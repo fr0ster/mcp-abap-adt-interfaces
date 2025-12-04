@@ -1,6 +1,6 @@
 /**
- * Logger interface for connection layer
- * Allows connection layer to be independent of specific logger implementation
+ * Logger interface for MCP ABAP ADT packages
+ * Allows packages to be independent of specific logger implementation
  */
 export interface ILogger {
   /**
@@ -22,23 +22,5 @@ export interface ILogger {
    * Log debug message
    */
   debug(message: string, meta?: any): void;
-
-  /**
-   * Log CSRF token operations
-   * @param action - Type of CSRF operation: "fetch", "retry", "success", or "error"
-   * @param message - Log message
-   * @param meta - Additional metadata
-   */
-  csrfToken?(
-    action: "fetch" | "retry" | "success" | "error",
-    message: string,
-    meta?: any
-  ): void;
-
-  /**
-   * Log TLS configuration
-   * @param rejectUnauthorized - Whether TLS certificate validation is enabled
-   */
-  tlsConfig?(rejectUnauthorized: boolean): void;
 }
 

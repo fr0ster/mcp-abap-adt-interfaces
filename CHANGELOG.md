@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [0.1.1] - 2024-12-04
+
+### Changed
+- **ILogger Interface**: Simplified to include only core logging methods (info, error, warn, debug)
+  - Removed domain-specific methods (csrfToken, tlsConfig, browserAuth, refresh, success, browserUrl, browserOpening, testSkip)
+  - Interface now focuses on universal logging capabilities without implementation-specific details
+- **ITokenProviderOptions**: Enhanced documentation with detailed descriptions of browser and logger options
+
 ## [0.1.0] - 2025-12-04
 
 ### Added
