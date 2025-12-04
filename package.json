@@ -1,0 +1,51 @@
+{
+  "name": "@mcp-abap-adt/interfaces",
+  "version": "0.1.0",
+  "description": "Shared interfaces for MCP ABAP ADT packages",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "abap",
+    "sap",
+    "adt",
+    "interfaces",
+    "types",
+    "mcp",
+    "abap-adt"
+  ],
+  "author": "Oleksii Kyslytsia <oleksij.kyslytsja@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/fr0ster/mcp-abap-adt-interfaces#readme",
+  "bugs": {
+    "url": "https://github.com/fr0ster/mcp-abap-adt-interfaces/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fr0ster/mcp-abap-adt-interfaces.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "build": "npm run clean --silent && npx tsc -p tsconfig.json",
+    "build:fast": "npx tsc -p tsconfig.json",
+    "test:check": "npx tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.2.1",
+    "axios": "^1.11.0",
+    "typescript": "^5.9.2"
+  }
+}
+
