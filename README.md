@@ -124,6 +124,10 @@ This package has **no runtime dependencies**. It only has devDependencies for Ty
 - `@types/node` - Node.js type definitions
 - `axios` - For AxiosResponse type (dev dependency only)
 
+## Documentation
+
+- **[Package Dependencies Analysis](docs/PACKAGE_DEPENDENCIES_ANALYSIS.md)** - Analysis of dependencies between all `@mcp-abap-adt/*` packages, verification that interfaces package has no runtime dependencies, and roadmap for eliminating unnecessary dependencies
+
 ## License
 
 MIT
