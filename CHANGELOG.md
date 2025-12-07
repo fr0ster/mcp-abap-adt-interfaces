@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2025-12-07
+
+### Added
+- **Session ID Header Constants**: Added constants for session identification headers
+  - `HEADER_SESSION_ID` - Standard session ID header (`x-session-id`)
+  - `HEADER_MCP_SESSION_ID` - MCP session ID header (`mcp-session-id`)
+  - `HEADER_X_MCP_SESSION_ID` - Extended MCP session ID header (`x-mcp-session-id`)
+  - These constants are used for session identification in proxy requests
+
 ## [0.1.2] - 2025-12-07
 
 ### Added
