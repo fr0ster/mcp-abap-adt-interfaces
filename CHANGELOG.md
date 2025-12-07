@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2] - 2025-12-07
+
+### Added
+- **HTTP Header Constants**: Added `Headers.ts` module with all HTTP header constants used across MCP ABAP ADT packages
+  - Proxy routing headers: `HEADER_BTP_DESTINATION`, `HEADER_MCP_DESTINATION`, `HEADER_MCP_URL`
+  - SAP ABAP connection headers: `HEADER_SAP_DESTINATION`, `HEADER_SAP_DESTINATION_SERVICE`, `HEADER_SAP_URL`, `HEADER_SAP_JWT_TOKEN`, `HEADER_SAP_AUTH_TYPE`, `HEADER_SAP_CLIENT`, `HEADER_SAP_LOGIN`, `HEADER_SAP_PASSWORD`, `HEADER_SAP_REFRESH_TOKEN`
+  - UAA/XSUAA headers: `HEADER_SAP_UAA_URL`, `HEADER_UAA_URL`, `HEADER_SAP_UAA_CLIENT_ID`, `HEADER_UAA_CLIENT_ID`, `HEADER_SAP_UAA_CLIENT_SECRET`, `HEADER_UAA_CLIENT_SECRET`
+  - Standard HTTP headers: `HEADER_AUTHORIZATION`, `HEADER_CONTENT_TYPE`, `HEADER_ACCEPT`
+  - Header groups: `PROXY_ROUTING_HEADERS`, `SAP_CONNECTION_HEADERS`, `UAA_HEADERS`, `PRESERVED_HEADERS`, `PROXY_MODIFIED_HEADERS`
+  - Authentication type constants: `AUTH_TYPE_JWT`, `AUTH_TYPE_BASIC`, `AUTH_TYPE_XSUAA`, `AUTH_TYPES`
+  - Special constant `HEADER_SAP_DESTINATION_SERVICE` for SAP destination service on Cloud (URL automatically derived from service key)
+- All header constants are exported from package root for easy import: `import { HEADER_SAP_DESTINATION } from '@mcp-abap-adt/interfaces'`
+
 ## [0.1.1] - 2024-12-04
 
 ### Changed

@@ -46,3 +46,6 @@ export { AuthMethodPriority } from './validation/IValidatedAuthConfig';
 export type { ITokenRefreshResult } from './utils/ITokenRefreshResult';
 export type { ITimeoutConfig } from './utils/ITimeoutConfig';
 
+// Headers domain
+export * from './Headers';
+
