@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.5] - 2025-12-09
+
+### Added
+- **High-Level ADT Object Operations Interface**: Added `IAdtObject` interface for high-level CRUD operations
+  - `IAdtObject<TConfig, TReadResult>` - Main interface for ADT object operations
+  - Provides simplified CRUD operations with automatic operation chains, error handling, and resource cleanup
+  - Methods: `validate()`, `create()`, `read()`, `update()`, `delete()`, `activate()`, `check()`
+  - Supports full operation chains:
+    - Create: validate → create → check → lock → check(inactive) → update → unlock → check → activate
+    - Update: lock → check(inactive) → update → unlock → check → activate
+    - Delete: check(deletion) → delete
+- **Operation Options Interfaces**: Added options interfaces for create and update operations
+  - `CreateOptions` - Options for create operations:
+    - `activateOnCreate?: boolean` - Activate object after creation (default: false)
+    - `deleteOnFailure?: boolean` - Delete object if creation fails (default: false)
+    - `sourceCode?: string` - Source code to use for update after create
+    - `xmlContent?: string` - XML content to use for update after create
+  - `UpdateOptions` - Options for update operations:
+    - `activateOnUpdate?: boolean` - Activate object after update (default: false)
+    - `deleteOnFailure?: boolean` - Delete object if update fails (default: false)
+    - `lockHandle?: string` - Lock handle if object is already locked
+- **ADT Domain**: New domain for ADT client interfaces
+  - All interfaces exported from `@mcp-abap-adt/interfaces` under ADT domain
+  - Located in `src/adt/IAdtObject.ts`
+
 ## [0.1.4] - 2025-12-08
 
 ### Breaking Changes

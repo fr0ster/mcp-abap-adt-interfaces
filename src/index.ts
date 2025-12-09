@@ -49,3 +49,6 @@ export type { ITimeoutConfig } from './utils/ITimeoutConfig';
 // Headers domain
 export * from './Headers';
 
+// ADT domain
+export type { IAdtObject, CreateOptions, UpdateOptions } from './adt/IAdtObject';
+
