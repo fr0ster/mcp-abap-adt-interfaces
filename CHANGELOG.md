@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.7] - 2025-12-10
+
+### Added
+- **Transport Request Builder Configuration Interface**: Added `ITransportBuilderConfig` interface
+  - Configuration interface for Transport Request operations
+  - Fields: `description`, `transportType`, `targetSystem`, `owner`, `transportNumber`
+  - Located in `src/adt/ITransportBuilderConfig.ts`
+  - Exported from package root: `import { ITransportBuilderConfig } from '@mcp-abap-adt/interfaces'`
+- **Unit Test Builder Configuration Interfaces**: Added unit test configuration interfaces
+  - `IUnitTestBuilderConfig` - Main configuration interface for unit test operations
+    - Fields: `tests`, `options`, `runId`, `status`, `result`
+  - `IClassUnitTestDefinition` - Interface for defining class unit tests
+    - Fields: `containerClass`, `testClass`
+  - `IClassUnitTestRunOptions` - Interface for unit test run options
+    - Fields: `title`, `context`, `scope`, `riskLevel`, `duration`
+  - Located in `src/adt/IUnitTestBuilderConfig.ts`
+  - Exported from package root: `import { IUnitTestBuilderConfig, IClassUnitTestDefinition, IClassUnitTestRunOptions } from '@mcp-abap-adt/interfaces'`
+
 ## [0.1.6] - 2025-12-09
 
 ### Added

@@ -51,4 +51,6 @@ export * from './Headers';
 
 // ADT domain
 export type { IAdtObject, IAdtOperationOptions } from './adt/IAdtObject';
+export type { ITransportBuilderConfig } from './adt/ITransportBuilderConfig';
+export type { IUnitTestBuilderConfig, IClassUnitTestDefinition, IClassUnitTestRunOptions } from './adt/IUnitTestBuilderConfig';
 
