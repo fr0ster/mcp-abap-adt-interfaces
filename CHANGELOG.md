@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.6] - 2025-12-09
+
+### Added
+- **Unified Operation Options Interface**: Created `IAdtOperationOptions` interface
+  - Unified interface for both create and update operations (replaces `CreateOptions` and `UpdateOptions`)
+  - Includes all fields from both interfaces: `activateOnCreate`, `activateOnUpdate`, `deleteOnFailure`, `sourceCode`, `xmlContent`, `timeout`
+  - `sourceCode` and `xmlContent` now available for update operations (previously only in create)
+  - `timeout?: number` - Timeout for operations in milliseconds (default: 1000)
+    - Prevents operation failures due to system not completing commands in time
+    - Increase timeout for complex operations or slow systems
+
+### Changed
+- **Operation Options Interfaces**: Unified `CreateOptions` and `UpdateOptions` into `IAdtOperationOptions`
+  - Both create and update operations now use the same interface
+  - `sourceCode` and `xmlContent` are now available for update operations
+  - Removed `lockHandle` field from update options (update operations always start with lock internally)
+  - All interfaces now follow `I` prefix convention (`IAdtOperationOptions`)
+
+### Removed
+- **Deprecated Interfaces**: Removed `CreateOptions` and `UpdateOptions` interfaces
+  - Replaced by unified `IAdtOperationOptions` interface
+  - No backward compatibility maintained (version < 1.0.0)
+
 ## [0.1.5] - 2025-12-09
 
 ### Added

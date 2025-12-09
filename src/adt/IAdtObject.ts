@@ -11,52 +11,51 @@
 import { AxiosResponse } from 'axios';
 
 /**
- * Options for create operations
+ * Options for ADT operations (create and update)
+ * Unified interface for both create and update operations
  */
-export interface CreateOptions {
+export interface IAdtOperationOptions {
   /**
-   * Activate object after creation
+   * Activate object after creation (for create operations)
    * @default false
    */
   activateOnCreate?: boolean;
 
   /**
-   * Delete object if creation fails
-   * @default false
-   */
-  deleteOnFailure?: boolean;
-
-  /**
-   * Source code to use for update after create
-   */
-  sourceCode?: string;
-
-  /**
-   * XML content to use for update after create
-   */
-  xmlContent?: string;
-}
-
-/**
- * Options for update operations
- */
-export interface UpdateOptions {
-  /**
-   * Activate object after update
+   * Activate object after update (for update operations)
    * @default false
    */
   activateOnUpdate?: boolean;
 
   /**
-   * Delete object if update fails
+   * Delete object if operation fails
    * @default false
    */
   deleteOnFailure?: boolean;
 
   /**
-   * Lock handle if object is already locked
+   * Source code to use for update
+   * Used in create operations for update after create, and in update operations
    */
-  lockHandle?: string;
+  sourceCode?: string;
+
+  /**
+   * XML content to use for update
+   * Used for objects that use XML format (e.g., Domain, DataElement)
+   * Used in create operations for update after create, and in update operations
+   */
+  xmlContent?: string;
+
+  /**
+   * Timeout for operations in milliseconds
+   * @default 1000 (1 second)
+   * 
+   * CRITICAL: Without timeouts, operations may fail due to system not completing commands in time.
+   * Increase timeout for complex operations or slow systems.
+   * 
+   * Example: timeout: 5000 for 5 seconds
+   */
+  timeout?: number;
 }
 
 /**
@@ -88,7 +87,7 @@ export interface IAdtObject<TConfig, TReadResult = TConfig> {
    */
   create(
     config: TConfig,
-    options?: CreateOptions
+    options?: IAdtOperationOptions
   ): Promise<TReadResult>;
 
   /**
@@ -114,7 +113,7 @@ export interface IAdtObject<TConfig, TReadResult = TConfig> {
    */
   update(
     config: Partial<TConfig>,
-    options?: UpdateOptions
+    options?: IAdtOperationOptions
   ): Promise<TReadResult>;
 
   /**
