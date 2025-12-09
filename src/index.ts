@@ -50,5 +50,5 @@ export type { ITimeoutConfig } from './utils/ITimeoutConfig';
 export * from './Headers';
 
 // ADT domain
-export type { IAdtObject, CreateOptions, UpdateOptions } from './adt/IAdtObject';
+export type { IAdtObject, IAdtOperationOptions } from './adt/IAdtObject';
 
