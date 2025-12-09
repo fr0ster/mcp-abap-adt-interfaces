@@ -1,5 +1,4 @@
 import type { ISapConfig } from '../sap/ISapConfig';
-import type { ISessionState } from '../storage/ISessionState';
 import type { IAbapRequestOptions } from './IAbapRequestOptions';
 
 /**
@@ -17,7 +16,5 @@ export interface IAbapConnection {
   makeAdtRequest(options: IAbapRequestOptions): Promise<AxiosResponse>;
   connect(): Promise<void>;
   reset(): void;
-  getSessionState(): ISessionState | null;
-  setSessionState(state: ISessionState): void;
 }
 

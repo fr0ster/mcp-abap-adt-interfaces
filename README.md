@@ -95,6 +95,9 @@ This package is responsible for:
 
 ### Connection Domain (`connection/`)
 - `IAbapConnection` - Main connection interface for ADT operations
+  - Handles HTTP communication with SAP systems
+  - Manages session headers (stateful/stateless mode via `setSessionType()`)
+  - Note: Token refresh and session state persistence are handled by other packages (e.g., auth-broker)
 - `IAbapRequestOptions` - Request options for ADT operations
 
 ### SAP Domain (`sap/`)

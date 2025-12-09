@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.4] - 2025-12-08
+
+### Breaking Changes
+
+- **Session State Methods Removed from IAbapConnection**: Removed session state management methods from connection interface
+  - `getSessionState()` method removed from `IAbapConnection`
+  - `setSessionState()` method removed from `IAbapConnection`
+  - Session state management is no longer a responsibility of connection package
+  - Connection package now focuses solely on HTTP communication
+  - Session state persistence should be handled by higher-level packages (e.g., auth-broker)
+
+### Changed
+
+- **Connection Package Scope**: Updated `IAbapConnection` interface to reflect connection package responsibilities
+  - Connection package handles only HTTP communication and session headers
+  - Token refresh is not a responsibility of connection package - handled by `@mcp-abap-adt/auth-broker` package
+  - Session state persistence is not part of connection package scope
+
+### Migration Guide
+
+If you were using session state methods:
+
+**Before (0.1.x)**:
+```typescript
+const state = connection.getSessionState();
+connection.setSessionState(state);
+```
+
+**After (0.1.4)**:
+```typescript
+// Session state management is now handled by auth-broker or other higher-level packages
+// Connection package only handles HTTP communication
+```
+
 ## [0.1.3] - 2025-12-07
 
 ### Added
