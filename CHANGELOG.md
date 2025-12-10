@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.12] - 2025-12-10
+
+### Added
+- **IAdtObject Interface - Metadata Reading**: Added `readMetadata()` method to `IAdtObject` interface
+  - `readMetadata(config: Partial<TConfig>): Promise<TReadResult>` - Reads object metadata (characteristics: package, responsible, description, etc.)
+  - For objects with source code (Class, Interface, Program), reads metadata separately from source code
+  - For objects without source code (Domain, DataElement), may delegate to `read()` as `read()` already returns metadata
+  - Returns state with metadata result in `metadataResult` field
+- **IAdtObjectState - Metadata Result Field**: Added `metadataResult?: AxiosResponse` field to `IAdtObjectState`
+  - Stores metadata read result from `readMetadata()` method
+  - Contains object characteristics (package, responsible, description, etc.)
+
 ## [0.1.11] - 2025-12-10
 
 ### Changed

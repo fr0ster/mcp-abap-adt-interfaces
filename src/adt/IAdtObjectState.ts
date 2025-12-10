@@ -11,7 +11,7 @@ import { AxiosResponse } from 'axios';
  * Base state that all ADT Object state types should extend
  * 
  * This interface defines the common structure for all operation results
- * returned by IAdtObject methods (validate, create, read, update, delete, activate, check).
+ * returned by IAdtObject methods (validate, create, read, readMetadata, update, delete, activate, check, readTransport).
  * 
  * Specific state types can extend this interface to add entity-specific fields.
  * 
@@ -39,8 +39,10 @@ export interface IAdtObjectState {
   activateResult?: AxiosResponse;
   /** Delete operation response from delete() method */
   deleteResult?: AxiosResponse;
-  /** Read operation response from read() method */
+  /** Read operation response from read() method (source code or XML) */
   readResult?: AxiosResponse;
+  /** Metadata read result from readMetadata() method (object characteristics: package, responsible, description, etc.) */
+  metadataResult?: AxiosResponse;
   /** Transport request read result from readTransport() method */
   transportResult?: AxiosResponse;
   /** Array of errors that occurred during operations */

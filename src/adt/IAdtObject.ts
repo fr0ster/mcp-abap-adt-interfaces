@@ -131,7 +131,10 @@ export interface IAdtObject<TConfig, TReadResult = TConfig> {
   ): Promise<TReadResult>;
 
   /**
-   * Read object
+   * Read object (source code or XML that describes the object)
+   * For objects without source code (Domain, DataElement), this returns metadata XML.
+   * For objects with source code (Class, Interface, Program), this returns source code.
+   * 
    * @param config - Object identification (name, etc.)
    * @param version - 'active' or 'inactive'
    * @returns Object configuration or source code, or undefined if not found
@@ -140,6 +143,16 @@ export interface IAdtObject<TConfig, TReadResult = TConfig> {
     config: Partial<TConfig>,
     version?: 'active' | 'inactive'
   ): Promise<TReadResult | undefined>;
+
+  /**
+   * Read object metadata (object characteristics: package, responsible, description, etc.)
+   * For objects with source code (Class, Interface, Program), this reads metadata separately from source code.
+   * For objects without source code (Domain, DataElement), this may delegate to read() as read() already returns metadata.
+   * 
+   * @param config - Object identification (name, etc.)
+   * @returns State with metadata result
+   */
+  readMetadata(config: Partial<TConfig>): Promise<TReadResult>;
 
   /**
    * Update object with full operation chain:
