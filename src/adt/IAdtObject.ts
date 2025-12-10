@@ -11,6 +11,46 @@
 import { AxiosResponse } from 'axios';
 
 /**
+ * Error codes that can be thrown by IAdtObject methods
+ * Consumers can catch specific errors using these constants
+ * 
+ * Example:
+ * ```typescript
+ * try {
+ *   await adtObject.read({ className: 'ZTEST' });
+ * } catch (error: any) {
+ *   if (error.code === AdtObjectErrorCodes.OBJECT_NOT_FOUND) {
+ *     // Handle not found
+ *   } else if (error.code === AdtObjectErrorCodes.OBJECT_NOT_READY) {
+ *     // Handle not ready
+ *   }
+ * }
+ * ```
+ */
+export const AdtObjectErrorCodes = {
+  /** Object not found (404) */
+  OBJECT_NOT_FOUND: 'ADT_OBJECT_NOT_FOUND',
+  /** Object not ready yet (400) - e.g., just created, not available for reading */
+  OBJECT_NOT_READY: 'ADT_OBJECT_NOT_READY',
+  /** Object validation failed */
+  VALIDATION_FAILED: 'ADT_VALIDATION_FAILED',
+  /** Object creation failed */
+  CREATE_FAILED: 'ADT_CREATE_FAILED',
+  /** Object update failed */
+  UPDATE_FAILED: 'ADT_UPDATE_FAILED',
+  /** Object deletion failed */
+  DELETE_FAILED: 'ADT_DELETE_FAILED',
+  /** Object activation failed */
+  ACTIVATE_FAILED: 'ADT_ACTIVATE_FAILED',
+  /** Object check failed */
+  CHECK_FAILED: 'ADT_CHECK_FAILED',
+  /** Lock operation failed */
+  LOCK_FAILED: 'ADT_LOCK_FAILED',
+  /** Unlock operation failed */
+  UNLOCK_FAILED: 'ADT_UNLOCK_FAILED',
+} as const;
+
+/**
  * Options for ADT operations (create and update)
  * Unified interface for both create and update operations
  */

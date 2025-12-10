@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.8] - 2025-12-10
+
+### Added
+- **ADT Object Error Codes**: Added `AdtObjectErrorCodes` constants for error handling
+  - Constants for all IAdtObject operation errors: `OBJECT_NOT_FOUND`, `OBJECT_NOT_READY`, `VALIDATION_FAILED`, `CREATE_FAILED`, `UPDATE_FAILED`, `DELETE_FAILED`, `ACTIVATE_FAILED`, `CHECK_FAILED`, `LOCK_FAILED`, `UNLOCK_FAILED`
+  - Allows consumers to catch specific errors by error code
+  - Exported from package root: `import { AdtObjectErrorCodes } from '@mcp-abap-adt/interfaces'`
+
 ## [0.1.7] - 2025-12-10
 
 ### Added
