@@ -50,20 +50,23 @@ export interface IAdtObjectState {
 /**
  * Base configuration interface for all ADT Object operations
  * 
- * This interface can be extended by specific configuration types
- * to ensure consistency. However, most configurations are entity-specific
- * and may not need a common base interface.
+ * This interface defines common fields that are present in all ADT object configurations.
+ * Specific configuration types should extend this interface to ensure consistency.
  * 
  * Example:
  * ```typescript
  * export interface DomainBuilderConfig extends IAdtObjectConfig {
  *   domainName: string;
- *   packageName?: string;
  *   // ... domain-specific fields
+ *   // packageName, description, transportRequest are inherited from IAdtObjectConfig
  * }
  * ```
  */
 export interface IAdtObjectConfig {
+  /** Package name (required for create operations, optional for others) */
+  packageName?: string;
+  /** Description (required for create/validate operations, optional for others) */
+  description?: string;
   /** Transport request (optional, used for create/update/delete operations) */
   transportRequest?: string;
 }

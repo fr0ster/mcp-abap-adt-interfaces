@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.11] - 2025-12-10
+
+### Changed
+- **IAdtObjectConfig Interface - Common Fields**: Extended `IAdtObjectConfig` with common fields shared across all ADT object configurations
+  - Added `packageName?: string` - Package name (required for create operations, optional for others)
+  - Added `description?: string` - Description (required for create/validate operations, optional for others)
+  - `transportRequest?: string` - Transport request (already existed)
+  - All specific configuration types (e.g., `IAdtClassConfig`, `DomainBuilderConfig`) should extend `IAdtObjectConfig` to inherit these common fields
+
 ## [0.1.10] - 2025-12-10
 
 ### Added
