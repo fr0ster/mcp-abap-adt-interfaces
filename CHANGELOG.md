@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.13] - 2025-12-19
+
+### Removed
+- **Unit Test and Transport Config Types**: Removed `IUnitTestBuilderConfig` and `ITransportBuilderConfig` from package exports
+  - These types are now defined locally in `@mcp-abap-adt/adt-clients` package as `IUnitTestConfig` and `ITransportConfig`
+  - This change aligns with the pattern used by all other ADT object types (Class, Program, Interface, etc.) which have local Config types
+  - **Migration**: If you were importing these types from `@mcp-abap-adt/interfaces`, update your imports to use local types from `@mcp-abap-adt/adt-clients`:
+    - `IUnitTestBuilderConfig` → `IUnitTestConfig` from `@mcp-abap-adt/adt-clients/src/core/unitTest/types`
+    - `ITransportBuilderConfig` → `ITransportConfig` from `@mcp-abap-adt/adt-clients/src/core/transport/types`
+  - **Note**: `IClassUnitTestDefinition` and `IClassUnitTestRunOptions` remain exported from this package as they are shared types
+
 ## [0.1.12] - 2025-12-10
 
 ### Added

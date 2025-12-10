@@ -53,6 +53,4 @@ export * from './Headers';
 export type { IAdtObject, IAdtOperationOptions } from './adt/IAdtObject';
 export { AdtObjectErrorCodes } from './adt/IAdtObject';
 export type { IAdtObjectState, IAdtObjectConfig } from './adt/IAdtObjectState';
-export type { ITransportBuilderConfig } from './adt/ITransportBuilderConfig';
-export type { IUnitTestBuilderConfig, IClassUnitTestDefinition, IClassUnitTestRunOptions } from './adt/IUnitTestBuilderConfig';
 
