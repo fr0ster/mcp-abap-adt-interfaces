@@ -184,4 +184,11 @@ export interface IAdtObject<TConfig, TReadResult = TConfig> {
     config: Partial<TConfig>,
     status?: string
   ): Promise<TReadResult>;
+
+  /**
+   * Read transport request information for the object
+   * @param config - Object identification
+   * @returns State with transport result
+   */
+  readTransport(config: Partial<TConfig>): Promise<TReadResult>;
 }

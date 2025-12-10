@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.10] - 2025-12-10
+
+### Added
+- **IAdtObject Interface - Transport Request Reading**: Added `readTransport()` method to `IAdtObject` interface
+  - `readTransport(config: Partial<TConfig>): Promise<TReadResult>` - Reads transport request information for the object
+  - Returns state with transport result in `transportResult` field
+  - Allows consumers to query transport request details for any ADT object
+
 ## [0.1.9] - 2025-12-10
 
 ### Changed
