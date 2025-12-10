@@ -111,9 +111,9 @@ export interface IAdtObject<TConfig, TReadResult = TConfig> {
   /**
    * Validate object configuration before creation
    * @param config - Object configuration
-   * @returns Validation response from ADT
+   * @returns State with validation result
    */
-  validate(config: Partial<TConfig>): Promise<AxiosResponse>;
+  validate(config: Partial<TConfig>): Promise<TReadResult>;
 
   /**
    * Create object with full operation chain:
@@ -161,26 +161,27 @@ export interface IAdtObject<TConfig, TReadResult = TConfig> {
    * Performs deletion check before deleting.
    * 
    * @param config - Object identification
-   * @returns Delete response from ADT
+   * @returns State with delete result
    * @throws Error if deletion check fails (object is not deleted)
    */
-  delete(config: Partial<TConfig>): Promise<AxiosResponse>;
+  delete(config: Partial<TConfig>): Promise<TReadResult>;
 
   /**
    * Activate object
    * @param config - Object identification
-   * @returns Activation response from ADT
+   * @returns State with activation result
    */
-  activate(config: Partial<TConfig>): Promise<AxiosResponse>;
+  activate(config: Partial<TConfig>): Promise<TReadResult>;
 
   /**
    * Check object (syntax, consistency, etc.)
    * @param config - Object identification
    * @param status - Optional status to check ('active', 'inactive', 'deletion')
-   * @returns Check response from ADT
+   * @returns State with check result
+   * @throws Error if check finds errors (type E in XML response)
    */
   check(
     config: Partial<TConfig>,
     status?: string
-  ): Promise<AxiosResponse>;
+  ): Promise<TReadResult>;
 }

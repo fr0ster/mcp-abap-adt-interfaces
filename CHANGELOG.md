@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.9] - 2025-12-10
+
+### Changed
+- **IAdtObject Interface - Unified Return Types**: All methods now return `Promise<TReadResult>` instead of mixed types
+  - `validate()`: Changed from `Promise<AxiosResponse>` to `Promise<TReadResult>`
+  - `check()`: Changed from `Promise<AxiosResponse>` to `Promise<TReadResult>`
+  - `activate()`: Changed from `Promise<AxiosResponse>` to `Promise<TReadResult>`
+  - `delete()`: Changed from `Promise<AxiosResponse>` to `Promise<TReadResult>`
+  - This provides consistent return types across all IAdtObject methods
+  - State types (e.g., `ClassBuilderState`) should include fields for all operation results
+
 ## [0.1.8] - 2025-12-10
 
 ### Added
