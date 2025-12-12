@@ -87,13 +87,19 @@ export interface IAdtOperationOptions {
   xmlContent?: string;
 
   /**
-   * Timeout for operations in milliseconds
+   * HTTP request timeout for operations in milliseconds
    * @default 1000 (1 second)
    * 
-   * CRITICAL: Without timeouts, operations may fail due to system not completing commands in time.
+   * Note: This timeout is for HTTP request completion, not for waiting object readiness.
+   * For waiting object readiness after create/update/activate operations, use `withLongPolling: true`
+   * in read operations instead of fixed timeouts.
+   * 
+   * The `timeout` parameter controls how long to wait for HTTP responses from the server.
    * Increase timeout for complex operations or slow systems.
    * 
    * Example: timeout: 5000 for 5 seconds
+   * 
+   * @see withLongPolling - Use long polling for waiting object readiness
    */
   timeout?: number;
 }
