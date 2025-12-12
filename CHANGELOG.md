@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.14] - 2025-12-19
+
+### Added
+- **LogLevel Enum**: Added `LogLevel` enum to logging domain exports
+  - Defines log levels: `ERROR = 0`, `WARN = 1`, `INFO = 2`, `DEBUG = 3`
+  - Exported from `@mcp-abap-adt/interfaces` for use across all packages
+  - Allows logger implementations to use standardized log level constants
+  - **Usage**: `import { LogLevel } from '@mcp-abap-adt/interfaces';`
+
 ## [0.1.13] - 2025-12-19
 
 ### Removed
