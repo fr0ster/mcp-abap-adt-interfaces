@@ -36,6 +36,7 @@ export type { ISessionState } from './storage/ISessionState';
 
 // Logging domain
 export type { ILogger } from './logging/ILogger';
+export { LogLevel } from './logging/LogLevel';
 
 // Validation domain
 export type { IValidatedAuthConfig } from './validation/IValidatedAuthConfig';
