@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.16] - 2025-12-13
+
+### Changed
+- **HTTP timeout docs**: Clarified `timeout` option in `IAdtOperationOptions` to explain behavior and mention `withLongPolling` interplay
+- **VSCode spell checking**: Limited spell checker scope to project files to reduce false positives
+
 ## [0.1.15] - 2025-12-12
 
 ### Added
@@ -266,4 +272,3 @@ connection.setSessionState(state);
   - `utils/` - Utility types and interfaces
 
 [0.1.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/releases/tag/v0.1.0
-
