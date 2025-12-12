@@ -14,6 +14,7 @@ npm install @mcp-abap-adt/interfaces
 
 This package contains all interfaces organized by domain:
 
+- **`adt/`** - ADT object operations interfaces (IAdtObject, operation options, error codes)
 - **`auth/`** - Core authentication interfaces (configs, auth types)
 - **`token/`** - Token-related interfaces (token provider, results, options)
 - **`session/`** - Session storage interface
@@ -21,7 +22,7 @@ This package contains all interfaces organized by domain:
 - **`connection/`** - Connection interfaces (AbapConnection, request options)
 - **`sap/`** - SAP-specific configuration (SapConfig, SapAuthType)
 - **`storage/`** - Storage interfaces (session storage, state)
-- **`logging/`** - Logging interfaces
+- **`logging/`** - Logging interfaces (ILogger, LogLevel enum)
 - **`validation/`** - Validation interfaces
 - **`utils/`** - Utility types and interfaces
 
@@ -32,6 +33,8 @@ This package contains all interfaces organized by domain:
 This ensures consistency across all packages and follows TypeScript naming conventions for interfaces.
 
 ## Usage
+
+### Basic Imports
 
 ```typescript
 import {
@@ -44,6 +47,30 @@ import {
   ISapConfig,
   ILogger
 } from '@mcp-abap-adt/interfaces';
+```
+
+### ADT Object Operations
+
+```typescript
+import {
+  IAdtObject,
+  IAdtOperationOptions,
+  AdtObjectErrorCodes,
+  LogLevel
+} from '@mcp-abap-adt/interfaces';
+
+// Example: Read with long polling
+const domain = await adtDomain.read(
+  { domainName: 'Z_TEST' },
+  'active',
+  { withLongPolling: true } // Wait until object is available
+);
+
+// Example: Read metadata with long polling
+const metadata = await adtDomain.readMetadata(
+  { domainName: 'Z_TEST' },
+  { withLongPolling: true }
+);
 ```
 
 ## Responsibilities and Design Principles
@@ -75,6 +102,24 @@ This package is responsible for:
 - **Does NOT know about implementations**: Interfaces are independent of implementations
 
 ## Interface Domains
+
+### ADT Domain (`adt/`)
+- `IAdtObject<TConfig, TReadResult>` - High-level ADT object operations interface
+  - Provides simplified CRUD operations with automatic operation chains, error handling, and resource cleanup
+  - Methods: `validate()`, `create()`, `read()`, `readMetadata()`, `readTransport()`, `update()`, `delete()`, `activate()`, `check()`
+  - All read methods support optional `withLongPolling` parameter for waiting until object becomes available
+  - Supports full operation chains:
+    - Create: validate → create → check → lock → check(inactive) → update → unlock → check → activate
+    - Update: lock → check(inactive) → update → unlock → check → activate
+    - Delete: check(deletion) → delete
+- `IAdtOperationOptions` - Unified options for create and update operations
+  - Fields: `activateOnCreate`, `activateOnUpdate`, `deleteOnFailure`, `sourceCode`, `xmlContent`, `timeout`
+- `AdtObjectErrorCodes` - Error code constants for ADT object operations
+  - Constants: `OBJECT_NOT_FOUND`, `OBJECT_NOT_READY`, `VALIDATION_FAILED`, `CREATE_FAILED`, `UPDATE_FAILED`, `DELETE_FAILED`, `ACTIVATE_FAILED`, `CHECK_FAILED`, `LOCK_FAILED`, `UNLOCK_FAILED`
+- `IAdtObjectState` - Base state interface for ADT object operations
+  - Fields: `validationResponse`, `createResult`, `lockHandle`, `updateResult`, `checkResult`, `unlockResult`, `activateResult`, `deleteResult`, `readResult`, `metadataResult`, `transportResult`, `errors`
+- `IAdtObjectConfig` - Base configuration interface for ADT objects
+  - Common fields: `packageName`, `description`, `transportRequest`
 
 ### Authentication Domain (`auth/`)
 - `IAuthorizationConfig` - Authorization values (UAA credentials, refresh token)
@@ -110,6 +155,8 @@ This package is responsible for:
 
 ### Logging Domain (`logging/`)
 - `ILogger` - Logger interface
+- `LogLevel` - Log level enum (`ERROR = 0`, `WARN = 1`, `INFO = 2`, `DEBUG = 3`)
+  - Exported from package root: `import { LogLevel } from '@mcp-abap-adt/interfaces'`
 
 ### Validation Domain (`validation/`)
 - `IValidatedAuthConfig` - Validated authentication configuration

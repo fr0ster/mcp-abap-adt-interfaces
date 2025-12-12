@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.15] - 2025-12-12
+
+### Added
+- **Long Polling Support for Read Operations**: Added optional `withLongPolling` parameter to all GET-based read methods
+  - **IAdtObject Interface**:
+    - `read(config, version?, options?)` - Added optional `options?: { withLongPolling?: boolean }` parameter
+    - `readMetadata(config, options?)` - Added optional `options?: { withLongPolling?: boolean }` parameter
+    - `readTransport(config, options?)` - Added optional `options?: { withLongPolling?: boolean }` parameter
+  - **IBuilder Interface** (in `@mcp-abap-adt/adt-clients`):
+    - `read(version?, options?)` - Added optional `options?: { withLongPolling?: boolean }` parameter
+  - **Usage**: When `withLongPolling: true` is specified, the request includes `?withLongPolling=true` query parameter
+    - This allows the server to hold the connection open until the object becomes available or a timeout occurs
+    - Useful after create/activate operations to wait until object is ready for reading
+    - Can replace timeout-based polling in tests and production code
+  - **Example**:
+    ```typescript
+    // Wait for object to become available after creation
+    const domain = await adtDomain.read(
+      { domainName: 'Z_TEST' },
+      'active',
+      { withLongPolling: true }
+    );
+    
+    // Read metadata with long polling
+    const metadata = await adtDomain.readMetadata(
+      { domainName: 'Z_TEST' },
+      { withLongPolling: true }
+    );
+    ```
+
 ## [0.1.14] - 2025-12-19
 
 ### Added

@@ -137,11 +137,15 @@ export interface IAdtObject<TConfig, TReadResult = TConfig> {
    * 
    * @param config - Object identification (name, etc.)
    * @param version - 'active' or 'inactive'
+   * @param options - Optional read options
+   * @param options.withLongPolling - If true, adds ?withLongPolling=true to wait for object to become available
+   *                                  Useful after create/activate operations to wait until object is ready
    * @returns Object configuration or source code, or undefined if not found
    */
   read(
     config: Partial<TConfig>,
-    version?: 'active' | 'inactive'
+    version?: 'active' | 'inactive',
+    options?: { withLongPolling?: boolean }
   ): Promise<TReadResult | undefined>;
 
   /**
@@ -150,9 +154,15 @@ export interface IAdtObject<TConfig, TReadResult = TConfig> {
    * For objects without source code (Domain, DataElement), this may delegate to read() as read() already returns metadata.
    * 
    * @param config - Object identification (name, etc.)
+   * @param options - Optional read options
+   * @param options.withLongPolling - If true, adds ?withLongPolling=true to wait for object to become available
+   *                                  Useful after create/activate operations to wait until object is ready
    * @returns State with metadata result
    */
-  readMetadata(config: Partial<TConfig>): Promise<TReadResult>;
+  readMetadata(
+    config: Partial<TConfig>,
+    options?: { withLongPolling?: boolean }
+  ): Promise<TReadResult>;
 
   /**
    * Update object with full operation chain:
@@ -201,7 +211,13 @@ export interface IAdtObject<TConfig, TReadResult = TConfig> {
   /**
    * Read transport request information for the object
    * @param config - Object identification
+   * @param options - Optional read options
+   * @param options.withLongPolling - If true, adds ?withLongPolling=true to wait for object to become available
+   *                                  Useful after create/activate operations to wait until object is ready
    * @returns State with transport result
    */
-  readTransport(config: Partial<TConfig>): Promise<TReadResult>;
+  readTransport(
+    config: Partial<TConfig>,
+    options?: { withLongPolling?: boolean }
+  ): Promise<TReadResult>;
 }
