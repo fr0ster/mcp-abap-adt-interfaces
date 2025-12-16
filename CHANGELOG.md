@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.17] - 2025-12-16
+
+### Added
+- **Basic Authentication Support for IConnectionConfig**: Added support for basic auth (username/password) in addition to JWT tokens
+  - Added optional `username?: string` field for basic authentication (on-premise systems)
+  - Added optional `password?: string` field for basic authentication (on-premise systems)
+  - Added optional `authType?: 'basic' | 'jwt'` field to indicate authentication type
+  - Made `authorizationToken` optional (required for JWT auth, optional for basic auth)
+  - This enables on-premise systems to use `--mcp` parameter with basic auth instead of requiring JWT tokens
+
 ## [0.1.16] - 2025-12-13
 
 ### Changed
