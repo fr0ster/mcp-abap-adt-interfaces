@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.19] - 2025-12-17
+
+### Added
+- **Low-level Update Mode in IAdtOperationOptions**: Added `lockHandle` field to `IAdtOperationOptions` interface
+  - `lockHandle?: string` - Lock handle to use for low-level update operations
+  - When `lockHandle` is provided in `update()` options, the method will skip lock, check, and unlock operations
+  - Performs only the core update operation, useful when managing lock/unlock manually or in custom workflows
+  - The update method assumes the object is already locked when `lockHandle` is provided
+
 ## [0.1.18] - 2025-12-17
 
 ### Added

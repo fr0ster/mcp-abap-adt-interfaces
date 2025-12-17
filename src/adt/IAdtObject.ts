@@ -87,6 +87,17 @@ export interface IAdtOperationOptions {
   xmlContent?: string;
 
   /**
+   * Lock handle to use for low-level update operations
+   * If provided, the update method will skip lock, check, and unlock operations
+   * and perform only the core update operation. Useful when you want to manage
+   * lock/unlock manually or when performing updates in a custom workflow.
+   * 
+   * When lockHandle is provided, the update method assumes the object is already locked
+   * and will only perform the update operation without any additional checks or unlocks.
+   */
+  lockHandle?: string;
+
+  /**
    * HTTP request timeout for operations in milliseconds
    * @default 1000 (1 second)
    * 
