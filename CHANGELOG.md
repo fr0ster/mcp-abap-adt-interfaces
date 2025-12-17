@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.18] - 2025-12-17
+
+### Added
+- **Lock and Unlock Methods in IAdtObject Interface**: Added `lock()` and `unlock()` methods to `IAdtObject` interface
+  - `lock(config: Partial<TConfig>): Promise<string>` - Lock object for modification, returns lock handle
+  - `unlock(config: Partial<TConfig>, lockHandle: string): Promise<TReadResult>` - Unlock object using lock handle
+  - These methods allow consumers to manually manage object locks for custom update workflows
+  - Lock sets connection to stateful mode, unlock sets it back to stateless mode
+  - Lock handle must be used in subsequent unlock() and update operations
+
 ## [0.1.17] - 2025-12-16
 
 ### Added

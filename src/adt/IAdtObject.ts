@@ -226,4 +226,29 @@ export interface IAdtObject<TConfig, TReadResult = TConfig> {
     config: Partial<TConfig>,
     options?: { withLongPolling?: boolean }
   ): Promise<TReadResult>;
+
+  /**
+   * Lock object for modification
+   * Sets connection to stateful mode before locking.
+   * 
+   * @param config - Object identification
+   * @returns Lock handle (string) that must be used in unlock() and update operations
+   * @throws Error if lock fails (object may be locked by another user)
+   */
+  lock(config: Partial<TConfig>): Promise<string>;
+
+  /**
+   * Unlock object
+   * Sets connection to stateless mode after unlocking.
+   * Must use the same session and lock handle from lock() operation.
+   * 
+   * @param config - Object identification
+   * @param lockHandle - Lock handle returned from lock() operation
+   * @returns State with unlock result
+   * @throws Error if unlock fails
+   */
+  unlock(
+    config: Partial<TConfig>,
+    lockHandle: string
+  ): Promise<TReadResult>;
 }
