@@ -30,6 +30,32 @@ export interface ITokenProvider {
   ): Promise<ITokenProviderResult>;
 
   /**
+   * Refresh token using refresh token from session (authorization config with refreshToken)
+   * This method uses the refresh token from the session to get a new access token.
+   * Typically uses refresh_token grant type or browser-based re-authentication.
+   * @param authConfig Authorization configuration including refreshToken from session
+   * @param options Optional provider-specific options (e.g., browser type for BTP)
+   * @returns Promise that resolves to connection configuration with new authorization token and optional new refresh token
+   */
+  refreshTokenFromSession(
+    authConfig: IAuthorizationConfig,
+    options?: ITokenProviderOptions
+  ): Promise<ITokenProviderResult>;
+
+  /**
+   * Refresh token using UAA credentials from service key (authorization config without refreshToken)
+   * This method uses UAA credentials (uaaUrl, uaaClientId, uaaClientSecret) to get a new token.
+   * Typically uses browser-based authorization flow to ensure proper role assignment.
+   * @param authConfig Authorization configuration with UAA credentials from service key (no refreshToken)
+   * @param options Optional provider-specific options (e.g., browser type for BTP)
+   * @returns Promise that resolves to connection configuration with new authorization token and optional refresh token
+   */
+  refreshTokenFromServiceKey(
+    authConfig: IAuthorizationConfig,
+    options?: ITokenProviderOptions
+  ): Promise<ITokenProviderResult>;
+
+  /**
    * Validate JWT token by testing connection to service
    * @param token JWT token to validate
    * @param serviceUrl Service URL (optional, for services that require URL validation)

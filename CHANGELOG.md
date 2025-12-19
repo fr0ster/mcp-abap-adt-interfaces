@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2025-12-19
+
+### Added
+- **Token Refresh Methods in ITokenProvider**: Added two new methods to `ITokenProvider` interface for explicit refresh scenarios
+  - `refreshTokenFromSession(authConfig, options?)` - Refresh token using refresh token from session
+    - Uses refresh token from `authConfig.refreshToken` to get new access token
+    - Typically uses refresh_token grant type or browser-based re-authentication
+    - Returns new authorization token and optional new refresh token
+  - `refreshTokenFromServiceKey(authConfig, options?)` - Refresh token using UAA credentials from service key
+    - Uses UAA credentials (uaaUrl, uaaClientId, uaaClientSecret) without refresh token
+    - Typically uses browser-based authorization flow to ensure proper role assignment
+    - Returns new authorization token and optional refresh token
+  - These methods provide explicit control over token refresh strategy in AuthBroker
+  - Allows separation of refresh-by-session vs refresh-by-service-key logic in token providers
+
 ## [0.2.0] - 2025-12-19
 
 ### Added
