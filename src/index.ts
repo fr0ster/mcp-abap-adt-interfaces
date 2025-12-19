@@ -25,6 +25,8 @@ export type { IServiceKeyStore } from './serviceKey/IServiceKeyStore';
 // Connection domain
 export type { IAbapConnection } from './connection/IAbapConnection';
 export type { IAbapRequestOptions } from './connection/IAbapRequestOptions';
+export { NETWORK_ERROR_CODES, isNetworkError } from './connection/NetworkErrors';
+export type { NetworkErrorCode } from './connection/NetworkErrors';
 
 // SAP domain
 export type { ISapConfig } from './sap/ISapConfig';

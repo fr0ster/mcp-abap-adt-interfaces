@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2025-12-19
+
+### Added
+- **Network Error Detection Constants and Utility**: Added network error codes and helper function for detecting infrastructure-level connection issues
+  - `NETWORK_ERROR_CODES` - Object containing standard network error codes:
+    - `ECONNREFUSED` - Connection refused (server not accepting connections)
+    - `ETIMEDOUT` - Connection timeout (server not responding)
+    - `ENOTFOUND` - DNS resolution failed (hostname not found)
+    - `ECONNRESET` - Connection reset by peer
+    - `ENETUNREACH` - Network is unreachable
+    - `EHOSTUNREACH` - Host is unreachable
+  - `NetworkErrorCode` - Type for network error codes
+  - `isNetworkError(error: any): boolean` - Utility function to check if an error is a network-level error
+  - These constants and utilities help distinguish network/infrastructure errors from application-level HTTP errors
+  - Network errors should not trigger retry logic (CSRF, auth) as they indicate VPN, DNS, or connectivity issues
+  - Exported from `@mcp-abap-adt/interfaces` package in connection domain
+
 ## [0.1.19] - 2025-12-17
 
 ### Added
