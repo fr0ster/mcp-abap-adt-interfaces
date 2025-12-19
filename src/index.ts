@@ -24,6 +24,10 @@ export type { ISessionStore } from './session/ISessionStore';
 // Service Key domain
 export type { IServiceKeyStore } from './serviceKey/IServiceKeyStore';
 
+// Store domain
+export { STORE_ERROR_CODES } from './store/StoreErrorCodes';
+export type { StoreErrorCode } from './store/StoreErrorCodes';
+
 // Connection domain
 export type { IAbapConnection } from './connection/IAbapConnection';
 export type { IAbapRequestOptions } from './connection/IAbapRequestOptions';

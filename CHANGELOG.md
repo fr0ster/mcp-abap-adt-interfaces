@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.3] - 2025-12-19
+
+### Added
+- **Store Error Codes**: Added standardized error codes for store operations
+  - `STORE_ERROR_CODES` - Object containing error codes for store failures:
+    - `FILE_NOT_FOUND` - Service key or session file not found
+    - `PARSE_ERROR` - JSON or YAML parsing failed
+    - `INVALID_CONFIG` - Required configuration fields are missing
+    - `STORAGE_ERROR` - File write or permission error
+  - `StoreErrorCode` - Type for store error codes
+  - These constants enable auth-stores to provide typed errors to auth-broker
+  - Error codes help broker distinguish between file not found, parsing errors, and validation failures
+  - Exported from `@mcp-abap-adt/interfaces` package in store domain
+
 ## [0.2.2] - 2025-12-19
 
 ### Added

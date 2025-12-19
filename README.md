@@ -45,7 +45,9 @@ import {
   ITokenProvider,
   IAbapConnection,
   ISapConfig,
-  ILogger
+  ILogger,
+  TOKEN_PROVIDER_ERROR_CODES,
+  STORE_ERROR_CODES
 } from '@mcp-abap-adt/interfaces';
 ```
 
@@ -71,6 +73,39 @@ const metadata = await adtDomain.readMetadata(
   { domainName: 'Z_TEST' },
   { withLongPolling: true }
 );
+```
+
+### Error Handling
+
+```typescript
+import {
+  TOKEN_PROVIDER_ERROR_CODES,
+  STORE_ERROR_CODES
+} from '@mcp-abap-adt/interfaces';
+
+// Token Provider Error Codes
+try {
+  await tokenProvider.refreshTokenFromSession(authConfig);
+} catch (error: any) {
+  if (error.code === TOKEN_PROVIDER_ERROR_CODES.VALIDATION_ERROR) {
+    console.error('Invalid auth config:', error.missingFields);
+  } else if (error.code === TOKEN_PROVIDER_ERROR_CODES.REFRESH_ERROR) {
+    console.error('Token refresh failed:', error.cause);
+  }
+}
+
+// Store Error Codes
+try {
+  const authConfig = await serviceKeyStore.getAuthorizationConfig('TRIAL');
+} catch (error: any) {
+  if (error.code === STORE_ERROR_CODES.FILE_NOT_FOUND) {
+    console.error('Service key not found:', error.filePath);
+  } else if (error.code === STORE_ERROR_CODES.PARSE_ERROR) {
+    console.error('Invalid JSON:', error.filePath, error.cause);
+  } else if (error.code === STORE_ERROR_CODES.INVALID_CONFIG) {
+    console.error('Missing fields:', error.missingFields);
+  }
+}
 ```
 
 ## Responsibilities and Design Principles
