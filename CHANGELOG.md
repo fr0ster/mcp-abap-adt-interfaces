@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] - 2025-12-19
+
+### Added
+- **Token Provider Error Codes**: Added standardized error codes for token provider operations
+  - `TOKEN_PROVIDER_ERROR_CODES` - Object containing error codes for token provider failures:
+    - `VALIDATION_ERROR` - Authentication configuration validation failed
+    - `REFRESH_ERROR` - Token refresh operation failed
+    - `SESSION_DATA_ERROR` - Session data is invalid or incomplete
+    - `SERVICE_KEY_ERROR` - Service key data is invalid or incomplete
+    - `BROWSER_AUTH_ERROR` - Browser authentication failed or was cancelled
+  - `TokenProviderErrorCode` - Type for token provider error codes
+  - These constants enable consistent error handling across token providers and auth-broker
+  - Error codes help distinguish between different types of authentication failures
+  - Exported from `@mcp-abap-adt/interfaces` package in token domain
+
 ## [0.2.1] - 2025-12-19
 
 ### Added

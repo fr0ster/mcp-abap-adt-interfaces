@@ -15,6 +15,8 @@ export type { AuthType } from './auth/AuthType';
 export type { ITokenProvider } from './token/ITokenProvider';
 export type { ITokenProviderResult } from './token/ITokenProviderResult';
 export type { ITokenProviderOptions } from './token/ITokenProviderOptions';
+export { TOKEN_PROVIDER_ERROR_CODES } from './token/TokenProviderErrorCodes';
+export type { TokenProviderErrorCode } from './token/TokenProviderErrorCodes';
 
 // Session domain
 export type { ISessionStore } from './session/ISessionStore';
