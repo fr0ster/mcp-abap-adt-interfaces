@@ -7,11 +7,12 @@
 import type { ILogger } from '../logging/ILogger';
 
 export interface ITokenProviderOptions {
-  /** 
+  /**
    * Browser type for browser-based authentication
-   * Supported values: "chrome", "edge", "firefox", "system" (default), "none"
-   * - "system": Uses system default browser
-   * - "none": Does not open browser automatically (user must open URL manually)
+   * Supported values: "chrome", "edge", "firefox", "system" (default), "none", "headless"
+   * - "system": Uses system default browser (default)
+   * - "headless": Does not open browser, logs URL and waits for manual callback (for SSH/remote sessions)
+   * - "none": Does not open browser, immediately rejects with error (for automated tests)
    */
   browser?: string;
   

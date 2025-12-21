@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.4] - 2025-12-21
+
+### Added
+- **Headless Browser Mode**: Added `"headless"` option to `ITokenProviderOptions.browser`
+  - `"headless"`: Does not open browser, logs authentication URL and waits for manual callback
+  - Ideal for SSH sessions, remote terminals, and environments without display
+  - Differs from `"none"` which immediately rejects (for automated tests)
+  - Updated JSDoc documentation for browser option with all supported values
+
 ## [0.2.3] - 2025-12-19
 
 ### Added
