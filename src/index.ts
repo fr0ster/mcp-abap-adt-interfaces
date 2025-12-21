@@ -15,6 +15,7 @@ export type { AuthType } from './auth/AuthType';
 export type { ITokenProvider } from './token/ITokenProvider';
 export type { ITokenProviderResult } from './token/ITokenProviderResult';
 export type { ITokenProviderOptions } from './token/ITokenProviderOptions';
+export type { ITokenRefresher } from './token/ITokenRefresher';
 export { TOKEN_PROVIDER_ERROR_CODES } from './token/TokenProviderErrorCodes';
 export type { TokenProviderErrorCode } from './token/TokenProviderErrorCodes';
 
@@ -29,7 +30,7 @@ export { STORE_ERROR_CODES } from './store/StoreErrorCodes';
 export type { StoreErrorCode } from './store/StoreErrorCodes';
 
 // Connection domain
-export type { IAbapConnection } from './connection/IAbapConnection';
+export type { IAbapConnection, IAbapConnectionExtended } from './connection/IAbapConnection';
 export type { IAbapRequestOptions } from './connection/IAbapRequestOptions';
 export { NETWORK_ERROR_CODES, isNetworkError } from './connection/NetworkErrors';
 export type { NetworkErrorCode } from './connection/NetworkErrors';

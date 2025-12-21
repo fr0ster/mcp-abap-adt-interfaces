@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.5] - 2025-12-21
+
+### Added
+- **ITokenRefresher Interface**: New interface for dependency injection of token refresh logic into connections
+  - `getToken(): Promise<string>` - Get current valid token (cached or refreshed)
+  - `refreshToken(): Promise<string>` - Force refresh token and save to session store
+  - Created by `AuthBroker.createTokenRefresher(destination)` and injected into `JwtAbapConnection`
+  - Enables connections to handle 401/403 errors transparently without knowing about auth internals
+  - Exported from `@mcp-abap-adt/interfaces` in token domain
+
+### Changed
+- **IAbapConnection Simplified**: Removed implementation details from interface, keeping only consumer-facing methods
+  - Removed `getConfig()` - internal implementation detail
+  - Removed `getAuthHeaders()` - handled internally by `makeAdtRequest()`
+  - Removed `connect()` - handled internally, connection established on first request
+  - Removed `reset()` - internal method for token refresh logic
+  - Kept: `getBaseUrl()`, `getSessionId()`, `setSessionType()`, `makeAdtRequest()`
+  - This change simplifies the interface for consumers who only need to make requests
+
+### Deprecated
+- **IAbapConnectionExtended**: Added for backward compatibility, extends `IAbapConnection` with removed methods
+  - `getConfig()`, `getAuthHeaders()`, `connect()`, `reset()`
+  - Will be removed in next major version
+  - Use `IAbapConnection` for new code
+
 ## [0.2.4] - 2025-12-21
 
 ### Added

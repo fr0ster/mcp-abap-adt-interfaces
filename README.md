@@ -163,9 +163,13 @@ This package is responsible for:
 - `AuthType` - Auth type: `'jwt' | 'xsuaa' | 'basic'`
 
 ### Token Domain (`token/`)
-- `ITokenProvider` - Token provider interface
+- `ITokenProvider` - Token provider interface (for auth-broker to get tokens from OAuth)
 - `ITokenProviderResult` - Result from token provider
 - `ITokenProviderOptions` - Options for token providers
+- `ITokenRefresher` - Token refresher interface for DI into connections
+  - Created by `AuthBroker.createTokenRefresher(destination)`
+  - Injected into `JwtAbapConnection` to enable automatic token refresh
+  - Methods: `getToken()`, `refreshToken()`
 
 ### Session Domain (`session/`)
 - `ISessionStore` - Session storage interface
@@ -174,10 +178,14 @@ This package is responsible for:
 - `IServiceKeyStore` - Service key storage interface
 
 ### Connection Domain (`connection/`)
-- `IAbapConnection` - Main connection interface for ADT operations
-  - Handles HTTP communication with SAP systems
-  - Manages session headers (stateful/stateless mode via `setSessionType()`)
-  - Note: Token refresh and session state persistence are handled by other packages (e.g., auth-broker)
+- `IAbapConnection` - Minimal connection interface for ADT operations
+  - Consumer-facing methods only: `getBaseUrl()`, `getSessionId()`, `setSessionType()`, `makeAdtRequest()`
+  - Implementation details (auth, CSRF, cookies, token refresh) are encapsulated
+  - For JWT: token refresh handled internally via `ITokenRefresher`
+  - For Basic: no token refresh needed
+- `IAbapConnectionExtended` - Deprecated, for backward compatibility
+  - Extends `IAbapConnection` with: `getConfig()`, `getAuthHeaders()`, `connect()`, `reset()`
+  - Will be removed in next major version
 - `IAbapRequestOptions` - Request options for ADT operations
 
 ### SAP Domain (`sap/`)
