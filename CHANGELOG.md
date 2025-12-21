@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.6] - 2025-12-21
+
+### Removed
+- **IAbapConnectionExtended**: Removed deprecated interface completely
+  - No backward compatibility - all consumers must use `IAbapConnection`
+  - Migration: Replace `IAbapConnectionExtended` with `IAbapConnection` in your code
+  - Methods `getConfig()`, `getAuthHeaders()`, `connect()`, `reset()` no longer in public interface
+
 ## [0.2.5] - 2025-12-21
 
 ### Added

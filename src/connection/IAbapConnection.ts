@@ -46,14 +46,3 @@ export interface IAbapConnection {
   makeAdtRequest(options: IAbapRequestOptions): Promise<AxiosResponse>;
 }
 
-/**
- * @deprecated Use IAbapConnection instead. Extended interface kept for backward compatibility.
- * Will be removed in next major version.
- */
-export interface IAbapConnectionExtended extends IAbapConnection {
-  getConfig(): any;
-  getAuthHeaders(): Promise<Record<string, string>>;
-  connect(): Promise<void>;
-  reset(): void;
-}
-
