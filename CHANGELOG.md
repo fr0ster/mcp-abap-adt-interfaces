@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.7] - 2025-12-22
+
+### Changed
+- **Migrated to Biome**: Replaced ESLint/Prettier with Biome for linting and formatting
+  - Added `@biomejs/biome` as dev dependency (^2.3.10)
+  - Added `biome.json` configuration file with recommended rules
+  - Added npm scripts: `lint`, `lint:check`, `format`
+  - Updated `build` script to include Biome check before TypeScript compilation
+  - All code now follows Biome formatting and linting rules
+
+### Fixed
+- **Type Safety Improvements**: Replaced `any` types with `unknown` for better type safety
+  - `IAbapRequestOptions.data` and `IAbapRequestOptions.params`: Changed from `any` to `unknown`
+  - `ILogger` interface methods (`info`, `error`, `warn`, `debug`): Changed `meta` parameter from `any` to `unknown`
+  - `IAbapConnection.AxiosResponse` type: Changed from `any` to `unknown` (type alias to avoid axios dependency)
+  - `isNetworkError()` function: Changed parameter type from `any` to `unknown` with proper type guards
+- **Code Quality**: Removed unused imports
+  - Removed unused `AxiosResponse` import from `IAdtObject.ts`
+  - Removed unused `IConnectionConfig` import from `ITokenProvider.ts`
+
 ## [0.2.6] - 2025-12-21
 
 ### Removed

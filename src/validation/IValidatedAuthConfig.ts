@@ -8,11 +8,11 @@ import type { AuthType } from '../auth/AuthType';
  * Higher number = higher priority
  */
 export enum AuthMethodPriority {
-  SAP_DESTINATION = 4,    // x-sap-destination (uses AuthBroker, JWT only)
-  MCP_DESTINATION = 3,    // x-mcp-destination + x-sap-auth-type=jwt (uses AuthBroker)
-  DIRECT_JWT = 2,         // x-sap-jwt-token + x-sap-auth-type=jwt
-  BASIC = 1,              // x-sap-login + x-sap-password + x-sap-auth-type=basic
-  NONE = 0                // No valid authentication
+  SAP_DESTINATION = 4, // x-sap-destination (uses AuthBroker, JWT only)
+  MCP_DESTINATION = 3, // x-mcp-destination + x-sap-auth-type=jwt (uses AuthBroker)
+  DIRECT_JWT = 2, // x-sap-jwt-token + x-sap-auth-type=jwt
+  BASIC = 1, // x-sap-login + x-sap-password + x-sap-auth-type=basic
+  NONE = 0, // No valid authentication
 }
 
 export interface IValidatedAuthConfig {
@@ -45,4 +45,3 @@ export interface IValidatedAuthConfig {
   /** Warnings (if any) */
   warnings: string[];
 }
-

@@ -13,4 +13,3 @@ export interface IHeaderValidationResult {
   /** Warnings */
   warnings: string[];
 }
-

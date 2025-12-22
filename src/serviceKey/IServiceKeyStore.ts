@@ -1,10 +1,11 @@
 /**
  * Interface for storing and retrieving service keys
- * 
+ *
  * Service keys contain UAA credentials and connection URLs.
  */
-import type { IConfig } from '../auth/IConfig';
+
 import type { IAuthorizationConfig } from '../auth/IAuthorizationConfig';
+import type { IConfig } from '../auth/IConfig';
 import type { IConnectionConfig } from '../auth/IConnectionConfig';
 
 export interface IServiceKeyStore {
@@ -21,7 +22,9 @@ export interface IServiceKeyStore {
    * @param destination Destination name (e.g., "TRIAL")
    * @returns IAuthorizationConfig with actual values or null if not found
    */
-  getAuthorizationConfig(destination: string): Promise<IAuthorizationConfig | null>;
+  getAuthorizationConfig(
+    destination: string,
+  ): Promise<IAuthorizationConfig | null>;
 
   /**
    * Get connection configuration from service key
@@ -31,4 +34,3 @@ export interface IServiceKeyStore {
    */
   getConnectionConfig(destination: string): Promise<IConnectionConfig | null>;
 }
-

@@ -12,4 +12,3 @@ export interface ISapConfig {
   uaaClientId?: string; // UAA client ID for token refresh (optional)
   uaaClientSecret?: string; // UAA client secret for token refresh (optional)
 }
-

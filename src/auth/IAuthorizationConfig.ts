@@ -12,4 +12,3 @@ export interface IAuthorizationConfig {
   /** Refresh token for token renewal (optional) */
   refreshToken?: string;
 }
-

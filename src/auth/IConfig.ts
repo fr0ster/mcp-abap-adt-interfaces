@@ -5,5 +5,5 @@
 import type { IAuthorizationConfig } from './IAuthorizationConfig';
 import type { IConnectionConfig } from './IConnectionConfig';
 
-export type IConfig = Partial<IAuthorizationConfig> & Partial<IConnectionConfig>;
-
+export type IConfig = Partial<IAuthorizationConfig> &
+  Partial<IConnectionConfig>;

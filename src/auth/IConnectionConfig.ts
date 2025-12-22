@@ -18,4 +18,3 @@ export interface IConnectionConfig {
   /** Language (optional, for ABAP/BTP) */
   language?: string;
 }
-

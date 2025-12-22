@@ -2,8 +2,7 @@ export interface IAbapRequestOptions {
   url: string;
   method: string;
   timeout: number;
-  data?: any;
-  params?: any;
+  data?: unknown;
+  params?: unknown;
   headers?: Record<string, string>;
 }
-

@@ -7,4 +7,3 @@ export interface ISessionState {
   csrfToken: string | null;
   cookieStore: Record<string, string>;
 }
-

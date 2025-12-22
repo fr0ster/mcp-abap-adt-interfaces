@@ -1,6 +1,6 @@
 /**
  * Options for token providers
- * 
+ *
  * Used by ITokenProvider implementations to configure token acquisition behavior.
  * All options are optional, allowing providers to use sensible defaults.
  */
@@ -15,11 +15,10 @@ export interface ITokenProviderOptions {
    * - "none": Does not open browser, immediately rejects with error (for automated tests)
    */
   browser?: string;
-  
-  /** 
+
+  /**
    * Logger instance for logging token provider operations
    * Uses ILogger interface to allow any logger implementation
    */
   logger?: ILogger;
 }
-

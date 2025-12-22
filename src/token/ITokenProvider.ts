@@ -1,6 +1,6 @@
 /**
  * Token Provider interface
- * 
+ *
  * Converts IAuthorizationConfig to IConnectionConfig by obtaining tokens.
  * Different implementations handle different authentication flows:
  * - XSUAA: client_credentials grant type (no browser)
@@ -8,13 +8,12 @@
  */
 
 import type { IAuthorizationConfig } from '../auth/IAuthorizationConfig';
-import type { IConnectionConfig } from '../auth/IConnectionConfig';
-import type { ITokenProviderResult } from './ITokenProviderResult';
 import type { ITokenProviderOptions } from './ITokenProviderOptions';
+import type { ITokenProviderResult } from './ITokenProviderResult';
 
 /**
  * Interface for token providers
- * 
+ *
  * Takes authorization configuration and returns connection configuration with token.
  */
 export interface ITokenProvider {
@@ -26,7 +25,7 @@ export interface ITokenProvider {
    */
   getConnectionConfig(
     authConfig: IAuthorizationConfig,
-    options?: ITokenProviderOptions
+    options?: ITokenProviderOptions,
   ): Promise<ITokenProviderResult>;
 
   /**
@@ -39,7 +38,7 @@ export interface ITokenProvider {
    */
   refreshTokenFromSession(
     authConfig: IAuthorizationConfig,
-    options?: ITokenProviderOptions
+    options?: ITokenProviderOptions,
   ): Promise<ITokenProviderResult>;
 
   /**
@@ -52,7 +51,7 @@ export interface ITokenProvider {
    */
   refreshTokenFromServiceKey(
     authConfig: IAuthorizationConfig,
-    options?: ITokenProviderOptions
+    options?: ITokenProviderOptions,
   ): Promise<ITokenProviderResult>;
 
   /**
@@ -63,4 +62,3 @@ export interface ITokenProvider {
    */
   validateToken?(token: string, serviceUrl?: string): Promise<boolean>;
 }
-

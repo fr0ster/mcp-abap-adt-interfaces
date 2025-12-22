@@ -1,20 +1,20 @@
 /**
  * Base state interface for all ADT Object operations
- * 
+ *
  * All specific state types (DomainBuilderState, DataElementBuilderState, etc.)
  * should extend this interface to ensure consistency across all ADT object types.
  */
 
-import { AxiosResponse } from 'axios';
+import type { AxiosResponse } from 'axios';
 
 /**
  * Base state that all ADT Object state types should extend
- * 
+ *
  * This interface defines the common structure for all operation results
  * returned by IAdtObject methods (validate, create, read, readMetadata, update, delete, activate, check, readTransport).
- * 
+ *
  * Specific state types can extend this interface to add entity-specific fields.
- * 
+ *
  * Example:
  * ```typescript
  * export interface DomainBuilderState extends IAdtObjectState {
@@ -51,10 +51,10 @@ export interface IAdtObjectState {
 
 /**
  * Base configuration interface for all ADT Object operations
- * 
+ *
  * This interface defines common fields that are present in all ADT object configurations.
  * Specific configuration types should extend this interface to ensure consistency.
- * 
+ *
  * Example:
  * ```typescript
  * export interface DomainBuilderConfig extends IAdtObjectConfig {

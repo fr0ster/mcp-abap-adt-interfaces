@@ -1,6 +1,6 @@
 /**
  * Token Provider Error Codes
- * 
+ *
  * Constants for error codes that token providers can throw.
  * Used to enable better error handling and categorization.
  */
@@ -24,4 +24,5 @@ export const TOKEN_PROVIDER_ERROR_CODES = {
 /**
  * Type for token provider error codes
  */
-export type TokenProviderErrorCode = typeof TOKEN_PROVIDER_ERROR_CODES[keyof typeof TOKEN_PROVIDER_ERROR_CODES];
+export type TokenProviderErrorCode =
+  (typeof TOKEN_PROVIDER_ERROR_CODES)[keyof typeof TOKEN_PROVIDER_ERROR_CODES];

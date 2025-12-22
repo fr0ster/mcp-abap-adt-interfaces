@@ -1,10 +1,11 @@
 /**
  * Interface for session stores - stores and retrieves session data
- * 
+ *
  * Session stores handle loading, saving, and managing session data (tokens, configuration).
  */
-import type { IConfig } from '../auth/IConfig';
+
 import type { IAuthorizationConfig } from '../auth/IAuthorizationConfig';
+import type { IConfig } from '../auth/IConfig';
 import type { IConnectionConfig } from '../auth/IConnectionConfig';
 
 export interface ISessionStore {
@@ -37,7 +38,9 @@ export interface ISessionStore {
    * @param destination Destination name (e.g., "TRIAL" or "mcp")
    * @returns IAuthorizationConfig with actual values or null if not found
    */
-  getAuthorizationConfig(destination: string): Promise<IAuthorizationConfig | null>;
+  getAuthorizationConfig(
+    destination: string,
+  ): Promise<IAuthorizationConfig | null>;
 
   /**
    * Get connection configuration with actual values (not file paths)
@@ -53,7 +56,10 @@ export interface ISessionStore {
    * @param destination Destination name (e.g., "TRIAL" or "mcp")
    * @param config IAuthorizationConfig with values to set
    */
-  setAuthorizationConfig(destination: string, config: IAuthorizationConfig): Promise<void>;
+  setAuthorizationConfig(
+    destination: string,
+    config: IAuthorizationConfig,
+  ): Promise<void>;
 
   /**
    * Set connection configuration
@@ -61,6 +67,8 @@ export interface ISessionStore {
    * @param destination Destination name (e.g., "TRIAL" or "mcp")
    * @param config IConnectionConfig with values to set
    */
-  setConnectionConfig(destination: string, config: IConnectionConfig): Promise<void>;
+  setConnectionConfig(
+    destination: string,
+    config: IConnectionConfig,
+  ): Promise<void>;
 }
-

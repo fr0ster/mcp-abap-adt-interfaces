@@ -25,4 +25,3 @@ export interface ISessionStorage {
    */
   delete(sessionId: string): Promise<void>;
 }
-

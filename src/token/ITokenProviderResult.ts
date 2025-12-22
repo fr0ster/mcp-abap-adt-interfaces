@@ -9,4 +9,3 @@ export interface ITokenProviderResult {
   /** Refresh token (optional, for BTP/ABAP) */
   refreshToken?: string;
 }
-

@@ -3,4 +3,3 @@ export interface ITimeoutConfig {
   csrf: number;
   long: number;
 }
-
