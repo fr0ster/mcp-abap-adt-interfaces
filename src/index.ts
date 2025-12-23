@@ -9,7 +9,7 @@
 export type { IAdtObject, IAdtOperationOptions } from './adt/IAdtObject';
 export { AdtObjectErrorCodes } from './adt/IAdtObject';
 export type { IAdtObjectConfig, IAdtObjectState } from './adt/IAdtObjectState';
-export type { AuthType } from './auth/AuthType';
+export type { AuthType as AuthTypeEnum } from './auth/AuthType';
 // Auth domain
 export type { IAuthorizationConfig } from './auth/IAuthorizationConfig';
 export type { IConfig } from './auth/IConfig';
@@ -40,11 +40,20 @@ export type { ISessionStorage } from './storage/ISessionStorage';
 export type { StoreErrorCode } from './store/StoreErrorCodes';
 // Store domain
 export { STORE_ERROR_CODES } from './store/StoreErrorCodes';
+export type { OAuth2GrantType } from './token/AuthType';
+export {
+  AUTH_TYPE_AUTHORIZATION_CODE,
+  AUTH_TYPE_AUTHORIZATION_CODE_PKCE,
+  AUTH_TYPE_CLIENT_CREDENTIALS,
+  AUTH_TYPE_IMPLICIT,
+  AUTH_TYPE_PASSWORD,
+} from './token/AuthType';
 // Token domain
 export type { ITokenProvider } from './token/ITokenProvider';
 export type { ITokenProviderOptions } from './token/ITokenProviderOptions';
 export type { ITokenProviderResult } from './token/ITokenProviderResult';
 export type { ITokenRefresher } from './token/ITokenRefresher';
+export type { ITokenResult } from './token/ITokenResult';
 export type { TokenProviderErrorCode } from './token/TokenProviderErrorCodes';
 export { TOKEN_PROVIDER_ERROR_CODES } from './token/TokenProviderErrorCodes';
 export type { ITimeoutConfig } from './utils/ITimeoutConfig';

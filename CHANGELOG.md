@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.8] - 2025-12-23
+
+### Added
+- **New Token Provider Interface**: Added `getTokens()` method to `ITokenProvider` for stateful token management
+  - New `ITokenResult` interface with `authorizationToken`, `refreshToken`, `authType`, and `expiresIn` fields
+  - New `OAuth2GrantType` type and constants for OAuth2 grant types:
+    - `AUTH_TYPE_AUTHORIZATION_CODE` - Standard authorization code flow
+    - `AUTH_TYPE_AUTHORIZATION_CODE_PKCE` - Authorization code with PKCE
+    - `AUTH_TYPE_IMPLICIT` - Implicit grant (legacy)
+    - `AUTH_TYPE_PASSWORD` - Password credentials grant
+    - `AUTH_TYPE_CLIENT_CREDENTIALS` - Client credentials grant
+  - All old methods (`getConnectionConfig`, `refreshTokenFromSession`, `refreshTokenFromServiceKey`) remain optional for backward compatibility
+
+### Changed
+- **ITokenProvider Interface**: Extended with optional `getTokens()` method
+  - Old stateless methods are now optional (marked with `?`)
+  - New stateful `getTokens()` method is optional (marked with `?`)
+  - Allows gradual migration from old to new API
+
 ## [0.2.7] - 2025-12-22
 
 ### Changed
