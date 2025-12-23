@@ -18,12 +18,6 @@ export const AUTH_TYPE_AUTHORIZATION_CODE_PKCE =
   'authorization_code_pkce' as const;
 
 /**
- * Implicit grant type
- * Legacy OAuth2 flow (deprecated, not recommended)
- */
-export const AUTH_TYPE_IMPLICIT = 'implicit' as const;
-
-/**
  * Password Credentials grant type
  * Direct username/password authentication
  */
@@ -36,11 +30,22 @@ export const AUTH_TYPE_PASSWORD = 'password' as const;
 export const AUTH_TYPE_CLIENT_CREDENTIALS = 'client_credentials' as const;
 
 /**
+ * User token passthrough (external token)
+ */
+export const AUTH_TYPE_USER_TOKEN = 'user_token' as const;
+
+/**
+ * Client X509 (mTLS) authentication
+ */
+export const AUTH_TYPE_CLIENT_X509 = 'client_x509' as const;
+
+/**
  * Union type for all OAuth2 grant types
  */
 export type OAuth2GrantType =
   | typeof AUTH_TYPE_AUTHORIZATION_CODE
   | typeof AUTH_TYPE_AUTHORIZATION_CODE_PKCE
-  | typeof AUTH_TYPE_IMPLICIT
   | typeof AUTH_TYPE_PASSWORD
-  | typeof AUTH_TYPE_CLIENT_CREDENTIALS;
+  | typeof AUTH_TYPE_CLIENT_CREDENTIALS
+  | typeof AUTH_TYPE_USER_TOKEN
+  | typeof AUTH_TYPE_CLIENT_X509;

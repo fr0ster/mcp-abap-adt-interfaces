@@ -45,8 +45,9 @@ export {
   AUTH_TYPE_AUTHORIZATION_CODE,
   AUTH_TYPE_AUTHORIZATION_CODE_PKCE,
   AUTH_TYPE_CLIENT_CREDENTIALS,
-  AUTH_TYPE_IMPLICIT,
+  AUTH_TYPE_CLIENT_X509,
   AUTH_TYPE_PASSWORD,
+  AUTH_TYPE_USER_TOKEN,
 } from './token/AuthType';
 // Token domain
 export type { ITokenProvider } from './token/ITokenProvider';

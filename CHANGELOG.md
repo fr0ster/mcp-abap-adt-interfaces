@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.9] - 2025-12-23
+
+### Changed
+- **OAuth2 grant types**: Removed `AUTH_TYPE_IMPLICIT` and added `AUTH_TYPE_USER_TOKEN` and `AUTH_TYPE_CLIENT_X509` to `OAuth2GrantType`.
+
 ## [0.2.8] - 2025-12-23
 
 ### Added
