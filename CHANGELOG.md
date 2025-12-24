@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-12-24
+
+### Changed
+- **Breaking**: `ITokenProvider` is now stateful only and requires `getTokens(authConfig, options)`.
+- Removed legacy stateless token methods from `ITokenProvider`.
+- Removed `ITokenProviderResult` from public exports.
+- Updated README examples to use `getTokens()`.
+
 ## [0.2.9] - 2025-12-23
 
 ### Changed

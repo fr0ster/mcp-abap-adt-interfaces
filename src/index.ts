@@ -52,7 +52,6 @@ export {
 // Token domain
 export type { ITokenProvider } from './token/ITokenProvider';
 export type { ITokenProviderOptions } from './token/ITokenProviderOptions';
-export type { ITokenProviderResult } from './token/ITokenProviderResult';
 export type { ITokenRefresher } from './token/ITokenRefresher';
 export type { ITokenResult } from './token/ITokenResult';
 export type { TokenProviderErrorCode } from './token/TokenProviderErrorCodes';

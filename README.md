@@ -85,7 +85,7 @@ import {
 
 // Token Provider Error Codes
 try {
-  await tokenProvider.refreshTokenFromSession(authConfig);
+  await tokenProvider.getTokens(authConfig);
 } catch (error: any) {
   if (error.code === TOKEN_PROVIDER_ERROR_CODES.VALIDATION_ERROR) {
     console.error('Invalid auth config:', error.missingFields);
@@ -163,13 +163,12 @@ This package is responsible for:
 - `AuthType` - Auth type: `'jwt' | 'xsuaa' | 'basic'`
 
 ### Token Domain (`token/`)
-- `ITokenProvider` - Token provider interface (for auth-broker to get tokens from OAuth)
-- `ITokenProviderResult` - Result from token provider
+- `ITokenProvider` - Token provider interface (stateful token lifecycle)
 - `ITokenProviderOptions` - Options for token providers
 - `ITokenRefresher` - Token refresher interface for DI into connections
   - Created by `AuthBroker.createTokenRefresher(destination)`
   - Injected into `JwtAbapConnection` to enable automatic token refresh
-  - Methods: `getToken()`, `refreshToken()`
+  - Methods: `getTokens()`
 
 ### Session Domain (`session/`)
 - `ISessionStore` - Session storage interface
@@ -224,4 +223,3 @@ This package has **no runtime dependencies**. It only has devDependencies for Ty
 ## License
 
 MIT
-
