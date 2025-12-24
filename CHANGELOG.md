@@ -7,10 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.12] - 2025-12-24
+
+### Changed
+- `IAbapConnection` now uses `IAdtResponse<T, D>` (custom response type, no axios dependency).
+- `makeAdtRequest` is generic and returns `IAdtResponse<T, D>`.
+
 ## [0.2.11] - 2025-12-24
 
 ### Changed
-- `IAbapConnection.AxiosResponse` now aliases `axios` `AxiosResponse` (typed response instead of `unknown`).
+- `IAbapConnection.AxiosResponse` now aliases `axios` `AxiosResponse` with generics preserved.
+- `makeAdtRequest` is generic and returns `AxiosResponse<T, D>`.
 - `axios` is now required for typing (moved from dev-only usage).
 
 ## [0.2.10] - 2025-12-24

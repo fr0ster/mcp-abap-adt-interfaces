@@ -5,8 +5,6 @@
  * The provider validates, refreshes, or re-authenticates as needed.
  */
 
-import type { IAuthorizationConfig } from '../auth/IAuthorizationConfig';
-import type { ITokenProviderOptions } from './ITokenProviderOptions';
 import type { ITokenResult } from './ITokenResult';
 
 /**
@@ -19,10 +17,7 @@ export interface ITokenProvider {
    * Stateful providers cache tokens internally and handle refresh automatically.
    * Checks token expiration, refreshes if needed, or triggers login.
    */
-  getTokens(
-    authConfig: IAuthorizationConfig,
-    options?: ITokenProviderOptions,
-  ): Promise<ITokenResult>;
+  getTokens(): Promise<ITokenResult>;
 
   /**
    * Validate JWT token locally (optional)

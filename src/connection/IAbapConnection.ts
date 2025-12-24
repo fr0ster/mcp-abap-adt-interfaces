@@ -1,10 +1,16 @@
-import type { AxiosResponse as AxiosResponseType } from 'axios';
 import type { IAbapRequestOptions } from './IAbapRequestOptions';
 
 /**
- * Axios response type for ADT requests.
+ * Minimal response type for ADT requests.
  */
-export type AxiosResponse = AxiosResponseType;
+export interface IAdtResponse<T = any, D = any> {
+  data: T;
+  status: number;
+  statusText: string;
+  headers: Record<string, string>;
+  config?: D;
+  request?: unknown;
+}
 
 /**
  * ABAP Connection interface
@@ -43,5 +49,7 @@ export interface IAbapConnection {
    * @param options - Request options (url, method, data, etc.)
    * @returns Promise with Axios response
    */
-  makeAdtRequest(options: IAbapRequestOptions): Promise<AxiosResponse>;
+  makeAdtRequest<T = any, D = any>(
+    options: IAbapRequestOptions,
+  ): Promise<IAdtResponse<T, D>>;
 }

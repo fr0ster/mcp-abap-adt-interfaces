@@ -214,7 +214,7 @@ This package is responsible for:
 This package has **no runtime dependencies**. It only has devDependencies for TypeScript compilation:
 - `typescript` - TypeScript compiler
 - `@types/node` - Node.js type definitions
-- `axios` - For AxiosResponse type
+- No runtime dependencies
 
 ## Documentation
 
