@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.11] - 2025-12-24
+
+### Changed
+- `IAbapConnection.AxiosResponse` now aliases `axios` `AxiosResponse` (typed response instead of `unknown`).
+- `axios` is now required for typing (moved from dev-only usage).
+
 ## [0.2.10] - 2025-12-24
 
 ### Changed

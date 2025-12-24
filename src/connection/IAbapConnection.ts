@@ -1,10 +1,10 @@
+import type { AxiosResponse as AxiosResponseType } from 'axios';
 import type { IAbapRequestOptions } from './IAbapRequestOptions';
 
 /**
- * Axios response type - using unknown to avoid dependency on axios package
- * Consumers should use proper AxiosResponse type from axios
+ * Axios response type for ADT requests.
  */
-export type AxiosResponse = unknown;
+export type AxiosResponse = AxiosResponseType;
 
 /**
  * ABAP Connection interface
