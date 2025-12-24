@@ -15,7 +15,10 @@ export type { IAuthorizationConfig } from './auth/IAuthorizationConfig';
 export type { IConfig } from './auth/IConfig';
 export type { IConnectionConfig } from './auth/IConnectionConfig';
 // Connection domain
-export type { IAbapConnection } from './connection/IAbapConnection';
+export type {
+  IAbapConnection,
+  IAdtResponse,
+} from './connection/IAbapConnection';
 export type { IAbapRequestOptions } from './connection/IAbapRequestOptions';
 export type { NetworkErrorCode } from './connection/NetworkErrors';
 export {

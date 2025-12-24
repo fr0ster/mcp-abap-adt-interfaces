@@ -7,7 +7,13 @@ export interface IAdtResponse<T = any, D = any> {
   data: T;
   status: number;
   statusText: string;
-  headers: Record<string, string>;
+  headers: Record<string, string | string[] | undefined> & {
+    location?: string;
+    Location?: string;
+    'content-location'?: string | string[];
+    'Content-Location'?: string | string[];
+    'sap-adt-location'?: string | string[];
+  };
   config?: D;
   request?: unknown;
 }

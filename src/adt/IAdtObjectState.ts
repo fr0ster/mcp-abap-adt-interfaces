@@ -5,7 +5,7 @@
  * should extend this interface to ensure consistency across all ADT object types.
  */
 
-import type { AxiosResponse } from 'axios';
+import type { IAdtResponse } from '../connection/IAbapConnection';
 
 /**
  * Base state that all ADT Object state types should extend
@@ -24,27 +24,27 @@ import type { AxiosResponse } from 'axios';
  */
 export interface IAdtObjectState {
   /** Validation response from validate() method */
-  validationResponse?: AxiosResponse;
+  validationResponse?: IAdtResponse;
   /** Create operation response from create() method */
-  createResult?: AxiosResponse;
+  createResult?: IAdtResponse;
   /** Lock handle obtained from lock operations */
   lockHandle?: string;
   /** Update operation response from update() method */
-  updateResult?: AxiosResponse;
+  updateResult?: IAdtResponse;
   /** Check operation response from check() method */
-  checkResult?: AxiosResponse;
+  checkResult?: IAdtResponse;
   /** Unlock operation response from unlock operations */
-  unlockResult?: AxiosResponse;
+  unlockResult?: IAdtResponse;
   /** Activate operation response from activate() method */
-  activateResult?: AxiosResponse;
+  activateResult?: IAdtResponse;
   /** Delete operation response from delete() method */
-  deleteResult?: AxiosResponse;
+  deleteResult?: IAdtResponse;
   /** Read operation response from read() method (source code or XML) */
-  readResult?: AxiosResponse;
+  readResult?: IAdtResponse;
   /** Metadata read result from readMetadata() method (object characteristics: package, responsible, description, etc.) */
-  metadataResult?: AxiosResponse;
+  metadataResult?: IAdtResponse;
   /** Transport request read result from readTransport() method */
-  transportResult?: AxiosResponse;
+  transportResult?: IAdtResponse;
   /** Array of errors that occurred during operations */
   errors: Array<{ method: string; error: Error; timestamp: Date }>;
 }
