@@ -3,16 +3,25 @@ import type { IAbapRequestOptions } from './IAbapRequestOptions';
 /**
  * Minimal response type for ADT requests.
  */
+export type IAdtHeaderValue =
+  | string
+  | string[]
+  | number
+  | boolean
+  | null
+  | undefined
+  | object;
+
 export interface IAdtResponse<T = any, D = any> {
   data: T;
   status: number;
   statusText: string;
-  headers: Record<string, string | string[] | undefined> & {
+  headers: Record<string, IAdtHeaderValue> & {
     location?: string;
     Location?: string;
-    'content-location'?: string | string[];
-    'Content-Location'?: string | string[];
-    'sap-adt-location'?: string | string[];
+    'content-location'?: IAdtHeaderValue;
+    'Content-Location'?: IAdtHeaderValue;
+    'sap-adt-location'?: IAdtHeaderValue;
   };
   config?: D;
   request?: unknown;

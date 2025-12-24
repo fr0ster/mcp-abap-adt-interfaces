@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.14] - 2025-12-24
+
+### Changed
+- Added `IAdtHeaderValue` to cover non-string header values returned by ADT responses.
+
 ## [0.2.13] - 2025-12-24
 
 ### Changed

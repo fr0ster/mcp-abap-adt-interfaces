@@ -182,6 +182,7 @@ This package is responsible for:
   - Implementation details (auth, CSRF, cookies, token refresh) are encapsulated
   - For JWT: token refresh handled internally via `ITokenRefresher`
   - For Basic: no token refresh needed
+- `IAdtResponse` - Minimal response shape returned by `makeAdtRequest()`
 - `IAbapConnectionExtended` - Deprecated, for backward compatibility
   - Extends `IAbapConnection` with: `getConfig()`, `getAuthHeaders()`, `connect()`, `reset()`
   - Will be removed in next major version
