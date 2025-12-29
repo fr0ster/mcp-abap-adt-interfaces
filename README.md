@@ -68,10 +68,10 @@ const domain = await adtDomain.read(
   { withLongPolling: true } // Wait until object is available
 );
 
-// Example: Read metadata with long polling
+// Example: Read metadata with long polling and version selection
 const metadata = await adtDomain.readMetadata(
   { domainName: 'Z_TEST' },
-  { withLongPolling: true }
+  { withLongPolling: true, version: 'active' }
 );
 ```
 

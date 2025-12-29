@@ -169,11 +169,12 @@ export interface IAdtObject<TConfig, TReadResult = TConfig> {
    * @param options - Optional read options
    * @param options.withLongPolling - If true, adds ?withLongPolling=true to wait for object to become available
    *                                  Useful after create/activate operations to wait until object is ready
+   * @param options.version - 'active' or 'inactive' (default: 'active')
    * @returns State with metadata result
    */
   readMetadata(
     config: Partial<TConfig>,
-    options?: { withLongPolling?: boolean },
+    options?: { withLongPolling?: boolean; version?: 'active' | 'inactive' },
   ): Promise<TReadResult>;
 
   /**
