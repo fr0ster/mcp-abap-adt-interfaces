@@ -27,4 +27,16 @@ export interface ITokenResult {
    * If not provided, token expiration is determined from JWT exp claim
    */
   expiresIn?: number;
+
+  /**
+   * Token expiration time as absolute timestamp (milliseconds since epoch)
+   * Useful for non-JWT tokens (e.g. SAML assertions).
+   */
+  expiresAt?: number;
+
+  /**
+   * Token format/type (helps consumers decide how to validate or parse).
+   * If omitted, defaults to JWT assumptions.
+   */
+  tokenType?: 'jwt' | 'saml' | 'opaque';
 }

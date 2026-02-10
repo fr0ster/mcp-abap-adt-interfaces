@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-02-10
+
+### Added
+- `ITokenResult` now supports `expiresAt` and `tokenType` to handle non-JWT tokens.
+- Added `AUTH_TYPE_SAML2_BEARER` to `OAuth2GrantType` for SAML 2.0 bearer exchanges.
+
 ## [0.2.15] - 2025-12-29
 
 ### Changed

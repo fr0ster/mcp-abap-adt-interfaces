@@ -165,6 +165,7 @@ This package is responsible for:
 ### Token Domain (`token/`)
 - `ITokenProvider` - Token provider interface (stateful token lifecycle)
 - `ITokenProviderOptions` - Options for token providers
+- `ITokenResult` - Token result payload (supports `expiresAt` and `tokenType` for non-JWT tokens)
 - `ITokenRefresher` - Token refresher interface for DI into connections
   - Created by `AuthBroker.createTokenRefresher(destination)`
   - Injected into `JwtAbapConnection` to enable automatic token refresh
