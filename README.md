@@ -166,6 +166,7 @@ This package is responsible for:
 - `ITokenProvider` - Token provider interface (stateful token lifecycle)
 - `ITokenProviderOptions` - Options for token providers
 - `ITokenResult` - Token result payload (supports `expiresAt` and `tokenType` for non-JWT tokens)
+- `IConnectionConfig` / `ISapConfig` - now support `authType: 'saml'` and `sessionCookies`
 - `ITokenRefresher` - Token refresher interface for DI into connections
   - Created by `AuthBroker.createTokenRefresher(destination)`
   - Injected into `JwtAbapConnection` to enable automatic token refresh

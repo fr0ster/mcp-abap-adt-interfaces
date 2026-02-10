@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-02-10
+
+### Added
+- Added `authType: 'saml'` and `sessionCookies` to connection and SAP config interfaces.
+
 ## [2.2.0] - 2026-02-10
 
 ### Added

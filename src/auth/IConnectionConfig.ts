@@ -12,9 +12,11 @@ export interface IConnectionConfig {
   /** Password for basic authentication - required for basic auth, optional for JWT auth */
   password?: string;
   /** Authentication type - 'basic' for on-premise, 'jwt' for cloud */
-  authType?: 'basic' | 'jwt';
+  authType?: 'basic' | 'jwt' | 'saml';
   /** SAP client number (optional, for ABAP/BTP) */
   sapClient?: string;
   /** Language (optional, for ABAP/BTP) */
   language?: string;
+  /** Session cookies for SAML authentication (raw Cookie header value) */
+  sessionCookies?: string;
 }
