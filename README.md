@@ -19,7 +19,7 @@ This package contains all interfaces organized by domain:
 - **`token/`** - Token-related interfaces (token provider, results, options)
 - **`session/`** - Session storage interface
 - **`serviceKey/`** - Service key storage interface
-- **`connection/`** - Connection interfaces (AbapConnection, request options)
+- **`connection/`** - Connection and realtime transport interfaces (AbapConnection, request options, WebSocket transport contracts)
 - **`sap/`** - SAP-specific configuration (SapConfig, SapAuthType)
 - **`storage/`** - Storage interfaces (session storage, state)
 - **`logging/`** - Logging interfaces (ILogger, LogLevel enum)
@@ -44,6 +44,8 @@ import {
   IServiceKeyStore,
   ITokenProvider,
   IAbapConnection,
+  IWebSocketTransport,
+  IWebSocketMessageEnvelope,
   ISapConfig,
   ILogger,
   TOKEN_PROVIDER_ERROR_CODES,
@@ -185,6 +187,11 @@ This package is responsible for:
   - For JWT: token refresh handled internally via `ITokenRefresher`
   - For Basic: no token refresh needed
 - `IAdtResponse` - Minimal response shape returned by `makeAdtRequest()`
+- `IWebSocketTransport` - Generic realtime transport contract for WS-based flows
+  - Methods: `connect()`, `disconnect()`, `send()`, `onMessage()`, `onOpen()`, `onError()`, `onClose()`, `isConnected()`
+- `IWebSocketConnectOptions` - WS connect options (`protocols`, `headers`, timeouts, heartbeat)
+- `IWebSocketMessageEnvelope` - Generic request/response/event/error message shape with correlation id
+- `IWebSocketCloseInfo` / `IWebSocketMessageHandler` - Close payload and message callback contracts
 - `IAbapConnectionExtended` - Deprecated, for backward compatibility
   - Extends `IAbapConnection` with: `getConfig()`, `getAuthHeaders()`, `connect()`, `reset()`
   - Will be removed in next major version

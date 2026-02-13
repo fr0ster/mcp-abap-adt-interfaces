@@ -20,6 +20,13 @@ export type {
   IAdtResponse,
 } from './connection/IAbapConnection';
 export type { IAbapRequestOptions } from './connection/IAbapRequestOptions';
+export type {
+  IWebSocketCloseInfo,
+  IWebSocketConnectOptions,
+  IWebSocketMessageEnvelope,
+  IWebSocketMessageHandler,
+  IWebSocketTransport,
+} from './connection/IWebSocketTransport';
 export type { NetworkErrorCode } from './connection/NetworkErrors';
 export {
   isNetworkError,
