@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.0] - 2026-02-14
+
+### Added
+- Added execution contract interface:
+  - `IExecutor<TTarget, TResult, TRunWithProfilerOptions, TRunWithProfilingOptions, TRunWithProfilingResult>`
+- Exported `IExecutor` from package root (`@mcp-abap-adt/interfaces`).
+
 ## [2.4.0] - 2026-02-13
 
 ### Added

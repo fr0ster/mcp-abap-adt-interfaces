@@ -20,6 +20,7 @@ This package contains all interfaces organized by domain:
 - **`session/`** - Session storage interface
 - **`serviceKey/`** - Service key storage interface
 - **`connection/`** - Connection and realtime transport interfaces (AbapConnection, request options, WebSocket transport contracts)
+- **`execution/`** - Execution contracts for runnable entities (`IExecutor`)
 - **`sap/`** - SAP-specific configuration (SapConfig, SapAuthType)
 - **`storage/`** - Storage interfaces (session storage, state)
 - **`logging/`** - Logging interfaces (ILogger, LogLevel enum)
@@ -44,6 +45,7 @@ import {
   IServiceKeyStore,
   ITokenProvider,
   IAbapConnection,
+  IExecutor,
   IWebSocketTransport,
   IWebSocketMessageEnvelope,
   ISapConfig,
@@ -196,6 +198,13 @@ This package is responsible for:
   - Extends `IAbapConnection` with: `getConfig()`, `getAuthHeaders()`, `connect()`, `reset()`
   - Will be removed in next major version
 - `IAbapRequestOptions` - Request options for ADT operations
+
+### Execution Domain (`execution/`)
+- `IExecutor<TTarget, TResult, TRunWithProfilerOptions, TRunWithProfilingOptions, TRunWithProfilingResult>`
+  - Generic contract for entities that support:
+    - `run(target)`
+    - `runWithProfiler(target, options)`
+    - `runWithProfiling(target, options?)`
 
 ### SAP Domain (`sap/`)
 - `ISapConfig` - SAP connection configuration

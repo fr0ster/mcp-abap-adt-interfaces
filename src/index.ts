@@ -32,6 +32,7 @@ export {
   isNetworkError,
   NETWORK_ERROR_CODES,
 } from './connection/NetworkErrors';
+export type { IExecutor } from './execution/IExecutor';
 // Headers domain
 export * from './Headers';
 // Logging domain
