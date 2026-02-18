@@ -41,6 +41,27 @@ export { LogLevel } from './logging/LogLevel';
 // SAP domain
 export type { ISapConfig } from './sap/ISapConfig';
 export type { SapAuthType } from './sap/SapAuthType';
+// Service domain
+export type {
+  DesiredPublicationState,
+  GeneratedServiceType,
+  IActivateServiceBindingParams,
+  IAdtService,
+  ICheckServiceBindingParams,
+  IClassifyServiceBindingParams,
+  ICreateAndGenerateServiceBindingParams,
+  ICreateServiceBindingParams,
+  IGenerateServiceBindingParams,
+  IGetServiceBindingODataParams,
+  IPublishODataV2Params,
+  IReadServiceBindingParams,
+  ITransportCheckServiceBindingParams,
+  IUnpublishODataV2Params,
+  IUpdateServiceBindingParams,
+  IValidateServiceBindingParams,
+  ServiceBindingType,
+  ServiceBindingVersion,
+} from './service/IAdtService';
 // Service Key domain
 export type { IServiceKeyStore } from './serviceKey/IServiceKeyStore';
 // Session domain

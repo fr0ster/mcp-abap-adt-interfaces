@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.6.0] - 2026-02-18
+
+### Added
+- Added new service domain contracts for ADT service binding lifecycle:
+  - `IAdtService`
+  - `ServiceBindingType`, `ServiceBindingVersion`, `GeneratedServiceType`, `DesiredPublicationState`
+  - `IValidateServiceBindingParams`
+  - `ITransportCheckServiceBindingParams`
+  - `ICreateServiceBindingParams`
+  - `IReadServiceBindingParams`
+  - `IUpdateServiceBindingParams`
+  - `ICheckServiceBindingParams`
+  - `IActivateServiceBindingParams`
+  - `IGenerateServiceBindingParams`
+  - `ICreateAndGenerateServiceBindingParams`
+  - `IGetServiceBindingODataParams`
+  - `IPublishODataV2Params`
+  - `IUnpublishODataV2Params`
+  - `IClassifyServiceBindingParams`
+
+### Changed
+- Exported all new service domain interfaces and types from package root (`@mcp-abap-adt/interfaces`).
+
 ## [2.5.0] - 2026-02-14
 
 ### Added

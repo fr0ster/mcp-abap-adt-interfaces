@@ -22,6 +22,7 @@ This package contains all interfaces organized by domain:
 - **`connection/`** - Connection and realtime transport interfaces (AbapConnection, request options, WebSocket transport contracts)
 - **`execution/`** - Execution contracts for runnable entities (`IExecutor`)
 - **`sap/`** - SAP-specific configuration (SapConfig, SapAuthType)
+- **`service/`** - Business service lifecycle contracts (`IAdtService`, service binding params)
 - **`storage/`** - Storage interfaces (session storage, state)
 - **`logging/`** - Logging interfaces (ILogger, LogLevel enum)
 - **`validation/`** - Validation interfaces
@@ -209,6 +210,16 @@ This package is responsible for:
 ### SAP Domain (`sap/`)
 - `ISapConfig` - SAP connection configuration
 - `SapAuthType` - Authentication type: `"basic" | "jwt"`
+
+### Service Domain (`service/`)
+- `IAdtService` - Service binding lifecycle contract for non-CRUD service operations
+  - Methods for binding discovery/validation, transport checks, create/read/update, activate/check, and generation
+  - `updateServiceBinding()` uses explicit `desiredPublicationState` and validates allowed state transition
+- Parameter/enum types:
+  - `ServiceBindingType`, `ServiceBindingVersion`, `GeneratedServiceType`, `DesiredPublicationState`
+  - `ICreateServiceBindingParams`, `IUpdateServiceBindingParams`, `IReadServiceBindingParams`
+  - `ITransportCheckServiceBindingParams`, `ICheckServiceBindingParams`, `IActivateServiceBindingParams`
+  - `IGenerateServiceBindingParams`, `ICreateAndGenerateServiceBindingParams`
 
 ### Storage Domain (`storage/`)
 - `ISessionStorage` - Session storage interface
