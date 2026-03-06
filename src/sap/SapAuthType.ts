@@ -1,1 +1,1 @@
-export type SapAuthType = 'basic' | 'jwt' | 'saml';
+export type SapAuthType = 'basic' | 'jwt' | 'saml' | 'rfc';

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.7.0] - 2026-03-06
+
+### Added
+- Added `'rfc'` to `SapAuthType` union type to support RFC-based connections for on-premise SAP systems (via `SADT_REST_RFC_ENDPOINT`).
+
 ## [2.6.0] - 2026-02-18
 
 ### Added
