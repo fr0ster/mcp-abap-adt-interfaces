@@ -1,9 +1,10 @@
-import type { SapAuthType } from './SapAuthType';
+import type { SapAuthType, SapConnectionType } from './SapAuthType';
 
 export interface ISapConfig {
   url: string;
   client?: string;
   authType: SapAuthType;
+  connectionType?: SapConnectionType;
   username?: string;
   password?: string;
   jwtToken?: string;

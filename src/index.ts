@@ -40,7 +40,7 @@ export type { ILogger } from './logging/ILogger';
 export { LogLevel } from './logging/LogLevel';
 // SAP domain
 export type { ISapConfig } from './sap/ISapConfig';
-export type { SapAuthType } from './sap/SapAuthType';
+export type { SapAuthType, SapConnectionType } from './sap/SapAuthType';
 // Service domain
 export type {
   DesiredPublicationState,
