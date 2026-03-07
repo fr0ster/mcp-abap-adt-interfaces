@@ -14,12 +14,15 @@
  *
  * Example:
  * ```typescript
+ * import { AdtObjectErrorCodes, AdtOperationError } from '@mcp-abap-adt/interfaces';
+ *
  * try {
  *   await adtObject.read({ className: 'ZTEST' });
- * } catch (error: any) {
- *   if (error.code === AdtObjectErrorCodes.OBJECT_NOT_FOUND) {
+ * } catch (error: unknown) {
+ *   const e = error as AdtOperationError;
+ *   if (e.code === AdtObjectErrorCodes.OBJECT_NOT_FOUND) {
  *     // Handle not found
- *   } else if (error.code === AdtObjectErrorCodes.OBJECT_NOT_READY) {
+ *   } else if (e.code === AdtObjectErrorCodes.OBJECT_NOT_READY) {
  *     // Handle not ready
  *   }
  * }

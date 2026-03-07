@@ -5,6 +5,8 @@
  * All interfaces follow the convention of starting with 'I' prefix
  */
 
+export type { HttpError, XmlNode } from './adt/AdtTypes';
+export { AdtOperationError } from './adt/AdtTypes';
 // ADT domain
 export type { IAdtObject, IAdtOperationOptions } from './adt/IAdtObject';
 export { AdtObjectErrorCodes } from './adt/IAdtObject';
