@@ -97,6 +97,6 @@ This PR has zero logic changes — imports only.
 
 | PR | Status |
 |----|--------|
-| PR #0 — Package interfaces | in progress |
-| PR #1 — Full CRUD interfaces (22 types) | planned |
+| PR #0 — Package interfaces | done (v4.0.0) |
+| PR #1 — Full CRUD interfaces (22 types) | in progress |
 | PR #2 — adt-clients import migration | planned |
