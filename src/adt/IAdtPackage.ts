@@ -30,6 +30,11 @@ export interface IUpdatePackageParams {
   record_changes?: boolean;
 }
 
+export interface IReadPackageParams {
+  package_name: string;
+  version?: 'active' | 'inactive';
+}
+
 export interface IDeletePackageParams {
   package_name: string;
   transport_request?: string;

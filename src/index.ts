@@ -7,6 +7,76 @@
 
 export type { HttpError, XmlNode } from './adt/AdtTypes';
 export { AdtOperationError } from './adt/AdtTypes';
+export type {
+  ICreateAccessControlParams,
+  IDeleteAccessControlParams,
+  IReadAccessControlParams,
+  IUpdateAccessControlParams,
+} from './adt/IAdtAccessControl';
+export type {
+  BehaviorDefinitionImplementationType,
+  ICreateBehaviorDefinitionParams,
+  IDeleteBehaviorDefinitionParams,
+  IReadBehaviorDefinitionParams,
+  IUpdateBehaviorDefinitionParams,
+} from './adt/IAdtBehaviorDefinition';
+export type {
+  ICreateBehaviorImplementationParams,
+  IDeleteBehaviorImplementationParams,
+  IReadBehaviorImplementationParams,
+  IUpdateBehaviorImplementationParams,
+} from './adt/IAdtBehaviorImplementation';
+export type {
+  ICreateClassParams,
+  IDeleteClassParams,
+  IReadClassParams,
+  IUpdateClassParams,
+} from './adt/IAdtClass';
+export type {
+  DataElementTypeKind,
+  ICreateDataElementParams,
+  IDeleteDataElementParams,
+  IReadDataElementParams,
+  IUpdateDataElementParams,
+} from './adt/IAdtDataElement';
+export type {
+  ICreateDomainParams,
+  IDeleteDomainParams,
+  IFixedValue,
+  IReadDomainParams,
+  IUpdateDomainParams,
+} from './adt/IAdtDomain';
+export type {
+  EnhancementType,
+  ICreateEnhancementParams,
+  IDeleteEnhancementParams,
+  IReadEnhancementParams,
+  IUpdateEnhancementParams,
+} from './adt/IAdtEnhancement';
+export type {
+  ICreateFunctionGroupParams,
+  IDeleteFunctionGroupParams,
+  IReadFunctionGroupParams,
+  IUpdateFunctionGroupParams,
+} from './adt/IAdtFunctionGroup';
+export type {
+  ICreateFunctionModuleParams,
+  IDeleteFunctionModuleParams,
+  IReadFunctionModuleParams,
+  IUpdateFunctionModuleParams,
+} from './adt/IAdtFunctionModule';
+export type {
+  ICreateInterfaceParams,
+  IDeleteInterfaceParams,
+  IReadInterfaceParams,
+  IUpdateInterfaceParams,
+} from './adt/IAdtInterface';
+export type {
+  ICreateMetadataExtensionParams,
+  IDeleteMetadataExtensionParams,
+  IReadMetadataExtensionParams,
+  IUpdateMetadataExtensionParams,
+} from './adt/IAdtMetadataExtension';
 // ADT domain
 export type { IAdtObject, IAdtOperationOptions } from './adt/IAdtObject';
 export { AdtObjectErrorCodes } from './adt/IAdtObject';
@@ -14,8 +84,66 @@ export type { IAdtObjectConfig, IAdtObjectState } from './adt/IAdtObjectState';
 export type {
   ICreatePackageParams,
   IDeletePackageParams,
+  IReadPackageParams,
   IUpdatePackageParams,
 } from './adt/IAdtPackage';
+export type {
+  ICreateProgramParams,
+  IDeleteProgramParams,
+  IReadProgramParams,
+  IUpdateProgramParams,
+} from './adt/IAdtProgram';
+// Note: IAdtServiceBinding snake_case interfaces will fully replace
+// service/IAdtService camelCase exports in PR #2.
+// For now only IDeleteServiceBindingParams is new (not present in service/IAdtService).
+export type { IDeleteServiceBindingParams } from './adt/IAdtServiceBinding';
+export type {
+  ICreateServiceDefinitionParams,
+  IDeleteServiceDefinitionParams,
+  IReadServiceDefinitionParams,
+  IUpdateServiceDefinitionParams,
+} from './adt/IAdtServiceDefinition';
+export type {
+  ICreateStructureParams,
+  IDeleteStructureParams,
+  IReadStructureParams,
+  IUpdateStructureParams,
+} from './adt/IAdtStructure';
+export type {
+  ICreateTableParams,
+  IDeleteTableParams,
+  IReadTableParams,
+  IUpdateTableParams,
+} from './adt/IAdtTable';
+export type {
+  ICreateTableTypeParams,
+  IDeleteTableTypeParams,
+  IReadTableTypeParams,
+  IUpdateTableTypeParams,
+  TableTypeAccessType,
+  TableTypePrimaryKeyDefinition,
+  TableTypePrimaryKeyKind,
+  TableTypeRowKind,
+} from './adt/IAdtTableType';
+export type {
+  ICreateTransportParams,
+  IDeleteTransportParams,
+  IReadTransportParams,
+  IUpdateTransportParams,
+} from './adt/IAdtTransport';
+export type {
+  IReadUnitTestParams,
+  IRunUnitTestParams,
+  IUnitTestDuration,
+  IUnitTestRiskLevel,
+  IUnitTestScope,
+} from './adt/IAdtUnitTest';
+export type {
+  ICreateViewParams,
+  IDeleteViewParams,
+  IReadViewParams,
+  IUpdateViewParams,
+} from './adt/IAdtView';
 export type { AuthType as AuthTypeEnum } from './auth/AuthType';
 // Auth domain
 export type { IAuthorizationConfig } from './auth/IAuthorizationConfig';
