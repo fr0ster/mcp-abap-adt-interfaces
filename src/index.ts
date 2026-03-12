@@ -93,10 +93,16 @@ export type {
   IReadProgramParams,
   IUpdateProgramParams,
 } from './adt/IAdtProgram';
-// Note: IAdtServiceBinding snake_case interfaces will fully replace
-// service/IAdtService camelCase exports in PR #2.
-// For now only IDeleteServiceBindingParams is new (not present in service/IAdtService).
-export type { IDeleteServiceBindingParams } from './adt/IAdtServiceBinding';
+export type {
+  DesiredPublicationState,
+  GeneratedServiceType,
+  ICreateServiceBindingParams,
+  IDeleteServiceBindingParams,
+  IReadServiceBindingParams,
+  IUpdateServiceBindingParams,
+  ServiceBindingType,
+  ServiceBindingVersion,
+} from './adt/IAdtServiceBinding';
 export type {
   ICreateServiceDefinitionParams,
   IDeleteServiceDefinitionParams,
@@ -178,29 +184,23 @@ export type { ISapConfig } from './sap/ISapConfig';
 export type { SapAuthType, SapConnectionType } from './sap/SapAuthType';
 // Service domain
 export type {
-  DesiredPublicationState,
-  GeneratedServiceType,
   IActivateServiceBindingParams,
   IAdtService,
   ICheckServiceBindingParams,
   IClassifyServiceBindingParams,
   ICreateAndGenerateServiceBindingParams,
-  ICreateServiceBindingParams,
   IGenerateServiceBindingParams,
   IGetServiceBindingODataParams,
   IPublishODataV2Params,
-  IReadServiceBindingParams,
   ITransportCheckServiceBindingParams,
   IUnpublishODataV2Params,
-  IUpdateServiceBindingParams,
   IValidateServiceBindingParams,
-  ServiceBindingType,
-  ServiceBindingVersion,
 } from './service/IAdtService';
 // Service Key domain
 export type { IServiceKeyStore } from './serviceKey/IServiceKeyStore';
 // Session domain
 export type { ISessionStore } from './session/ISessionStore';
+export type { IReadOptions } from './shared/IReadOptions';
 export type { ISessionState } from './storage/ISessionState';
 // Storage domain
 export type { ISessionStorage } from './storage/ISessionStorage';
