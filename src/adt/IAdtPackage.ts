@@ -12,7 +12,7 @@ export interface ICreatePackageParams {
   transport_request?: string;
   application_component?: string;
   responsible?: string;
-  masterSystem?: string;
+  master_system?: string;
   record_changes: boolean;
 }
 
@@ -26,7 +26,7 @@ export interface IUpdatePackageParams {
   transport_request?: string;
   application_component?: string;
   responsible?: string;
-  masterSystem?: string;
+  master_system?: string;
   record_changes?: boolean;
 }
 
