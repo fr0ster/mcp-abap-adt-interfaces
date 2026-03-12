@@ -11,6 +11,11 @@ export { AdtOperationError } from './adt/AdtTypes';
 export type { IAdtObject, IAdtOperationOptions } from './adt/IAdtObject';
 export { AdtObjectErrorCodes } from './adt/IAdtObject';
 export type { IAdtObjectConfig, IAdtObjectState } from './adt/IAdtObjectState';
+export type {
+  ICreatePackageParams,
+  IDeletePackageParams,
+  IUpdatePackageParams,
+} from './adt/IAdtPackage';
 export type { AuthType as AuthTypeEnum } from './auth/AuthType';
 // Auth domain
 export type { IAuthorizationConfig } from './auth/IAuthorizationConfig';
