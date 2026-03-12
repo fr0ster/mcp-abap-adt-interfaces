@@ -1,5 +1,7 @@
 # @mcp-abap-adt/interfaces
 
+[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://stand-with-ukraine.pp.ua)
+
 Shared interfaces for MCP ABAP ADT packages.
 
 This package provides all TypeScript interfaces used across the MCP ABAP ADT ecosystem, ensuring consistency and type safety across all packages.
