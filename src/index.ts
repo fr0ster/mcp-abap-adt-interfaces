@@ -174,11 +174,31 @@ export {
   NETWORK_ERROR_CODES,
 } from './connection/NetworkErrors';
 export type { IExecutor } from './execution/IExecutor';
+// Feeds domain
+export type { IFeedRepository } from './feeds/IFeedRepository';
+export type {
+  IAbapTimestamp,
+  ICallStackEntry,
+  IFeedDescriptor,
+  IFeedEntry,
+  IFeedQueryOptions,
+  IFeedVariant,
+  IGatewayErrorDetail,
+  IGatewayErrorEntry,
+  IGatewayException,
+  ISourceCodeLine,
+  ISystemMessageEntry,
+} from './feeds/types';
 // Headers domain
 export * from './Headers';
 // Logging domain
 export type { ILogger } from './logging/ILogger';
 export { LogLevel } from './logging/LogLevel';
+// Runtime domain
+export type {
+  IListableRuntimeObject,
+  IRuntimeAnalysisObject,
+} from './runtime/types';
 // SAP domain
 export type { ISapConfig } from './sap/ISapConfig';
 export type { SapAuthType, SapConnectionType } from './sap/SapAuthType';
