@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.0] - 2026-04-10
+
+### Added
+- **Runtime Analysis Domain** (`runtime/`):
+  - `IRuntimeAnalysisObject` — base interface with `readonly kind: string` discriminator for runtime analysis domain objects (not CRUD)
+  - `IListableRuntimeObject<TResult, TOptions>` — generic listable runtime object with `list()` method
+- **Feeds Domain** (`feeds/`):
+  - `IAbapTimestamp` — type alias for ABAP timestamp strings (`YYYYMMDDHHMMSS`)
+  - `IFeedQueryOptions` — query parameters for feed methods (`user`, `maxResults`, `from`, `to`)
+  - `IFeedEntry` — generic feed entry
+  - `IFeedDescriptor` — feed metadata
+  - `IFeedVariant` — feed variant metadata
+  - `ISystemMessageEntry` — system message with severity and validity period
+  - `IGatewayErrorEntry` — basic gateway error log entry
+  - `IGatewayErrorDetail` — extended error with service info, error context, source code, and call stack
+  - `IGatewayException`, `ICallStackEntry`, `ISourceCodeLine` — supporting types for error details
+  - `IFeedRepository` — domain-facing interface for feed access with typed methods: `list()`, `variants()`, `dumps()`, `systemMessages()`, `gatewayErrors()`, `gatewayErrorDetail()`
+
 ## [2.7.0] - 2026-03-06
 
 ### Added
