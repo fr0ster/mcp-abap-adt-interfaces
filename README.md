@@ -23,6 +23,8 @@ This package contains all interfaces organized by domain:
 - **`serviceKey/`** - Service key storage interface
 - **`connection/`** - Connection and realtime transport interfaces (AbapConnection, request options, WebSocket transport contracts)
 - **`execution/`** - Execution contracts for runnable entities (`IExecutor`)
+- **`feeds/`** - Feed access interfaces (IFeedRepository, feed entries, system messages, gateway errors)
+- **`runtime/`** - Runtime analysis domain types (IRuntimeAnalysisObject, IListableRuntimeObject)
 - **`sap/`** - SAP-specific configuration (SapConfig, SapAuthType)
 - **`service/`** - Business service lifecycle contracts (`IAdtService`, service binding params)
 - **`storage/`** - Storage interfaces (session storage, state)
@@ -202,12 +204,30 @@ This package is responsible for:
   - Will be removed in next major version
 - `IAbapRequestOptions` - Request options for ADT operations
 
+### Feeds Domain (`feeds/`)
+- `IAbapTimestamp` - ABAP timestamp string type alias (format `YYYYMMDDHHMMSS`)
+- `IFeedRepository` - Domain-facing interface for feed access
+  - Methods: `list()`, `variants()`, `dumps()`, `systemMessages()`, `gatewayErrors()`, `gatewayErrorDetail()`
+  - All methods return domain types (no raw transport responses)
+- `IFeedQueryOptions` - Query parameters for feed methods (`user`, `maxResults`, `from`, `to`)
+- `IFeedEntry` - Generic feed entry (`id`, `title`, `updated`, `link`, `content`)
+- `IFeedDescriptor` - Feed metadata (`id`, `title`, `url`, `category`)
+- `IFeedVariant` - Feed variant metadata (`id`, `title`, `url`)
+- `ISystemMessageEntry` - System message with severity and validity period
+- `IGatewayErrorEntry` - Basic gateway error log entry
+- `IGatewayErrorDetail` - Extended error with service info, error context, source code, and call stack
+- `IGatewayException`, `ICallStackEntry`, `ISourceCodeLine` - Supporting types for error details
+
 ### Execution Domain (`execution/`)
 - `IExecutor<TTarget, TResult, TRunWithProfilerOptions, TRunWithProfilingOptions, TRunWithProfilingResult>`
   - Generic contract for entities that support:
     - `run(target)`
     - `runWithProfiler(target, options)`
     - `runWithProfiling(target, options?)`
+
+### Runtime Domain (`runtime/`)
+- `IRuntimeAnalysisObject` - Base interface for runtime analysis domain objects with `readonly kind: string` discriminator
+- `IListableRuntimeObject<TResult, TOptions>` - Generic interface for listable runtime objects with `list()` method
 
 ### SAP Domain (`sap/`)
 - `ISapConfig` - SAP connection configuration
