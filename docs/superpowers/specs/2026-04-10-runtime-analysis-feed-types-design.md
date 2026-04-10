@@ -21,18 +21,23 @@ src/
 └── index.ts                  # Re-exports for new modules
 ```
 
-Data types go in `types.ts`; interfaces with methods get their own files — consistent with existing patterns (e.g. `IAdtObject.ts`).
+Data types go in `types.ts`; interfaces with methods get their own files — a readability choice for these new domains, not a strict repository-wide convention.
 
 ### Runtime module (`src/runtime/types.ts`)
 
-- `IRuntimeAnalysisObject` — marker type (`object`) for all runtime analysis domain objects. These are NOT `IAdtObject` (not CRUD) — they represent runtime analysis/monitoring capabilities.
-- `IListableRuntimeObject<TOptions = void>` — generic listable runtime object. Each domain supplies its own options type. Has a `list(options?: TOptions): Promise<IAdtResponse>` method. Imports `IAdtResponse` from `../connection/IAbapConnection`.
+- `IRuntimeAnalysisObject` — base interface for all runtime analysis domain objects with a `readonly kind: string` discriminator. These are NOT `IAdtObject` (not CRUD) — they represent runtime analysis/monitoring capabilities.
+- `IListableRuntimeObject<TResult, TOptions = undefined>` — generic listable runtime object. Both result type and options type are parameterized. Has a `list(options?: TOptions): Promise<TResult>` method.
 
 ### Feeds module — data types (`src/feeds/types.ts`)
 
+Timestamp alias:
+- `IAbapTimestamp` — type alias for `string`, format `YYYYMMDDHHMMSS`. Represents SAP system-local time. Omitted values are excluded from query serialization.
+
 Feed-level types:
-- `IFeedQueryOptions` — query parameters: `user?`, `maxResults?`, `from?` (YYYYMMDDHHMMSS), `to?` (YYYYMMDDHHMMSS)
+- `IFeedQueryOptions` — query parameters: `user?`, `maxResults?`, `from?: IAbapTimestamp`, `to?: IAbapTimestamp`
 - `IFeedEntry` — generic feed entry: `id`, `title`, `updated`, `link`, `content`, `author?`, `category?`
+- `IFeedDescriptor` — feed metadata: `id`, `title`, `url`, `category?`
+- `IFeedVariant` — feed variant metadata: `id`, `title`, `url`
 
 System message types:
 - `ISystemMessageEntry` — `id`, `title`, `text`, `severity`, `validFrom`, `validTo`, `createdBy`
@@ -46,15 +51,16 @@ Gateway error types:
 
 ### Feeds module — repository interface (`src/feeds/IFeedRepository.ts`)
 
-`IFeedRepository` — methods for feed access:
-- `list(): Promise<IAdtResponse>`
-- `variants(): Promise<IAdtResponse>`
+`IFeedRepository` — domain-facing interface for feed access. All methods return domain types (no raw `IAdtResponse`):
+- `list(): Promise<IFeedDescriptor[]>`
+- `variants(): Promise<IFeedVariant[]>`
 - `dumps(options?: IFeedQueryOptions): Promise<IFeedEntry[]>`
-- `systemMessages(options?: IFeedQueryOptions): Promise<IFeedEntry[]>`
-- `gatewayErrors(options?: IFeedQueryOptions): Promise<IFeedEntry[]>`
+- `systemMessages(options?: IFeedQueryOptions): Promise<ISystemMessageEntry[]>`
+- `gatewayErrors(options?: IFeedQueryOptions): Promise<IGatewayErrorEntry[]>`
+- `gatewayErrorDetail(feedUrl: string): Promise<IGatewayErrorDetail>`
 - `byUrl(feedUrl: string, options?: IFeedQueryOptions): Promise<IFeedEntry[]>`
 
-Imports `IAdtResponse` from `../connection/IAbapConnection`, and `IFeedQueryOptions`/`IFeedEntry` from `./types`.
+Imports all types from `./types`.
 
 ### Exports (`src/index.ts`)
 
