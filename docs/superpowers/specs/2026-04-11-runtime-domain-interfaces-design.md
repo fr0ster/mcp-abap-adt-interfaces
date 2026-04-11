@@ -14,28 +14,62 @@ Follows from #4 (feed types added in 5.1.0).
 
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
-| Option types source | Full definitions from `adt-clients` | Single source of truth, full type safety |
+| Option types source | Full definitions migrated from `adt-clients` | `@mcp-abap-adt/interfaces` is canonical owner; `adt-clients` is migration source |
 | IAbapDebugger structure | Monolithic, single interface | Sub-interfaces add complexity without benefit; grouping via comments |
 | File organization | One file per domain entity | Matches `src/adt/` convention |
 | Sub-debugger inheritance | All extend IRuntimeAnalysisObject | Each can be used independently with own `kind` |
+| IListableRuntimeObject base (Q1) | Extends IRuntimeAnalysisObject | All listable objects expose `kind` consistently without repetitive multiple inheritance |
+| Typed discriminator (Q2) | `IRuntimeAnalysisObject<TKind extends string = string>` | Literal `kind` values enable meaningful type narrowing; default generic = backwards compatible |
+| Implementation helpers (Q3) | Excluded from public interfaces | Public interfaces describe domain operations only; helpers stay in `adt-clients` |
+| API maturity (Q4) | Phase 1 — shape and options only | Typed response payloads are a future enhancement; document explicitly |
+
+## Non-goals
+
+- Typed response payload models (e.g., `IAdtResponse<IProfilerTrace[]>`) — future phase
+- Standardizing implementation helper utilities (builders, extractors) — stay in `adt-clients`
+- Runtime behavior changes — this phase extracts public contracts only
 
 ## File Structure
 
 ```
 src/runtime/
-├── types.ts                 (exists — IRuntimeAnalysisObject, IListableRuntimeObject)
-├── IDebugger.ts             (IDebugger, IAbapDebugger, IAmdpDebugger + 12 option types)
-├── IMemorySnapshots.ts      (IMemorySnapshots + 4 option types)
-├── IProfiler.ts             (IProfiler + 5 option types)
-├── ICrossTrace.ts           (ICrossTrace + 1 option type)
-├── ISt05Trace.ts            (ISt05Trace)
-├── IApplicationLog.ts       (IApplicationLog + 2 option types)
-├── IAtcLog.ts               (IAtcLog + 1 option type)
-├── IDdicActivation.ts       (IDdicActivation + 1 option type)
-├── IRuntimeDumps.ts         (IRuntimeDumps + 3 option types)
-├── ISystemMessages.ts       (ISystemMessages — reuses IFeedQueryOptions)
-└── IGatewayErrorLog.ts      (IGatewayErrorLog — reuses IFeedQueryOptions)
+├── types.ts              (exists — IRuntimeAnalysisObject, IListableRuntimeObject)
+├── IDebugger.ts          (IDebugger, IAbapDebugger, IAmdpDebugger + option types)
+├── IMemorySnapshots.ts   (IMemorySnapshots + option types)
+├── IProfiler.ts          (IProfiler + option types)
+├── ICrossTrace.ts        (ICrossTrace + option types)
+├── ISt05Trace.ts         (ISt05Trace)
+├── IApplicationLog.ts    (IApplicationLog + option types)
+├── IAtcLog.ts            (IAtcLog + option types)
+├── IDdicActivation.ts    (IDdicActivation + option types)
+├── IRuntimeDumps.ts      (IRuntimeDumps + option types)
+├── ISystemMessages.ts    (ISystemMessages — reuses IFeedQueryOptions)
+└── IGatewayErrorLog.ts   (IGatewayErrorLog — reuses IFeedQueryOptions)
 ```
+
+## Phase 1 Scope
+
+This spec covers **interface shape and request option typing**. All methods return generic `IAdtResponse`. Typed response payloads (e.g., `IAdtResponse<IProfilerTrace[]>`) are a future enhancement where there is enough stability and reuse to justify them.
+
+## Base Type Changes (types.ts)
+
+The existing `types.ts` must be updated to reflect Q1 and Q2 decisions:
+
+```typescript
+export interface IRuntimeAnalysisObject<TKind extends string = string> {
+  readonly kind: TKind;
+}
+
+export interface IListableRuntimeObject<
+  TResult,
+  TOptions = undefined,
+  TKind extends string = string
+> extends IRuntimeAnalysisObject<TKind> {
+  list(options?: TOptions): Promise<TResult>;
+}
+```
+
+All interface definitions below MUST use the literal `kind` values listed in the Discriminator Values section. No runtime interface uses unparameterized `IRuntimeAnalysisObject` or `IListableRuntimeObject` unless intentionally generic.
 
 ## Interface Definitions
 
@@ -112,11 +146,6 @@ export interface IGetVariableValueStatementOptions {
   lineBreakThreshold?: number;
 }
 
-export interface IDebuggerBatchPayload {
-  boundary: string;
-  body: string;
-}
-
 export type IAbapDebuggerStepMethod = 'stepInto' | 'stepOut' | 'stepContinue';
 
 export interface IStartAmdpDebuggerOptions {
@@ -158,13 +187,13 @@ import type { IRuntimeAnalysisObject } from './types';
 import type { IAdtResponse } from '../connection/IAbapConnection';
 import type { IMemorySnapshots } from './IMemorySnapshots';
 
-export interface IDebugger extends IRuntimeAnalysisObject {
+export interface IDebugger extends IRuntimeAnalysisObject<'debugger'> {
   getAbap(): IAbapDebugger;
   getAmdp(): IAmdpDebugger;
   getMemorySnapshots(): IMemorySnapshots;
 }
 
-export interface IAbapDebugger extends IRuntimeAnalysisObject {
+export interface IAbapDebugger extends IRuntimeAnalysisObject<'abapDebugger'> {
   // Session management
   launch(options?: ILaunchDebuggerOptions): Promise<IAdtResponse>;
   stop(options?: IStopDebuggerOptions): Promise<IAdtResponse>;
@@ -197,15 +226,13 @@ export interface IAbapDebugger extends IRuntimeAnalysisObject {
 
   // Batch operations
   executeBatchRequest(requests: string): Promise<IAdtResponse>;
-  buildBatchPayload(requests: string[]): IDebuggerBatchPayload;
-  buildStepWithStackBatchPayload(stepMethod: IAbapDebuggerStepMethod): IDebuggerBatchPayload;
   executeStepBatch(stepMethod: IAbapDebuggerStepMethod): Promise<IAdtResponse>;
   stepIntoBatch(): Promise<IAdtResponse>;
   stepOutBatch(): Promise<IAdtResponse>;
   stepContinueBatch(): Promise<IAdtResponse>;
 }
 
-export interface IAmdpDebugger extends IRuntimeAnalysisObject {
+export interface IAmdpDebugger extends IRuntimeAnalysisObject<'amdpDebugger'> {
   start(options?: IStartAmdpDebuggerOptions): Promise<IAdtResponse>;
   resume(mainId: string): Promise<IAdtResponse>;
   terminate(mainId: string, hardStop?: boolean): Promise<IAdtResponse>;
@@ -252,7 +279,7 @@ export interface ISnapshotReferencesOptions {
   maxNumberOfReferences?: number;
 }
 
-export interface IMemorySnapshots extends IListableRuntimeObject<IAdtResponse, IMemorySnapshotsListOptions> {
+export interface IMemorySnapshots extends IListableRuntimeObject<IAdtResponse, IMemorySnapshotsListOptions, 'memorySnapshots'> {
   getById(snapshotId: string): Promise<IAdtResponse>;
   getOverview(snapshotId: string): Promise<IAdtResponse>;
   getRankingList(snapshotId: string, options?: ISnapshotRankingListOptions): Promise<IAdtResponse>;
@@ -307,14 +334,11 @@ export interface IProfilerTraceDbAccessesOptions {
   withSystemEvents?: boolean;
 }
 
-export interface IProfiler extends IListableRuntimeObject<IAdtResponse, IProfilerListOptions> {
+export interface IProfiler extends IListableRuntimeObject<IAdtResponse, IProfilerListOptions, 'profiler'> {
   getParameters(): Promise<IAdtResponse>;
   getParametersForCallstack(): Promise<IAdtResponse>;
   getParametersForAmdp(): Promise<IAdtResponse>;
-  buildParametersXml(options?: IProfilerTraceParameters): string;
   createParameters(options?: IProfilerTraceParameters): Promise<IAdtResponse>;
-  extractIdFromResponse(response: IAdtResponse): string | undefined;
-  getDefaultParameters(): Omit<IProfilerTraceParameters, 'description'>;
   getHitList(traceIdOrUri: string, options?: IProfilerTraceHitListOptions): Promise<IAdtResponse>;
   getStatements(traceIdOrUri: string, options?: IProfilerTraceStatementsOptions): Promise<IAdtResponse>;
   getDbAccesses(traceIdOrUri: string, options?: IProfilerTraceDbAccessesOptions): Promise<IAdtResponse>;
@@ -337,7 +361,7 @@ export interface IListCrossTracesOptions {
   actChangeUser?: string;
 }
 
-export interface ICrossTrace extends IListableRuntimeObject<IAdtResponse, IListCrossTracesOptions> {
+export interface ICrossTrace extends IListableRuntimeObject<IAdtResponse, IListCrossTracesOptions, 'crossTrace'> {
   getById(traceId: string, includeSensitiveData?: boolean): Promise<IAdtResponse>;
   getRecords(traceId: string): Promise<IAdtResponse>;
   getRecordContent(traceId: string, recordNumber: number): Promise<IAdtResponse>;
@@ -351,7 +375,7 @@ export interface ICrossTrace extends IListableRuntimeObject<IAdtResponse, IListC
 import type { IRuntimeAnalysisObject } from './types';
 import type { IAdtResponse } from '../connection/IAbapConnection';
 
-export interface ISt05Trace extends IRuntimeAnalysisObject {
+export interface ISt05Trace extends IRuntimeAnalysisObject<'st05Trace'> {
   getState(): Promise<IAdtResponse>;
   getDirectory(): Promise<IAdtResponse>;
 }
@@ -377,7 +401,7 @@ export interface IGetApplicationLogSourceOptions {
   version?: string;
 }
 
-export interface IApplicationLog extends IRuntimeAnalysisObject {
+export interface IApplicationLog extends IRuntimeAnalysisObject<'applicationLog'> {
   getObject(objectName: string, options?: IGetApplicationLogObjectOptions): Promise<IAdtResponse>;
   getSource(objectName: string, options?: IGetApplicationLogSourceOptions): Promise<IAdtResponse>;
   validateName(objectName: string): Promise<IAdtResponse>;
@@ -398,7 +422,7 @@ export interface IGetCheckFailureLogsOptions {
   phaseKey?: string;
 }
 
-export interface IAtcLog extends IRuntimeAnalysisObject {
+export interface IAtcLog extends IRuntimeAnalysisObject<'atcLog'> {
   getCheckFailureLogs(options?: IGetCheckFailureLogsOptions): Promise<IAdtResponse>;
   getExecutionLog(executionId: string): Promise<IAdtResponse>;
 }
@@ -416,7 +440,7 @@ export interface IGetActivationGraphOptions {
   logName?: string;
 }
 
-export interface IDdicActivation extends IRuntimeAnalysisObject {
+export interface IDdicActivation extends IRuntimeAnalysisObject<'ddicActivation'> {
   getGraph(options?: IGetActivationGraphOptions): Promise<IAdtResponse>;
 }
 ```
@@ -443,11 +467,9 @@ export interface IRuntimeDumpReadOptions {
   view?: IRuntimeDumpReadView;
 }
 
-export interface IRuntimeDumps extends IListableRuntimeObject<IAdtResponse, IRuntimeDumpsListOptions> {
+export interface IRuntimeDumps extends IListableRuntimeObject<IAdtResponse, IRuntimeDumpsListOptions, 'runtimeDumps'> {
   listByUser(user?: string, options?: Omit<IRuntimeDumpsListOptions, 'query'>): Promise<IAdtResponse>;
   getById(dumpId: string, options?: IRuntimeDumpReadOptions): Promise<IAdtResponse>;
-  buildIdPrefix(datetime: string, hostname: string, sysid: string, instance: string): string;
-  buildUserQuery(user?: string): string | undefined;
 }
 ```
 
@@ -458,7 +480,7 @@ import type { IListableRuntimeObject } from './types';
 import type { IAdtResponse } from '../connection/IAbapConnection';
 import type { IFeedQueryOptions } from '../feeds/types';
 
-export interface ISystemMessages extends IListableRuntimeObject<IAdtResponse, IFeedQueryOptions> {
+export interface ISystemMessages extends IListableRuntimeObject<IAdtResponse, IFeedQueryOptions, 'systemMessages'> {
   getById(messageId: string): Promise<IAdtResponse>;
 }
 ```
@@ -470,7 +492,7 @@ import type { IListableRuntimeObject } from './types';
 import type { IAdtResponse } from '../connection/IAbapConnection';
 import type { IFeedQueryOptions } from '../feeds/types';
 
-export interface IGatewayErrorLog extends IListableRuntimeObject<IAdtResponse, IFeedQueryOptions> {
+export interface IGatewayErrorLog extends IListableRuntimeObject<IAdtResponse, IFeedQueryOptions, 'gatewayErrorLog'> {
   getById(errorType: string, errorId: string): Promise<IAdtResponse>;
 }
 ```
@@ -485,8 +507,7 @@ export type { IDebugger, IAbapDebugger, IAmdpDebugger } from './runtime/IDebugge
 export type {
   ILaunchDebuggerOptions, IStopDebuggerOptions, IGetDebuggerOptions, IGetSystemAreaOptions,
   IGetVariableAsCsvOptions, IGetVariableAsJsonOptions, IGetVariableValueStatementOptions,
-  IDebuggerBatchPayload, IStartAmdpDebuggerOptions,
-  IGetAmdpDataPreviewOptions, IGetAmdpCellSubstringOptions,
+  IStartAmdpDebuggerOptions, IGetAmdpDataPreviewOptions, IGetAmdpCellSubstringOptions,
 } from './runtime/IDebugger';
 export type { IAbapDebuggerStepMethod } from './runtime/IDebugger';
 
@@ -519,15 +540,39 @@ export type { ISystemMessages } from './runtime/ISystemMessages';
 export type { IGatewayErrorLog } from './runtime/IGatewayErrorLog';
 ```
 
-## Totals
+## Discriminator Values
 
-- **11 new files** in `src/runtime/`
-- **13 interfaces** (IDebugger, IAbapDebugger, IAmdpDebugger, IMemorySnapshots, IProfiler, ICrossTrace, ISt05Trace, IApplicationLog, IAtcLog, IDdicActivation, IRuntimeDumps, ISystemMessages, IGatewayErrorLog)
-- **24 option interfaces** (full field definitions from `adt-clients`)
-- **3 type aliases** (IAbapDebuggerStepMethod, IRuntimeDumpReadView, IRuntimeDumpReadOptions)
-- **40 new exports** in `index.ts`
+These literal values are part of the public contract. Changing them requires a semver breaking change.
 
-## Verification
+Intended literal `kind` values for each runtime interface:
+
+| Interface | `kind` value |
+|-----------|-------------|
+| IDebugger | `'debugger'` |
+| IAbapDebugger | `'abapDebugger'` |
+| IAmdpDebugger | `'amdpDebugger'` |
+| IMemorySnapshots | `'memorySnapshots'` |
+| IProfiler | `'profiler'` |
+| ICrossTrace | `'crossTrace'` |
+| ISt05Trace | `'st05Trace'` |
+| IApplicationLog | `'applicationLog'` |
+| IAtcLog | `'atcLog'` |
+| IDdicActivation | `'ddicActivation'` |
+| IRuntimeDumps | `'runtimeDumps'` |
+| ISystemMessages | `'systemMessages'` |
+| IGatewayErrorLog | `'gatewayErrorLog'` |
+
+## Verification & Acceptance Criteria
 
 - `npm run build` must pass (biome check + tsc)
 - All new types must be importable from package root
+- `adt-clients` compiles against the new interfaces without local runtime type duplicates
+- Runtime factory methods in `adt-clients` return interfaces from this package rather than concrete classes
+- TypeScript compilation passes in both `interfaces` and `adt-clients`
+- All runtime interfaces expose `kind` via `IRuntimeAnalysisObject<TKind>`
+- Listable runtime interfaces preserve literal discriminator types through `IListableRuntimeObject<TResult, TOptions, TKind>`
+- No runtime interface uses unparameterized `IRuntimeAnalysisObject` or `IListableRuntimeObject` unless intentionally generic
+
+## Review Note
+
+The remaining implementation risk is mainly scope control, not interface design. This spec intentionally keeps response payloads as generic `IAdtResponse` in Phase 1, so implementation work should avoid reintroducing helper methods into the public interfaces or expanding into ad hoc typed response modeling outside the boundaries defined here.
