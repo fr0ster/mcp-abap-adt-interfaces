@@ -175,9 +175,7 @@ export interface IAbapDebugger extends IRuntimeAnalysisObject<'abapDebugger'> {
 
   // Batch operations
   executeBatchRequest(requests: string): Promise<IAdtResponse>;
-  executeStepBatch(
-    stepMethod: IAbapDebuggerStepMethod,
-  ): Promise<IAdtResponse>;
+  executeStepBatch(stepMethod: IAbapDebuggerStepMethod): Promise<IAdtResponse>;
   stepIntoBatch(): Promise<IAdtResponse>;
   stepOutBatch(): Promise<IAdtResponse>;
   stepContinueBatch(): Promise<IAdtResponse>;
@@ -187,10 +185,7 @@ export interface IAmdpDebugger extends IRuntimeAnalysisObject<'amdpDebugger'> {
   start(options?: IStartAmdpDebuggerOptions): Promise<IAdtResponse>;
   resume(mainId: string): Promise<IAdtResponse>;
   terminate(mainId: string, hardStop?: boolean): Promise<IAdtResponse>;
-  getDebuggee(
-    mainId: string,
-    debuggeeId: string,
-  ): Promise<IAdtResponse>;
+  getDebuggee(mainId: string, debuggeeId: string): Promise<IAdtResponse>;
   getVariable(
     mainId: string,
     debuggeeId: string,
@@ -210,16 +205,11 @@ export interface IAmdpDebugger extends IRuntimeAnalysisObject<'amdpDebugger'> {
     name?: string,
   ): Promise<IAdtResponse>;
   stepOver(mainId: string, debuggeeId: string): Promise<IAdtResponse>;
-  stepContinue(
-    mainId: string,
-    debuggeeId: string,
-  ): Promise<IAdtResponse>;
+  stepContinue(mainId: string, debuggeeId: string): Promise<IAdtResponse>;
   getBreakpoints(mainId: string): Promise<IAdtResponse>;
   getBreakpointsLlang(mainId: string): Promise<IAdtResponse>;
   getBreakpointsTableFunctions(mainId: string): Promise<IAdtResponse>;
-  getDataPreview(
-    options?: IGetAmdpDataPreviewOptions,
-  ): Promise<IAdtResponse>;
+  getDataPreview(options?: IGetAmdpDataPreviewOptions): Promise<IAdtResponse>;
   getCellSubstring(
     options?: IGetAmdpCellSubstringOptions,
   ): Promise<IAdtResponse>;

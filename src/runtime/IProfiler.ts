@@ -46,9 +46,7 @@ export interface IProfiler
   getParameters(): Promise<IAdtResponse>;
   getParametersForCallstack(): Promise<IAdtResponse>;
   getParametersForAmdp(): Promise<IAdtResponse>;
-  createParameters(
-    options?: IProfilerTraceParameters,
-  ): Promise<IAdtResponse>;
+  createParameters(options?: IProfilerTraceParameters): Promise<IAdtResponse>;
   getHitList(
     traceIdOrUri: string,
     options?: IProfilerTraceHitListOptions,

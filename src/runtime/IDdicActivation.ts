@@ -9,7 +9,5 @@ export interface IGetActivationGraphOptions {
 
 export interface IDdicActivation
   extends IRuntimeAnalysisObject<'ddicActivation'> {
-  getGraph(
-    options?: IGetActivationGraphOptions,
-  ): Promise<IAdtResponse>;
+  getGraph(options?: IGetActivationGraphOptions): Promise<IAdtResponse>;
 }
