@@ -24,7 +24,7 @@ This package contains all interfaces organized by domain:
 - **`connection/`** - Connection and realtime transport interfaces (AbapConnection, request options, WebSocket transport contracts)
 - **`execution/`** - Execution contracts for runnable entities (`IExecutor`)
 - **`feeds/`** - Feed access interfaces (IFeedRepository, feed entries, system messages, gateway errors)
-- **`runtime/`** - Runtime analysis domain types (IRuntimeAnalysisObject, IListableRuntimeObject)
+- **`runtime/`** - Runtime analysis domain interfaces (debugger, profiler, traces, dumps, logs, memory snapshots, etc.)
 - **`sap/`** - SAP-specific configuration (SapConfig, SapAuthType)
 - **`service/`** - Business service lifecycle contracts (`IAdtService`, service binding params)
 - **`storage/`** - Storage interfaces (session storage, state)
@@ -226,8 +226,17 @@ This package is responsible for:
     - `runWithProfiling(target, options?)`
 
 ### Runtime Domain (`runtime/`)
-- `IRuntimeAnalysisObject` - Base interface for runtime analysis domain objects with `readonly kind: string` discriminator
-- `IListableRuntimeObject<TResult, TOptions>` - Generic interface for listable runtime objects with `list()` method
+- `IRuntimeAnalysisObject<TKind>` — Base interface with typed `readonly kind: TKind` discriminator for type narrowing
+- `IListableRuntimeObject<TResult, TOptions, TKind>` — Extends `IRuntimeAnalysisObject<TKind>` with `list()` method
+- **Debugger**: `IDebugger` (composite), `IAbapDebugger` (session, breakpoints, variables, watchpoints, batch), `IAmdpDebugger` (AMDP-specific debug)
+- **Memory**: `IMemorySnapshots` (snapshots with delta analysis)
+- **Profiler**: `IProfiler` (traces, hit lists, statements, DB accesses)
+- **Traces**: `ICrossTrace` (cross-layer traces), `ISt05Trace` (SQL trace)
+- **Logs**: `IApplicationLog`, `IAtcLog` (ATC check logs)
+- **DDIC**: `IDdicActivation` (activation graphs)
+- **Dumps**: `IRuntimeDumps` (runtime dumps with views)
+- **Feeds**: `ISystemMessages`, `IGatewayErrorLog` (reuse `IFeedQueryOptions`)
+- All runtime interfaces use literal `kind` discriminators (e.g., `'profiler'`, `'debugger'`) for type-safe narrowing
 
 ### SAP Domain (`sap/`)
 - `ISapConfig` - SAP connection configuration

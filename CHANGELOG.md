@@ -7,6 +7,150 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.0.0] - 2026-04-11
+
+### Breaking Changes
+
+- **`IRuntimeAnalysisObject`** is now generic: `IRuntimeAnalysisObject<TKind extends string = string>`
+  - The `kind` field type changes from `string` to `TKind`, enabling literal type narrowing
+  - Default generic (`= string`) preserves backwards compatibility for unparameterized usage
+  - Consumers who extend `IRuntimeAnalysisObject` without a type parameter are unaffected
+  - Consumers who inspect `kind` at the type level may see narrower types
+- **`IListableRuntimeObject`** now extends `IRuntimeAnalysisObject` and accepts a third generic parameter:
+  `IListableRuntimeObject<TResult, TOptions, TKind extends string = string>`
+  - Previously `IListableRuntimeObject` was independent; now all listable runtime objects expose a `kind` discriminator
+  - Existing `IListableRuntimeObject<TResult, TOptions>` usage compiles unchanged (default `TKind = string`)
+
+### Added — from issue #6
+
+The following interfaces were requested in #6 to support `@mcp-abap-adt/adt-clients` refactoring (branch `feature/feed-reader-extensions`), so factory methods return interfaces instead of concrete classes:
+
+- **Debugger domain** (`runtime/IDebugger.ts`):
+  - `IDebugger` — composite interface exposing `getAbap()`, `getAmdp()`, `getMemorySnapshots()`
+  - `IAbapDebugger` — ABAP debugger with session management, breakpoints, variables, watchpoints, and batch operations (23 methods)
+  - `IAmdpDebugger` — AMDP debugger with start/resume/terminate, variable inspection, breakpoints, data preview (14 methods)
+  - Option types: `ILaunchDebuggerOptions`, `IStopDebuggerOptions`, `IGetDebuggerOptions`, `IGetSystemAreaOptions`, `IGetVariableAsCsvOptions`, `IGetVariableAsJsonOptions`, `IGetVariableValueStatementOptions`, `IStartAmdpDebuggerOptions`, `IGetAmdpDataPreviewOptions`, `IGetAmdpCellSubstringOptions`
+  - Type alias: `IAbapDebuggerStepMethod` (`'stepInto' | 'stepOut' | 'stepContinue'`)
+- **Memory snapshots** (`runtime/IMemorySnapshots.ts`):
+  - `IMemorySnapshots` — list, getById, overview, ranking lists, children, references, and delta analysis (9 methods)
+  - Option types: `IMemorySnapshotsListOptions`, `ISnapshotRankingListOptions`, `ISnapshotChildrenOptions`, `ISnapshotReferencesOptions`
+- **Profiler** (`runtime/IProfiler.ts`):
+  - `IProfiler` — trace parameter management, hit lists, statements, DB accesses, requests, object/process types (11 methods)
+  - Option types: `IProfilerListOptions`, `IProfilerTraceParameters`, `IProfilerTraceHitListOptions`, `IProfilerTraceStatementsOptions`, `IProfilerTraceDbAccessesOptions`
+- **Traces** (`runtime/ICrossTrace.ts`, `runtime/ISt05Trace.ts`):
+  - `ICrossTrace` — cross-trace listing, records, activations (4 methods)
+  - `ISt05Trace` — SQL trace state and directory (2 methods)
+  - Option type: `IListCrossTracesOptions`
+- **Logs** (`runtime/IApplicationLog.ts`, `runtime/IAtcLog.ts`):
+  - `IApplicationLog` — application log object/source access and name validation (3 methods)
+  - `IAtcLog` — ATC check failure logs and execution logs (2 methods)
+  - Option types: `IGetApplicationLogObjectOptions`, `IGetApplicationLogSourceOptions`, `IGetCheckFailureLogsOptions`
+- **DDIC** (`runtime/IDdicActivation.ts`):
+  - `IDdicActivation` — activation graph access (1 method)
+  - Option type: `IGetActivationGraphOptions`
+- **Dumps** (`runtime/IRuntimeDumps.ts`):
+  - `IRuntimeDumps` — dump listing by user, getById with view options (2 methods + inherited `list()`)
+  - Option types: `IRuntimeDumpsListOptions`, `IRuntimeDumpReadOptions`
+  - Type alias: `IRuntimeDumpReadView` (`'default' | 'summary' | 'formatted'`)
+- **Feeds-based** (`runtime/ISystemMessages.ts`, `runtime/IGatewayErrorLog.ts`):
+  - `ISystemMessages` — system message listing and getById (reuses `IFeedQueryOptions`)
+  - `IGatewayErrorLog` — gateway error listing and getById by type+id (reuses `IFeedQueryOptions`)
+
+### Added — design decisions beyond issue #6
+
+The following were not in the original issue but emerged during design review:
+
+- **Typed discriminator** (`IRuntimeAnalysisObject<TKind>`) — enables literal `kind` values per interface (e.g., `'profiler'`, `'debugger'`), supporting `switch`/`if` narrowing in consumer code. Discriminator values are contractual (changing them is a breaking change).
+- **`IListableRuntimeObject` extends `IRuntimeAnalysisObject`** — all listable objects now expose `kind` consistently, eliminating the need for each interface to extend both base types separately.
+- **`TKind` propagation** — `IListableRuntimeObject` passes `TKind` to `IRuntimeAnalysisObject`, so consumers get literal `kind` types from listable objects too.
+- **Implementation helpers excluded** — methods like `buildBatchPayload()`, `buildParametersXml()`, `extractIdFromResponse()`, `getDefaultParameters()`, `buildIdPrefix()`, `buildUserQuery()` were in the issue but excluded from the public interface contract. These are implementation details that stay in `@mcp-abap-adt/adt-clients`.
+
+### Discriminator values (public contract)
+
+| Interface | `kind` value |
+|-----------|-------------|
+| `IDebugger` | `'debugger'` |
+| `IAbapDebugger` | `'abapDebugger'` |
+| `IAmdpDebugger` | `'amdpDebugger'` |
+| `IMemorySnapshots` | `'memorySnapshots'` |
+| `IProfiler` | `'profiler'` |
+| `ICrossTrace` | `'crossTrace'` |
+| `ISt05Trace` | `'st05Trace'` |
+| `IApplicationLog` | `'applicationLog'` |
+| `IAtcLog` | `'atcLog'` |
+| `IDdicActivation` | `'ddicActivation'` |
+| `IRuntimeDumps` | `'runtimeDumps'` |
+| `ISystemMessages` | `'systemMessages'` |
+| `IGatewayErrorLog` | `'gatewayErrorLog'` |
+
+### Consumer usage
+
+**Importing runtime interfaces:**
+
+```typescript
+import type {
+  IDebugger,
+  IAbapDebugger,
+  IProfiler,
+  IRuntimeDumps,
+  IProfilerTraceParameters,
+} from '@mcp-abap-adt/interfaces';
+```
+
+**Using typed discriminators for narrowing:**
+
+```typescript
+import type { IRuntimeAnalysisObject } from '@mcp-abap-adt/interfaces';
+
+function handleRuntimeObject(obj: IRuntimeAnalysisObject) {
+  switch (obj.kind) {
+    case 'profiler':
+      // TypeScript knows obj has kind: 'profiler'
+      break;
+    case 'debugger':
+      break;
+  }
+}
+```
+
+**Factory methods in `adt-clients` will return these interfaces:**
+
+```typescript
+// Before (adt-clients returns concrete class):
+const profiler = client.getProfiler(); // returns ProfilerDomain
+
+// After (adt-clients returns interface from this package):
+const profiler: IProfiler = client.getProfiler(); // returns IProfiler
+```
+
+### Migration guide (5.1.0 → 6.0.0)
+
+**Most consumers: no changes needed.** The default generic parameters (`= string`) ensure backwards compatibility.
+
+**If you extend `IRuntimeAnalysisObject`:**
+
+```typescript
+// Before (5.1.0):
+interface MyObject extends IRuntimeAnalysisObject { ... }
+
+// After (6.0.0) — still works as-is, but you can now add a literal kind:
+interface MyObject extends IRuntimeAnalysisObject<'myObject'> { ... }
+```
+
+**If you extend `IListableRuntimeObject`:**
+
+```typescript
+// Before (5.1.0):
+interface MyList extends IListableRuntimeObject<IAdtResponse, MyOptions> { ... }
+
+// After (6.0.0) — still works, but now MyList also has `kind: string`.
+// To add a literal kind:
+interface MyList extends IListableRuntimeObject<IAdtResponse, MyOptions, 'myList'> { ... }
+```
+
+**If you check `kind` at the type level:**
+The `kind` field is now `readonly`. If you were assigning to it, you'll get a compile error. Use the constructor or factory to set it.
+
 ## [5.1.0] - 2026-04-10
 
 ### Added
