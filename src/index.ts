@@ -194,6 +194,64 @@ export * from './Headers';
 // Logging domain
 export type { ILogger } from './logging/ILogger';
 export { LogLevel } from './logging/LogLevel';
+export type {
+  IApplicationLog,
+  IGetApplicationLogObjectOptions,
+  IGetApplicationLogSourceOptions,
+} from './runtime/IApplicationLog';
+export type {
+  IAtcLog,
+  IGetCheckFailureLogsOptions,
+} from './runtime/IAtcLog';
+export type {
+  ICrossTrace,
+  IListCrossTracesOptions,
+} from './runtime/ICrossTrace';
+export type {
+  IDdicActivation,
+  IGetActivationGraphOptions,
+} from './runtime/IDdicActivation';
+// Runtime domain object interfaces
+export type {
+  IAbapDebugger,
+  IAbapDebuggerStepMethod,
+  IAmdpDebugger,
+  IDebugger,
+  IGetAmdpCellSubstringOptions,
+  IGetAmdpDataPreviewOptions,
+  IGetDebuggerOptions,
+  IGetSystemAreaOptions,
+  IGetVariableAsCsvOptions,
+  IGetVariableAsJsonOptions,
+  IGetVariableValueStatementOptions,
+  ILaunchDebuggerOptions,
+  IStartAmdpDebuggerOptions,
+  IStopDebuggerOptions,
+} from './runtime/IDebugger';
+export type { IGatewayErrorLog } from './runtime/IGatewayErrorLog';
+export type {
+  IMemorySnapshots,
+  IMemorySnapshotsListOptions,
+  ISnapshotChildrenOptions,
+  ISnapshotRankingListOptions,
+  ISnapshotReferencesOptions,
+} from './runtime/IMemorySnapshots';
+export type {
+  IProfiler,
+  IProfilerListOptions,
+  IProfilerTraceDbAccessesOptions,
+  IProfilerTraceHitListOptions,
+  IProfilerTraceParameters,
+  IProfilerTraceStatementsOptions,
+} from './runtime/IProfiler';
+export type {
+  IRuntimeDumpReadOptions,
+  IRuntimeDumpReadView,
+  IRuntimeDumps,
+  IRuntimeDumpsListOptions,
+} from './runtime/IRuntimeDumps';
+export type { ISt05Trace } from './runtime/ISt05Trace';
+export type { ISystemMessages } from './runtime/ISystemMessages';
 // Runtime domain
 export type {
   IListableRuntimeObject,
