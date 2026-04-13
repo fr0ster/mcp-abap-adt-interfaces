@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.1.0] - 2026-04-13
+
+### Added
+
+- **`connect()`** method to `IAbapConnection` interface — initializes connection by fetching CSRF token and establishing session cookies. Must be called before making any ADT requests. All existing implementations (`BaseAbapConnection`, `JwtAbapConnection`, `SamlAbapConnection`, `RfcAbapConnection`) already have this method; this change formalizes it in the contract.
+
 ## [6.0.0] - 2026-04-11
 
 ### Breaking Changes

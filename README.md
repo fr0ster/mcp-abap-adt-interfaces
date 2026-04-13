@@ -189,7 +189,8 @@ This package is responsible for:
 
 ### Connection Domain (`connection/`)
 - `IAbapConnection` - Minimal connection interface for ADT operations
-  - Consumer-facing methods only: `getBaseUrl()`, `getSessionId()`, `setSessionType()`, `makeAdtRequest()`
+  - Consumer-facing methods: `connect()`, `getBaseUrl()`, `getSessionId()`, `setSessionType()`, `makeAdtRequest()`
+  - `connect()` initializes the session (CSRF token + cookies) before any ADT requests
   - Implementation details (auth, CSRF, cookies, token refresh) are encapsulated
   - For JWT: token refresh handled internally via `ITokenRefresher`
   - For Basic: no token refresh needed
@@ -200,7 +201,7 @@ This package is responsible for:
 - `IWebSocketMessageEnvelope` - Generic request/response/event/error message shape with correlation id
 - `IWebSocketCloseInfo` / `IWebSocketMessageHandler` - Close payload and message callback contracts
 - `IAbapConnectionExtended` - Deprecated, for backward compatibility
-  - Extends `IAbapConnection` with: `getConfig()`, `getAuthHeaders()`, `connect()`, `reset()`
+  - Extends `IAbapConnection` with: `getConfig()`, `getAuthHeaders()`, `reset()`
   - Will be removed in next major version
 - `IAbapRequestOptions` - Request options for ADT operations
 

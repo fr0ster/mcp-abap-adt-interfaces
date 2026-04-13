@@ -38,6 +38,12 @@ export interface IAdtResponse<T = any, D = any> {
  */
 export interface IAbapConnection {
   /**
+   * Initialize connection: fetch CSRF token and establish session cookies.
+   * Must be called before making any ADT requests.
+   */
+  connect(): Promise<void>;
+
+  /**
    * Get base URL of SAP system
    */
   getBaseUrl(): Promise<string>;
