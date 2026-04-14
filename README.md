@@ -248,8 +248,10 @@ This package is responsible for:
   - Methods for binding discovery/validation, transport checks, create/read/update, activate/check, and generation
   - `updateServiceBinding()` uses explicit `desiredPublicationState` and validates allowed state transition
 - Parameter/enum types:
+  - `ServiceBindingVariant` — `'ODATA_V2_UI' | 'ODATA_V2_WEB_API' | 'ODATA_V4_UI' | 'ODATA_V4_WEB_API'`
+  - `SERVICE_BINDING_VARIANT_MAP` — maps variant to `{ bindingType, bindingVersion, bindingCategory, serviceType }`
   - `ServiceBindingType`, `ServiceBindingVersion`, `GeneratedServiceType`, `DesiredPublicationState`
-  - `ICreateServiceBindingParams`, `IUpdateServiceBindingParams`, `IReadServiceBindingParams`
+  - `ICreateServiceBindingParams` (uses `binding_variant: ServiceBindingVariant`), `IUpdateServiceBindingParams`, `IReadServiceBindingParams`
   - `ITransportCheckServiceBindingParams`, `ICheckServiceBindingParams`, `IActivateServiceBindingParams`
   - `IGenerateServiceBindingParams`, `ICreateAndGenerateServiceBindingParams`
 

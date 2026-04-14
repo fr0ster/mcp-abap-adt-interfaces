@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.0.0] - 2026-04-14
+
+### Breaking Changes
+
+- **`ICreateServiceBindingParams`**: replaced `binding_type: ServiceBindingType`, `binding_version: ServiceBindingVersion`, `binding_category?: string` with single `binding_variant: ServiceBindingVariant` field
+
+### Added
+
+- **`ServiceBindingVariant`** type — 4 ODATA variants: `ODATA_V2_UI`, `ODATA_V2_WEB_API`, `ODATA_V4_UI`, `ODATA_V4_WEB_API`
+- **`SERVICE_BINDING_VARIANT_MAP`** constant — maps each variant to `{ bindingType, bindingVersion, bindingCategory, serviceType }`
+
 ## [6.1.0] - 2026-04-13
 
 ### Added
