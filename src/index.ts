@@ -101,8 +101,10 @@ export type {
   IReadServiceBindingParams,
   IUpdateServiceBindingParams,
   ServiceBindingType,
+  ServiceBindingVariant,
   ServiceBindingVersion,
 } from './adt/IAdtServiceBinding';
+export { SERVICE_BINDING_VARIANT_MAP } from './adt/IAdtServiceBinding';
 export type {
   ICreateServiceDefinitionParams,
   IDeleteServiceDefinitionParams,

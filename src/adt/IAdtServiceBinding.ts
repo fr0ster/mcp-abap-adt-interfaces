@@ -7,6 +7,48 @@ export type ServiceBindingVersion = 'V2' | 'V4' | '0001' | '0000' | string;
 export type GeneratedServiceType = 'odatav2' | 'odatav4';
 export type DesiredPublicationState = 'published' | 'unpublished' | 'unchanged';
 
+export type ServiceBindingVariant =
+  | 'ODATA_V2_UI'
+  | 'ODATA_V2_WEB_API'
+  | 'ODATA_V4_UI'
+  | 'ODATA_V4_WEB_API';
+// Future: INA_UI, SQL_WEB_API — see fr0ster/mcp-abap-adt-clients#18
+
+export const SERVICE_BINDING_VARIANT_MAP: Record<
+  ServiceBindingVariant,
+  {
+    bindingType: ServiceBindingType;
+    bindingVersion: ServiceBindingVersion;
+    bindingCategory: '0' | '1';
+    serviceType: GeneratedServiceType;
+  }
+> = {
+  ODATA_V2_UI: {
+    bindingType: 'ODATA',
+    bindingVersion: 'V2',
+    bindingCategory: '0',
+    serviceType: 'odatav2',
+  },
+  ODATA_V2_WEB_API: {
+    bindingType: 'ODATA',
+    bindingVersion: 'V2',
+    bindingCategory: '1',
+    serviceType: 'odatav2',
+  },
+  ODATA_V4_UI: {
+    bindingType: 'ODATA',
+    bindingVersion: 'V4',
+    bindingCategory: '0',
+    serviceType: 'odatav4',
+  },
+  ODATA_V4_WEB_API: {
+    bindingType: 'ODATA',
+    bindingVersion: 'V4',
+    bindingCategory: '1',
+    serviceType: 'odatav4',
+  },
+};
+
 export interface ICreateServiceBindingParams {
   binding_name: string;
   package_name: string;
@@ -14,9 +56,7 @@ export interface ICreateServiceBindingParams {
   service_definition_name: string;
   service_name: string;
   service_version: string;
-  binding_type: ServiceBindingType;
-  binding_version: ServiceBindingVersion;
-  binding_category?: '0' | '1' | string;
+  binding_variant: ServiceBindingVariant;
   master_language?: string;
   master_system?: string;
   responsible?: string;
