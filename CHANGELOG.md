@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.1.0] - 2026-04-23
+
+### Added
+
+- **`ICalmConnection`** interface (`src/connection/ICalmConnection.ts`) — minimal contract for SAP Cloud ALM HTTP APIs: `connect()`, `getBaseUrl()`, `getServiceUrl(service)`, `makeRequest(options)`. Mirrors the `IAbapConnection` narrow-contract pattern so resource clients depend on one interface only.
+- **`ICalmResponse<T, D>`** type alias — shares `IAdtResponse` shape for consistent payload semantics across ADT and Cloud ALM.
+- **`ICalmRequestOptions`** interface (`src/connection/ICalmRequestOptions.ts`) — request options accepted by `ICalmConnection.makeRequest`.
+- **`CalmService`** string-literal union + **`CALM_SERVICES`** frozen tuple (`src/connection/CalmService.ts`) — the 9 Cloud ALM services: `features`, `documents`, `tasks`, `projects`, `testManagement`, `hierarchy`, `analytics`, `processMonitoring`, `logs`.
+
+### Notes
+
+- Purely additive — no existing interfaces or types changed. Consumers on `^7.0.0` continue to work unchanged.
+
 ## [7.0.0] - 2026-04-14
 
 ### Breaking Changes

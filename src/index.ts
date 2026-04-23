@@ -163,6 +163,13 @@ export type {
   IAdtResponse,
 } from './connection/IAbapConnection';
 export type { IAbapRequestOptions } from './connection/IAbapRequestOptions';
+export { CALM_SERVICES } from './connection/CalmService';
+export type { CalmService } from './connection/CalmService';
+export type {
+  ICalmConnection,
+  ICalmResponse,
+} from './connection/ICalmConnection';
+export type { ICalmRequestOptions } from './connection/ICalmRequestOptions';
 export type {
   IWebSocketCloseInfo,
   IWebSocketConnectOptions,
