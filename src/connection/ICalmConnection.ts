@@ -1,5 +1,5 @@
-import type { IAdtResponse } from './IAbapConnection';
 import type { CalmService } from './CalmService';
+import type { IAdtResponse } from './IAbapConnection';
 import type { ICalmRequestOptions } from './ICalmRequestOptions';
 
 export type ICalmResponse<T = unknown, D = unknown> = IAdtResponse<T, D>;

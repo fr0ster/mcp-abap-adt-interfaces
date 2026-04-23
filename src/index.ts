@@ -157,14 +157,14 @@ export type { AuthType as AuthTypeEnum } from './auth/AuthType';
 export type { IAuthorizationConfig } from './auth/IAuthorizationConfig';
 export type { IConfig } from './auth/IConfig';
 export type { IConnectionConfig } from './auth/IConnectionConfig';
+export type { CalmService } from './connection/CalmService';
+export { CALM_SERVICES } from './connection/CalmService';
 // Connection domain
 export type {
   IAbapConnection,
   IAdtResponse,
 } from './connection/IAbapConnection';
 export type { IAbapRequestOptions } from './connection/IAbapRequestOptions';
-export { CALM_SERVICES } from './connection/CalmService';
-export type { CalmService } from './connection/CalmService';
 export type {
   ICalmConnection,
   ICalmResponse,
