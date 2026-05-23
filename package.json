@@ -38,8 +38,8 @@
     "lint": "npx biome check --write src",
     "lint:check": "npx biome check src",
     "format": "npx biome format --write src",
-    "build": "npm run --silent clean && npx biome check src --diagnostic-level=error && npx tsc -p tsconfig.json",
-    "build:fast": "npx tsc -p tsconfig.json",
+    "build": "npm run --silent clean && npx biome check src --diagnostic-level=error && npx tsc -p tsconfig.build.json",
+    "build:fast": "npx tsc -p tsconfig.build.json",
     "test:check": "npx tsc --noEmit",
     "prepublishOnly": "npm run build"
   },

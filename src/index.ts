@@ -155,6 +155,10 @@ export type {
 export type { AuthType as AuthTypeEnum } from './auth/AuthType';
 // Auth domain
 export type { IAuthorizationConfig } from './auth/IAuthorizationConfig';
+export type {
+  ICertificateMaterial,
+  ICertificateMaterialLoader,
+} from './auth/ICertificateMaterialLoader';
 export type { IConfig } from './auth/IConfig';
 export type { IConnectionConfig } from './auth/IConnectionConfig';
 export type { CalmService } from './connection/CalmService';
