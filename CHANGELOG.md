@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.2.0] - 2026-05-23
+
+### Added
+
+- **Certificate (mTLS) and Kerberos auth types.** `SapAuthType` extended to `'basic' | 'jwt' | 'saml' | 'certificate' | 'kerberos'`.
+- **`ISapConfig`** new optional fields: `certPath`, `certKeyPath`, `certPfxPath`, `certPassphrase` (certificate/mTLS) and `kerberosSpn`, `kerberosService` (Kerberos/SPNEGO).
+- **`ICertificateMaterialLoader`** + **`ICertificateMaterial`** (`src/auth/ICertificateMaterialLoader.ts`) — contract for loading client-certificate material (PEM/PFX) for an `https.Agent`; exported from the package root.
+
+### Notes
+
+- Certificate and Kerberos are connection-layer auth types (on-prem HTTP); they bypass the auth-broker. `IConnectionConfig.authType` (the broker's surface) is intentionally left as `'basic' | 'jwt' | 'saml'`.
+
 ## [7.1.0] - 2026-04-23
 
 ### Added

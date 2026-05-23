@@ -1,6 +1,6 @@
 {
   "name": "@mcp-abap-adt/interfaces",
-  "version": "7.1.0",
+  "version": "7.2.0",
   "description": "Shared interfaces for MCP ABAP ADT packages",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -34,12 +34,12 @@
   },
   "scripts": {
     "chrono": "./tools/version-stats.sh",
-    "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo tsconfig.build.tsbuildinfo",
     "lint": "npx biome check --write src",
     "lint:check": "npx biome check src",
     "format": "npx biome format --write src",
-    "build": "npm run --silent clean && npx biome check src --diagnostic-level=error && npx tsc -p tsconfig.json",
-    "build:fast": "npx tsc -p tsconfig.json",
+    "build": "npm run --silent clean && npx biome check src --diagnostic-level=error && npx tsc -p tsconfig.build.json",
+    "build:fast": "npx tsc -p tsconfig.build.json",
     "test:check": "npx tsc --noEmit",
     "prepublishOnly": "npm run build"
   },
