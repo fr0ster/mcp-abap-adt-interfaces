@@ -6,3 +6,6 @@ tsconfig.tsbuildinfo
 .env
 .env.local
 .codex
+
+# Git worktrees
+.worktrees/
