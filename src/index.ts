@@ -140,6 +140,14 @@ export type {
   IUpdateTransportParams,
 } from './adt/IAdtTransport';
 export type {
+  AtcFindingsFormat,
+  AtcObjectType,
+  IGetAtcFindingsParams,
+  IGetAtcRunStatusParams,
+  IListAtcCheckVariantsParams,
+  IRunAtcParams,
+} from './adt/IAdtAtc';
+export type {
   IReadUnitTestParams,
   IRunUnitTestParams,
   IUnitTestDuration,
