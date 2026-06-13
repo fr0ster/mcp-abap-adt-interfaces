@@ -7,11 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [7.3.0] - 2026-06-13
-
-### Added
-- `ISapConfig.language?: string` — optional logon language (e.g. `"EN"`, `"DE"`). Lets the connection layer pass the session language per request (like the client/mandant) so the HTTP session runs in it and created objects take it as their master language. Additive; no breaking change.
-
 ## [7.2.0] - 2026-05-23
 
 ### Added
