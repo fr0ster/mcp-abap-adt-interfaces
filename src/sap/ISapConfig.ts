@@ -3,8 +3,6 @@ import type { SapAuthType, SapConnectionType } from './SapAuthType';
 export interface ISapConfig {
   url: string;
   client?: string;
-  /** Logon language (e.g. "EN", "DE"). Passed per request like the client/mandant so the HTTP session runs in it; created objects then take it as their master language. */
-  language?: string;
   authType: SapAuthType;
   connectionType?: SapConnectionType;
   username?: string;

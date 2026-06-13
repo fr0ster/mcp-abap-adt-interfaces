@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [7.3.0] - 2026-06-13
 
 ### Added
-- `ISapConfig.language?: string` — optional logon language (e.g. `"EN"`, `"DE"`). Lets the connection layer pass the session language per request (like the client/mandant) so the HTTP session runs in it and created objects take it as their master language. Additive; no breaking change.
+- `ICreatePackageParams.master_language?: string` — master/original language for created packages (e.g. `"EN"`, `"DE"`), defaults to EN when unset. Brings package create params in line with the configurable-master-language support of the other object types (fr0ster/mcp-abap-adt#105).
 
 ## [7.2.0] - 2026-05-23
 
