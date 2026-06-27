@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [8.0.0] - 2026-06-27
+
+### Changed (BREAKING)
+- **Renamed the dead `IAdtView` parameter interfaces to `IAdtDdl`.** `ICreateViewParams`/`IReadViewParams`/`IUpdateViewParams`/`IDeleteViewParams` → `ICreate/Read/Update/DeleteDdlParams`, the `view_name` field → `ddl_name`, and `src/adt/IAdtView.ts` → `src/adt/IAdtDdl.ts`. These describe the generic DDL-source endpoint (`/sap/bc/adt/ddic/ddl/sources/` — CDS views, AMDP table functions, …), aligning with the View→Ddl rename in `@mcp-abap-adt/adt-clients` 6.0.0 and `@mcp-abap-adt/core` 8.0.0. The old exports were unused by current consumers (`@mcp-abap-adt/core` imports none of them; `adt-clients` defines its own local DDL param types). Major bump so `^7.x` consumers are not auto-upgraded onto the renamed exports.
+
 ## [7.3.0] - 2026-06-13
 
 ### Added

@@ -40,6 +40,12 @@ export type {
   IUpdateDataElementParams,
 } from './adt/IAdtDataElement';
 export type {
+  ICreateDdlParams,
+  IDeleteDdlParams,
+  IReadDdlParams,
+  IUpdateDdlParams,
+} from './adt/IAdtDdl';
+export type {
   ICreateDomainParams,
   IDeleteDomainParams,
   IFixedValue,
@@ -146,12 +152,6 @@ export type {
   IUnitTestRiskLevel,
   IUnitTestScope,
 } from './adt/IAdtUnitTest';
-export type {
-  ICreateViewParams,
-  IDeleteViewParams,
-  IReadViewParams,
-  IUpdateViewParams,
-} from './adt/IAdtView';
 export type { AuthType as AuthTypeEnum } from './auth/AuthType';
 // Auth domain
 export type { IAuthorizationConfig } from './auth/IAuthorizationConfig';
