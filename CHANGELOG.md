@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [9.0.0] - 2026-06-28
+
+### Added (BREAKING)
+- **Object version history on `IAdtObject`.** New required methods `getVersions(config: Partial<TConfig>): Promise<IObjectVersion[]>` and `getVersionSource(contentUri: string): Promise<string>`, a new `IObjectVersion` type (`versionId`, `author?`, `updatedAt?`, `title?`, `contentUri`), and a new `AdtObjectErrorCodes.UNSUPPORTED_OPERATION` (`'ADT_UNSUPPORTED_OPERATION'`). Adding **required** methods to the exported `IAdtObject` interface is source-breaking for every implementer (all `AdtXxx` in `@mcp-abap-adt/adt-clients`, plus any consumer/test mocks), so this is a major bump. Implementations live in `adt-clients` (each object type owns its own `/versions` endpoint; non-source types throw `UNSUPPORTED_OPERATION`).
+
 ## [8.0.0] - 2026-06-27
 
 ### Changed (BREAKING)

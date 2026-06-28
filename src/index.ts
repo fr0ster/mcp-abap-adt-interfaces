@@ -84,7 +84,11 @@ export type {
   IUpdateMetadataExtensionParams,
 } from './adt/IAdtMetadataExtension';
 // ADT domain
-export type { IAdtObject, IAdtOperationOptions } from './adt/IAdtObject';
+export type {
+  IAdtObject,
+  IAdtOperationOptions,
+  IObjectVersion,
+} from './adt/IAdtObject';
 export { AdtObjectErrorCodes } from './adt/IAdtObject';
 export type { IAdtObjectConfig, IAdtObjectState } from './adt/IAdtObjectState';
 export type {

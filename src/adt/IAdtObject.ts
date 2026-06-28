@@ -49,6 +49,8 @@ export const AdtObjectErrorCodes = {
   LOCK_FAILED: 'ADT_LOCK_FAILED',
   /** Unlock operation failed */
   UNLOCK_FAILED: 'ADT_UNLOCK_FAILED',
+  /** Operation not supported for this object type (e.g. version history on a non-source object) */
+  UNSUPPORTED_OPERATION: 'ADT_UNSUPPORTED_OPERATION',
 } as const;
 
 /**
@@ -114,6 +116,20 @@ export interface IAdtOperationOptions {
    * @see withLongPolling - Use long polling for waiting object readiness
    */
   timeout?: number;
+}
+
+/** One entry in an object's version history (from the ADT versions Atom feed). */
+export interface IObjectVersion {
+  /** Version number, e.g. '00000'. */
+  versionId: string;
+  /** The user who created the version (atom:author/name), if present. */
+  author?: string;
+  /** ISO timestamp of the version (atom:updated), if present. */
+  updatedAt?: string;
+  /** Feed title, e.g. 'Version List of ZCL_X (CLAS)', if present. */
+  title?: string;
+  /** Opaque, complete URI to fetch this version's source (atom:content@src). */
+  contentUri: string;
 }
 
 /**
@@ -255,4 +271,20 @@ export interface IAdtObject<TConfig, TReadResult = TConfig> {
    * @throws Error if unlock fails
    */
   unlock(config: Partial<TConfig>, lockHandle: string): Promise<TReadResult>;
+
+  /**
+   * List the version history of this object's source. Identity is passed per
+   * call (the implementations are stateless factories) — e.g.
+   * `getVersions({ className: 'ZCL_X' })`.
+   * @throws AdtOperationError(UNSUPPORTED_OPERATION) when the object has no
+   *         version resource (SAP 404/406, or a non-source object type).
+   *         Never leaks raw HTTP.
+   */
+  getVersions(config: Partial<TConfig>): Promise<IObjectVersion[]>;
+
+  /**
+   * Fetch the source code of a specific version.
+   * @param contentUri the opaque, complete `contentUri` from a getVersions() entry.
+   */
+  getVersionSource(contentUri: string): Promise<string>;
 }
