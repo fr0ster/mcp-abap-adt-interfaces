@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [9.1.0] - 2026-06-30
+
+### Added
+- **`IObjectVersion.transportRequest?` / `transportDescription?`** — optional fields exposing the transport request a version was recorded under (from the version feed's per-entry transport-request link, e.g. id `DS4K901917` + its short text). Additive; versions without a transport leave them undefined.
+
 ## [9.0.0] - 2026-06-28
 
 ### Added (BREAKING)
