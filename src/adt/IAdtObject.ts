@@ -130,6 +130,11 @@ export interface IObjectVersion {
   title?: string;
   /** Opaque, complete URI to fetch this version's source (atom:content@src). */
   contentUri: string;
+  /** Transport request id this version was recorded under, if any (from the
+   *  entry's transport-request link, e.g. 'DS4K901917'). */
+  transportRequest?: string;
+  /** Short text / description of that transport request, if any. */
+  transportDescription?: string;
 }
 
 /**
