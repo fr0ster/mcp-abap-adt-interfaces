@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [9.1.1] - 2026-07-01
+
+### Security
+- **Bumped dev-only `axios` `^1.11.0` → `^1.18.1`** and added an `overrides` entry pinning `form-data` to `^4.0.6`, clearing all 25 Dependabot alerts (axios proxy-auth/prototype-pollution/SSRF/ReDoS advisories, `follow-redirects` `1.15.11`→`1.16.0` auth-header leak, `form-data` `4.0.5`→`4.0.6` CRLF injection). `axios` is only a devDependency here and is not shipped to consumers, so runtime exposure was negligible; no published API change.
+
 ## [9.1.0] - 2026-06-30
 
 ### Added
