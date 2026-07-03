@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [9.2.0] - 2026-07-03
+
+### Added
+- **Message class (MSAG) param types** in `IAdtMessageClass.ts` — `ICreate/Read/Update/DeleteMessageClassParams` and the message equivalents (`ICreate/UpdateMessageClassMessageParams`, `IDeleteMessageClassMessageParams`). Low-level (snake_case) params for the upcoming adt-clients message-class CRUD clients. `IUpdateMessageClassMessageParams` keeps `msgtext` optional so an update may change only the description or self-explanatory flag. Additive; no changes to existing types.
+
 ## [9.1.1] - 2026-07-01
 
 ### Security
