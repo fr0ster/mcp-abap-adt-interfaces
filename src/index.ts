@@ -78,6 +78,15 @@ export type {
   IUpdateInterfaceParams,
 } from './adt/IAdtInterface';
 export type {
+  ICreateMessageClassMessageParams,
+  ICreateMessageClassParams,
+  IDeleteMessageClassMessageParams,
+  IDeleteMessageClassParams,
+  IReadMessageClassParams,
+  IUpdateMessageClassMessageParams,
+  IUpdateMessageClassParams,
+} from './adt/IAdtMessageClass';
+export type {
   ICreateMetadataExtensionParams,
   IDeleteMetadataExtensionParams,
   IReadMetadataExtensionParams,
