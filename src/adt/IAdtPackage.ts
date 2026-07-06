@@ -13,6 +13,8 @@ export interface ICreatePackageParams {
   application_component?: string;
   responsible?: string;
   master_system?: string;
+  /** Master/original language (e.g. "EN", "DE"). Defaults to EN when unset. */
+  master_language?: string;
   record_changes: boolean;
 }
 

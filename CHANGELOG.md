@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [9.2.0] - 2026-07-03
+
+### Added
+- **Message class (MSAG) param types** in `IAdtMessageClass.ts` — `ICreate/Read/Update/DeleteMessageClassParams` and the message equivalents (`ICreate/UpdateMessageClassMessageParams`, `IDeleteMessageClassMessageParams`). Low-level (snake_case) params for the upcoming adt-clients message-class CRUD clients. `IUpdateMessageClassMessageParams` keeps `msgtext` optional so an update may change only the description or self-explanatory flag. Additive; no changes to existing types.
+
+## [9.1.1] - 2026-07-01
+
+### Security
+- **Bumped dev-only `axios` `^1.11.0` → `^1.18.1`** and added an `overrides` entry pinning `form-data` to `^4.0.6`, clearing all 25 Dependabot alerts (axios proxy-auth/prototype-pollution/SSRF/ReDoS advisories, `follow-redirects` `1.15.11`→`1.16.0` auth-header leak, `form-data` `4.0.5`→`4.0.6` CRLF injection). `axios` is only a devDependency here and is not shipped to consumers, so runtime exposure was negligible; no published API change.
+
+## [9.1.0] - 2026-06-30
+
+### Added
+- **`IObjectVersion.transportRequest?` / `transportDescription?`** — optional fields exposing the transport request a version was recorded under (from the version feed's per-entry transport-request link, e.g. id `DS4K901917` + its short text). Additive; versions without a transport leave them undefined.
+
+## [9.0.0] - 2026-06-28
+
+### Added (BREAKING)
+- **Object version history on `IAdtObject`.** New required methods `getVersions(config: Partial<TConfig>): Promise<IObjectVersion[]>` and `getVersionSource(contentUri: string): Promise<string>`, a new `IObjectVersion` type (`versionId`, `author?`, `updatedAt?`, `title?`, `contentUri`), and a new `AdtObjectErrorCodes.UNSUPPORTED_OPERATION` (`'ADT_UNSUPPORTED_OPERATION'`). Adding **required** methods to the exported `IAdtObject` interface is source-breaking for every implementer (all `AdtXxx` in `@mcp-abap-adt/adt-clients`, plus any consumer/test mocks), so this is a major bump. Implementations live in `adt-clients` (each object type owns its own `/versions` endpoint; non-source types throw `UNSUPPORTED_OPERATION`).
+
+## [8.0.0] - 2026-06-27
+
+### Changed (BREAKING)
+- **Renamed the dead `IAdtView` parameter interfaces to `IAdtDdl`.** `ICreateViewParams`/`IReadViewParams`/`IUpdateViewParams`/`IDeleteViewParams` → `ICreate/Read/Update/DeleteDdlParams`, the `view_name` field → `ddl_name`, and `src/adt/IAdtView.ts` → `src/adt/IAdtDdl.ts`. These describe the generic DDL-source endpoint (`/sap/bc/adt/ddic/ddl/sources/` — CDS views, AMDP table functions, …), aligning with the View→Ddl rename in `@mcp-abap-adt/adt-clients` 6.0.0 and `@mcp-abap-adt/core` 8.0.0. The old exports were unused by current consumers (`@mcp-abap-adt/core` imports none of them; `adt-clients` defines its own local DDL param types). Major bump so `^7.x` consumers are not auto-upgraded onto the renamed exports.
+
+## [7.3.0] - 2026-06-13
+
+### Added
+- `ICreatePackageParams.master_language?: string` — master/original language for created packages (e.g. `"EN"`, `"DE"`), defaults to EN when unset. Brings package create params in line with the configurable-master-language support of the other object types (fr0ster/mcp-abap-adt#105).
+
 ## [7.2.0] - 2026-05-23
 
 ### Added

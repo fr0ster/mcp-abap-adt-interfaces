@@ -40,6 +40,12 @@ export type {
   IUpdateDataElementParams,
 } from './adt/IAdtDataElement';
 export type {
+  ICreateDdlParams,
+  IDeleteDdlParams,
+  IReadDdlParams,
+  IUpdateDdlParams,
+} from './adt/IAdtDdl';
+export type {
   ICreateDomainParams,
   IDeleteDomainParams,
   IFixedValue,
@@ -72,13 +78,26 @@ export type {
   IUpdateInterfaceParams,
 } from './adt/IAdtInterface';
 export type {
+  ICreateMessageClassMessageParams,
+  ICreateMessageClassParams,
+  IDeleteMessageClassMessageParams,
+  IDeleteMessageClassParams,
+  IReadMessageClassParams,
+  IUpdateMessageClassMessageParams,
+  IUpdateMessageClassParams,
+} from './adt/IAdtMessageClass';
+export type {
   ICreateMetadataExtensionParams,
   IDeleteMetadataExtensionParams,
   IReadMetadataExtensionParams,
   IUpdateMetadataExtensionParams,
 } from './adt/IAdtMetadataExtension';
 // ADT domain
-export type { IAdtObject, IAdtOperationOptions } from './adt/IAdtObject';
+export type {
+  IAdtObject,
+  IAdtOperationOptions,
+  IObjectVersion,
+} from './adt/IAdtObject';
 export { AdtObjectErrorCodes } from './adt/IAdtObject';
 export type { IAdtObjectConfig, IAdtObjectState } from './adt/IAdtObjectState';
 export type {
@@ -154,12 +173,6 @@ export type {
   IUnitTestRiskLevel,
   IUnitTestScope,
 } from './adt/IAdtUnitTest';
-export type {
-  ICreateViewParams,
-  IDeleteViewParams,
-  IReadViewParams,
-  IUpdateViewParams,
-} from './adt/IAdtView';
 export type { AuthType as AuthTypeEnum } from './auth/AuthType';
 // Auth domain
 export type { IAuthorizationConfig } from './auth/IAuthorizationConfig';
