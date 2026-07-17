@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [10.0.0] - 2026-07-17
+
+### Removed (BREAKING)
+- **`source_code` removed from create-params** — `ICreateAccessControlParams`, `ICreateServiceDefinitionParams`, `ICreateEnhancementParams`. The field was a no-op on create (deprecated in 9.2.1) and is now gone; source is written via the update flow (`IUpdate*Params.source_code`, untouched). This is a breaking type change: a consumer compiling against `ICreate*Params.source_code` under a `^9.x` range will no longer compile — hence the major bump. No runtime behavior changes (the field was never read on create). Completes the drift resolution with `@mcp-abap-adt/adt-clients` 7.4.3.
+
 ## [9.2.1] - 2026-07-17
 
 ### Deprecated

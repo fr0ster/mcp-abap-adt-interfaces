@@ -17,12 +17,6 @@ export interface ICreateEnhancementParams {
   transport_request?: string;
   enhancement_spot?: string;
   badi_definition?: string;
-  /**
-   * @deprecated No-op on create. Create posts metadata only; source is written
-   * by the update flow. Only enhancement type 'enhoxhh' carries source, via the
-   * update params. Never read on create.
-   */
-  source_code?: string;
   master_system?: string;
   responsible?: string;
 }
