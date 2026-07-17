@@ -7,11 +7,6 @@ export interface ICreateServiceDefinitionParams {
   description?: string;
   package_name: string;
   transport_request?: string;
-  /**
-   * @deprecated No-op. Create posts metadata only; source is written by the
-   * update flow (IUpdateServiceDefinitionParams.source_code). Never read on create.
-   */
-  source_code?: string;
   master_system?: string;
   responsible?: string;
 }
