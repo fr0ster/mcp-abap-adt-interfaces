@@ -17,8 +17,14 @@ export interface ICreateEnhancementParams {
   transport_request?: string;
   enhancement_spot?: string;
   badi_definition?: string;
-  master_system?: string;
+  /**
+   * @deprecated No-op. `create()` posts metadata only; the source is written by
+   * `update()`. Kept for backward compatibility — this field is never read.
+   */
+  source_code?: string;
+  masterSystem?: string;
   responsible?: string;
+  masterLanguage?: string;
 }
 
 export interface IReadEnhancementParams {
@@ -39,4 +45,18 @@ export interface IDeleteEnhancementParams {
   enhancement_name: string;
   enhancement_type: EnhancementType;
   transport_request?: string;
+}
+
+export interface ICheckEnhancementParams {
+  enhancement_name: string;
+  enhancement_type: EnhancementType;
+  version?: 'active' | 'inactive';
+  source_code?: string;
+}
+
+export interface IValidateEnhancementParams {
+  enhancement_name: string;
+  enhancement_type: EnhancementType;
+  package_name?: string;
+  description?: string;
 }

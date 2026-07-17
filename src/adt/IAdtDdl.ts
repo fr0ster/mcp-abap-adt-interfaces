@@ -6,12 +6,13 @@
 
 export interface ICreateDdlParams {
   ddl_name: string;
-  description?: string;
+  ddl_source?: string;
   package_name: string;
   transport_request?: string;
-  ddl_source?: string;
-  master_system?: string;
+  description?: string;
+  masterSystem?: string;
   responsible?: string;
+  masterLanguage?: string;
 }
 
 export interface IReadDdlParams {
@@ -24,6 +25,14 @@ export interface IUpdateDdlParams {
   ddl_source: string;
   transport_request?: string;
   lock_handle?: string;
+}
+
+export interface IUpdateDdlSourceParams {
+  ddl_name: string;
+  ddl_source: string;
+  activate?: boolean;
+  lock_handle?: string;
+  transport_request?: string;
 }
 
 export interface IDeleteDdlParams {

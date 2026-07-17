@@ -3,12 +3,13 @@
  */
 
 export interface ICreateFunctionGroupParams {
-  function_group_name: string;
+  functionGroupName: string;
   description: string;
-  package_name: string;
-  transport_request?: string;
-  master_system?: string;
+  packageName: string;
+  transportRequest?: string;
+  masterSystem?: string;
   responsible?: string;
+  masterLanguage?: string;
 }
 
 export interface IReadFunctionGroupParams {

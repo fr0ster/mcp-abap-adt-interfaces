@@ -3,11 +3,11 @@
  */
 
 export interface ICreateFunctionModuleParams {
-  function_group_name: string;
-  function_module_name: string;
+  functionGroupName: string;
+  functionModuleName: string;
   description: string;
-  transport_request?: string;
-  master_system?: string;
+  transportRequest?: string;
+  masterSystem?: string;
   responsible?: string;
 }
 
@@ -18,11 +18,11 @@ export interface IReadFunctionModuleParams {
 }
 
 export interface IUpdateFunctionModuleParams {
-  function_group_name: string;
-  function_module_name: string;
-  lock_handle: string;
-  source_code: string;
-  transport_request?: string;
+  functionGroupName: string;
+  functionModuleName: string;
+  lockHandle: string;
+  sourceCode: string;
+  transportRequest?: string;
 }
 
 export interface IDeleteFunctionModuleParams {

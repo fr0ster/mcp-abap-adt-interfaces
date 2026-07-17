@@ -14,9 +14,15 @@ export interface ICreateDataElementParams {
   description?: string;
   package_name: string;
   transport_request?: string;
-  master_system?: string;
+  masterSystem?: string;
   responsible?: string;
-  type_kind?: DataElementTypeKind;
+  masterLanguage?: string;
+  type_kind?:
+    | 'domain'
+    | 'predefinedAbapType'
+    | 'refToPredefinedAbapType'
+    | 'refToDictionaryType'
+    | 'refToClifType';
   type_name?: string;
   data_type?: string;
   length?: number;
@@ -43,9 +49,14 @@ export interface IReadDataElementParams {
 export interface IUpdateDataElementParams {
   data_element_name: string;
   description?: string;
-  package_name?: string;
+  package_name: string;
   transport_request?: string;
-  type_kind?: DataElementTypeKind;
+  type_kind?:
+    | 'domain'
+    | 'predefinedAbapType'
+    | 'refToPredefinedAbapType'
+    | 'refToDictionaryType'
+    | 'refToClifType';
   type_name?: string;
   data_type?: string;
   length?: number;
@@ -62,6 +73,7 @@ export interface IUpdateDataElementParams {
   change_document?: boolean;
   left_to_right_direction?: boolean;
   deactivate_bidi_filtering?: boolean;
+  activate?: boolean;
 }
 
 export interface IDeleteDataElementParams {

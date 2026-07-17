@@ -4,8 +4,7 @@
 
 export interface IFixedValue {
   low: string;
-  high?: string;
-  description?: string;
+  text: string;
 }
 
 export interface ICreateDomainParams {
@@ -13,8 +12,9 @@ export interface ICreateDomainParams {
   description?: string;
   package_name: string;
   transport_request?: string;
-  master_system?: string;
+  masterSystem?: string;
   responsible?: string;
+  masterLanguage?: string;
   datatype?: string;
   length?: number;
   decimals?: number;
@@ -22,6 +22,7 @@ export interface ICreateDomainParams {
   lowercase?: boolean;
   sign_exists?: boolean;
   value_table?: string;
+  activate?: boolean;
   fixed_values?: IFixedValue[];
 }
 
@@ -33,9 +34,9 @@ export interface IReadDomainParams {
 export interface IUpdateDomainParams {
   domain_name: string;
   description?: string;
-  package_name?: string;
+  package_name: string;
   transport_request?: string;
-  master_system?: string;
+  masterSystem?: string;
   responsible?: string;
   datatype?: string;
   length?: number;
@@ -44,6 +45,7 @@ export interface IUpdateDomainParams {
   lowercase?: boolean;
   sign_exists?: boolean;
   value_table?: string;
+  activate?: boolean;
   fixed_values?: IFixedValue[];
 }
 

@@ -9,6 +9,7 @@ export interface ICreateClassParams {
   transport_request?: string;
   master_system?: string;
   responsible?: string;
+  masterLanguage?: string;
   superclass?: string;
   final?: boolean;
   abstract?: boolean;

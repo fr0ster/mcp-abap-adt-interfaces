@@ -3,11 +3,48 @@
  */
 
 export type BehaviorDefinitionImplementationType =
-  | 'managed'
-  | 'unmanaged'
-  | 'abstract'
-  | 'projection'
-  | string;
+  | 'Managed'
+  | 'Unmanaged'
+  | 'Abstract'
+  | 'Projection';
+
+/**
+ * Parameters for validating a behavior definition before creation
+ */
+export interface IBehaviorDefinitionValidationParams {
+  /** Name of the behavior definition object */
+  objname: string;
+  /** Root entity name */
+  rootEntity: string;
+  /** Description of the behavior definition */
+  description: string;
+  /** Package name where the object will be created */
+  package: string;
+  /** Implementation type (Managed, Unmanaged, Abstract, Projection) */
+  implementationType: BehaviorDefinitionImplementationType;
+}
+
+/**
+ * Parameters for creating a behavior definition
+ */
+export interface IBehaviorDefinitionCreateParams {
+  /** Name of the behavior definition */
+  name: string;
+  /** Description */
+  description: string;
+  /** Package name */
+  package: string;
+  /** Implementation type */
+  implementationType: BehaviorDefinitionImplementationType;
+  /** Language (default: EN) */
+  language?: string;
+  /** Responsible user */
+  responsible?: string;
+  /** Master system */
+  masterSystem?: string;
+  /** Transport request number */
+  transportRequest?: string;
+}
 
 export interface ICreateBehaviorDefinitionParams {
   behavior_definition_name: string;
@@ -26,10 +63,10 @@ export interface IReadBehaviorDefinitionParams {
 }
 
 export interface IUpdateBehaviorDefinitionParams {
-  behavior_definition_name: string;
-  source_code: string;
-  lock_handle: string;
-  transport_request?: string;
+  name: string;
+  sourceCode: string;
+  lockHandle: string;
+  transportRequest?: string;
 }
 
 export interface IDeleteBehaviorDefinitionParams {
