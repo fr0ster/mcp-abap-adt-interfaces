@@ -10,3 +10,5 @@ tsconfig.build.tsbuildinfo
 
 # Git worktrees
 .worktrees/
+
+type-promotion-diff.md
