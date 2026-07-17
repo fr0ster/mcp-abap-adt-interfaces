@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [9.2.1] - 2026-07-17
+
+### Deprecated
+- **`source_code` on create-params marked `@deprecated`** in `ICreateAccessControlParams`, `ICreateServiceDefinitionParams`, and `ICreateEnhancementParams`. The field is a no-op on create — create posts metadata only; source is written by the update flow (`IUpdate*Params.source_code`). This resolves the drift with `@mcp-abap-adt/adt-clients` 7.4.3, which stopped populating it. The field is kept (not removed) to avoid a breaking change; hard removal is deferred to the planned type-consolidation pass. `IUpdate*Params.source_code` (live) is untouched.
+
 ## [9.2.0] - 2026-07-03
 
 ### Added
