@@ -74,3 +74,33 @@ export interface IUnitTestState extends IAdtObjectState {
   runStatus?: unknown;
   runResult?: unknown;
 }
+
+// Unit test definition types (local to adt-clients)
+export interface IClassUnitTestDefinition {
+  containerClass: string;
+  testClass: string;
+}
+
+export interface IClassUnitTestRunOptions {
+  title?: string;
+  context?: string;
+  scope?: {
+    ownTests?: boolean;
+    foreignTests?: boolean;
+    addForeignTestsAsPreview?: boolean;
+  };
+  riskLevel?: {
+    harmless?: boolean;
+    dangerous?: boolean;
+    critical?: boolean;
+  };
+  duration?: {
+    short?: boolean;
+    medium?: boolean;
+    long?: boolean;
+  };
+}
+
+// Re-export with aliases for backward compatibility
+export type ClassUnitTestDefinition = IClassUnitTestDefinition;
+export type ClassUnitTestRunOptions = IClassUnitTestRunOptions;

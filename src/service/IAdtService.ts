@@ -1,4 +1,10 @@
-import type { ServiceBindingVariant } from '../adt/IAdtServiceBinding';
+import type { IAdtObject, IAdtOperationOptions } from '../adt/IAdtObject';
+import type {
+  IDeleteServiceBindingParams,
+  IServiceBindingConfig,
+  IServiceBindingState,
+  ServiceBindingVariant,
+} from '../adt/IAdtServiceBinding';
 import type { IAdtResponse } from '../connection/IAbapConnection';
 
 export type ServiceBindingType = 'ODATA' | 'INA' | 'SQL';
@@ -101,7 +107,8 @@ export interface ICreateAndGenerateServiceBindingParams
 export type ICreateAndGenerateServiceBindingParamsLegacy =
   ICreateAndGenerateServiceBindingParams;
 
-export interface IAdtService {
+export interface IAdtServiceBinding
+  extends IAdtObject<IServiceBindingConfig, IServiceBindingState> {
   getServiceBindingTypes(): Promise<IAdtResponse>;
   validateServiceBinding(
     params: IValidateServiceBindingParams,
@@ -121,6 +128,9 @@ export interface IAdtService {
   ): Promise<IAdtResponse>;
   activateServiceBinding(
     params: IActivateServiceBindingParams,
+  ): Promise<IAdtResponse>;
+  deleteServiceBinding(
+    params: IDeleteServiceBindingParams,
   ): Promise<IAdtResponse>;
   generateServiceBinding(
     params: IGenerateServiceBindingParams,
@@ -147,3 +157,12 @@ export interface IAdtService {
     params: IClassifyServiceBindingParams,
   ): Promise<IAdtResponse>;
 }
+
+export type AdtServiceBindingType = IAdtObject<
+  IServiceBindingConfig,
+  IServiceBindingState
+>;
+
+// Backward compatibility aliases
+export type IAdtService = IAdtServiceBinding;
+export type IAdtServiceOperationOptions = IAdtOperationOptions;

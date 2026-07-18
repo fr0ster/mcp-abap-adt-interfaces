@@ -1,12 +1,8 @@
 /**
  * Feature Toggle (FTG2/FT) ADT operation parameter interfaces (low-level)
- *
- * Note: the low-level params, the nested shapes they reference, and
- * IFeatureToggleConfig/IFeatureToggleState are promoted here. The
- * domain-object type (IFeatureToggleObject) is out of scope for this task
- * and is promoted separately.
  */
 
+import type { IAdtObject } from './IAdtObject';
 import type { IAdtObjectState } from './IAdtObjectState';
 
 export type FeatureToggleState = 'on' | 'off' | 'undefined';
@@ -124,4 +120,31 @@ export interface IFeatureToggleState extends IAdtObjectState {
   runtimeState?: IFeatureToggleRuntimeState;
   checkStateResult?: IFeatureToggleCheckStateResult;
   sourceResult?: IFeatureToggleSource;
+}
+
+export interface IFeatureToggleObject
+  extends IAdtObject<IFeatureToggleConfig, IFeatureToggleState> {
+  switchOn(
+    config: Partial<IFeatureToggleConfig>,
+    opts: { transportRequest: string; userSpecific?: boolean },
+  ): Promise<IFeatureToggleState>;
+
+  switchOff(
+    config: Partial<IFeatureToggleConfig>,
+    opts: { transportRequest: string; userSpecific?: boolean },
+  ): Promise<IFeatureToggleState>;
+
+  getRuntimeState(
+    config: Partial<IFeatureToggleConfig>,
+  ): Promise<IFeatureToggleState>;
+
+  checkState(
+    config: Partial<IFeatureToggleConfig>,
+    opts?: { userSpecific?: boolean },
+  ): Promise<IFeatureToggleState>;
+
+  readSource(
+    config: Partial<IFeatureToggleConfig>,
+    version?: 'active' | 'inactive',
+  ): Promise<IFeatureToggleState>;
 }
