@@ -1,11 +1,8 @@
 /**
  * Transformation ADT operation parameter interfaces (low-level)
- *
- * Note: only the low-level params + the nested shapes they reference are
- * promoted here. Config/State/domain-object types (ITransformationConfig,
- * ITransformationState, etc.) are out of scope for this task and are
- * promoted separately.
  */
+
+import type { IAdtObjectState } from './IAdtObjectState';
 
 export type TransformationType = 'SimpleTransformation' | 'XSLTProgram';
 
@@ -30,3 +27,17 @@ export interface IDeleteTransformationParams {
   transformation_name: string;
   transport_request?: string;
 }
+
+// Builder configuration (camelCase)
+export interface ITransformationConfig {
+  transformationName: string;
+  masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE), then EN
+  transformationType: TransformationType;
+  packageName?: string;
+  transportRequest?: string;
+  description?: string;
+  sourceCode?: string;
+}
+
+// Uses standard IAdtObjectState fields: readResult, metadataResult, transportResult, etc.
+export interface ITransformationState extends IAdtObjectState {}

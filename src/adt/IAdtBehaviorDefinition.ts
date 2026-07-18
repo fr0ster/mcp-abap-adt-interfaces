@@ -2,6 +2,9 @@
  * Behavior Definition ADT operation parameter interfaces (snake_case, low-level)
  */
 
+import type { IAdtResponse as AxiosResponse } from '../connection/IAbapConnection';
+import type { IAdtObjectState } from './IAdtObjectState';
+
 export type BehaviorDefinitionImplementationType =
   | 'Managed'
   | 'Unmanaged'
@@ -72,4 +75,40 @@ export interface IUpdateBehaviorDefinitionParams {
 export interface IDeleteBehaviorDefinitionParams {
   behavior_definition_name: string;
   transport_request?: string;
+}
+
+// Builder configuration (camelCase)
+// Note: packageName, description, implementationType are required for create/validate operations (validated in builder methods)
+// rootEntity is required for validate operations
+export interface IBehaviorDefinitionConfig {
+  name: string; // Required
+  masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE), then EN
+  packageName?: string; // Required for create/validate operations, optional for others
+  transportRequest?: string; // Only optional parameter
+  description?: string; // Required for create/validate operations, optional for others
+  implementationType?: 'Managed' | 'Unmanaged' | 'Abstract' | 'Projection'; // Required for create/validate operations, optional for others
+  rootEntity?: string; // Required for validate operations, optional for others
+  sourceCode?: string;
+  onLock?: (lockHandle: string) => void;
+}
+
+/**
+ * State maintained by the Behavior Definition Builder
+ */
+export interface IBehaviorDefinitionState extends IAdtObjectState {
+  /** Name of the behavior definition */
+  name?: string;
+  /** Lock result */
+  lockResult?: AxiosResponse<unknown>;
+  /** Update source result (separate from updateResult) */
+  updateSourceResult?: AxiosResponse<unknown>;
+  /** Check results (array for multiple checks) */
+  checkResults?: AxiosResponse<unknown>[];
+  /** Delete check result */
+  deleteCheckResult?: AxiosResponse<unknown>;
+  /** Validation result */
+  validationResult?: AxiosResponse<unknown>;
+  // All operation results are in IAdtObjectState:
+  // validationResponse, createResult, lockHandle, updateResult, checkResult,
+  // unlockResult, activateResult, deleteResult, readResult, transportResult, errors
 }

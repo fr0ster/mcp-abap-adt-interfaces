@@ -1,11 +1,15 @@
 /**
  * Feature Toggle (FTG2/FT) ADT operation parameter interfaces (low-level)
  *
- * Note: only the low-level params + the nested shapes they reference are
- * promoted here. Config/State/domain-object types (IFeatureToggleConfig,
- * IFeatureToggleState, IFeatureToggleObject, FeatureToggleState, etc.) are
- * out of scope for this task and are promoted separately.
+ * Note: the low-level params, the nested shapes they reference, and
+ * IFeatureToggleConfig/IFeatureToggleState are promoted here. The
+ * domain-object type (IFeatureToggleObject) is out of scope for this task
+ * and is promoted separately.
  */
+
+import type { IAdtObjectState } from './IAdtObjectState';
+
+export type FeatureToggleState = 'on' | 'off' | 'undefined';
 
 export interface IFeatureToggleReleasePlan {
   version: string;
@@ -75,4 +79,49 @@ export interface IToggleFeatureToggleParams {
   state: 'on' | 'off';
   is_user_specific: boolean;
   transport_request?: string;
+}
+
+export interface IFeatureToggleClientLevel {
+  client: string;
+  description?: string;
+  state: FeatureToggleState;
+}
+
+export interface IFeatureToggleUserLevel {
+  user: string;
+  state: FeatureToggleState;
+}
+
+export interface IFeatureToggleRuntimeState {
+  name: string;
+  clientState: FeatureToggleState;
+  userState: FeatureToggleState;
+  clientChangedBy?: string;
+  clientChangedOn?: string;
+  clientStates: IFeatureToggleClientLevel[];
+  userStates: IFeatureToggleUserLevel[];
+}
+
+export interface IFeatureToggleCheckStateResult {
+  currentState: FeatureToggleState;
+  transportPackage?: string;
+  transportUri?: string;
+  customizingTransportAllowed: boolean;
+}
+
+export interface IFeatureToggleConfig {
+  featureToggleName: string;
+  packageName?: string;
+  description?: string;
+  transportRequest?: string;
+  masterSystem?: string;
+  responsible?: string;
+  source?: IFeatureToggleSource;
+  onLock?: (lockHandle: string) => void;
+}
+
+export interface IFeatureToggleState extends IAdtObjectState {
+  runtimeState?: IFeatureToggleRuntimeState;
+  checkStateResult?: IFeatureToggleCheckStateResult;
+  sourceResult?: IFeatureToggleSource;
 }

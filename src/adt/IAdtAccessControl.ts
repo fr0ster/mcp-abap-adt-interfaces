@@ -2,6 +2,9 @@
  * Access Control (DCL) ADT operation parameter interfaces (snake_case, low-level)
  */
 
+import type { IAdtResponse } from '../connection/IAbapConnection';
+import type { IAdtObjectState } from './IAdtObjectState';
+
 export interface ICreateAccessControlParams {
   access_control_name: string;
   description?: string;
@@ -26,4 +29,18 @@ export interface IUpdateAccessControlParams {
 export interface IDeleteAccessControlParams {
   access_control_name: string;
   transport_request?: string;
+}
+
+// Builder configuration (camelCase)
+export interface IAccessControlConfig {
+  accessControlName: string;
+  masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE), then EN
+  packageName?: string;
+  transportRequest?: string;
+  description?: string;
+  sourceCode?: string;
+}
+
+export interface IAccessControlState extends IAdtObjectState {
+  readSourceResult?: IAdtResponse;
 }

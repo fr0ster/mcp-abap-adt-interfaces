@@ -2,6 +2,8 @@
  * Enhancement ADT operation parameter interfaces (snake_case, low-level)
  */
 
+import type { IAdtObjectState } from './IAdtObjectState';
+
 export type EnhancementType =
   | 'enhoxh'
   | 'enhoxhb'
@@ -59,4 +61,29 @@ export interface IValidateEnhancementParams {
   enhancement_type: EnhancementType;
   package_name?: string;
   description?: string;
+}
+
+/**
+ * AdtEnhancement configuration (camelCase)
+ * Used by high-level IAdtObject implementation
+ */
+export interface IEnhancementConfig {
+  enhancementName: string;
+  masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE), then EN
+  enhancementType: EnhancementType;
+  description?: string;
+  packageName?: string;
+  transportRequest?: string;
+  sourceCode?: string;
+  enhancementSpot?: string;
+  badiDefinition?: string;
+}
+
+/**
+ * AdtEnhancement state
+ * Extends base IAdtObjectState with enhancement-specific fields
+ */
+export interface IEnhancementState extends IAdtObjectState {
+  enhancementType?: EnhancementType;
+  sourceCode?: string;
 }

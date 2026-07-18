@@ -8,25 +8,45 @@
 export type { HttpError, XmlNode } from './adt/AdtTypes';
 export { AdtOperationError } from './adt/AdtTypes';
 export type {
+  IAccessControlConfig,
+  IAccessControlState,
   ICreateAccessControlParams,
   IDeleteAccessControlParams,
   IReadAccessControlParams,
   IUpdateAccessControlParams,
 } from './adt/IAdtAccessControl';
 export type {
+  IAppendStructureConfig,
+  IAppendStructureState,
+  ICreateAppendStructureParams,
+  IDeleteAppendStructureParams,
+  IUpdateAppendStructureParams,
+} from './adt/IAdtAppendStructure';
+export type {
+  IAuthorizationFieldConfig,
+  IAuthorizationFieldState,
+  ICreateAuthorizationFieldParams,
+} from './adt/IAdtAuthorizationField';
+export type {
   BehaviorDefinitionImplementationType,
+  IBehaviorDefinitionConfig,
+  IBehaviorDefinitionState,
   ICreateBehaviorDefinitionParams,
   IDeleteBehaviorDefinitionParams,
   IReadBehaviorDefinitionParams,
   IUpdateBehaviorDefinitionParams,
 } from './adt/IAdtBehaviorDefinition';
 export type {
+  IBehaviorImplementationConfig,
+  IBehaviorImplementationState,
   ICreateBehaviorImplementationParams,
   IDeleteBehaviorImplementationParams,
   IReadBehaviorImplementationParams,
   IUpdateBehaviorImplementationParams,
 } from './adt/IAdtBehaviorImplementation';
 export type {
+  IClassConfig,
+  IClassState,
   ICreateClassParams,
   IDeleteClassParams,
   IReadClassParams,
@@ -35,12 +55,16 @@ export type {
 export type {
   DataElementTypeKind,
   ICreateDataElementParams,
+  IDataElementConfig,
+  IDataElementState,
   IDeleteDataElementParams,
   IReadDataElementParams,
   IUpdateDataElementParams,
 } from './adt/IAdtDataElement';
 export type {
   ICreateDdlParams,
+  IDdlConfig,
+  IDdlState,
   IDeleteDdlParams,
   IReadDdlParams,
   IUpdateDdlParams,
@@ -48,6 +72,8 @@ export type {
 export type {
   ICreateDomainParams,
   IDeleteDomainParams,
+  IDomainConfig,
+  IDomainState,
   IFixedValue,
   IReadDomainParams,
   IUpdateDomainParams,
@@ -56,24 +82,55 @@ export type {
   EnhancementType,
   ICreateEnhancementParams,
   IDeleteEnhancementParams,
+  IEnhancementConfig,
+  IEnhancementState,
   IReadEnhancementParams,
   IUpdateEnhancementParams,
 } from './adt/IAdtEnhancement';
 export type {
+  FeatureToggleState,
+  ICreateFeatureToggleParams,
+  IDeleteFeatureToggleParams,
+  IFeatureToggleAttribute,
+  IFeatureToggleCheckStateResult,
+  IFeatureToggleClientLevel,
+  IFeatureToggleConfig,
+  IFeatureToggleHeader,
+  IFeatureTogglePlanning,
+  IFeatureToggleReleasePlan,
+  IFeatureToggleRollout,
+  IFeatureToggleRuntimeState,
+  IFeatureToggleSource,
+  IFeatureToggleState,
+  IFeatureToggleUserLevel,
+  IToggleFeatureToggleParams,
+} from './adt/IAdtFeatureToggle';
+export type {
   ICreateFunctionGroupParams,
   IDeleteFunctionGroupParams,
+  IFunctionGroupConfig,
+  IFunctionGroupState,
   IReadFunctionGroupParams,
   IUpdateFunctionGroupParams,
 } from './adt/IAdtFunctionGroup';
 export type {
+  ICreateFunctionIncludeParams,
+  IFunctionIncludeConfig,
+  IFunctionIncludeState,
+} from './adt/IAdtFunctionInclude';
+export type {
   ICreateFunctionModuleParams,
   IDeleteFunctionModuleParams,
+  IFunctionModuleConfig,
+  IFunctionModuleState,
   IReadFunctionModuleParams,
   IUpdateFunctionModuleParams,
 } from './adt/IAdtFunctionModule';
 export type {
   ICreateInterfaceParams,
   IDeleteInterfaceParams,
+  IInterfaceConfig,
+  IInterfaceState,
   IReadInterfaceParams,
   IUpdateInterfaceParams,
 } from './adt/IAdtInterface';
@@ -82,6 +139,12 @@ export type {
   ICreateMessageClassParams,
   IDeleteMessageClassMessageParams,
   IDeleteMessageClassParams,
+  IMessageClassConfig,
+  IMessageClassMessageConfig,
+  IMessageClassMessageState,
+  IMessageClassState,
+  IParsedMessage,
+  IParsedMessageClass,
   IReadMessageClassParams,
   IUpdateMessageClassMessageParams,
   IUpdateMessageClassParams,
@@ -89,7 +152,9 @@ export type {
 export type {
   ICreateMetadataExtensionParams,
   IDeleteMetadataExtensionParams,
+  IMetadataExtensionConfig,
   IMetadataExtensionCreateParams,
+  IMetadataExtensionState,
   IMetadataExtensionValidationParams,
   IReadMetadataExtensionParams,
   IUpdateMetadataExtensionParams,
@@ -105,21 +170,42 @@ export type { IAdtObjectConfig, IAdtObjectState } from './adt/IAdtObjectState';
 export type {
   ICreatePackageParams,
   IDeletePackageParams,
+  IPackageConfig,
+  IPackageState,
   IReadPackageParams,
   IUpdatePackageParams,
 } from './adt/IAdtPackage';
 export type {
   ICreateProgramParams,
   IDeleteProgramParams,
+  IProgramConfig,
+  IProgramState,
   IReadProgramParams,
   IUpdateProgramParams,
 } from './adt/IAdtProgram';
+export type {
+  ICreateScalarFunctionParams,
+  IDeleteScalarFunctionParams,
+  IScalarFunctionConfig,
+  IScalarFunctionState,
+  IUpdateScalarFunctionParams,
+} from './adt/IAdtScalarFunction';
+export type {
+  ICreateScalarFunctionImplementationParams,
+  IDeleteScalarFunctionImplementationParams,
+  IScalarFunctionImplementationConfig,
+  IScalarFunctionImplementationState,
+  IUpdateScalarFunctionImplementationParams,
+  ScalarFunctionEngine,
+} from './adt/IAdtScalarFunctionImplementation';
 export type {
   DesiredPublicationState,
   GeneratedServiceType,
   ICreateServiceBindingParams,
   IDeleteServiceBindingParams,
   IReadServiceBindingParams,
+  IServiceBindingConfig,
+  IServiceBindingState,
   IUpdateServiceBindingParams,
   ServiceBindingType,
   ServiceBindingVariant,
@@ -130,24 +216,34 @@ export type {
   ICreateServiceDefinitionParams,
   IDeleteServiceDefinitionParams,
   IReadServiceDefinitionParams,
+  IServiceDefinitionConfig,
+  IServiceDefinitionState,
   IUpdateServiceDefinitionParams,
 } from './adt/IAdtServiceDefinition';
 export type {
   ICreateStructureParams,
   IDeleteStructureParams,
   IReadStructureParams,
+  IStructureConfig,
+  IStructureField,
+  IStructureInclude,
+  IStructureState,
   IUpdateStructureParams,
 } from './adt/IAdtStructure';
 export type {
   ICreateTableParams,
   IDeleteTableParams,
   IReadTableParams,
+  ITableConfig,
+  ITableState,
   IUpdateTableParams,
 } from './adt/IAdtTable';
 export type {
   ICreateTableTypeParams,
   IDeleteTableTypeParams,
   IReadTableTypeParams,
+  ITableTypeConfig,
+  ITableTypeState,
   IUpdateTableTypeParams,
   TableTypeAccessType,
   TableTypePrimaryKeyDefinition,
@@ -155,17 +251,29 @@ export type {
   TableTypeRowKind,
 } from './adt/IAdtTableType';
 export type {
+  ICreateTransformationParams,
+  IDeleteTransformationParams,
+  ITransformationConfig,
+  ITransformationState,
+  IUpdateTransformationParams,
+  TransformationType,
+} from './adt/IAdtTransformation';
+export type {
   ICreateTransportParams,
   IDeleteTransportParams,
   IReadTransportParams,
+  ITransportConfig,
+  ITransportState,
   IUpdateTransportParams,
 } from './adt/IAdtTransport';
 export type {
   IReadUnitTestParams,
   IRunUnitTestParams,
+  IUnitTestConfig,
   IUnitTestDuration,
   IUnitTestRiskLevel,
   IUnitTestScope,
+  IUnitTestState,
 } from './adt/IAdtUnitTest';
 export type { AuthType as AuthTypeEnum } from './auth/AuthType';
 // Auth domain

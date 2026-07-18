@@ -2,6 +2,9 @@
  * Service Binding ADT operation parameter interfaces (snake_case, low-level)
  */
 
+import type { IAdtResponse } from '../connection/IAbapConnection';
+import type { IAdtObjectState } from './IAdtObjectState';
+
 export type ServiceBindingType = 'ODATA' | 'INA' | 'SQL';
 export type ServiceBindingVersion = 'V2' | 'V4' | '0001' | '0000' | string;
 export type GeneratedServiceType = 'odatav2' | 'odatav4';
@@ -81,4 +84,28 @@ export interface IUpdateServiceBindingParams {
 export interface IDeleteServiceBindingParams {
   bindingName: string;
   transportRequest?: string;
+}
+
+export interface IServiceBindingConfig {
+  bindingName: string;
+  packageName?: string;
+  description?: string;
+  serviceDefinitionName?: string;
+  serviceName?: string;
+  serviceVersion?: string;
+  bindingVariant?: ServiceBindingVariant;
+  masterLanguage?: string;
+  masterSystem?: string;
+  responsible?: string;
+  desiredPublicationState?: DesiredPublicationState;
+  serviceType?: GeneratedServiceType;
+  transportRequest?: string;
+  runTransportCheck?: boolean;
+}
+
+export interface IServiceBindingState extends IAdtObjectState {
+  serviceTypesResult?: IAdtResponse;
+  inactiveCheckResult?: IAdtResponse;
+  generatedInfoResult?: IAdtResponse;
+  activeCheckResult?: IAdtResponse;
 }

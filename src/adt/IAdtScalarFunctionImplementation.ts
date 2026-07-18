@@ -1,11 +1,8 @@
 /**
  * ScalarFunctionImplementation (DSFI/SFI) ADT operation parameter interfaces (low-level)
- *
- * Note: only the low-level params + the nested shapes they reference are
- * promoted here. Config/State/domain-object types (IScalarFunctionImplementationConfig,
- * IScalarFunctionImplementationState, etc.) are out of scope for this task and
- * are promoted separately.
  */
+
+import type { IAdtObjectState } from './IAdtObjectState';
 
 export type ScalarFunctionEngine = 'sqlEngine' | 'amdpEngine';
 
@@ -30,4 +27,19 @@ export interface IUpdateScalarFunctionImplementationParams {
 export interface IDeleteScalarFunctionImplementationParams {
   implementation_name: string;
   transport_request?: string;
+}
+
+export interface IScalarFunctionImplementationConfig {
+  implementationName: string;
+  scalarFunctionName: string;
+  engineValue?: ScalarFunctionEngine;
+  masterLanguage?: string;
+  packageName?: string;
+  transportRequest?: string;
+  description?: string;
+  sourceCode?: string;
+}
+
+export interface IScalarFunctionImplementationState extends IAdtObjectState {
+  validationSupported?: boolean;
 }

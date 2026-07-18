@@ -2,6 +2,8 @@
  * Domain ADT operation parameter interfaces (snake_case, low-level)
  */
 
+import type { IAdtObjectState } from './IAdtObjectState';
+
 export interface IFixedValue {
   low: string;
   text: string;
@@ -53,3 +55,24 @@ export interface IDeleteDomainParams {
   domain_name: string;
   transport_request?: string;
 }
+
+// Builder configuration (camelCase)
+// Note: packageName is required for create/update operations (validated in builder methods)
+// description is required for create/update/validate operations
+export interface IDomainConfig {
+  domainName: string;
+  masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE), then EN
+  packageName?: string; // Required for create/update operations, optional for others
+  transportRequest?: string; // Only optional parameter
+  description?: string; // Required for create/update/validate operations, optional for others
+  datatype?: string;
+  length?: number;
+  decimals?: number;
+  conversion_exit?: string;
+  lowercase?: boolean;
+  sign_exists?: boolean;
+  value_table?: string;
+  fixed_values?: IFixedValue[];
+}
+
+export interface IDomainState extends IAdtObjectState {}

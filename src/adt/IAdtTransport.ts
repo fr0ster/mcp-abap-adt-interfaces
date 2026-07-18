@@ -2,6 +2,9 @@
  * Transport ADT operation parameter interfaces (snake_case, low-level)
  */
 
+import type { IAdtResponse } from '../connection/IAbapConnection';
+import type { IAdtObjectState } from './IAdtObjectState';
+
 export interface ICreateTransportParams {
   transport_type?: string;
   description: string;
@@ -29,4 +32,20 @@ export interface IUpdateTransportParams {
 
 export interface IDeleteTransportParams {
   transport_number: string;
+}
+
+// Transport request configuration (camelCase)
+export interface ITransportConfig {
+  description: string;
+  transportType?: 'workbench' | 'customizing';
+  targetSystem?: string;
+  owner?: string;
+  transportNumber?: string; // Set after create, used for read operations
+}
+
+// Transport state
+export interface ITransportState extends IAdtObjectState {
+  transportNumber?: string;
+  taskNumber?: string;
+  listResult?: IAdtResponse;
 }

@@ -2,6 +2,8 @@
  * Unit Test ADT operation parameter interfaces (snake_case, low-level)
  */
 
+import type { IAdtObjectState } from './IAdtObjectState';
+
 export interface IUnitTestScope {
   own_tests?: boolean;
   foreign_tests?: boolean;
@@ -34,4 +36,41 @@ export interface IRunUnitTestParams {
 
 export interface IReadUnitTestParams {
   run_id: string;
+}
+
+// Unit test configuration (camelCase)
+export interface IUnitTestConfig {
+  tests?: Array<{
+    containerClass: string;
+    testClass: string;
+  }>; // Optional: required for test run, not needed for test class creation
+  options?: {
+    title?: string;
+    context?: string;
+    scope?: {
+      ownTests?: boolean;
+      foreignTests?: boolean;
+      addForeignTestsAsPreview?: boolean;
+    };
+    riskLevel?: {
+      harmless?: boolean;
+      dangerous?: boolean;
+      critical?: boolean;
+    };
+    duration?: {
+      short?: boolean;
+      medium?: boolean;
+      long?: boolean;
+    };
+  };
+  runId?: string; // Set after create, used for read operations
+  status?: unknown;
+  result?: unknown;
+}
+
+// Unit test state
+export interface IUnitTestState extends IAdtObjectState {
+  runId?: string;
+  runStatus?: unknown;
+  runResult?: unknown;
 }
