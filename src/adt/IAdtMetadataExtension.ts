@@ -1,6 +1,23 @@
 /**
- * Metadata Extension ADT operation parameter interfaces (snake_case, low-level)
+ * Metadata Extension ADT operation parameter interfaces (low-level)
  */
+
+// Promoted verbatim from adt-clients src/core/metadataExtension/types.ts
+export interface IMetadataExtensionValidationParams {
+  name: string;
+  description: string;
+  packageName: string;
+}
+
+export interface IMetadataExtensionCreateParams {
+  name: string;
+  description: string;
+  packageName: string;
+  transportRequest?: string;
+  masterLanguage?: string;
+  masterSystem?: string;
+  responsible?: string;
+}
 
 export interface ICreateMetadataExtensionParams {
   metadata_extension_name: string;

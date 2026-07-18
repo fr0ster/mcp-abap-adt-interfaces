@@ -89,6 +89,8 @@ export type {
 export type {
   ICreateMetadataExtensionParams,
   IDeleteMetadataExtensionParams,
+  IMetadataExtensionCreateParams,
+  IMetadataExtensionValidationParams,
   IReadMetadataExtensionParams,
   IUpdateMetadataExtensionParams,
 } from './adt/IAdtMetadataExtension';
