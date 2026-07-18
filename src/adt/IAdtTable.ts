@@ -7,8 +7,9 @@ export interface ICreateTableParams {
   package_name: string;
   transport_request?: string;
   ddl_code?: string;
-  master_system?: string;
+  masterSystem?: string;
   responsible?: string;
+  masterLanguage?: string;
 }
 
 export interface IReadTableParams {
@@ -20,6 +21,7 @@ export interface IUpdateTableParams {
   table_name: string;
   ddl_code: string;
   transport_request?: string;
+  activate?: boolean;
 }
 
 export interface IDeleteTableParams {

@@ -3,12 +3,13 @@
  */
 
 export interface ICreateStructureParams {
-  structure_name: string;
+  structureName: string;
   description: string;
-  package_name: string;
-  transport_request?: string;
-  master_system?: string;
+  packageName: string;
+  transportRequest?: string;
+  masterSystem?: string;
   responsible?: string;
+  masterLanguage?: string;
 }
 
 export interface IReadStructureParams {
@@ -17,9 +18,9 @@ export interface IReadStructureParams {
 }
 
 export interface IUpdateStructureParams {
-  structure_name: string;
-  ddl_code: string;
-  transport_request?: string;
+  structureName: string;
+  ddlCode: string;
+  transportRequest?: string;
 }
 
 export interface IDeleteStructureParams {

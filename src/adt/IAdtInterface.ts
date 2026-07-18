@@ -3,12 +3,13 @@
  */
 
 export interface ICreateInterfaceParams {
-  interface_name: string;
+  interfaceName: string;
   description: string;
-  package_name: string;
-  transport_request?: string;
-  master_system?: string;
+  packageName: string;
+  transportRequest?: string;
+  masterSystem?: string;
   responsible?: string;
+  masterLanguage?: string;
 }
 
 export interface IReadInterfaceParams {
@@ -20,6 +21,12 @@ export interface IUpdateInterfaceParams {
   interface_name: string;
   source_code: string;
   transport_request?: string;
+}
+
+export interface IUpdateInterfaceSourceParams {
+  interface_name: string;
+  source_code: string;
+  activate?: boolean;
 }
 
 export interface IDeleteInterfaceParams {

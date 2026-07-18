@@ -1,9 +1,9 @@
 export interface ICreateMessageClassParams {
   name: string;
-  description?: string;
-  package_name?: string;
-  master_language?: string;
+  description: string;
+  package_name: string;
   transport_request?: string;
+  master_language?: string;
 }
 export interface IReadMessageClassParams {
   name: string;

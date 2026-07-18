@@ -50,33 +50,35 @@ export const SERVICE_BINDING_VARIANT_MAP: Record<
 };
 
 export interface ICreateServiceBindingParams {
-  binding_name: string;
-  package_name: string;
+  bindingName: string;
+  packageName: string;
   description: string;
-  service_definition_name: string;
-  service_name: string;
-  service_version: string;
-  binding_variant: ServiceBindingVariant;
-  master_language?: string;
-  master_system?: string;
+  serviceDefinitionName: string;
+  serviceName: string;
+  serviceVersion: string;
+  bindingVariant: ServiceBindingVariant;
+  masterLanguage?: string;
+  masterSystem?: string;
   responsible?: string;
-  transport_request?: string;
+  transportRequest?: string;
+  runTransportCheck?: boolean;
+  activateAfterCreate?: boolean;
 }
 
 export interface IReadServiceBindingParams {
-  binding_name: string;
+  bindingName: string;
   version?: 'active' | 'inactive';
 }
 
 export interface IUpdateServiceBindingParams {
-  binding_name: string;
-  desired_publication_state: DesiredPublicationState;
-  service_type: GeneratedServiceType;
-  service_name: string;
-  service_version?: string;
+  bindingName: string;
+  desiredPublicationState: DesiredPublicationState;
+  serviceType: GeneratedServiceType;
+  serviceName: string;
+  serviceVersion?: string;
 }
 
 export interface IDeleteServiceBindingParams {
-  binding_name: string;
-  transport_request?: string;
+  bindingName: string;
+  transportRequest?: string;
 }

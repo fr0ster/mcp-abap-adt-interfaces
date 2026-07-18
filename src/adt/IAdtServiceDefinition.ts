@@ -7,8 +7,9 @@ export interface ICreateServiceDefinitionParams {
   description?: string;
   package_name: string;
   transport_request?: string;
-  master_system?: string;
+  masterSystem?: string;
   responsible?: string;
+  masterLanguage?: string;
 }
 
 export interface IReadServiceDefinitionParams {

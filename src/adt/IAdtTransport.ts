@@ -3,10 +3,18 @@
  */
 
 export interface ICreateTransportParams {
-  description: string;
   transport_type?: string;
+  description: string;
   target_system?: string;
   owner?: string;
+}
+
+export interface IListTransportsParams {
+  user: string;
+  status?: string; // D = modifiable, R = released
+  date_range?: string; // e.g. "20260101-20260326"
+  target_system?: string;
+  request_type?: string; // K = workbench, T = customizing
 }
 
 export interface IReadTransportParams {

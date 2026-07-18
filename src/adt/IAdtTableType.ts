@@ -32,8 +32,9 @@ export interface ICreateTableTypeParams {
   package_name: string;
   description?: string;
   transport_request?: string;
-  master_system?: string;
+  masterSystem?: string;
   responsible?: string;
+  masterLanguage?: string;
 }
 
 export interface IReadTableTypeParams {
@@ -45,11 +46,24 @@ export interface IUpdateTableTypeParams {
   tabletype_name: string;
   description?: string;
   row_type_name: string;
-  row_type_kind?: TableTypeRowKind;
-  access_type?: TableTypeAccessType;
-  primary_key_definition?: TableTypePrimaryKeyDefinition;
-  primary_key_kind?: TableTypePrimaryKeyKind;
+  row_type_kind?:
+    | 'dictionaryType'
+    | 'predefinedAbapType'
+    | 'refToPredefinedAbapType'
+    | 'refToDictionaryType'
+    | 'refToClassOrInterfaceType'
+    | 'rangeTypeOnPredefinedType'
+    | 'rangeTypeOnDataelement';
+  access_type?: 'standard' | 'sorted' | 'hashed' | 'index' | 'notSpecified';
+  primary_key_definition?:
+    | 'standard'
+    | 'rowType'
+    | 'keyComponents'
+    | 'empty'
+    | 'notSpecified';
+  primary_key_kind?: 'unique' | 'nonUnique' | 'notSpecified';
   transport_request?: string;
+  activate?: boolean;
 }
 
 export interface IDeleteTableTypeParams {

@@ -3,14 +3,17 @@
  */
 
 export interface ICreateProgramParams {
-  program_name: string;
+  programName: string;
   description?: string;
-  package_name: string;
-  transport_request?: string;
-  master_system?: string;
+  packageName: string;
+  transportRequest?: string;
+  masterSystem?: string;
   responsible?: string;
-  program_type?: string;
+  masterLanguage?: string;
+  programType?: string;
   application?: string;
+  sourceCode?: string;
+  activate?: boolean;
 }
 
 export interface IReadProgramParams {
@@ -24,7 +27,13 @@ export interface IUpdateProgramParams {
   transport_request?: string;
 }
 
+export interface IUpdateProgramSourceParams {
+  programName: string;
+  sourceCode: string;
+  activate?: boolean;
+}
+
 export interface IDeleteProgramParams {
-  program_name: string;
-  transport_request?: string;
+  programName: string;
+  transportRequest?: string;
 }
