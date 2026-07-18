@@ -14,17 +14,6 @@ export interface ICreateInterfaceParams {
   masterLanguage?: string;
 }
 
-export interface IReadInterfaceParams {
-  interface_name: string;
-  version?: 'active' | 'inactive';
-}
-
-export interface IUpdateInterfaceParams {
-  interface_name: string;
-  source_code: string;
-  transport_request?: string;
-}
-
 export interface IUpdateInterfaceSourceParams {
   interface_name: string;
   source_code: string;

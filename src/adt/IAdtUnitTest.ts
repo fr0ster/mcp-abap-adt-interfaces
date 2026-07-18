@@ -22,22 +22,6 @@ export interface IUnitTestDuration {
   long?: boolean;
 }
 
-export interface IRunUnitTestParams {
-  tests: Array<{
-    container_class: string;
-    test_class: string;
-  }>;
-  title?: string;
-  context?: string;
-  scope?: IUnitTestScope;
-  risk_level?: IUnitTestRiskLevel;
-  duration?: IUnitTestDuration;
-}
-
-export interface IReadUnitTestParams {
-  run_id: string;
-}
-
 // Unit test configuration (camelCase)
 export interface IUnitTestConfig {
   tests?: Array<{

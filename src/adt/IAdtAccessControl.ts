@@ -15,11 +15,6 @@ export interface ICreateAccessControlParams {
   masterLanguage?: string;
 }
 
-export interface IReadAccessControlParams {
-  access_control_name: string;
-  version?: 'active' | 'inactive';
-}
-
 export interface IUpdateAccessControlParams {
   access_control_name: string;
   source_code: string;

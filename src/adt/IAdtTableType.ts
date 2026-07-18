@@ -39,11 +39,6 @@ export interface ICreateTableTypeParams {
   masterLanguage?: string;
 }
 
-export interface IReadTableTypeParams {
-  tabletype_name: string;
-  version?: 'active' | 'inactive';
-}
-
 export interface IUpdateTableTypeParams {
   tabletype_name: string;
   description?: string;

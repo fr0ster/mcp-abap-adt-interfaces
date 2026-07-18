@@ -15,11 +15,6 @@ export interface ICreateServiceDefinitionParams {
   masterLanguage?: string;
 }
 
-export interface IReadServiceDefinitionParams {
-  service_definition_name: string;
-  version?: 'active' | 'inactive';
-}
-
 export interface IUpdateServiceDefinitionParams {
   service_definition_name: string;
   source_code: string;

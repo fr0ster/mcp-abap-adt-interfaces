@@ -17,18 +17,6 @@ export interface ICreateDdlParams {
   masterLanguage?: string;
 }
 
-export interface IReadDdlParams {
-  ddl_name: string;
-  version?: 'active' | 'inactive';
-}
-
-export interface IUpdateDdlParams {
-  ddl_name: string;
-  ddl_source: string;
-  transport_request?: string;
-  lock_handle?: string;
-}
-
 export interface IUpdateDdlSourceParams {
   ddl_name: string;
   ddl_source: string;

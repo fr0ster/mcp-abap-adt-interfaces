@@ -14,11 +14,6 @@ export interface ICreateTableParams {
   masterLanguage?: string;
 }
 
-export interface IReadTableParams {
-  table_name: string;
-  version?: 'active' | 'inactive';
-}
-
 export interface IUpdateTableParams {
   table_name: string;
   ddl_code: string;

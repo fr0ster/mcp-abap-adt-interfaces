@@ -43,11 +43,6 @@ export interface ICreateDataElementParams {
   deactivate_bidi_filtering?: boolean;
 }
 
-export interface IReadDataElementParams {
-  data_element_name: string;
-  version?: 'active' | 'inactive';
-}
-
 export interface IUpdateDataElementParams {
   data_element_name: string;
   description?: string;

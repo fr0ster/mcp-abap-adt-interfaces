@@ -20,20 +20,6 @@ export interface IListTransportsParams {
   request_type?: string; // K = workbench, T = customizing
 }
 
-export interface IReadTransportParams {
-  transport_number: string;
-}
-
-export interface IUpdateTransportParams {
-  transport_number: string;
-  description?: string;
-  target_system?: string;
-}
-
-export interface IDeleteTransportParams {
-  transport_number: string;
-}
-
 // Transport request configuration (camelCase)
 export interface ITransportConfig {
   description: string;

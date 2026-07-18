@@ -14,11 +14,6 @@ export interface ICreateStructureParams {
   masterLanguage?: string;
 }
 
-export interface IReadStructureParams {
-  structure_name: string;
-  version?: 'active' | 'inactive';
-}
-
 export interface IUpdateStructureParams {
   structureName: string;
   ddlCode: string;

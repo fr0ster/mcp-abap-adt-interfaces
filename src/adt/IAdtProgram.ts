@@ -18,17 +18,6 @@ export interface ICreateProgramParams {
   activate?: boolean;
 }
 
-export interface IReadProgramParams {
-  program_name: string;
-  version?: 'active' | 'inactive';
-}
-
-export interface IUpdateProgramParams {
-  program_name: string;
-  source_code: string;
-  transport_request?: string;
-}
-
 export interface IUpdateProgramSourceParams {
   programName: string;
   sourceCode: string;

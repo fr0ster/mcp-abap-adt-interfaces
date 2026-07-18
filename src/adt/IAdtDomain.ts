@@ -28,11 +28,6 @@ export interface ICreateDomainParams {
   fixed_values?: IFixedValue[];
 }
 
-export interface IReadDomainParams {
-  domain_name: string;
-  version?: 'active' | 'inactive';
-}
-
 export interface IUpdateDomainParams {
   domain_name: string;
   description?: string;

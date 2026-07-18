@@ -29,12 +29,6 @@ export interface ICreateEnhancementParams {
   masterLanguage?: string;
 }
 
-export interface IReadEnhancementParams {
-  enhancement_name: string;
-  enhancement_type: EnhancementType;
-  version?: 'active' | 'inactive';
-}
-
 export interface IUpdateEnhancementParams {
   enhancement_name: string;
   enhancement_type: EnhancementType;

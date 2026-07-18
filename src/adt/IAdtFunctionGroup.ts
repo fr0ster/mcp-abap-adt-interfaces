@@ -14,11 +14,6 @@ export interface ICreateFunctionGroupParams {
   masterLanguage?: string;
 }
 
-export interface IReadFunctionGroupParams {
-  function_group_name: string;
-  version?: 'active' | 'inactive';
-}
-
 export interface IUpdateFunctionGroupParams {
   function_group_name: string;
   description?: string;

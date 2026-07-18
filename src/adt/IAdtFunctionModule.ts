@@ -13,12 +13,6 @@ export interface ICreateFunctionModuleParams {
   responsible?: string;
 }
 
-export interface IReadFunctionModuleParams {
-  function_module_name: string;
-  function_group_name: string;
-  version?: 'active' | 'inactive';
-}
-
 export interface IUpdateFunctionModuleParams {
   functionGroupName: string;
   functionModuleName: string;

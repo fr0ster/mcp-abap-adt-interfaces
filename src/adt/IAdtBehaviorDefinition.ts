@@ -49,32 +49,11 @@ export interface IBehaviorDefinitionCreateParams {
   transportRequest?: string;
 }
 
-export interface ICreateBehaviorDefinitionParams {
-  behavior_definition_name: string;
-  description: string;
-  package_name: string;
-  implementation_type: BehaviorDefinitionImplementationType;
-  language?: string;
-  responsible?: string;
-  master_system?: string;
-  transport_request?: string;
-}
-
-export interface IReadBehaviorDefinitionParams {
-  behavior_definition_name: string;
-  version?: 'active' | 'inactive';
-}
-
 export interface IUpdateBehaviorDefinitionParams {
   name: string;
   sourceCode: string;
   lockHandle: string;
   transportRequest?: string;
-}
-
-export interface IDeleteBehaviorDefinitionParams {
-  behavior_definition_name: string;
-  transport_request?: string;
 }
 
 // Builder configuration (camelCase)
