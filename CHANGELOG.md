@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [11.0.0] - 2026-07-19
+
+Type-promotion consolidation: `@mcp-abap-adt/interfaces` becomes the single definition site for the object-type modules' consumer-facing types. adt-clients will import and re-export these (a follow-up adt-clients release); its public API is unchanged.
+
+### Added
+- **`IXxxConfig`/`IXxxState` for all object-type modules** (~29 pairs across 27 modules) — previously local-only in adt-clients, now defined here (verbatim).
+- **Cross-cutting shared types** in the new `src/adt/IAdtShared.ts` — `AdtObjectType`(+`…Lower`/source variants), `IObjectReference`, `ISearchObjectsParams`/`ISearchResult`, `IGetSqlQueryParams`, `IGetTableContentsParams`, `IGetDiscoveryParams`, `IGetWhereUsed*Params`, `IWhereUsedReference`/`IWhereUsedListResult`, `IVirtualFolders*`, `IGetPackageHierarchyOptions`/`PackageHierarchy*`/`IPackageHierarchyNode`, `IGetPackageContentsListOptions`/`IPackageContentItem`, `IInactiveObjectsResponse`.
+- **Missing/renamed params and option/result types** brought in to match adt-clients (e.g. `IMetadataExtensionCreateParams`/`ValidationParams`, `IFeatureToggleSource` + nested, service-binding operation params, `IClassUnitTest*`, `IFeatureToggleObject`).
+- **Public helper/config types promoted so adt-clients can re-export its consumer-facing type surface from here:** behaviorDefinition `IValidationResult`/`ILockResult`/`CheckReporter`/`ICheckMessage`/`ICheckRunResult`, `IEnhancementMetadata`, CDS unit-test `ICdsUnitTestConfig`/`ICdsUnitTestState`, and class-includes `ILocalTestClassConfig`/`ILocalTypesConfig`/`ILocalDefinitionsConfig`/`ILocalMacrosConfig`. Deliberately NOT promoted (stay adt-clients-local): `IAdtClientOptions` (the client class's own constructor options), and the `AdtXxxType` convenience aliases (e.g. `AdtClassType = IAdtObject<IClassConfig, IClassState>`) which are composed locally from the promoted `Config`/`State` rather than being shared contract types themselves.
+
+### Changed (BREAKING)
+- **Param interfaces reconciled to adt-clients' actual shape (verbatim).** adt-clients is the source of truth (it runs against SAP); the interfaces copies had drifted. Reconciliation includes field-name changes where the two diverged — notably snake_case→camelCase for `masterSystem`/`masterLanguage` (interfaces previously used `master_system`), the `IFixedValue` nested shape (`{ low; high?; description? }` → `{ low; text }`), tightened optionality (e.g. `IUpdateDomainParams.package_name`), and `behaviorDefinition` param renames. A consumer compiling against the old field names/shapes must update.
+- `IAdtService` replaced by the canonical `IAdtServiceBinding` shape (+ `IAdtService = IAdtServiceBinding` alias), restoring the previously-missing `deleteServiceBinding` member.
+
+### Removed (BREAKING)
+- **37 stale interfaces-only param types** that no consumer used (e.g. `IReadClassParams`, `IUpdateClassParams`, `IReadDomainParams`, the CRUD-named `ICreate/IRead/IUpdate/IDeleteMetadataExtensionParams`, `IRunUnitTestParams`, and other `IRead*`/`IUpdate*`/`IDelete*` leftovers). Each was verified to have zero references across adt-clients before removal.
+
+`IReadOptions` (already at `src/shared/IReadOptions.ts`) is unchanged. `IUpdate*Params.source_code` (live) and all runtime/infrastructure types are untouched.
+
 ## [10.0.0] - 2026-07-17
 
 ### Removed (BREAKING)
