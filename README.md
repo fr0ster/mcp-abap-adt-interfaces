@@ -164,6 +164,12 @@ This package is responsible for:
   - Fields: `validationResponse`, `createResult`, `lockHandle`, `updateResult`, `checkResult`, `unlockResult`, `activateResult`, `deleteResult`, `readResult`, `metadataResult`, `transportResult`, `errors`
 - `IAdtObjectConfig` - Base configuration interface for ADT objects
   - Common fields: `packageName`, `description`, `transportRequest`
+- **Per-object-type contract types** (`IAdt<Object>.ts`, one file per ADT object type — class, program, interface, table, domain, dataElement, ddl, structure, package, functionGroup/Module/Include, behaviorDefinition/Implementation, metadataExtension, enhancement, accessControl, serviceDefinition/Binding, transformation, scalarFunction(Implementation), tableType, appendStructure, authorizationField, featureToggle, messageClass, transport, unitTest):
+  - Low-level operation params — `ICreate/IRead/IUpdate/IDelete<Object>Params` (snake_case where the object uses it; some fields are camelCase, e.g. `masterSystem`/`masterLanguage`, matching the client)
+  - High-level `I<Object>Config` / `I<Object>State` (the `IAdtObject<Config, State>` type arguments)
+  - Object-specific enums/option/result helpers (e.g. `EnhancementType`, `ServiceBindingVariant`, `IFixedValue`, behaviorDefinition `ICheckRunResult`/`IValidationResult`, CDS/class-includes configs)
+  - This package is the **single definition site** for these; `@mcp-abap-adt/adt-clients` imports and re-exports them (its public API is unchanged).
+- **Cross-cutting shared types** (`adt/IAdtShared.ts`) — `AdtObjectType`(+lower/source variants), `IObjectReference`, search (`ISearchObjectsParams`/`ISearchResult`), where-used (`IGetWhereUsed*Params`/`IWhereUsedListResult`), package hierarchy (`IPackageHierarchyNode`/`IGetPackageHierarchyOptions`/…), virtual folders, SQL/table-contents/discovery params, `IInactiveObjectsResponse`. (`IReadOptions` lives in `shared/IReadOptions.ts`.)
 
 ### Authentication Domain (`auth/`)
 - `IAuthorizationConfig` - Authorization values (UAA credentials, refresh token)
