@@ -29,7 +29,9 @@ export type {
 export type {
   BehaviorDefinitionImplementationType,
   IBehaviorDefinitionConfig,
+  IBehaviorDefinitionCreateParams,
   IBehaviorDefinitionState,
+  IBehaviorDefinitionValidationParams,
   IUpdateBehaviorDefinitionParams,
 } from './adt/IAdtBehaviorDefinition';
 export type {
@@ -56,6 +58,7 @@ export type {
   IDdlConfig,
   IDdlState,
   IDeleteDdlParams,
+  IUpdateDdlSourceParams,
 } from './adt/IAdtDdl';
 export type {
   ICreateDomainParams,
@@ -67,11 +70,13 @@ export type {
 } from './adt/IAdtDomain';
 export type {
   EnhancementType,
+  ICheckEnhancementParams,
   ICreateEnhancementParams,
   IDeleteEnhancementParams,
   IEnhancementConfig,
   IEnhancementState,
   IUpdateEnhancementParams,
+  IValidateEnhancementParams,
 } from './adt/IAdtEnhancement';
 export type {
   FeatureToggleState,
@@ -116,6 +121,7 @@ export type {
   IDeleteInterfaceParams,
   IInterfaceConfig,
   IInterfaceState,
+  IUpdateInterfaceSourceParams,
 } from './adt/IAdtInterface';
 export type {
   ICreateMessageClassParams,
@@ -154,6 +160,7 @@ export type {
   IDeleteProgramParams,
   IProgramConfig,
   IProgramState,
+  IUpdateProgramSourceParams,
 } from './adt/IAdtProgram';
 export type {
   ICreateScalarFunctionParams,
@@ -254,6 +261,7 @@ export type {
 } from './adt/IAdtTransformation';
 export type {
   ICreateTransportParams,
+  IListTransportsParams,
   ITransportConfig,
   ITransportState,
 } from './adt/IAdtTransport';
@@ -399,6 +407,7 @@ export type {
   ICheckServiceBindingParams,
   IClassifyServiceBindingParams,
   ICreateAndGenerateServiceBindingParams,
+  ICreateAndGenerateServiceBindingParamsLegacy,
   IGenerateServiceBindingParams,
   IGetServiceBindingODataParams,
   IPublishODataV2Params,
