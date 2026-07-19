@@ -49,6 +49,10 @@ export type {
   IClassState,
   ICreateClassParams,
   IDeleteClassParams,
+  ILocalDefinitionsConfig,
+  ILocalMacrosConfig,
+  ILocalTestClassConfig,
+  ILocalTypesConfig,
 } from './adt/IAdtClass';
 export type {
   DataElementTypeKind,
@@ -274,6 +278,8 @@ export type {
 export type {
   ClassUnitTestDefinition,
   ClassUnitTestRunOptions,
+  ICdsUnitTestConfig,
+  ICdsUnitTestState,
   IClassUnitTestDefinition,
   IClassUnitTestRunOptions,
   IUnitTestConfig,

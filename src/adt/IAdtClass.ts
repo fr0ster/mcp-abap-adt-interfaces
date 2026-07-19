@@ -59,3 +59,31 @@ export interface IClassState extends IAdtObjectState {
   testLockHandle?: string;
   testClassesResult?: AxiosResponse;
 }
+
+// Class-includes config types — promoted verbatim from adt-clients
+// src/core/class/AdtLocal{TestClass,Types,Definitions,Macros}.ts
+// (publicly exported, IAdtObject configs).
+export interface ILocalTestClassConfig {
+  className: string;
+  testClassCode?: string;
+  testClassName?: string;
+  transportRequest?: string;
+}
+
+export interface ILocalTypesConfig {
+  className: string;
+  localTypesCode?: string;
+  transportRequest?: string;
+}
+
+export interface ILocalDefinitionsConfig {
+  className: string;
+  definitionsCode?: string;
+  transportRequest?: string;
+}
+
+export interface ILocalMacrosConfig {
+  className: string;
+  macrosCode?: string;
+  transportRequest?: string;
+}

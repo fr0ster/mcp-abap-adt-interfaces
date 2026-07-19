@@ -2,6 +2,8 @@
  * Unit Test ADT operation parameter interfaces (snake_case, low-level)
  */
 
+import type { IAdtResponse } from '../connection/IAbapConnection';
+import type { IClassState } from './IAdtClass';
 import type { IAdtObjectState } from './IAdtObjectState';
 
 export interface IUnitTestScope {
@@ -88,3 +90,21 @@ export interface IClassUnitTestRunOptions {
 // Re-export with aliases for backward compatibility
 export type ClassUnitTestDefinition = IClassUnitTestDefinition;
 export type ClassUnitTestRunOptions = IClassUnitTestRunOptions;
+
+// CDS unit-test config/state — promoted verbatim from adt-clients
+// src/core/unitTest/AdtCdsUnitTest.ts (publicly exported, IAdtObject config/state).
+export interface ICdsUnitTestConfig extends IUnitTestConfig {
+  // CDS-specific fields
+  className?: string;
+  packageName?: string;
+  cdsViewName?: string;
+  classTemplate?: string;
+  testClassSource?: string;
+  description?: string;
+  transportRequest?: string;
+}
+
+export interface ICdsUnitTestState extends IUnitTestState {
+  testClassState?: IClassState;
+  cdsCheckResponse?: IAdtResponse;
+}
