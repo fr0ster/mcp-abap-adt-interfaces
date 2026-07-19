@@ -91,3 +91,37 @@ export interface IBehaviorDefinitionState extends IAdtObjectState {
   // validationResponse, createResult, lockHandle, updateResult, checkResult,
   // unlockResult, activateResult, deleteResult, readResult, transportResult, errors
 }
+
+// Result/check helper types — promoted verbatim from adt-clients
+// src/core/behaviorDefinition/types.ts (publicly exported, consumer-facing).
+export interface IValidationResult {
+  severity: 'OK' | 'ERROR' | 'WARNING';
+  shortText?: string;
+  longText?: string;
+}
+
+export interface ILockResult {
+  lockHandle: string;
+  corrnr?: string;
+  corruser?: string;
+  corrtext?: string;
+  isLocal?: boolean;
+  isLinkUp?: boolean;
+}
+
+export type CheckReporter = 'bdefImplementationCheck' | 'abapCheckRun';
+
+export interface ICheckMessage {
+  uri: string;
+  type: 'E' | 'W' | 'I' | 'S';
+  shortText: string;
+  code: string;
+}
+
+export interface ICheckRunResult {
+  reporter: CheckReporter;
+  triggeringUri: string;
+  status: string;
+  statusText: string;
+  messages?: ICheckMessage[];
+}

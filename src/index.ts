@@ -28,11 +28,16 @@ export type {
 } from './adt/IAdtAuthorizationField';
 export type {
   BehaviorDefinitionImplementationType,
+  CheckReporter,
   IBehaviorDefinitionConfig,
   IBehaviorDefinitionCreateParams,
   IBehaviorDefinitionState,
   IBehaviorDefinitionValidationParams,
+  ICheckMessage,
+  ICheckRunResult,
+  ILockResult,
   IUpdateBehaviorDefinitionParams,
+  IValidationResult,
 } from './adt/IAdtBehaviorDefinition';
 export type {
   IBehaviorImplementationConfig,
@@ -74,6 +79,7 @@ export type {
   ICreateEnhancementParams,
   IDeleteEnhancementParams,
   IEnhancementConfig,
+  IEnhancementMetadata,
   IEnhancementState,
   IUpdateEnhancementParams,
   IValidateEnhancementParams,
