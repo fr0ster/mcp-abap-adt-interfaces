@@ -55,3 +55,31 @@ export interface IAdtTransportAware<TConfig, TReadResult = TConfig> {
     options?: { withLongPolling?: boolean },
   ): Promise<TReadResult>;
 }
+
+import type { IClassConfig, IClassState } from './IAdtClass';
+import type { IAdtObject } from './IAdtObject';
+
+/** Assertion helper: instantiating with `false` is a compile error. */
+type Assert<T extends true> = T;
+
+/** The intersection of every atom that composes IAdtObject. */
+type AllAtoms<C, R> = IAdtCrud<C, R> &
+  IAdtValidatable<C, R> &
+  IAdtCheckable<C, R> &
+  IAdtActivatable<C, R> &
+  IAdtLockable<C, R> &
+  IAdtVersionable<C> &
+  IAdtTransportAware<C, R>;
+
+/**
+ * Proof that the partition is exact: IAdtObject and the atom intersection are
+ * mutually assignable. Both directions are required. The generic parameters
+ * are bound and the alias is instantiated below, or nothing is checked.
+ */
+type _PartitionIsExact<C, R> = [
+  Assert<IAdtObject<C, R> extends AllAtoms<C, R> ? true : false>,
+  Assert<AllAtoms<C, R> extends IAdtObject<C, R> ? true : false>,
+];
+
+// Instantiate at a concrete pair so the constraints are actually evaluated.
+type _Check = _PartitionIsExact<IClassConfig, IClassState>;
