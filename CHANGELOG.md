@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [11.2.0] - 2026-07-20
+
+### Added
+- **Capability atom interfaces.** Seven small interfaces — `IAdtCrud`,
+  `IAdtValidatable`, `IAdtCheckable`, `IAdtActivatable`, `IAdtLockable`,
+  `IAdtVersionable`, `IAdtTransportAware` — partition the 13 methods of
+  `IAdtObject` so each method belongs to exactly one. Purely additive:
+  `IAdtObject` is unchanged, and a compile-time proof asserts the intersection
+  of the atoms is structurally identical to it. Consumers may depend on a
+  narrow capability instead of the whole contract.
+
 ## [11.0.0] - 2026-07-19
 
 Type-promotion consolidation: `@mcp-abap-adt/interfaces` becomes the single definition site for the object-type modules' consumer-facing types. adt-clients will import and re-export these (a follow-up adt-clients release); its public API is unchanged.

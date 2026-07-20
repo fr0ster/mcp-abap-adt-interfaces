@@ -45,6 +45,15 @@ export type {
   ICreateBehaviorImplementationParams,
 } from './adt/IAdtBehaviorImplementation';
 export type {
+  IAdtActivatable,
+  IAdtCheckable,
+  IAdtCrud,
+  IAdtLockable,
+  IAdtTransportAware,
+  IAdtValidatable,
+  IAdtVersionable,
+} from './adt/IAdtCapabilities';
+export type {
   IClassConfig,
   IClassState,
   ICreateClassParams,
