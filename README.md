@@ -156,6 +156,15 @@ This package is responsible for:
     - Create: validate → create → check → lock → check(inactive) → update → unlock → check → activate
     - Update: lock → check(inactive) → update → unlock → check → activate
     - Delete: check(deletion) → delete
+- **Capability atoms** (`adt/IAdtCapabilities.ts`, since 11.2.0) — seven small interfaces that partition the 13 methods of `IAdtObject`, each method belonging to exactly one, so a consumer can depend on just the capability it needs instead of the whole contract:
+  - `IAdtCrud` — `create`, `read`, `readMetadata`, `update`, `delete`
+  - `IAdtValidatable` — `validate`
+  - `IAdtCheckable` — `check`
+  - `IAdtActivatable` — `activate`
+  - `IAdtLockable` — `lock`, `unlock`
+  - `IAdtVersionable` — `getVersions`, `getVersionSource`
+  - `IAdtTransportAware` — `readTransport`
+  - Purely additive: `IAdtObject` is unchanged, and a compile-time proof in the same file asserts the intersection of the atoms is structurally identical to it (both directions). A class implementing the atoms satisfies `IAdtObject` structurally.
 - `IAdtOperationOptions` - Unified options for create and update operations
   - Fields: `activateOnCreate`, `activateOnUpdate`, `deleteOnFailure`, `sourceCode`, `xmlContent`, `timeout`
 - `AdtObjectErrorCodes` - Error code constants for ADT object operations
