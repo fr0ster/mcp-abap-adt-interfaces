@@ -64,6 +64,10 @@ export type {
   ILocalTypesConfig,
 } from './adt/IAdtClass';
 export type {
+  IAdtNonVersionedObject,
+  IAdtSourceObject,
+} from './adt/IAdtComposites';
+export type {
   DataElementTypeKind,
   ICreateDataElementParams,
   IDataElementConfig,

@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [11.3.0] - 2026-07-21
+
+### Added
+- **Named capability composites** `IAdtSourceObject` (full capability set) and
+  `IAdtNonVersionedObject` (all but version history), for handlers to declare
+  their honest capability profile instead of the fat contract.
+
+### Deprecated
+- **`IAdtObject`.** It remains as the full-capability composite (structurally
+  identical to `IAdtSourceObject`, asserted at compile time) for backward
+  compatibility, and will be removed in a later major. New code should depend on
+  the specific capability atoms or a composite.
+
 ## [11.2.0] - 2026-07-20
 
 ### Added
