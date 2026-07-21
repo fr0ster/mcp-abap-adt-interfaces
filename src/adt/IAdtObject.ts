@@ -145,6 +145,11 @@ export interface IObjectVersion {
  *
  * @template TConfig - Configuration type for the object (e.g., ClassBuilderConfig)
  * @template TReadResult - Result type for read operations (defaults to TConfig)
+ *
+ * @deprecated Since 11.3.0. Handlers now declare their honest capability set
+ * (see IAdtComposites and the capability atoms). `IAdtObject` remains as the
+ * full-capability composite for backward compatibility and will be removed in a
+ * later major. New code should depend on the specific capability it needs.
  */
 export interface IAdtObject<TConfig, TReadResult = TConfig> {
   /**
