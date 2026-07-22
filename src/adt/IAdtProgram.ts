@@ -2,29 +2,52 @@
  * Program ADT operation parameter interfaces (snake_case, low-level)
  */
 
+import type { IAdtObjectState } from './IAdtObjectState';
+
 export interface ICreateProgramParams {
-  program_name: string;
+  programName: string;
   description?: string;
-  package_name: string;
-  transport_request?: string;
-  master_system?: string;
+  packageName: string;
+  transportRequest?: string;
+  masterSystem?: string;
   responsible?: string;
-  program_type?: string;
+  masterLanguage?: string;
+  programType?: string;
   application?: string;
+  sourceCode?: string;
+  activate?: boolean;
 }
 
-export interface IReadProgramParams {
-  program_name: string;
-  version?: 'active' | 'inactive';
-}
-
-export interface IUpdateProgramParams {
-  program_name: string;
-  source_code: string;
-  transport_request?: string;
+export interface IUpdateProgramSourceParams {
+  programName: string;
+  sourceCode: string;
+  activate?: boolean;
 }
 
 export interface IDeleteProgramParams {
-  program_name: string;
-  transport_request?: string;
+  programName: string;
+  transportRequest?: string;
+}
+
+// Builder configuration (camelCase)
+// Note: packageName is required for create operations (validated in builder methods)
+// description is required for create/validate operations
+export interface IProgramConfig {
+  programName: string;
+  masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE), then EN
+  packageName?: string; // Required for create operations, optional for others
+  transportRequest?: string; // Only optional parameter
+  description?: string; // Required for create/validate operations, optional for others
+  programType?: string;
+  application?: string;
+  sourceCode?: string;
+  sessionId?: string;
+  onLock?: (lockHandle: string) => void;
+}
+
+export interface IProgramState extends IAdtObjectState {
+  runResult?: unknown;
+  // All operation results are in IAdtObjectState:
+  // validationResponse, createResult, lockHandle, updateResult, checkResult,
+  // unlockResult, activateResult, deleteResult, readResult, transportResult, errors
 }

@@ -2,6 +2,8 @@
  * Table Type ADT operation parameter interfaces (snake_case, low-level)
  */
 
+import type { IAdtObjectState } from './IAdtObjectState';
+
 export type TableTypeRowKind =
   | 'dictionaryType'
   | 'predefinedAbapType'
@@ -32,27 +34,72 @@ export interface ICreateTableTypeParams {
   package_name: string;
   description?: string;
   transport_request?: string;
-  master_system?: string;
+  masterSystem?: string;
   responsible?: string;
-}
-
-export interface IReadTableTypeParams {
-  tabletype_name: string;
-  version?: 'active' | 'inactive';
+  masterLanguage?: string;
 }
 
 export interface IUpdateTableTypeParams {
   tabletype_name: string;
   description?: string;
   row_type_name: string;
-  row_type_kind?: TableTypeRowKind;
-  access_type?: TableTypeAccessType;
-  primary_key_definition?: TableTypePrimaryKeyDefinition;
-  primary_key_kind?: TableTypePrimaryKeyKind;
+  row_type_kind?:
+    | 'dictionaryType'
+    | 'predefinedAbapType'
+    | 'refToPredefinedAbapType'
+    | 'refToDictionaryType'
+    | 'refToClassOrInterfaceType'
+    | 'rangeTypeOnPredefinedType'
+    | 'rangeTypeOnDataelement';
+  access_type?: 'standard' | 'sorted' | 'hashed' | 'index' | 'notSpecified';
+  primary_key_definition?:
+    | 'standard'
+    | 'rowType'
+    | 'keyComponents'
+    | 'empty'
+    | 'notSpecified';
+  primary_key_kind?: 'unique' | 'nonUnique' | 'notSpecified';
   transport_request?: string;
+  activate?: boolean;
 }
 
 export interface IDeleteTableTypeParams {
   tabletype_name: string;
   transport_request?: string;
+}
+
+// Builder configuration (camelCase)
+// Note: packageName is required for create operations (validated in builder methods)
+// description is required for create/validate operations
+export interface ITableTypeConfig {
+  tableTypeName: string;
+  masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE), then EN
+  packageName?: string; // Required for create operations, optional for others
+  transportRequest?: string; // Only optional parameter
+  // XML-based TableType parameters (TableType is XML-based entity like Domain/DataElement)
+  rowTypeName?: string; // Structure name for dictionaryType (required for update)
+  rowTypeKind?:
+    | 'dictionaryType'
+    | 'predefinedAbapType'
+    | 'refToPredefinedAbapType'
+    | 'refToDictionaryType'
+    | 'refToClassOrInterfaceType'
+    | 'rangeTypeOnPredefinedType'
+    | 'rangeTypeOnDataelement';
+  accessType?: 'standard' | 'sorted' | 'hashed' | 'index' | 'notSpecified';
+  primaryKeyDefinition?:
+    | 'standard'
+    | 'rowType'
+    | 'keyComponents'
+    | 'empty'
+    | 'notSpecified';
+  primaryKeyKind?: 'unique' | 'nonUnique' | 'notSpecified';
+  description?: string; // Required for create/validate operations, optional for others
+}
+
+export interface ITableTypeState extends IAdtObjectState {
+  // All operation results are in IAdtObjectState:
+  // validationResponse, createResult, lockHandle, updateResult, checkResult,
+  // unlockResult, activateResult, deleteResult, readResult, transportResult, errors
+  // TableType-specific fields can be added here if needed
 }

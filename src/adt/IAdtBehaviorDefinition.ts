@@ -2,37 +2,126 @@
  * Behavior Definition ADT operation parameter interfaces (snake_case, low-level)
  */
 
-export type BehaviorDefinitionImplementationType =
-  | 'managed'
-  | 'unmanaged'
-  | 'abstract'
-  | 'projection'
-  | string;
+import type { IAdtResponse as AxiosResponse } from '../connection/IAbapConnection';
+import type { IAdtObjectState } from './IAdtObjectState';
 
-export interface ICreateBehaviorDefinitionParams {
-  behavior_definition_name: string;
+export type BehaviorDefinitionImplementationType =
+  | 'Managed'
+  | 'Unmanaged'
+  | 'Abstract'
+  | 'Projection';
+
+/**
+ * Parameters for validating a behavior definition before creation
+ */
+export interface IBehaviorDefinitionValidationParams {
+  /** Name of the behavior definition object */
+  objname: string;
+  /** Root entity name */
+  rootEntity: string;
+  /** Description of the behavior definition */
   description: string;
-  package_name: string;
-  implementation_type: BehaviorDefinitionImplementationType;
-  language?: string;
-  responsible?: string;
-  master_system?: string;
-  transport_request?: string;
+  /** Package name where the object will be created */
+  package: string;
+  /** Implementation type (Managed, Unmanaged, Abstract, Projection) */
+  implementationType: BehaviorDefinitionImplementationType;
 }
 
-export interface IReadBehaviorDefinitionParams {
-  behavior_definition_name: string;
-  version?: 'active' | 'inactive';
+/**
+ * Parameters for creating a behavior definition
+ */
+export interface IBehaviorDefinitionCreateParams {
+  /** Name of the behavior definition */
+  name: string;
+  /** Description */
+  description: string;
+  /** Package name */
+  package: string;
+  /** Implementation type */
+  implementationType: BehaviorDefinitionImplementationType;
+  /** Language (default: EN) */
+  language?: string;
+  /** Responsible user */
+  responsible?: string;
+  /** Master system */
+  masterSystem?: string;
+  /** Transport request number */
+  transportRequest?: string;
 }
 
 export interface IUpdateBehaviorDefinitionParams {
-  behavior_definition_name: string;
-  source_code: string;
-  lock_handle: string;
-  transport_request?: string;
+  name: string;
+  sourceCode: string;
+  lockHandle: string;
+  transportRequest?: string;
 }
 
-export interface IDeleteBehaviorDefinitionParams {
-  behavior_definition_name: string;
-  transport_request?: string;
+// Builder configuration (camelCase)
+// Note: packageName, description, implementationType are required for create/validate operations (validated in builder methods)
+// rootEntity is required for validate operations
+export interface IBehaviorDefinitionConfig {
+  name: string; // Required
+  masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE), then EN
+  packageName?: string; // Required for create/validate operations, optional for others
+  transportRequest?: string; // Only optional parameter
+  description?: string; // Required for create/validate operations, optional for others
+  implementationType?: 'Managed' | 'Unmanaged' | 'Abstract' | 'Projection'; // Required for create/validate operations, optional for others
+  rootEntity?: string; // Required for validate operations, optional for others
+  sourceCode?: string;
+  onLock?: (lockHandle: string) => void;
+}
+
+/**
+ * State maintained by the Behavior Definition Builder
+ */
+export interface IBehaviorDefinitionState extends IAdtObjectState {
+  /** Name of the behavior definition */
+  name?: string;
+  /** Lock result */
+  lockResult?: AxiosResponse<unknown>;
+  /** Update source result (separate from updateResult) */
+  updateSourceResult?: AxiosResponse<unknown>;
+  /** Check results (array for multiple checks) */
+  checkResults?: AxiosResponse<unknown>[];
+  /** Delete check result */
+  deleteCheckResult?: AxiosResponse<unknown>;
+  /** Validation result */
+  validationResult?: AxiosResponse<unknown>;
+  // All operation results are in IAdtObjectState:
+  // validationResponse, createResult, lockHandle, updateResult, checkResult,
+  // unlockResult, activateResult, deleteResult, readResult, transportResult, errors
+}
+
+// Result/check helper types — promoted verbatim from adt-clients
+// src/core/behaviorDefinition/types.ts (publicly exported, consumer-facing).
+export interface IValidationResult {
+  severity: 'OK' | 'ERROR' | 'WARNING';
+  shortText?: string;
+  longText?: string;
+}
+
+export interface ILockResult {
+  lockHandle: string;
+  corrnr?: string;
+  corruser?: string;
+  corrtext?: string;
+  isLocal?: boolean;
+  isLinkUp?: boolean;
+}
+
+export type CheckReporter = 'bdefImplementationCheck' | 'abapCheckRun';
+
+export interface ICheckMessage {
+  uri: string;
+  type: 'E' | 'W' | 'I' | 'S';
+  shortText: string;
+  code: string;
+}
+
+export interface ICheckRunResult {
+  reporter: CheckReporter;
+  triggeringUri: string;
+  status: string;
+  statusText: string;
+  messages?: ICheckMessage[];
 }

@@ -2,19 +2,17 @@
  * Service Definition ADT operation parameter interfaces (snake_case, low-level)
  */
 
+import type { IAdtResponse } from '../connection/IAbapConnection';
+import type { IAdtObjectState } from './IAdtObjectState';
+
 export interface ICreateServiceDefinitionParams {
   service_definition_name: string;
   description?: string;
   package_name: string;
   transport_request?: string;
-  source_code?: string;
-  master_system?: string;
+  masterSystem?: string;
   responsible?: string;
-}
-
-export interface IReadServiceDefinitionParams {
-  service_definition_name: string;
-  version?: 'active' | 'inactive';
+  masterLanguage?: string;
 }
 
 export interface IUpdateServiceDefinitionParams {
@@ -26,4 +24,21 @@ export interface IUpdateServiceDefinitionParams {
 export interface IDeleteServiceDefinitionParams {
   service_definition_name: string;
   transport_request?: string;
+}
+
+// Builder configuration (camelCase)
+export interface IServiceDefinitionConfig {
+  serviceDefinitionName: string;
+  masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE), then EN
+  packageName?: string; // Required for create operations, optional for others
+  transportRequest?: string; // Only optional parameter
+  description?: string; // Required for create/validate operations, optional for others
+  sourceCode?: string; // Service definition source code (CDS service definition syntax)
+}
+
+export interface IServiceDefinitionState extends IAdtObjectState {
+  readSourceResult?: IAdtResponse;
+  // All operation results are in IAdtObjectState:
+  // validationResponse, createResult, lockHandle, updateResult, checkResult,
+  // unlockResult, activateResult, deleteResult, readResult, transportResult, errors
 }

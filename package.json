@@ -1,6 +1,6 @@
 {
   "name": "@mcp-abap-adt/interfaces",
-  "version": "9.2.0",
+  "version": "11.3.0-atc.0",
   "description": "Shared interfaces for MCP ABAP ADT packages",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -47,7 +47,7 @@
     "node": ">=18.0.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.3.10",
+    "@biomejs/biome": "^2.5.3",
     "@types/node": "^24.2.1",
     "axios": "^1.18.1",
     "typescript": "^5.9.2"
