@@ -22,6 +22,14 @@ export type {
   IUpdateAppendStructureParams,
 } from './adt/IAdtAppendStructure';
 export type {
+  AtcFindingsFormat,
+  AtcObjectType,
+  IGetAtcFindingsParams,
+  IGetAtcRunStatusParams,
+  IListAtcCheckVariantsParams,
+  IRunAtcParams,
+} from './adt/IAdtAtc';
+export type {
   IAuthorizationFieldConfig,
   IAuthorizationFieldState,
   ICreateAuthorizationFieldParams,
