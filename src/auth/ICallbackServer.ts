@@ -103,17 +103,24 @@ export interface ICallbackServerHandle<TResult> {
  * The factory settles on the first terminal outcome — the callback returning or
  * throwing, `fail`, the timeout, or an abort — and only once the listening
  * socket has been released, so a settled result always means the port is free.
- * On success it resolves with whatever the callback returned, which is what
- * makes `transform(await server.waitForResult())` work.
+ * On success it resolves with whatever the callback returned — which need not be
+ * the payload itself, so `transform(await server.waitForResult())` resolves with
+ * the transformed value.
  *
  * It does **not** promise to stop the callback: an arbitrary async function
  * cannot be force-terminated. A failure outcome ends the scope without waiting
  * for it, and a later settlement from the abandoned body is discarded.
  *
- * The type parameter is on the alias rather than the call signature, because a
- * factory for a given flow always produces that flow's result; were it generic
- * per call, a browser-code factory would type-check against a caller expecting
- * something it can never yield.
+ * There are two type parameters, and the split matters:
+ *
+ * - `TResult` is on the alias, because the payload a flow's callback endpoint
+ *   delivers is fixed by that flow. Were it generic per call, a browser-code
+ *   factory would type-check against a caller expecting something it can never
+ *   yield.
+ * - `TReturn` is generic per call, because the scope resolves with whatever the
+ *   callback returned. Tying it to `TResult` would forbid the transformation
+ *   shown above — `transform(await server.waitForResult())` may legitimately
+ *   produce a token, a session, or anything else built from the payload.
  *
  * ```ts
  * const code = await withBrowserCallbackServer(
@@ -127,7 +134,7 @@ export interface ICallbackServerHandle<TResult> {
  * // reached only once the port is free — whatever the outcome
  * ```
  */
-export type CallbackServerFactory<TResult> = (
+export type CallbackServerFactory<TResult> = <TReturn>(
   options: ICallbackServerOptions,
-  use: (server: ICallbackServerHandle<TResult>) => Promise<TResult>,
-) => Promise<TResult>;
+  use: (server: ICallbackServerHandle<TResult>) => Promise<TReturn>,
+) => Promise<TReturn>;
