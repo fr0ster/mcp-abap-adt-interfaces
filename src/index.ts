@@ -305,6 +305,11 @@ export type { AuthType as AuthTypeEnum } from './auth/AuthType';
 // Auth domain
 export type { IAuthorizationConfig } from './auth/IAuthorizationConfig';
 export type {
+  CallbackServerFactory,
+  ICallbackServerHandle,
+  ICallbackServerOptions,
+} from './auth/ICallbackServer';
+export type {
   ICertificateMaterial,
   ICertificateMaterialLoader,
 } from './auth/ICertificateMaterialLoader';

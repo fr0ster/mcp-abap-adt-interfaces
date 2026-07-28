@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [11.4.0] - 2026-07-28
+
+### Added
+- **Callback server contract** — `ICallbackServerOptions`, `ICallbackServerHandle<TResult>`
+  and `CallbackServerFactory<TResult>`, describing the lifetime of the local listener that
+  receives an interactive login's redirect.
+
+  The handle is borrowed inside a factory callback, and the port is released on the first
+  terminal outcome: the callback returning or throwing, an explicit `fail`, the timeout, or
+  an abort. Releasing the socket is therefore never a consequence of a wait settling — which
+  is the shape that lets an abandoned login hold a port for the lifetime of a process.
+
+  `timeoutMs` is mandatory, bounded by Node's 32-bit `setTimeout` delay so that a
+  generous-looking value cannot silently become 1 ms, and cancellation is available through
+  an `AbortSignal`. The contract is domain-agnostic: an OAuth authorization code, OIDC
+  `code` + `state` and a SAML `SAMLResponse` all fit through it, parameterised by result.
+
 ## [11.3.0] - 2026-07-21
 
 ### Added

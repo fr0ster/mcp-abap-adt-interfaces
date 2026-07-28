@@ -185,6 +185,12 @@ This package is responsible for:
 - `IConnectionConfig` - Connection values (service URL, token, client, language)
 - `IConfig` - Composition of authorization and connection config
 - `AuthType` - Auth type: `'jwt' | 'xsuaa' | 'basic'`
+- `ICallbackServerOptions` / `ICallbackServerHandle` / `CallbackServerFactory` - Lifetime
+  contract for the local listener that receives an interactive login's redirect. The handle
+  is borrowed inside a factory callback and the port is released on the first terminal
+  outcome — the callback returning or throwing, an explicit failure, the timeout, or an
+  abort — so releasing the socket is never a consequence of a wait settling. `timeoutMs` is
+  mandatory and cancellation is available through an `AbortSignal`.
 
 ### Token Domain (`token/`)
 - `ITokenProvider` - Token provider interface (stateful token lifecycle)
