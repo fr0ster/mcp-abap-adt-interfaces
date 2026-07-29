@@ -81,23 +81,24 @@ export interface ISessionLifecycleAware {
   isConnected(): boolean;
 
   /**
-   * Which server session the connection is on, or null when it can name none.
+   * Which server session the connection is on — or `null`, which says nothing
+   * about whether the connection is usable. **Use {@link isConnected} for that.**
    *
-   * Identifies the SESSION, not the conversation: a stable client-side
-   * conversation id says nothing about whether the server replaced the session
-   * underneath it, which is precisely the failure this exists to expose.
-   * Compare two readings across an operation to detect a replacement.
+   * `null` means only that no identity is known, and there are two ways to get
+   * there: no session exists, or the connection is live over a server that
+   * issued no session cookie — some do not. So a live, working connection can
+   * return `null` here, and a consumer that reads `null` as "session lost"
+   * would tear down a connection that was fine.
    *
-   * **`null` is not a verdict on the connection.** It means only that no
-   * identity is known, and there are two ways to get there: no session exists,
-   * or the connection is live over a server that issued no session cookie —
-   * some do not. Use {@link ISessionLifecycleAware.isConnected} for connection
-   * state; this answers a different question.
+   * What it does identify is the SESSION, not the conversation: a stable
+   * client-side conversation id says nothing about whether the server replaced
+   * the session underneath it, which is precisely the failure this exists to
+   * expose. Compare two readings across an operation to detect a replacement.
    *
-   * It follows that null → non-null is NOT a replacement. An identity appearing
-   * where none was known is an identity being learned — the LOCK response that
-   * first carries a session cookie would otherwise read as a new session and
-   * condemn the window it just opened. Only a CHANGED value is a replacement.
+   * Only a CHANGED value is a replacement. `null` → non-null is an identity
+   * being learned, not a new session: the LOCK response is often the first to
+   * carry a session cookie, and reading that as a replacement would condemn the
+   * window it just opened.
    */
   getSessionIdentity(): string | null;
 }
