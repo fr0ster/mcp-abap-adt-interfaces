@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [11.5.0] - 2026-07-29
+
+### Added
+- **Connection capability atoms — `ISessionLifecycleAware` and `ILockWindowAware`**, with
+  `ITeardownReport`, `WindowToken`, `ADT_SESSION_ERROR` and `AdtSessionErrorCode`.
+
+  `ISessionLifecycleAware` describes a connection whose session is owned and observable:
+  `disconnect()` resolving with a report of what it could not finish, `isConnected()`, and
+  `getSessionIdentity()` naming which **server session** the connection is on. That last one
+  is the point — a stable client-side conversation id says nothing about whether the server
+  replaced the session underneath it, and a caller holding a lock had no way to notice.
+
+  `ILockWindowAware` marks a span that must not lose its session, such as LOCK to UNLOCK. A
+  lock outlives the request that takes it, so a teardown in that span strands the lock rather
+  than merely failing a request; a teardown waits for an open window, bounded, and reports it
+  as abandoned instead of dropping it silently. `WindowToken` is a symbol rather than a string
+  because the same object may be locked twice in one chain and the two must close independently.
+
+  **Additive, following the ADT capability atoms.** `IAbapConnection` is unchanged: it stays
+  the minimum every transport can honour, and these are the things only some can. An RFC
+  connection, a batch recorder and a test stub are all legitimate `IAbapConnection`s that own
+  no HTTP session and can open no lock window — making these methods mandatory would force
+  each of them to implement a lie. An implementation adds an atom when it genuinely supports
+  it; a consumer narrows to the atom it needs. Pinned by `src/__typechecks__/connectionCapabilities.ts`,
+  which asserts a session-less connection still satisfies `IAbapConnection`.
+
 ## [11.4.0] - 2026-07-28
 
 ### Added
