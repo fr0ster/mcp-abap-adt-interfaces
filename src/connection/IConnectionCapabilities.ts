@@ -81,12 +81,23 @@ export interface ISessionLifecycleAware {
   isConnected(): boolean;
 
   /**
-   * Which server session the connection is on, or null when it holds none.
+   * Which server session the connection is on, or null when it can name none.
    *
    * Identifies the SESSION, not the conversation: a stable client-side
    * conversation id says nothing about whether the server replaced the session
    * underneath it, which is precisely the failure this exists to expose.
    * Compare two readings across an operation to detect a replacement.
+   *
+   * **`null` is not a verdict on the connection.** It means only that no
+   * identity is known, and there are two ways to get there: no session exists,
+   * or the connection is live over a server that issued no session cookie —
+   * some do not. Use {@link ISessionLifecycleAware.isConnected} for connection
+   * state; this answers a different question.
+   *
+   * It follows that null → non-null is NOT a replacement. An identity appearing
+   * where none was known is an identity being learned — the LOCK response that
+   * first carries a session cookie would otherwise read as a new session and
+   * condemn the window it just opened. Only a CHANGED value is a replacement.
    */
   getSessionIdentity(): string | null;
 }
