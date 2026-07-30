@@ -33,3 +33,21 @@ const _samlOutcome: AuthorizationOutcome<string> = {
   redirectUri: 'http://localhost:61001/callback',
 };
 void _samlOutcome;
+
+import type { ICallbackServerOptions } from '../auth/ICallbackServer';
+import type { ILogger } from '../logging/ILogger';
+
+const logger: ILogger = {
+  debug: () => undefined,
+  info: () => undefined,
+  warn: () => undefined,
+  error: () => undefined,
+};
+
+// Ephemeral port plus a transport-level logger.
+const _ephemeral: ICallbackServerOptions = {
+  port: 0,
+  timeoutMs: 30_000,
+  logger,
+};
+void _ephemeral;
