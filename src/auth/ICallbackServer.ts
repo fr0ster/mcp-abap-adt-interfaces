@@ -1,3 +1,5 @@
+import type { ILogger } from '../logging/ILogger';
+
 /**
  * Local callback server used by interactive authorization flows.
  *
@@ -14,11 +16,14 @@
 
 export interface ICallbackServerOptions {
   /**
-   * Port for the local listener. Must be an integer in 1..65535.
+   * Port for the local listener. Must be an integer in 0..65535.
    *
-   * `0` is rejected rather than treated as "pick one for me": a flow that builds
-   * its authorization URL before the server binds would advertise `:0` to the
-   * identity provider.
+   * `0` means "bind an ephemeral port": the handle then reports what the OS
+   * actually gave, and the authorization URL must be built from
+   * `handle.redirectUri` rather than from anything known beforehand. A flow
+   * that assembles its URL before binding — or one whose redirect is
+   * registered with the identity provider, as a SAML ACS always is — cannot
+   * use it, because the redirect would advertise a port nobody is listening on.
    */
   readonly port: number;
 
@@ -41,6 +46,12 @@ export interface ICallbackServerOptions {
    * it fires before the bind, during it, or while waiting for the callback.
    */
   readonly signal?: AbortSignal;
+
+  /**
+   * Where the transport reports what it did — an ignored request that was not
+   * our redirect, for instance. Absent means silence; never stdout.
+   */
+  readonly logger?: ILogger;
 }
 
 /**

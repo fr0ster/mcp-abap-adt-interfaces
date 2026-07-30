@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [11.6.0] - 2026-07-30
+
+### Added
+
+- `IAuthorizationStrategy<TResult>`, `AuthorizationRequest` and
+  `AuthorizationOutcome<TResult>` — the contract by which a consumer supplies
+  its own way of conducting an interactive authorization.
+- `ICallbackServerOptions.logger` — where the transport reports an ignored
+  request.
+
+### Changed
+
+- `ICallbackServerOptions.port` accepts `0`, meaning an ephemeral port. Flows
+  that build their authorization URL before binding still cannot use it.
+
 ## [11.5.0] - 2026-07-29
 
 ### Added
