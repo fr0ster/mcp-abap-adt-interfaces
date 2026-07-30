@@ -190,7 +190,19 @@ This package is responsible for:
   is borrowed inside a factory callback and the port is released on the first terminal
   outcome — the callback returning or throwing, an explicit failure, the timeout, or an
   abort — so releasing the socket is never a consequence of a wait settling. `timeoutMs` is
-  mandatory and cancellation is available through an `AbortSignal`.
+  mandatory and cancellation is available through an `AbortSignal`. `port` accepts `0` to bind
+  an ephemeral port (since 11.6.0), in which case the authorization URL must be built from
+  `handle.redirectUri`; a flow that assembles its URL before binding, or one whose redirect is
+  registered with the identity provider such as a SAML ACS, cannot use it. `logger` is where
+  the transport reports an ignored request.
+- `IAuthorizationStrategy<TResult>` / `AuthorizationRequest` / `AuthorizationOutcome<TResult>`
+  (since 11.6.0) - How an interactive authorization is conducted, so a consumer can supply
+  its own instead of the shipped one. `AuthorizationRequest.buildAuthorizationUrl(redirectUri)`
+  is async and is called once the strategy has settled on its redirect URI — which is what
+  makes an ephemeral port possible, since the URL cannot be assembled before the socket is
+  bound. `authorize()` resolves with an `AuthorizationOutcome` that carries the redirect URI
+  alongside the payload, because the token exchange must send that same URI and, with an
+  ephemeral port, has no other way to learn it.
 
 ### Token Domain (`token/`)
 - `ITokenProvider` - Token provider interface (stateful token lifecycle)
