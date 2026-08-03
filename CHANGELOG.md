@@ -32,9 +32,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   | `IPackageHierarchyNode.is_package` | `.isPackage` |
 
   `type` is required on the base, where `IPackageHierarchyNode.adtType` was
-  optional. This is deliberate and immediately earned its keep: compiling
-  `@mcp-abap-adt/adt-clients` against it surfaced two construction sites that
-  could produce a node with no type at all.
+  optional. Both producers in `@mcp-abap-adt/adt-clients` already guard with
+  `if (!objectName || !objectType) continue;`, so the code always supplied one
+  and the stricter contract merely states what was already true.
 
 - **`IAdtObject` is now assembled from the capability atoms** instead of
   declaring its 13 methods itself. The shape is unchanged — the compile-time
