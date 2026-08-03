@@ -108,3 +108,81 @@ export interface ICdsUnitTestState extends IUnitTestState {
   testClassState?: IClassState;
   cdsCheckResponse?: IAdtResponse;
 }
+
+/** Options for fetching a finished run's result document. */
+export interface IUnitTestResultOptions {
+  /** Ask ADT to embed navigation URIs for each reported item. */
+  withNavigationUris?: boolean;
+  /** Result document flavour. */
+  format?: 'abapunit' | 'junit';
+}
+
+/**
+ * Running ABAP Unit and collecting the outcome.
+ *
+ * This is the reason a unit-test handler exists, and until 13.1.0 no interface
+ * described it: the handler was typed as an ADT object, which covers creating
+ * and reading a run but says nothing about starting one or fetching its result.
+ * Consumers reached the methods by casting past the declared type.
+ *
+ * `getStatus` and `getResult` hand back the raw ADT response rather than a
+ * parsed report. That is what the operation currently is, and the contract says
+ * so instead of promising a shape nothing produces.
+ */
+export interface IAdtTestRunnable {
+  /**
+   * Start a run and return its run id.
+   * @param tests the test classes to execute, each with its container class
+   */
+  run(
+    tests: IClassUnitTestDefinition[],
+    options?: IClassUnitTestRunOptions,
+  ): Promise<string>;
+
+  /** Run id of the most recent {@link run}, if one has been started. */
+  getRunId(): string | undefined;
+
+  /**
+   * Poll a run.
+   * @param withLongPolling let ADT hold the request until the run progresses
+   */
+  getStatus(runId: string, withLongPolling?: boolean): Promise<IAdtResponse>;
+
+  /** Response of the most recent {@link getStatus}, if one has been made. */
+  getStatusResponse(): IAdtResponse | undefined;
+
+  /** Fetch the result document of a finished run. */
+  getResult(
+    runId: string,
+    options?: IUnitTestResultOptions,
+  ): Promise<IAdtResponse>;
+
+  /** Response of the most recent {@link getResult}, if one has been made. */
+  getResultResponse(): IAdtResponse | undefined;
+}
+
+/**
+ * ABAP Unit against a CDS view.
+ *
+ * Adds the test-double check that has no equivalent for a plain class, and
+ * widens `run` to accept a class name — a CDS run is normally started from the
+ * generated test class rather than from an explicit test list.
+ */
+export interface IAdtCdsTestRunnable extends IAdtTestRunnable {
+  run(
+    testsOrClassName: IClassUnitTestDefinition[] | string,
+    options?: IClassUnitTestRunOptions,
+  ): Promise<string>;
+
+  /**
+   * Check whether a CDS view can be tested with test doubles.
+   * @param cdsViewName the view to inspect
+   */
+  checkCdsTestDoubles(cdsViewName: string): Promise<ICdsUnitTestState>;
+
+  /** Name of the generated test class, once one is known. */
+  getClassName(): string | undefined;
+
+  /** Name of the CDS view under test, once one is known. */
+  getCdsViewName(): string | undefined;
+}

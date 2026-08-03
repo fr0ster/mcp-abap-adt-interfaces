@@ -168,6 +168,7 @@ This package is responsible for:
   - `IAdtVersionable` — `getVersions`, `getVersionSource`
   - `IAdtTransportAware` — `readTransport`
   - `IAdtSearchable` — `search`; not per-object-type, implemented by whatever locates objects
+  - `IAdtTestRunnable` / `IAdtCdsTestRunnable` (`adt/IAdtUnitTest.ts`, since 13.1.0) — running ABAP Unit and collecting the outcome. Kept with the unit-test types rather than in `IAdtCapabilities.ts`, because unlike the atoms above it is not generic over an object type.
   - Since 13.0.0 `IAdtObject` is *assembled* from these atoms rather than declaring the methods itself, so the atoms are the definitions and the composite cannot drift from them. The shape is unchanged — a compile-time proof in the same file still asserts both directions of the equivalence, which now also catches a method added to `IAdtObject` directly instead of to an atom.
   - The grain follows ADT, not taste: `lock`/`unlock` and `getVersions`/`getVersionSource` are honoured or refused as pairs, and `update`+`delete` split from `create`/`read`/`readMetadata` because objects that record an event (unit-test runs, transport requests) are never edited afterwards.
 - `IAdtOperationOptions` - Unified options for create and update operations

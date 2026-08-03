@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [13.1.0] - 2026-08-03
+
+### Added
+- **`IAdtTestRunnable` and `IAdtCdsTestRunnable`** — the ABAP Unit run surface finally has a contract. Starting a run, polling it and fetching its result is the reason a unit-test handler exists, yet no interface described any of it: the handler was typed as an ADT object, which covers creating and reading a run but says nothing about `run`, `getRunId`, `getStatus`, `getResult`. Consumers reached those methods by casting past the declared type, which is how `adt-clients`' own integration test does it today.
+
+  `IAdtCdsTestRunnable` extends it with `checkCdsTestDoubles` — which has no equivalent for a plain class — and widens `run` to accept a class name, since a CDS run normally starts from the generated test class rather than an explicit test list.
+
+  `getStatus` and `getResult` return the raw `IAdtResponse`. That is what the operation currently is, and the contract says so rather than promising a parsed report that nothing produces.
+
+  Verified against the concrete handlers in `@mcp-abap-adt/adt-clients`: `AdtUnitTest` satisfies `IAdtTestRunnable` and `AdtCdsUnitTest` satisfies `IAdtCdsTestRunnable`, both checked by the compiler.
+- **`IUnitTestResultOptions`** — `withNavigationUris`, `format: 'abapunit' | 'junit'`.
+
 ## [13.0.0] - 2026-08-03
 
 ### Changed — BREAKING
