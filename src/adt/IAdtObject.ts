@@ -8,6 +8,16 @@
  * provides high-level operation chains with automatic error handling and cleanup.
  */
 
+import type {
+  IAdtActivatable,
+  IAdtCheckable,
+  IAdtCrud,
+  IAdtLockable,
+  IAdtTransportAware,
+  IAdtValidatable,
+  IAdtVersionable,
+} from './IAdtCapabilities';
+
 /**
  * Error codes that can be thrown by IAdtObject methods
  * Consumers can catch specific errors using these constants
@@ -151,150 +161,11 @@ export interface IObjectVersion {
  * full-capability composite for backward compatibility and will be removed in a
  * later major. New code should depend on the specific capability it needs.
  */
-export interface IAdtObject<TConfig, TReadResult = TConfig> {
-  /**
-   * Validate object configuration before creation
-   * @param config - Object configuration
-   * @returns State with validation result
-   */
-  validate(config: Partial<TConfig>): Promise<TReadResult>;
-
-  /**
-   * Create object with full operation chain:
-   * validate → create → check → lock → check(inactive) → update → unlock → check → activate (optional)
-   *
-   * @param config - Object configuration
-   * @param options - Create options (activation, cleanup, source code)
-   * @returns Created object configuration
-   * @throws Error if validation fails (object is not created)
-   * @throws Error if any operation fails (with cleanup if deleteOnFailure=true)
-   */
-  create(config: TConfig, options?: IAdtOperationOptions): Promise<TReadResult>;
-
-  /**
-   * Read object (source code or XML that describes the object)
-   * For objects without source code (Domain, DataElement), this returns metadata XML.
-   * For objects with source code (Class, Interface, Program), this returns source code.
-   *
-   * @param config - Object identification (name, etc.)
-   * @param version - 'active' or 'inactive'
-   * @param options - Optional read options
-   * @param options.withLongPolling - If true, adds ?withLongPolling=true to wait for object to become available
-   *                                  Useful after create/activate operations to wait until object is ready
-   * @returns Object configuration or source code, or undefined if not found
-   */
-  read(
-    config: Partial<TConfig>,
-    version?: 'active' | 'inactive',
-    options?: { withLongPolling?: boolean },
-  ): Promise<TReadResult | undefined>;
-
-  /**
-   * Read object metadata (object characteristics: package, responsible, description, etc.)
-   * For objects with source code (Class, Interface, Program), this reads metadata separately from source code.
-   * For objects without source code (Domain, DataElement), this may delegate to read() as read() already returns metadata.
-   *
-   * @param config - Object identification (name, etc.)
-   * @param options - Optional read options
-   * @param options.withLongPolling - If true, adds ?withLongPolling=true to wait for object to become available
-   *                                  Useful after create/activate operations to wait until object is ready
-   * @param options.version - 'active' or 'inactive' (default: 'active')
-   * @returns State with metadata result
-   */
-  readMetadata(
-    config: Partial<TConfig>,
-    options?: { withLongPolling?: boolean; version?: 'active' | 'inactive' },
-  ): Promise<TReadResult>;
-
-  /**
-   * Update object with full operation chain:
-   * lock → check(inactive) → update → unlock → check → activate (optional)
-   *
-   * @param config - Object configuration with updates
-   * @param options - Update options (activation, cleanup, lock handle)
-   * @returns Updated object configuration
-   * @throws Error if lock fails
-   * @throws Error if any operation fails (with cleanup if deleteOnFailure=true)
-   */
-  update(
-    config: Partial<TConfig>,
-    options?: IAdtOperationOptions,
-  ): Promise<TReadResult>;
-
-  /**
-   * Delete object
-   * Performs deletion check before deleting.
-   *
-   * @param config - Object identification
-   * @returns State with delete result
-   * @throws Error if deletion check fails (object is not deleted)
-   */
-  delete(config: Partial<TConfig>): Promise<TReadResult>;
-
-  /**
-   * Activate object
-   * @param config - Object identification
-   * @returns State with activation result
-   */
-  activate(config: Partial<TConfig>): Promise<TReadResult>;
-
-  /**
-   * Check object (syntax, consistency, etc.)
-   * @param config - Object identification
-   * @param status - Optional status to check ('active', 'inactive', 'deletion')
-   * @returns State with check result
-   * @throws Error if check finds errors (type E in XML response)
-   */
-  check(config: Partial<TConfig>, status?: string): Promise<TReadResult>;
-
-  /**
-   * Read transport request information for the object
-   * @param config - Object identification
-   * @param options - Optional read options
-   * @param options.withLongPolling - If true, adds ?withLongPolling=true to wait for object to become available
-   *                                  Useful after create/activate operations to wait until object is ready
-   * @returns State with transport result
-   */
-  readTransport(
-    config: Partial<TConfig>,
-    options?: { withLongPolling?: boolean },
-  ): Promise<TReadResult>;
-
-  /**
-   * Lock object for modification
-   * Sets connection to stateful mode before locking.
-   *
-   * @param config - Object identification
-   * @returns Lock handle (string) that must be used in unlock() and update operations
-   * @throws Error if lock fails (object may be locked by another user)
-   */
-  lock(config: Partial<TConfig>): Promise<string>;
-
-  /**
-   * Unlock object
-   * Sets connection to stateless mode after unlocking.
-   * Must use the same session and lock handle from lock() operation.
-   *
-   * @param config - Object identification
-   * @param lockHandle - Lock handle returned from lock() operation
-   * @returns State with unlock result
-   * @throws Error if unlock fails
-   */
-  unlock(config: Partial<TConfig>, lockHandle: string): Promise<TReadResult>;
-
-  /**
-   * List the version history of this object's source. Identity is passed per
-   * call (the implementations are stateless factories) — e.g.
-   * `getVersions({ className: 'ZCL_X' })`.
-   * @throws AdtOperationError(UNSUPPORTED_OPERATION) when the object has no
-   *         version resource (SAP 404/406, or a non-source object type).
-   *         Never leaks raw HTTP.
-   */
-  getVersions(config: Partial<TConfig>): Promise<IObjectVersion[]>;
-
-  /**
-   * Fetch the source code of a specific version.
-   * @param contentUri the opaque, complete `contentUri` from a getVersions() entry.
-   */
-  getVersionSource(contentUri: string): Promise<string>;
-}
+export interface IAdtObject<TConfig, TReadResult = TConfig>
+  extends IAdtCrud<TConfig, TReadResult>,
+    IAdtValidatable<TConfig, TReadResult>,
+    IAdtCheckable<TConfig, TReadResult>,
+    IAdtActivatable<TConfig, TReadResult>,
+    IAdtLockable<TConfig, TReadResult>,
+    IAdtVersionable<TConfig>,
+    IAdtTransportAware<TConfig, TReadResult> {}
