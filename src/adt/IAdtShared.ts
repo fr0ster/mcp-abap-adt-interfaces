@@ -53,11 +53,33 @@ export type AdtSourceObjectType =
   | Uppercase<AdtSourceObjectTypeLower>;
 
 /**
+ * Anything the repository can hand back as a located object.
+ *
+ * Every way of finding an object — search, where-used, package contents,
+ * package hierarchy, the inactive list — answers with a name and an ADT type
+ * code. Those two are the identity of a hit; everything else is per-source
+ * detail. Before this base existed the code lived under `type` in three of the
+ * shapes and under `adtType` in the other two, where `type` meant an unrelated
+ * enum — so a consumer could not read a hit without knowing which producer made
+ * it. That is what this removes.
+ */
+export interface IAdtObjectHit {
+  /** Object name. */
+  name: string;
+  /** ADT object type code, e.g. 'CLAS/OC', 'DDLS/DF', 'DEVC/K'. */
+  type: string;
+  /** ADT URI of the object, where the producer knows it. */
+  uri?: string;
+  /** Package containing the object, where the producer knows it. */
+  packageName?: string;
+  /** Human-readable description, where the producer knows it. */
+  description?: string;
+}
+
+/**
  * Object reference for group activation and inactive objects
  */
-export interface IObjectReference {
-  type: string;
-  name: string;
+export interface IObjectReference extends IAdtObjectHit {
   parentName?: string;
 }
 
@@ -81,12 +103,9 @@ export interface ISearchObjectsParams {
 /**
  * Search result entry
  */
-export interface ISearchResult {
-  name: string;
-  type: string;
+export interface ISearchResult extends IAdtObjectHit {
+  /** Search always reports a description, even when empty. */
   description: string;
-  packageName?: string;
-  uri?: string;
 }
 
 /**
@@ -174,17 +193,11 @@ export interface IGetWhereUsedListParams {
 /**
  * Single where-used reference
  */
-export interface IWhereUsedReference {
-  /** ADT URI of the referencing object */
+export interface IWhereUsedReference extends IAdtObjectHit {
+  /** ADT URI of the referencing object — always known for a where-used hit. */
   uri: string;
-  /** Object name */
-  name: string;
-  /** ADT object type (e.g., 'CLAS/OC', 'DDLS/DF') */
-  type: string;
   /** Parent URI (for hierarchical display) */
   parentUri?: string;
-  /** Package name containing the object */
-  packageName?: string;
   /** Responsible user */
   responsible?: string;
   /** Whether this is a direct result or container */
@@ -258,12 +271,11 @@ export type PackageHierarchySupportedType =
 
 export type PackageHierarchyCodeFormat = 'source' | 'xml';
 
-export interface IPackageHierarchyNode {
-  name: string;
-  adtType?: string;
-  type?: PackageHierarchySupportedType;
-  description?: string;
-  is_package: boolean;
+export interface IPackageHierarchyNode extends IAdtObjectHit {
+  /** Coarse classification of the node, derived from its `type` code. */
+  kind?: PackageHierarchySupportedType;
+  /** Whether this node is a subpackage. */
+  isPackage: boolean;
   codeFormat?: PackageHierarchyCodeFormat;
   restoreStatus?: 'ok' | 'not-implemented';
   children?: IPackageHierarchyNode[];
@@ -284,16 +296,10 @@ export interface IGetPackageContentsListOptions {
 /**
  * Single item in package contents list
  */
-export interface IPackageContentItem {
-  /** Object name */
-  name: string;
-  /** ADT object type (e.g., 'CLAS/OC', 'PROG/P') */
-  adtType: string;
-  /** Human-readable type name */
-  type?: PackageHierarchySupportedType;
-  /** Object description */
-  description?: string;
-  /** Package containing this object */
+export interface IPackageContentItem extends IAdtObjectHit {
+  /** Coarse classification of the item, derived from its `type` code. */
+  kind?: PackageHierarchySupportedType;
+  /** Package containing this object — always known when listing a package. */
   packageName: string;
   /** Whether this item is a subpackage */
   isPackage: boolean;

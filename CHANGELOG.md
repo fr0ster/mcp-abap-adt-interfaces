@@ -7,6 +7,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [13.0.0] - 2026-08-03
+
+### Changed — BREAKING
+- **One shape for a located object: `IAdtObjectHit`.** Five types described the
+  same thing — an object the repository handed back — and disagreed on how. The
+  ADT type code lived under `type` in `ISearchResult`, `IWhereUsedReference` and
+  `IObjectReference`, but under `adtType` in `IPackageContentItem` and
+  `IPackageHierarchyNode`, where the name `type` was taken by an unrelated
+  `PackageHierarchySupportedType` enum. On top of that the same concept was
+  `isPackage` in one and `is_package` in its sibling — snake_case and camelCase
+  for one idea in one file. A consumer could not read a hit without first knowing
+  which producer made it.
+
+  All five now extend `IAdtObjectHit` (`name`, `type`, optional `uri`,
+  `packageName`, `description`). Migration, in the two types that moved:
+
+  | before | after |
+  |---|---|
+  | `IPackageContentItem.adtType` | `.type` |
+  | `IPackageContentItem.type` (enum) | `.kind` |
+  | `IPackageHierarchyNode.adtType` | `.type` |
+  | `IPackageHierarchyNode.type` (enum) | `.kind` |
+  | `IPackageHierarchyNode.is_package` | `.isPackage` |
+
+  `type` is required on the base, where `IPackageHierarchyNode.adtType` was
+  optional. This is deliberate and immediately earned its keep: compiling
+  `@mcp-abap-adt/adt-clients` against it surfaced two construction sites that
+  could produce a node with no type at all.
+
+- **`IAdtObject` is now assembled from the capability atoms** instead of
+  declaring its 13 methods itself. The shape is unchanged — the compile-time
+  proof in `IAdtCapabilities.ts` asserts the equivalence in both directions, and
+  `adt-clients` compiles against it untouched — so this breaks no consumer. It is
+  listed here because the atoms, not the composite, are now the definitions: a
+  method added to `IAdtObject` directly instead of to an atom is a compile error.
+
+### Added
+- **`IAdtCreatable`, `IAdtReadable`, `IAdtModifiable`** — `IAdtCrud` bundled five
+  methods, which made it a lie for any handler that refuses some of them: a
+  unit-test run and a transport request are created and read but never updated or
+  deleted. `IAdtCrud` is retained as the composite of the three, so existing
+  consumers keep compiling.
+
+  The grain is not arbitrary. It follows ADT: `lock`/`unlock` and
+  `getVersions`/`getVersionSource` are two ends of one operation and stay
+  together, while `update`+`delete` separate from `create`/`read`/`readMetadata`
+  because an object that records an event is never edited afterwards. Across the
+  35 handlers in `adt-clients`, `update` and `delete` are refused by exactly the
+  same two handlers, and `create`/`read`/`readMetadata` by none.
+- **`IAdtSearchable<TCriteria, TResult>`** — the capability of locating objects,
+  parameterised because free-text search, where-used and package listing differ
+  in what they accept and how much detail they return, while agreeing that a
+  result is a named object with an ADT type code.
+- **`IAdtObjectHit`** — see above.
+
 ## [12.0.0] - 2026-08-03
 
 ### Removed — BREAKING

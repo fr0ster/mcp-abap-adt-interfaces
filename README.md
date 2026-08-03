@@ -156,15 +156,20 @@ This package is responsible for:
     - Create: validate → create → check → lock → check(inactive) → update → unlock → check → activate
     - Update: lock → check(inactive) → update → unlock → check → activate
     - Delete: check(deletion) → delete
-- **Capability atoms** (`adt/IAdtCapabilities.ts`, since 11.2.0) — seven small interfaces that partition the 13 methods of `IAdtObject`, each method belonging to exactly one, so a consumer can depend on just the capability it needs instead of the whole contract:
-  - `IAdtCrud` — `create`, `read`, `readMetadata`, `update`, `delete`
+- **Capability atoms** (`adt/IAdtCapabilities.ts`, since 11.2.0) — small interfaces that partition the 13 methods of `IAdtObject`, each method belonging to exactly one, so a consumer can depend on just the capability it needs instead of the whole contract:
+  - `IAdtCreatable` — `create`
+  - `IAdtReadable` — `read`, `readMetadata`
+  - `IAdtModifiable` — `update`, `delete`
+  - `IAdtCrud` — the composite of the three above, retained for consumers that genuinely do all five
   - `IAdtValidatable` — `validate`
   - `IAdtCheckable` — `check`
   - `IAdtActivatable` — `activate`
   - `IAdtLockable` — `lock`, `unlock`
   - `IAdtVersionable` — `getVersions`, `getVersionSource`
   - `IAdtTransportAware` — `readTransport`
-  - Purely additive: `IAdtObject` is unchanged, and a compile-time proof in the same file asserts the intersection of the atoms is structurally identical to it (both directions). A class implementing the atoms satisfies `IAdtObject` structurally.
+  - `IAdtSearchable` — `search`; not per-object-type, implemented by whatever locates objects
+  - Since 13.0.0 `IAdtObject` is *assembled* from these atoms rather than declaring the methods itself, so the atoms are the definitions and the composite cannot drift from them. The shape is unchanged — a compile-time proof in the same file still asserts both directions of the equivalence, which now also catches a method added to `IAdtObject` directly instead of to an atom.
+  - The grain follows ADT, not taste: `lock`/`unlock` and `getVersions`/`getVersionSource` are honoured or refused as pairs, and `update`+`delete` split from `create`/`read`/`readMetadata` because objects that record an event (unit-test runs, transport requests) are never edited afterwards.
 - `IAdtOperationOptions` - Unified options for create and update operations
   - Fields: `activateOnCreate`, `activateOnUpdate`, `deleteOnFailure`, `sourceCode`, `xmlContent`, `timeout`
 - `AdtObjectErrorCodes` - Error code constants for ADT object operations
@@ -179,6 +184,7 @@ This package is responsible for:
   - Object-specific enums/option/result helpers (e.g. `EnhancementType`, `ServiceBindingVariant`, `IFixedValue`, behaviorDefinition `ICheckRunResult`/`IValidationResult`, CDS/class-includes configs)
   - This package is the **single definition site** for these; `@mcp-abap-adt/adt-clients` imports and re-exports them (its public API is unchanged).
 - **Cross-cutting shared types** (`adt/IAdtShared.ts`) — `AdtObjectType`(+lower/source variants), `IObjectReference`, search (`ISearchObjectsParams`/`ISearchResult`), where-used (`IGetWhereUsed*Params`/`IWhereUsedListResult`), package hierarchy (`IPackageHierarchyNode`/`IGetPackageHierarchyOptions`/…), virtual folders, SQL/table-contents/discovery params, `IInactiveObjectsResponse`. (`IReadOptions` lives in `shared/IReadOptions.ts`.)
+  - `IAdtObjectHit` (since 13.0.0) is the common base of everything the repository hands back as a located object: `ISearchResult`, `IWhereUsedReference`, `IObjectReference`, `IPackageContentItem`, `IPackageHierarchyNode`. A hit is a `name` plus an ADT `type` code; the rest is per-source detail. Before it, the code lived under `type` in three of those shapes and under `adtType` in the other two — where `type` meant an unrelated enum — so a consumer had to know which producer made a hit in order to read it.
 
 ### Authentication Domain (`auth/`)
 - `IAuthorizationConfig` - Authorization values (UAA credentials, refresh token)
