@@ -228,14 +228,13 @@ This package is responsible for:
   - For JWT: token refresh handled internally via `ITokenRefresher`
   - For Basic: no token refresh needed
 - `IAdtResponse` - Minimal response shape returned by `makeAdtRequest()`
-- **Connection capability atoms** (`connection/IConnectionCapabilities.ts`, since 11.5.0) — the same split as the ADT atoms above, for the same reason: `IAbapConnection` is the minimum every transport can honour, and these are the things only some can.
+- **Connection capability atom** (`connection/IConnectionCapabilities.ts`) — the same split as the ADT atoms above, for the same reason: `IAbapConnection` is the minimum every transport can honour, and this is a thing only some can.
   - `ISessionLifecycleAware` — `disconnect()`, `isConnected()`, `getSessionIdentity()`
-    - `disconnect()` resolves with an `ITeardownReport` rather than throwing: `abandonedWindows` names the locks nobody released, `releasePending` says a transport release is outstanding
+    - `disconnect(options?)` resolves to `void` and **always settles**. Whatever it could not finish — a transport release that did not complete, a cleanup skipped at the deadline — is the connection's own state, and a repeat call performs what is still owed. `options.deadlineMs` bounds the wait for the transport release, measured from the call
     - `getSessionIdentity()` names which **server session** the connection is on. A stable client-side conversation id says nothing about whether the server replaced the session underneath it — compare two readings across an operation to detect a replacement
     - `null` is not a verdict on the connection: it means no identity is known, which happens both when no session exists *and* when the connection is live over a server that issues no session cookie. Use `isConnected()` for connection state. It follows that `null` → non-null is not a replacement, only a *changed* value is
-  - `ILockWindowAware` — `beginWindow(label)`, `endWindow(token)`, marking a span that must not lose its session (LOCK to UNLOCK). `WindowToken` is a symbol, not a string: the same object may be locked twice in one chain and the two must close independently
   - `ADT_SESSION_ERROR` / `AdtSessionErrorCode` — `ADT_NOT_CONNECTED`, `ADT_SESSION_REPLACED`, `ADT_RELEASE_PENDING`. Match on the code, not on the message
-  - Purely additive: `IAbapConnection` is unchanged. An RFC connection, a batch recorder and a test stub are all legitimate connections that own no HTTP session and can open no lock window; making these methods mandatory would force each of them to implement a lie. A compile-time proof in `__typechecks__/connectionCapabilities.ts` asserts a session-less connection still satisfies `IAbapConnection`
+  - Additive to `IAbapConnection`, which is unchanged. An RFC connection, a batch recorder and a test stub are all legitimate connections that own no HTTP session; making these methods mandatory would force each of them to implement a lie. A compile-time proof in `__typechecks__/connectionCapabilities.ts` asserts a session-less connection still satisfies `IAbapConnection`
 - `IWebSocketTransport` - Generic realtime transport contract for WS-based flows
   - Methods: `connect()`, `disconnect()`, `send()`, `onMessage()`, `onOpen()`, `onError()`, `onClose()`, `isConnected()`
 - `IWebSocketConnectOptions` - WS connect options (`protocols`, `headers`, timeouts, heartbeat)
