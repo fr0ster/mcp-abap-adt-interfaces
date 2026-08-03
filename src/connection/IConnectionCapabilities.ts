@@ -1,46 +1,15 @@
 /**
- * Capability atoms for the connection — session lifecycle and lock windows,
- * partitioned so each method belongs to exactly one small interface.
+ * Capability atoms for the connection.
  *
- * The same shape as the ADT capability atoms, for the same reason: `IAbapConnection`
- * is the minimum every transport can honour, and these are the things only some
- * can. An RFC connection, a batch recorder and a test stub are all legitimate
- * `IAbapConnection`s that own no HTTP session and can open no lock window; making
- * these methods mandatory would force each of them to implement a lie.
+ * The same shape as the ADT capability atoms, for the same reason:
+ * `IAbapConnection` is the minimum every transport can honour, and this is a
+ * thing only some can. An RFC connection, a batch recorder and a test stub are
+ * all legitimate `IAbapConnection`s that own no HTTP session; making these
+ * methods mandatory would force each of them to implement a lie.
  *
- * ADDITIVE. `IAbapConnection` is unchanged — an implementation adds an atom when
- * it genuinely supports it, and a consumer narrows to the atom it needs.
+ * ADDITIVE to `IAbapConnection`, which is unchanged — an implementation adds the
+ * atom when it genuinely supports it, and a consumer narrows to it.
  */
-
-/**
- * What a teardown could not finish.
- *
- * A teardown resolves with this rather than throwing, because "the session is
- * gone" and "two locks were left behind" are different facts and the caller
- * needs both.
- */
-export interface ITeardownReport {
-  /**
-   * Labels of the lock windows still open when the bounded wait gave up.
-   *
-   * These are the locks nobody released. Whoever tears the session down learns
-   * which objects need unlocking by hand, instead of the next developer finding
-   * them locked and inactive with no record of why.
-   */
-  abandonedWindows: string[];
-  /** A transport release did not complete and is still outstanding. */
-  releasePending: boolean;
-}
-
-/**
- * Handle for one open lock window.
- *
- * A symbol rather than a string: two windows may carry the same label — the same
- * object locked twice in a chain — and they must still close independently.
- * Symbols are unique per occurrence, so a stale handle cannot close a window it
- * did not open.
- */
-export type WindowToken = symbol;
 
 /** Error codes a session-aware connection raises. Match on these, not on messages. */
 export const ADT_SESSION_ERROR = {
@@ -69,13 +38,24 @@ export type AdtSessionErrorCode =
  */
 export interface ISessionLifecycleAware {
   /**
-   * Tears the session down and reports what could not be finished.
+   * Tears the session down.
    *
-   * Resolves rather than throws — the report carries the failures. In-flight
-   * requests are drained first, so a teardown never pulls the session out from
-   * under a request already running.
+   * Resolves rather than throws, and **always settles**: whatever it could not
+   * finish is the connection's own state, not the caller's problem. A repeat
+   * call performs whatever is still owed — a transport release that did not
+   * complete, a cleanup skipped because the deadline expired — so a caller that
+   * wants the connection fully released simply calls it again.
+   *
+   * In-flight requests are NOT waited for. They continue as their caller
+   * arranged and nothing is aborted; their results can no longer affect this
+   * connection.
+   *
+   * @param options.deadlineMs How long to wait for the transport release before
+   *   detaching it, measured from this call and including any time spent queued
+   *   behind another lifecycle transition. Defaults to `SAP_RELEASE_DEADLINE_MS`.
+   *   Must be finite and non-negative; `0` means do not wait at all.
    */
-  disconnect(): Promise<ITeardownReport>;
+  disconnect(options?: { deadlineMs?: number }): Promise<void>;
 
   /** Whether a caller may start work. False throughout a pending teardown. */
   isConnected(): boolean;
@@ -98,22 +78,7 @@ export interface ISessionLifecycleAware {
    * Only a CHANGED value is a replacement. `null` → non-null is an identity
    * being learned, not a new session: the LOCK response is often the first to
    * carry a session cookie, and reading that as a replacement would condemn the
-   * window it just opened.
+   * operation it just covered.
    */
   getSessionIdentity(): string | null;
-}
-
-/**
- * A connection that can be told which spans must not lose their session.
- *
- * A lock outlives the request that takes it, so a teardown between LOCK and
- * UNLOCK strands the lock rather than merely failing a request. A window marks
- * that span: a teardown requested while one is open waits for it, bounded, and
- * reports it as abandoned rather than dropping it silently.
- */
-export interface ILockWindowAware {
-  /** Opens a window. The label identifies it in {@link ITeardownReport.abandonedWindows}. */
-  beginWindow(label: string): WindowToken;
-  /** Closes the window. A token matching no open window is ignored. */
-  endWindow(token: WindowToken): void;
 }

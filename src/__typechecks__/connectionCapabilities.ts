@@ -7,14 +7,11 @@ import type {
 import {
   ADT_SESSION_ERROR,
   type AdtSessionErrorCode,
-  type ILockWindowAware,
   type ISessionLifecycleAware,
-  type ITeardownReport,
-  type WindowToken,
 } from '../connection/IConnectionCapabilities';
 
 // The point of the split: a transport that owns no HTTP session is STILL a
-// valid IAbapConnection. If the atoms ever migrate into IAbapConnection, this
+// valid IAbapConnection. If the atom ever migrates into IAbapConnection, this
 // stops compiling — which is the warning, since RFC connections, batch
 // recorders and test stubs all live here.
 const _sessionless: IAbapConnection = {
@@ -34,29 +31,23 @@ const _sessionless: IAbapConnection = {
 };
 void _sessionless;
 
-// And a connection that supports everything composes the atoms alongside it.
-const _full: IAbapConnection & ISessionLifecycleAware & ILockWindowAware = {
+// And a connection that owns its session composes the atom alongside it.
+const _full: IAbapConnection & ISessionLifecycleAware = {
   ..._sessionless,
-  disconnect: async () => ({ abandonedWindows: [], releasePending: false }),
+  disconnect: async () => {},
   isConnected: () => true,
   getSessionIdentity: () => 'SAP_SESSIONID_T_100=S1',
-  beginWindow: (label: string) => Symbol(label),
-  endWindow: () => {},
 };
 void _full;
 
-// Windows are distinguishable per occurrence, not per label: the same object
-// locked twice must close twice, and a stale token must not close a live window.
-const _first: WindowToken = _full.beginWindow('Class/ZCL_X');
-const _second: WindowToken = _full.beginWindow('Class/ZCL_X');
-const _distinct: boolean = _first !== _second;
-void _distinct;
+// disconnect() resolves to nothing: a teardown reports through the connection's
+// own state, not through a value the caller has to interpret.
+const _void: Promise<void> = _full.disconnect();
+void _void;
 
-const _report: ITeardownReport = {
-  abandonedWindows: ['Class/ZCL_X'],
-  releasePending: true,
-};
-void _report;
+// The deadline is optional, and omitting it is not "no bound" — see the doc
+// comment. Both call shapes must type-check.
+void _full.disconnect({ deadlineMs: 0 });
 
 // The codes are values, so a consumer can match on them rather than on a
 // message. Every member must widen to the code type.

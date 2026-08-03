@@ -335,10 +335,7 @@ export type {
 export type { ICalmRequestOptions } from './connection/ICalmRequestOptions';
 export type {
   AdtSessionErrorCode,
-  ILockWindowAware,
   ISessionLifecycleAware,
-  ITeardownReport,
-  WindowToken,
 } from './connection/IConnectionCapabilities';
 export { ADT_SESSION_ERROR } from './connection/IConnectionCapabilities';
 export type {

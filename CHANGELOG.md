@@ -7,6 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [12.0.0] - 2026-08-03
+
+### Removed — BREAKING
+- **`ITeardownReport`, `ILockWindowAware` and `WindowToken`.** They were added in
+  11.5.0, four days before this release, and should not have been. The criterion
+  they failed is this package's own: `interfaces` holds what a **consumer
+  imports**. Counted across all four repositories that use it, `ITeardownReport`
+  appeared in exactly one — `@mcp-abap-adt/connection` — and only to type its own
+  method's return. No consumer imported it, and both of its fields were vacuous in
+  practice: `releasePending` was hard-coded `false`, and `abandonedWindows` drew
+  from windows that nothing opens.
+
+  `ILockWindowAware` and `WindowToken` are worse: `beginWindow()` has **zero
+  callers** anywhere, and the behaviour it was supposed to provide — a span in
+  which a short per-request timeout must not abort a request — has been
+  implemented in the connection's own reference-counted
+  `beginCriticalSection()`/`endCriticalSection()` since 1.9.0. Two mechanisms for
+  one idea, and the one promoted into the shared contract was the no-op.
+
+  Removing them breaks nothing in practice, because nothing outside the connector
+  ever referenced them; the major is formal. Doing it now, while that is still
+  true, is cheaper than carrying deprecated types to the next one.
+
+### Changed — BREAKING
+- **`ISessionLifecycleAware.disconnect()` returns `Promise<void>`** and takes an
+  optional `{ deadlineMs }`. It always settles: whatever a teardown could not
+  finish is the connection's own state, and a repeat call performs what is still
+  owed, so nothing has to be handed back for the caller to interpret. `deadlineMs`
+  bounds the wait for the transport release — measured from the call, so time
+  spent queued behind another lifecycle transition counts against it — and
+  defaults to `SAP_RELEASE_DEADLINE_MS`. Omitting it does **not** mean "no bound";
+  an unbounded teardown was the defect this whole line of work exists to remove.
+
+### Kept
+- `ISessionLifecycleAware` and `ADT_SESSION_ERROR` — the two additions from 11.5.0
+  that a consumer genuinely imports.
+
+Design: `docs/superpowers/specs/2026-07-31-teardown-policy-design.md` in
+`@mcp-abap-adt/adt-clients`.
+
 ## [11.6.0] - 2026-07-30
 
 ### Added
