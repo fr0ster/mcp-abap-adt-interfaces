@@ -8,6 +8,20 @@
 export type { HttpError, XmlNode } from './adt/AdtTypes';
 export { AdtOperationError } from './adt/AdtTypes';
 export type {
+  AbapGitStatus,
+  IAbapGitErrorLogEntry,
+  IAbapGitExternalRepoBranch,
+  IAbapGitExternalRepoCredentials,
+  IAbapGitExternalRepoInfo,
+  IAbapGitLinkArgs,
+  IAbapGitPullArgs,
+  IAbapGitPullResult,
+  IAbapGitRepoStatus,
+  IAbapGitUnlinkArgs,
+  IAdtAbapGitClient,
+  IAdtAbapGitClientOptions,
+} from './adt/IAdtAbapGit';
+export type {
   IAccessControlConfig,
   IAccessControlState,
   ICreateAccessControlParams,
