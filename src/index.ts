@@ -372,6 +372,18 @@ export {
   isNetworkError,
   NETWORK_ERROR_CODES,
 } from './connection/NetworkErrors';
+export type {
+  IClassExecuteWithProfilerOptions,
+  IClassExecuteWithProfilingOptions,
+  IClassExecuteWithProfilingResult,
+  IClassExecutionTarget,
+  IClassExecutor,
+  IProgramExecuteWithProfilerOptions,
+  IProgramExecuteWithProfilingOptions,
+  IProgramExecuteWithProfilingResult,
+  IProgramExecutionTarget,
+  IProgramExecutor,
+} from './execution/IAdtExecutors';
 export type { IExecutor } from './execution/IExecutor';
 // Feeds domain
 export type { IFeedRepository } from './feeds/IFeedRepository';
