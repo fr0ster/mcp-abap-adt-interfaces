@@ -11,3 +11,6 @@ tsconfig.build.tsbuildinfo
 # Git worktrees
 .worktrees/
 
+
+# Subagent-driven development scratch (ledger, briefs, review packages)
+.superpowers/
