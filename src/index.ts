@@ -41,6 +41,11 @@ export type {
   ICreateAuthorizationFieldParams,
 } from './adt/IAdtAuthorizationField';
 export type {
+  IBatchPayload,
+  IBatchRequestPart,
+  IBatchResponsePart,
+} from './adt/IAdtBatch';
+export type {
   BehaviorDefinitionImplementationType,
   CheckReporter,
   IBehaviorDefinitionConfig,
