@@ -406,6 +406,13 @@ export * from './Headers';
 export type { ILogger } from './logging/ILogger';
 export { LogLevel } from './logging/LogLevel';
 export type {
+  DebuggerStepAction,
+  IDebuggerAttachParams,
+  IDebuggerGetVariablesParams,
+  IDebuggerListenParams,
+  IDebuggerStepParams,
+} from './runtime/IAdtDebuggerSession';
+export type {
   IApplicationLog,
   IGetApplicationLogObjectOptions,
   IGetApplicationLogSourceOptions,
