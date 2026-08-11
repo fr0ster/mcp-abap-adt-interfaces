@@ -8,6 +8,20 @@
 export type { HttpError, XmlNode } from './adt/AdtTypes';
 export { AdtOperationError } from './adt/AdtTypes';
 export type {
+  AbapGitStatus,
+  IAbapGitErrorLogEntry,
+  IAbapGitExternalRepoBranch,
+  IAbapGitExternalRepoCredentials,
+  IAbapGitExternalRepoInfo,
+  IAbapGitLinkArgs,
+  IAbapGitPullArgs,
+  IAbapGitPullResult,
+  IAbapGitRepoStatus,
+  IAbapGitUnlinkArgs,
+  IAdtAbapGitClient,
+  IAdtAbapGitClientOptions,
+} from './adt/IAdtAbapGit';
+export type {
   IAccessControlConfig,
   IAccessControlState,
   ICreateAccessControlParams,
@@ -26,6 +40,11 @@ export type {
   IAuthorizationFieldState,
   ICreateAuthorizationFieldParams,
 } from './adt/IAdtAuthorizationField';
+export type {
+  IBatchPayload,
+  IBatchRequestPart,
+  IBatchResponsePart,
+} from './adt/IAdtBatch';
 export type {
   BehaviorDefinitionImplementationType,
   CheckReporter,
@@ -68,9 +87,14 @@ export type {
   ILocalTypesConfig,
 } from './adt/IAdtClass';
 export type {
+  IAdtClientOptions,
+  IAdtSystemContext,
+} from './adt/IAdtClientOptions';
+export type {
   IAdtNonVersionedObject,
   IAdtSourceObject,
 } from './adt/IAdtComposites';
+export type { IAdtContentTypes, IAdtHeaders } from './adt/IAdtContentTypes';
 export type {
   DataElementTypeKind,
   ICreateDataElementParams,
@@ -289,9 +313,15 @@ export type {
 } from './adt/IAdtTransformation';
 export type {
   ICreateTransportParams,
+  IListTransportsOptions,
   IListTransportsParams,
   ITransportConfig,
+  ITransportSearchConfiguration,
   ITransportState,
+} from './adt/IAdtTransport';
+export {
+  TRANSPORT_SEARCH_CONFIGURATIONS_URL,
+  TransportSearchConfigurationMissing,
 } from './adt/IAdtTransport';
 export type {
   ClassUnitTestDefinition,
@@ -343,9 +373,13 @@ export type {
 export type { ICalmRequestOptions } from './connection/ICalmRequestOptions';
 export type {
   AdtSessionErrorCode,
+  IDeferredResponseConnection,
   ISessionLifecycleAware,
 } from './connection/IConnectionCapabilities';
-export { ADT_SESSION_ERROR } from './connection/IConnectionCapabilities';
+export {
+  ADT_SESSION_ERROR,
+  hasDeferredResponses,
+} from './connection/IConnectionCapabilities';
 export type {
   IWebSocketCloseInfo,
   IWebSocketConnectOptions,
@@ -358,6 +392,18 @@ export {
   isNetworkError,
   NETWORK_ERROR_CODES,
 } from './connection/NetworkErrors';
+export type {
+  IClassExecuteWithProfilerOptions,
+  IClassExecuteWithProfilingOptions,
+  IClassExecuteWithProfilingResult,
+  IClassExecutionTarget,
+  IClassExecutor,
+  IProgramExecuteWithProfilerOptions,
+  IProgramExecuteWithProfilingOptions,
+  IProgramExecuteWithProfilingResult,
+  IProgramExecutionTarget,
+  IProgramExecutor,
+} from './execution/IAdtExecutors';
 export type { IExecutor } from './execution/IExecutor';
 // Feeds domain
 export type { IFeedRepository } from './feeds/IFeedRepository';
@@ -379,6 +425,13 @@ export * from './Headers';
 // Logging domain
 export type { ILogger } from './logging/ILogger';
 export { LogLevel } from './logging/LogLevel';
+export type {
+  DebuggerStepAction,
+  IDebuggerAttachParams,
+  IDebuggerGetVariablesParams,
+  IDebuggerListenParams,
+  IDebuggerStepParams,
+} from './runtime/IAdtDebuggerSession';
 export type {
   IApplicationLog,
   IGetApplicationLogObjectOptions,

@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [14.0.0] - 2026-08-11
+
+### Changed — BREAKING
+- **`IListTransportsParams` narrowed to a required `configUri`.** `user`, `status`, `date_range`, `target_system` and `request_type` are gone — they were never read by the server.
+
+  Probed on a live SAP trial 2026-08-07: `/sap/bc/adt/cts/transportrequests` answered with the same 309-byte empty root for `?user=`, for `?status=`, for the configuration's own property spellings, and for no parameters at all — while 15 transport requests existed on the system and reading them individually worked. `?configUri=<href>` returned 137 181 bytes and 16 requests from the same system in the same minute. The endpoint is a saved-configuration search, not a filtered query: the five fields this removes describe a filter the server never applied.
+
+  **Migration**: obtain an href from `GET` on `TRANSPORT_SEARCH_CONFIGURATIONS_URL` (`/sap/bc/adt/cts/transportrequests/searchconfiguration/configurations`) and pass it as `configUri`. Filtering is a property of the saved configuration, created in Eclipse — there was no server-side filtering to lose, so there is no field-by-field equivalent to migrate to. `IListTransportsOptions.configUri` stays optional for callers that want to opt into a resolved default instead of naming one explicitly.
+
+### Added
+- **The contract that was still declared in `@mcp-abap-adt/adt-clients` moves here**, so a consumer has one import point and one seam to override, instead of importing from two packages with no substitution point. All moves are verbatim — no shape changes — except `IAdtClientOptions.contentTypes`, which was typed with an inline `import('../core/shared/contentTypes')` reaching into `adt-clients` and is now a normal sibling import of `IAdtContentTypes` declared alongside it.
+
+  | group | count | added |
+  |---|---|---|
+  | abapGit (`adt/IAdtAbapGit.ts`) | 12 | `IAdtAbapGitClient`, `IAbapGitLinkArgs`, `IAbapGitPullArgs`, `IAbapGitPullResult`, `IAbapGitUnlinkArgs`, `IAbapGitRepoStatus`, `IAbapGitErrorLogEntry`, `IAbapGitExternalRepoCredentials`, `IAbapGitExternalRepoBranch`, `IAbapGitExternalRepoInfo`, `IAdtAbapGitClientOptions`, `AbapGitStatus` |
+  | executors (`execution/IAdtExecutors.ts`) | 10 | `IClassExecutor`, `IProgramExecutor`, `IClassExecutionTarget`, `IProgramExecutionTarget`, `IClassExecuteWithProfilerOptions`, `IClassExecuteWithProfilingOptions`, `IClassExecuteWithProfilingResult`, `IProgramExecuteWithProfilerOptions`, `IProgramExecuteWithProfilingOptions`, `IProgramExecuteWithProfilingResult` |
+  | debugger session (`runtime/IAdtDebuggerSession.ts`) | 5 | `IDebuggerListenParams`, `IDebuggerAttachParams`, `IDebuggerStepParams`, `IDebuggerGetVariablesParams`, `DebuggerStepAction` |
+  | batch payload (`adt/IAdtBatch.ts`) | 3 | `IBatchRequestPart`, `IBatchPayload`, `IBatchResponsePart` |
+  | content-type contract (`adt/IAdtContentTypes.ts`) | 2 | `IAdtContentTypes`, `IAdtHeaders` |
+  | client options + system context (`adt/IAdtClientOptions.ts`) | 2 | `IAdtClientOptions`, `IAdtSystemContext` |
+
+  **Two things deliberately stay in `adt-clients` — not part of this move**: the classes `AdtContentTypesBase`/`AdtContentTypesModern` (354 lines, 38 methods, `Modern extends Base`) are implementation, and `resolveContentTypes()` stays with them. Only the two interfaces above are here.
+
+- **`IListTransportsOptions`, `ITransportSearchConfiguration`, `TRANSPORT_SEARCH_CONFIGURATIONS_URL`, `TransportSearchConfigurationMissing`** (`adt/IAdtTransport.ts`) — the high-level transport-list surface and the saved-configuration shape behind the breaking change above. `TransportSearchConfigurationMissing` is the error a consumer catches when a system has no saved search configured at all (precedent: `AdtOperationError` in `src/adt/AdtTypes.ts`).
+- **`IDeferredResponseConnection` / `hasDeferredResponses()`** (`connection/IConnectionCapabilities.ts`) — marks a connection (typically a batch recorder) whose responses resolve only after a later flush, so a caller can detect the deadlock risk of awaiting mid-recording before hitting it.
+
 ## [13.1.0] - 2026-08-03
 
 ### Added

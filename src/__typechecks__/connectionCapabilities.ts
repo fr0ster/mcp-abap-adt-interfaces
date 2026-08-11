@@ -57,3 +57,28 @@ const _codes: AdtSessionErrorCode[] = [
   ADT_SESSION_ERROR.RELEASE_PENDING,
 ];
 void _codes;
+
+// A batch recorder is a legitimate IAbapConnection whose responses arrive late.
+// The atom says so; nothing in IAbapConnection can.
+import {
+  hasDeferredResponses,
+  type IDeferredResponseConnection,
+} from '../connection/IConnectionCapabilities';
+
+const _deferring: IAbapConnection & IDeferredResponseConnection = {
+  ..._sessionless,
+  responsesAreDeferred: true,
+};
+void _deferring;
+
+// The guard narrows whatever the caller holds, without the caller importing the
+// atom's shape.
+const _narrowed: IAbapConnection = _sessionless;
+if (hasDeferredResponses(_narrowed)) {
+  const _flag: true = _narrowed.responsesAreDeferred;
+  void _flag;
+}
+
+// @ts-expect-error the flag is `true`, not `boolean`: "sometimes deferred" is not a state.
+const _sometimes: IDeferredResponseConnection = { responsesAreDeferred: false };
+void _sometimes;
