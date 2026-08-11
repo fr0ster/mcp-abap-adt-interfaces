@@ -90,6 +90,7 @@ export type {
   IAdtNonVersionedObject,
   IAdtSourceObject,
 } from './adt/IAdtComposites';
+export type { IAdtContentTypes, IAdtHeaders } from './adt/IAdtContentTypes';
 export type {
   DataElementTypeKind,
   ICreateDataElementParams,
