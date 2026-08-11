@@ -373,9 +373,13 @@ export type {
 export type { ICalmRequestOptions } from './connection/ICalmRequestOptions';
 export type {
   AdtSessionErrorCode,
+  IDeferredResponseConnection,
   ISessionLifecycleAware,
 } from './connection/IConnectionCapabilities';
-export { ADT_SESSION_ERROR } from './connection/IConnectionCapabilities';
+export {
+  ADT_SESSION_ERROR,
+  hasDeferredResponses,
+} from './connection/IConnectionCapabilities';
 export type {
   IWebSocketCloseInfo,
   IWebSocketConnectOptions,
