@@ -87,6 +87,10 @@ export type {
   ILocalTypesConfig,
 } from './adt/IAdtClass';
 export type {
+  IAdtClientOptions,
+  IAdtSystemContext,
+} from './adt/IAdtClientOptions';
+export type {
   IAdtNonVersionedObject,
   IAdtSourceObject,
 } from './adt/IAdtComposites';
