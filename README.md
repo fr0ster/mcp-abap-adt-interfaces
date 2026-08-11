@@ -6,6 +6,16 @@ Shared interfaces for MCP ABAP ADT packages.
 
 This package provides all TypeScript interfaces used across the MCP ABAP ADT ecosystem, ensuring consistency and type safety across all packages.
 
+This package exists to be the **one import point** for the contract: object
+configs/states, client options, abapGit, batch payloads, executors, and
+debugger session parameters all live here rather than in
+`@mcp-abap-adt/adt-clients`, so a consumer imports one package and has exactly
+one seam to override at — a custom `IAdtContentTypes`, a connection that
+implements `IDeferredResponseConnection`, and so on — without reaching into
+the implementation package to do it. Concrete implementations (parsers,
+request builders, the shipped `IAdtContentTypes` classes) stay in
+`adt-clients`; this package never depends on it.
+
 ## Installation
 
 ```bash
@@ -16,13 +26,13 @@ npm install @mcp-abap-adt/interfaces
 
 This package contains all interfaces organized by domain:
 
-- **`adt/`** - ADT object operations interfaces (IAdtObject, operation options, error codes)
+- **`adt/`** - ADT object operations interfaces (IAdtObject, operation options, error codes), plus the abapGit client contract, batch payload shapes, ADT client options, and the content-type/header contract
 - **`auth/`** - Core authentication interfaces (configs, auth types)
 - **`token/`** - Token-related interfaces (token provider, results, options)
 - **`session/`** - Session storage interface
 - **`serviceKey/`** - Service key storage interface
-- **`connection/`** - Connection and realtime transport interfaces (AbapConnection, request options, WebSocket transport contracts)
-- **`execution/`** - Execution contracts for runnable entities (`IExecutor`)
+- **`connection/`** - Connection and realtime transport interfaces (AbapConnection, request options, WebSocket transport contracts, deferred-response detection)
+- **`execution/`** - Execution contracts for runnable entities (`IExecutor`, class/program executors with profiling)
 - **`feeds/`** - Feed access interfaces (IFeedRepository, feed entries, system messages, gateway errors)
 - **`runtime/`** - Runtime analysis domain interfaces (debugger, profiler, traces, dumps, logs, memory snapshots, etc.)
 - **`sap/`** - SAP-specific configuration (SapConfig, SapAuthType)
@@ -186,6 +196,11 @@ This package is responsible for:
   - This package is the **single definition site** for these; `@mcp-abap-adt/adt-clients` imports and re-exports them (its public API is unchanged).
 - **Cross-cutting shared types** (`adt/IAdtShared.ts`) — `AdtObjectType`(+lower/source variants), `IObjectReference`, search (`ISearchObjectsParams`/`ISearchResult`), where-used (`IGetWhereUsed*Params`/`IWhereUsedListResult`), package hierarchy (`IPackageHierarchyNode`/`IGetPackageHierarchyOptions`/…), virtual folders, SQL/table-contents/discovery params, `IInactiveObjectsResponse`. (`IReadOptions` lives in `shared/IReadOptions.ts`.)
   - `IAdtObjectHit` (since 13.0.0) is the common base of everything the repository hands back as a located object: `ISearchResult`, `IWhereUsedReference`, `IObjectReference`, `IPackageContentItem`, `IPackageHierarchyNode`. A hit is a `name` plus an ADT `type` code; the rest is per-source detail. Before it, the code lived under `type` in three of those shapes and under `adtType` in the other two — where `type` meant an unrelated enum — so a consumer had to know which producer made a hit in order to read it.
+- **abapGit client contract** (`adt/IAdtAbapGit.ts`, since 14.0.0) — `IAdtAbapGitClient` (link, pull, unlink, listRepos, getRepo, getErrorLog, checkExternalRepo) plus its argument/result types (`IAbapGitLinkArgs`, `IAbapGitPullArgs`, `IAbapGitPullResult`, `IAbapGitUnlinkArgs`, `IAbapGitRepoStatus`, `IAbapGitErrorLogEntry`, `IAbapGitExternalRepoCredentials`/`IAbapGitExternalRepoBranch`/`IAbapGitExternalRepoInfo`, `IAdtAbapGitClientOptions`, `AbapGitStatus`). Moved verbatim from `@mcp-abap-adt/adt-clients`' `AdtAbapGitClient`, which still owns the implementation.
+- **Batch payload shapes** (`adt/IAdtBatch.ts`, since 14.0.0) — `IBatchRequestPart`, `IBatchPayload`, `IBatchResponsePart`, the wire shapes a `multipart/mixed` ADT batch is built from and parsed back into. The recording/building logic stays in `adt-clients`.
+- **ADT client options** (`adt/IAdtClientOptions.ts`, since 14.0.0) — `IAdtClientOptions` (`enableAcceptCorrection`, `masterSystem`, `responsible`, `masterLanguage`, `contentTypes`, `unicode`) and `IAdtSystemContext`, so configuring a client does not require importing `adt-clients` to describe the options.
+- **Content-type contract** (`adt/IAdtContentTypes.ts`, since 14.0.0) — `IAdtHeaders` (`accept`, `contentType`) and `IAdtContentTypes`, the per-operation Accept/Content-Type provider a consumer overrides for a system that needs different headers. The two shipped implementations (`AdtContentTypesBase`/`AdtContentTypesModern`, 354 lines/38 methods) and `resolveContentTypes()` stay in `adt-clients` — that is behaviour, not contract.
+- **Transport search configuration** (`adt/IAdtTransport.ts`) — `IListTransportsParams.configUri` is **required** (since 14.0.0, breaking): the five filter fields it replaces (`user`, `status`, `date_range`, `target_system`, `request_type`) were never read by the server — `/sap/bc/adt/cts/transportrequests` is a saved-configuration search, not a filtered query. `IListTransportsOptions` (`configUri` optional) is the high-level surface that opts into resolving a default configuration. `ITransportSearchConfiguration` describes one saved configuration (`uri`, `etag`, `attributes`); `TRANSPORT_SEARCH_CONFIGURATIONS_URL` is where they live; `TransportSearchConfigurationMissing` is thrown when none exists. See the [14.0.0 CHANGELOG entry](CHANGELOG.md) for the migration and the probe evidence.
 
 ### Authentication Domain (`auth/`)
 - `IAuthorizationConfig` - Authorization values (UAA credentials, refresh token)
@@ -242,6 +257,7 @@ This package is responsible for:
     - `null` is not a verdict on the connection: it means no identity is known, which happens both when no session exists *and* when the connection is live over a server that issues no session cookie. Use `isConnected()` for connection state. It follows that `null` → non-null is not a replacement, only a *changed* value is
   - `ADT_SESSION_ERROR` / `AdtSessionErrorCode` — `ADT_NOT_CONNECTED`, `ADT_SESSION_REPLACED`, `ADT_RELEASE_PENDING`. Match on the code, not on the message
   - Additive to `IAbapConnection`, which is unchanged. An RFC connection, a batch recorder and a test stub are all legitimate connections that own no HTTP session; making these methods mandatory would force each of them to implement a lie. A compile-time proof in `__typechecks__/connectionCapabilities.ts` asserts a session-less connection still satisfies `IAbapConnection`
+  - `IDeferredResponseConnection` / `hasDeferredResponses()` (since 14.0.0) — marks a connection (typically a batch recorder) whose responses resolve only after a later flush, so awaiting one mid-recording would deadlock. `hasDeferredResponses()` is a type guard, generic over whatever the caller already holds, so the atom carries no dependency on `IAbapConnection`.
 - `IWebSocketTransport` - Generic realtime transport contract for WS-based flows
   - Methods: `connect()`, `disconnect()`, `send()`, `onMessage()`, `onOpen()`, `onError()`, `onClose()`, `isConnected()`
 - `IWebSocketConnectOptions` - WS connect options (`protocols`, `headers`, timeouts, heartbeat)
@@ -272,11 +288,13 @@ This package is responsible for:
     - `run(target)`
     - `runWithProfiler(target, options)`
     - `runWithProfiling(target, options?)`
+- **Executors** (`execution/IAdtExecutors.ts`, since 14.0.0) — `IClassExecutor`/`IProgramExecutor`, each an `IExecutor` instantiated for its target (`IClassExecutionTarget`/`IProgramExecutionTarget`) with its profiler options and profiling result (`IClassExecuteWithProfiler/ProfilingOptions`, `IClassExecuteWithProfilingResult`, and the program equivalents — program profiling has no `traceId`, since program execution is fire-and-forget and the trace is written asynchronously). Moved verbatim from `adt-clients`' `AdtExecutor`, which still owns the implementation.
 
 ### Runtime Domain (`runtime/`)
 - `IRuntimeAnalysisObject<TKind>` — Base interface with typed `readonly kind: TKind` discriminator for type narrowing
 - `IListableRuntimeObject<TResult, TOptions, TKind>` — Extends `IRuntimeAnalysisObject<TKind>` with `list()` method
 - **Debugger**: `IDebugger` (composite), `IAbapDebugger` (session, breakpoints, variables, watchpoints, batch), `IAmdpDebugger` (AMDP-specific debug)
+  - **Debugger session parameters** (`runtime/IAdtDebuggerSession.ts`, since 14.0.0) — `IDebuggerListenParams`, `IDebuggerAttachParams`, `IDebuggerStepParams` (+ `DebuggerStepAction`), `IDebuggerGetVariablesParams`, backing the WebSocket debugger-session facade (`AdtClientsWS`, which stays in `adt-clients`: `debugger.listen`/`attach`/`detach`/`step`/`getStack`/`getVariables`)
 - **Memory**: `IMemorySnapshots` (snapshots with delta analysis)
 - **Profiler**: `IProfiler` (traces, hit lists, statements, DB accesses)
 - **Traces**: `ICrossTrace` (cross-layer traces), `ISt05Trace` (SQL trace)
@@ -325,10 +343,6 @@ This package is responsible for:
 This package has **no runtime dependencies**. It only has devDependencies for TypeScript compilation:
 - `typescript` - TypeScript compiler
 - `@types/node` - Node.js type definitions
-
-## Documentation
-
-- **[Package Dependencies Analysis](docs/PACKAGE_DEPENDENCIES_ANALYSIS.md)** - Analysis of dependencies between all `@mcp-abap-adt/*` packages, verification that interfaces package has no runtime dependencies, and roadmap for eliminating unnecessary dependencies
 
 ## License
 
