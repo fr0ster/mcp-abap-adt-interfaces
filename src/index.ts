@@ -313,9 +313,15 @@ export type {
 } from './adt/IAdtTransformation';
 export type {
   ICreateTransportParams,
+  IListTransportsOptions,
   IListTransportsParams,
   ITransportConfig,
+  ITransportSearchConfiguration,
   ITransportState,
+} from './adt/IAdtTransport';
+export {
+  TRANSPORT_SEARCH_CONFIGURATIONS_URL,
+  TransportSearchConfigurationMissing,
 } from './adt/IAdtTransport';
 export type {
   ClassUnitTestDefinition,
