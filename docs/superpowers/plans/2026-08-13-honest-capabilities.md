@@ -182,7 +182,8 @@ Do not change `activation.ts`'s request — the verb and URL are already right.
 
 ```bash
 MCP_ENV_PATH=/tmp/nonexistent-env npx jest src/__tests__/unit 2>&1 | tee unit-run.log
-npx tsc -p tsconfig.json
+npx tsc -p tsconfig.json     # production sources
+npm run test:check           # the tests — tsconfig.json excludes src/__tests__
 npm run lint
 ```
 
@@ -226,8 +227,12 @@ the collection's type.
 
 Assert, against a recording connection:
 
-- `update` issues exactly one **PUT** to the item URL, and the body carries the new
-  description;
+- `update` issues **exactly one PUT** to the item URL with the new description in the body,
+  **optionally preceded by exactly one GET** of the same URL if it follows `package`'s
+  read-modify-write. The test asserts the PUT and tolerates the GET; it must not assert a total
+  request count of one. Whichever shape the implementation takes, the mock connection has to
+  answer that GET with a realistic body — an empty one is what silently corrupted
+  read-modify-write updates before;
 - `delete` issues exactly one **DELETE** to the item URL;
 - neither touches the collection or the search-configuration endpoint;
 - `update` without a description rejects **before** any request goes out.
@@ -255,60 +260,44 @@ was immutable and undeletable."
 
 ---
 
-### Task 3: `unitTest.validate` and the nine dead methods
+### Task 3: `unitTest.validate` — real validation
 
 **Files:**
 - Modify: `src/core/unitTest/AdtUnitTest.ts`
 - Test: `src/__tests__/unit/core/unitTest/validateIsReal.test.ts` (create)
 
-Two changes, one commit — they are the same statement about the same class.
+**The nine dead methods are NOT deleted here.** They move to Phase C, next to the other
+deletions and immediately before the shape guard that needs them gone. Keeping them out of
+Phase A is what lets that release stay additive.
 
 **`validate()`** currently checks an argument and returns what its own comment calls "a mock
 success response". A unit test **is** a class, so validation there is a class's validation:
 `AdtClass.validate()` calls `validateClassName` against the server. Do the same.
 
-**Nine methods are deleted** — implemented but never declared, so nothing in the contract
-promises them and no TypeScript caller can reach them: `update`, `delete`, `activate`, `check`,
-`lock`, `unlock`, `getVersions`, `getVersionSource` (all throwing), plus **`readTransport`**,
-which does not throw at all — it returns an empty state and says in its own comment that a test
-run has no transport request.
-
-- [ ] **Step 1: Confirm the class declares none of the nine**
-
-```bash
-sed -n '/^export class AdtUnitTest/,/^{/p' src/core/unitTest/AdtUnitTest.ts
-```
-
-Expected: `IAdtCreatable`, `IAdtReadable`, `IAdtValidatable`, `IAdtTestRunnable` — no
-`IAdtCrud`. If any of the nine **is** declared, stop and report: the deletion becomes a
-contract change and belongs in Phase C.
-
-- [ ] **Step 2: Write the failing test** — `validate` issues a request and reports what came
+- [ ] **Step 1: Write the failing test** — `validate` issues a request and reports what came
   back; a name the server rejects produces errors rather than an empty success.
 
-- [ ] **Step 3: Implement `validate` on `AdtClass`'s pattern; delete the nine.**
+- [ ] **Step 2: Implement `validate` on `AdtClass`'s pattern.** Delete nothing.
 
-- [ ] **Step 4: Verify and commit**
+- [ ] **Step 3: Verify and commit**
 
 ```bash
-git commit -m "fix(unitTest)!: real validation, and nine methods that were never declared
+git commit -m "fix(unitTest): real validation instead of a self-declared mock
 
-validate() returned what its own comment called a mock success. A unit test is
-a class, so validation there is a class's validation. The nine deleted methods
-were implemented but not declared — eight threw, and readTransport quietly
-returned an empty state, which is the same dishonesty without the throw."
+validate() checked an argument and returned what its own comment called a mock
+success response. A unit test is a class, so validation there is a class's
+validation, as AdtClass does it."
 ```
 
 ---
 
 ### Task 4: Release adt-clients — behavioural fixes only
 
-A **major**: `transport.update`/`delete` change from throwing to working (additive), but
-`unitTest`'s nine deletions are a runtime break for JavaScript callers and anyone going through
-`any`.
+**Additive, so a minor.** Three operations that threw or lied start working; nothing is removed
+and no type changes. The deletions that would have forced a major moved to Phase C.
 
-- [ ] **Step 1: Ask the user for the version.** State the assessment: deletions make it a
-  major; propose the next major after 11.0.0. Wait.
+- [ ] **Step 1: Ask the user for the version.** State the assessment: additive, so a minor on
+  top of 11.0.0. Wait.
 - [ ] **Step 2: Sweep the docs** — `README.md` and all of `docs/`, not only the changelog.
   A doc describing the old contract is worse than none.
 - [ ] **Step 3: CHANGELOG** — with the runtime-break note stated plainly, not filed under
@@ -316,8 +305,10 @@ A **major**: `transport.update`/`delete` change from throwing to working (additi
 - [ ] **Step 4: Bump, relock, build, full unit suite; read every log.**
 - [ ] **Step 5: PR, user review, merge, tag, GitHub release.** Then stop.
 
-**Phase B does not start until this version is on npm** — the atoms it adds are consumed by
-handlers this release has already changed.
+**Phase B does not wait for this.** `interfaces` does not depend on adt-clients, and Phase A
+uses none of the new atoms — the two can run in parallel. Only **Phase C** needs both: the
+atoms from B on npm, and A's behavioural fixes in place, since the guard cannot be switched on
+over a handler whose method lies.
 
 ---
 
@@ -400,7 +391,7 @@ PUT capability. Drop `IAdtCreatable` from each class's `implements`.
 - [ ] **Step 2:** delete the aliases and the `IAdtCreatable` declarations.
 - [ ] **Step 3:** verify; commit with a `BREAKING CHANGE:` footer naming all five.
 
-### Task 8: Narrow the ten
+### Task 8: Narrow the nine
 
 Per handler, replace the declared composite with the exact intersection of atoms it satisfies.
 The spec's cluster tables give the starting point; **read each class** before writing its list.
@@ -413,13 +404,44 @@ The spec's cluster tables give the starting point; **read each class** before wr
 | `functionInclude` | `IAdtTransportAware` |
 | `AdtServiceBinding` | `IAdtVersionable`, `IAdtLockable` |
 | `transport` | everything ADT does not give it; `IAdtValidatable` goes too — a request's number is system-generated, so `validate()` is deleted, not implemented |
-| `unitTest` | already narrow; nothing to drop |
+`unitTest` is deliberately absent: its declared atoms are already correct. Its nine dead
+methods are deleted in Task 8a below, which is where the shape guard needs them gone.
 
 Then delete every stub whose atom is gone, until
 `grep -rn "is not supported" src/core/*/Adt*.ts` returns nothing and
 `throwUnsupportedVersions` has no call site left and is itself deleted.
 
 - [ ] One commit per handler, so a reviewer can reject one without the rest.
+
+### Task 8a: Delete `unitTest`'s nine undeclared methods
+
+**Files:** `src/core/unitTest/AdtUnitTest.ts`; any test naming them.
+
+Implemented but never declared, so nothing in the contract promises them and no TypeScript
+caller can reach them: `update`, `delete`, `activate`, `check`, `lock`, `unlock`,
+`getVersions`, `getVersionSource` — all throwing — plus **`readTransport`**, which does not
+throw at all: it returns an empty state and says in its own comment that a test run has no
+transport request.
+
+They sit here rather than in Phase A for two reasons. Deleting a public method is a runtime
+break for JavaScript callers, and Phase A is otherwise additive — no need to force a major for
+it. And the shape guard in Task 9 cannot run while they exist: TypeScript reads shape, not
+intent, so a class carrying `delete` satisfies `IAdtDeletable` however little it declares.
+
+- [ ] **Step 1: Confirm the class declares none of the nine**
+
+```bash
+sed -n '/^export class AdtUnitTest/,/^{/p' src/core/unitTest/AdtUnitTest.ts
+```
+
+Expected: `IAdtCreatable`, `IAdtReadable`, `IAdtValidatable`, `IAdtTestRunnable` — no
+`IAdtCrud`. If any of the nine **is** declared, it is a contract change and needs saying in the
+changelog as one.
+
+- [ ] **Step 2: Delete them; update any test that calls one.**
+- [ ] **Step 3: Verify** — `npx tsc -p tsconfig.json`, `npm run test:check`, the unit suite.
+- [ ] **Step 4: Commit** with a `BREAKING CHANGE:` footer naming all nine and the runtime
+  consequence: a JavaScript caller moves from a sentence to `TypeError: … is not a function`.
 
 ### Task 9: The guard
 
@@ -433,15 +455,40 @@ Then delete every stub whose atom is gone, until
 intent, so while a handler still carries an undeclared method it satisfies that atom
 structurally and the bidirectional check would demand the manifest claim it.
 
-**Check 1 — shape, compile time, bidirectional and generated.** Not one line per pair: 30
-handlers × 11 atoms, and a forgotten line is a silent hole in the check meant to close silent
-holes. A mapped type over the full product whose `as` clause drops every atom that agrees, so a
-disagreeing handler keeps a key and the assertion fails naming both. The two lookups to write
-are a registry of the exported classes and the atom types bound to each handler's config.
+**The subject of every check is the FACTORY RETURN TYPE, not the concrete class.** A consumer
+never names `AdtClass`; it calls `client.getClass()`, and that method's declared return type is
+the contract it receives:
 
-**Check 2 — completeness, runtime.** Enumerate the package's exported classes — values survive
-compilation — and fail on any handler missing from the manifest. This is what stops a new
-object type, copied from an existing one, arriving unchecked; that is how the sixteen arose.
+```ts
+getClass(): IAdtSourceObject<IClassConfig, IClassState>
+getDomain(): IAdtNonVersionedObject<IDomainConfig, IDomainState>   // the composite being deleted
+```
+
+Checking the class would let a getter keep a wide composite while the class underneath is
+narrow, and see nothing wrong. Measured 2026-08-13: **37 getters on `AdtClient` against 18
+handler classes exported from the package root** — so a class-based check is blind to 19
+handlers as well as to every getter's own type.
+
+```ts
+type PublicContract<K extends HandlerGetter> = ReturnType<AdtClient[K]>;
+```
+
+**Check 1 — shape, compile time, bidirectional and generated.** Not one line per pair: 37
+getters × 11 atoms, and a forgotten line is a silent hole in the check meant to close silent
+holes. A mapped type over the full product whose `as` clause drops every atom that agrees, so a
+disagreeing getter keeps a key and the assertion fails naming both. The two lookups to write
+are the getter registry below and the atom types bound to each handler's config.
+
+**Check 2 — completeness, runtime, against an authoritative registry.** Package exports are not
+that registry — 18 of 37. The registry is the list of factory names, and the check asserts
+three things at once: every getter on `AdtClient` (and `AdtClientLegacy`) appears in it, every
+registry entry has a manifest entry, and nothing is in the manifest that is not a getter. This
+is what stops a new object type, copied from an existing one, arriving unchecked; that is how
+the sixteen arose.
+
+Deriving the getter list mechanically is preferable to typing it — `keyof AdtClient` filtered
+to `get*` returning an object gives it at compile time, and `Object.getOwnPropertyNames(AdtClient.prototype)`
+gives it at runtime for the completeness assertion. Write both; they catch different drift.
 
 **Check 3 — behaviour, runtime, driven by the manifest.** For each handler, for each atom it
 claims, assert that atom's semantics against a recording connection. Every method of every
