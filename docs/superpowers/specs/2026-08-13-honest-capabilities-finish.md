@@ -111,15 +111,41 @@ means one half is affected — and that is the point.
 This mirrors what the package already does with `IAdtCrud`: keep the assembled name, add the
 parts, prefer the part you actually mean.
 
-### Composites
+### No new composites — that was the wrong question
 
-- Apply `IAdtNonVersionedObject` to the **ten** version-stubbing handlers, `service` included.
-- A composite without `IAdtTransportAware` for the four that stub `readTransport`. Name and
-  membership to be settled in the plan, from what those four actually share.
-- **Nothing new for `unitTest`.** It already composes
-  `IAdtCreatable + IAdtReadable + IAdtValidatable + IAdtTestRunnable`. If a named composite is
-  wanted for readability, it is an alias over those four — but the contract is correct today
-  and the work there is deleting undeclared methods, not adding a type.
+An earlier draft said "apply `IAdtNonVersionedObject` to the ten version-stubbing handlers"
+and left the `readTransport` cluster's composite "to be settled in the plan". Both were wrong,
+and for the same reason the maintainer named: **`IAdtNonVersionedObject` is a negative name for
+a positive thing.** It means "CRUD, validation, check, activation, lock and transport awareness
+— but not versions", so it enumerates everything else in order to omit one atom. Composing from
+atoms means you simply do not add `IAdtVersionable`.
+
+It is also wrong on the facts: it still carries check, activation, lock and transport
+awareness, which `transport`, `service`, `messageClass`, `authorizationField` and
+`featureToggle` do not all have. Applying it to the ten would replace one lie with another.
+
+**So: no new composite, and no wider use of the existing ones.** Each handler declares the
+intersection of atoms it actually satisfies, exactly as `AdtUnitTest` already does:
+
+```ts
+export class AdtUnitTest
+  implements
+    IAdtCreatable<IUnitTestConfig, IUnitTestState>,
+    IAdtReadable<IUnitTestConfig, IUnitTestState>,
+    IAdtValidatable<IUnitTestConfig, IUnitTestState>,
+    IAdtTestRunnable
+```
+
+That is the pattern. It needs no name of its own, it reads as what the handler can do, and it
+cannot drift from the truth without a compile error.
+
+`IAdtSourceObject` and `IAdtNonVersionedObject` stay for the handlers that genuinely match
+them and for consumers already naming them. They are not extended to new ones, and the plan
+should not add a third.
+
+**What the plan needs from the inventory** is therefore not a composite design but, per
+handler, the atom list it satisfies. That is mechanical once the open questions below are
+answered.
 
 ### Code, before the types
 
@@ -192,14 +218,36 @@ source. Anything weaker will keep missing this class, and this class is the one 
 
 ## How this is verified
 
-A stub is a method whose body throws "not supported" or calls `throwUnsupportedVersions`. The
-inventory above came from parsing every `src/core/*/Adt*.ts` in `mcp-abap-adt-clients`, and the same script is the check:
-**after step 5, no handler may declare a method it stubs.** That is a test, not a review note —
-it can be written as a unit test that walks the handlers and fails on any stub whose name is
-still in the declared contract.
+**One criterion, and it is not a grep.** An earlier draft defined a stub as a method that
+throws "not supported", then proposed the same parsing script as the guard test.
+`unitTest.readTransport()` disproves it: no throw, returns an empty state, equally dishonest.
+A later draft over-corrected to "every declared method must issue a real request", which is
+also wrong — `IAdtTestRunnable.getRunId()`, `getStatusResponse()` and `getResultResponse()` are
+state accessors that correctly touch no network, and a local `validate()` can be a genuine
+capability with no endpoint behind it.
 
-Without that test this regresses the moment a new object type is added by copying an existing
-one, which is how the current eleven arose.
+So the guard is **per atom, asserting that atom's own semantics**, against a recording
+connection:
+
+| atom | what the test asserts of a handler declaring it |
+|---|---|
+| `IAdtCreatable` | `create` issues a POST to the object's collection |
+| `IAdtReadable` | `read` issues a GET and returns what came back |
+| `IAdtUpdatable` | `update` issues a PUT |
+| `IAdtDeletable` | `delete` issues a DELETE |
+| `IAdtLockable` | `lock` returns a handle the server supplied |
+| `IAdtVersionable` | `getVersions` issues a GET and parses a feed |
+| `IAdtTransportAware` | `readTransport` reports a request the server named |
+| `IAdtTestRunnable` | `run` issues a POST; the `get*` accessors return prior state without a request |
+
+The shape is: **for every atom a handler declares, the behaviour that atom promises actually
+happens.** A method that throws fails it. A method that silently returns an empty state fails
+it too — which is the point, since that is the class the grep could not see and the class that
+produced `{"success": true, "count": 0}` over 55 real transport requests.
+
+Handlers are enumerated by reflection over the exported classes, so a new object type is
+covered the day it is added — which is what stops this recurring, since the current eleven
+arose by copying an existing handler.
 
 ## Open questions
 
@@ -207,8 +255,13 @@ one, which is how the current eleven arose.
    unimplemented feature? If the latter, it belongs with `transport` in step 1, not in a
    narrowed composite.
 2. **`messageClass`** stubs `activate` and `check`. Same question.
-3. Does the `readTransport` cluster share anything else, or does each need its own composite?
-   Four handlers is enough to justify a name only if they are actually alike.
+3. ~~Does the `readTransport` cluster need a composite?~~ **Answered: no.** Those four simply
+   do not declare `IAdtTransportAware`. There is no cluster to name.
+
+**Questions 1 and 2 gate the work**, and not only the wording: whether an operation is
+unimplemented or genuinely impossible decides whether it is fixed in code (like `transport`)
+or dropped from a handler's atom list. Until they are answered the per-handler atom lists
+cannot be written, so the plan cannot start with them open.
 
 ## Related
 
