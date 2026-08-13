@@ -71,7 +71,7 @@ the manifest to claim a capability the behaviour test then rejects.
 
 ## What is actually broken, by cluster
 
-### 1. Versions — ten handlers, and the fix already exists
+### 1. Versions — ten handlers declaring a capability ADT does not give them
 
 `dataElement`, `domain`, `functionGroup`, `messageClass`, `authorizationField`,
 `featureToggle`, `package`, `AdtServiceBinding`, `transport`, `unitTest` — **ten**, not nine. An earlier
@@ -79,9 +79,10 @@ draft of this document said nine here and then named `service` as a version-stub
 down; both `throwUnsupportedVersions` calls are in its source. `service` was therefore about to
 be left without a migration.
 
-`IAdtNonVersionedObject` exists in `IAdtComposites.ts` for exactly this and is the same as
-`IAdtSourceObject` minus `IAdtVersionable`. This is not a design problem; it is a migration
-that stopped halfway.
+An earlier draft called this "a migration that stopped halfway" and pointed at
+`IAdtNonVersionedObject`, which is `IAdtSourceObject` minus `IAdtVersionable`. **That composite
+is not the fix and is removed by this design** — see "No new composites". These ten simply do
+not declare `IAdtVersionable`.
 
 ### 2. `readTransport` — four handlers
 
@@ -185,9 +186,13 @@ perfectly — a `delete` that throws has exactly the signature `IAdtDeletable` a
 compiler guards the *shape*; only a behavioural test guards the *behaviour*. That is precisely
 how the present eleven arose, and why the guard below is not optional.
 
-`IAdtSourceObject` and `IAdtNonVersionedObject` stay for the handlers that genuinely match
-them and for consumers already naming them. They are not extended to new ones, and the plan
-should not add a third.
+**`IAdtNonVersionedObject` is deleted.** It exists only to say "everything except versions",
+which is what omitting an atom already says; keeping it would leave two ways to express one
+thing and invite the next handler to reach for the negative one. Removing an exported type is
+breaking, and belongs in the same major as the narrowing.
+
+`IAdtSourceObject` is a different case: it names the full set, positively, and every handler
+matching it matches it exactly. It stays. The plan adds no third composite.
 
 **What the plan needs from the inventory** is therefore not a composite design but, per
 handler, the atom list it satisfies. That is mechanical once the open questions below are
@@ -360,9 +365,9 @@ assert that atom's own semantics against a recording connection:
 
 | atom | asserted of every handler claiming it |
 |---|---|
-| `IAdtCreatable` | `create` issues a POST to the object's collection |
+| `IAdtCreatable` | `create` issues a **POST**. Always — see the note below. |
 | `IAdtReadable` | `read` issues a GET and returns the body; `readMetadata` likewise |
-| `IAdtUpdatable` | `update` issues a PUT |
+| `IAdtUpdatable` | `update` issues a **PUT**. Always. |
 | `IAdtDeletable` | `delete` issues a DELETE |
 | `IAdtValidatable` | `validate` either issues a request **or** returns a decision it computed — never an empty state with no decision in it |
 | `IAdtCheckable` | `check` issues a request and reports what came back |
@@ -374,6 +379,24 @@ assert that atom's own semantics against a recording connection:
 
 Every method of an atom is covered, not one per atom — `readMetadata`, `unlock` and
 `getVersionSource` are exactly where stubs hid before.
+
+### The verbs are fixed, and that is a finding about a handler
+
+`create` is POST and `update` is PUT — the atoms do not bend per handler. Review raised
+`AdtMessageClassMessage.create()` as a counterexample: it is documented as an upsert and
+delegates to the update path, which ends in a **PUT** of the parent message class
+(`src/core/messageClass/update.ts:53`). The code is as described.
+
+The conclusion is the opposite of relaxing the rule. **A message is not a standalone ADT
+object** — it lives inside a message class, and there is no collection to POST it to. So that
+handler does not create a resource; it modifies its parent. It should not declare
+`IAdtCreatable` at all, and the guard rejecting it is the guard working.
+
+The same question is owed to `update`, `check` and `activate` before the plan starts: the atom
+keeps one verb, and any handler that cannot meet it is telling us it does not have that
+capability. Local class includes, raised in the same review, are created through a
+lock/check/update flow — which is the same answer: that is updating a class, not creating an
+object.
 
 `IAdtValidatable` was the awkward one. **Both cases are now decided, and oppositely** — which
 is what a test can force but never settle:
