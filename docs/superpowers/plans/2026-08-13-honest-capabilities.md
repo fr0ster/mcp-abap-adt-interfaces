@@ -68,8 +68,9 @@ guard cannot be switched on over a handler whose method lies.
 ### Task 1: `functionGroup.activate` must read the server's answer
 
 **Files:**
-- Modify: `src/core/functionGroup/activation.ts`
 - Modify: `src/core/functionGroup/AdtFunctionGroup.ts` — three call sites, one at line 711
+- Read only: `src/core/functionGroup/activation.ts` — its request is already correct, verb and
+  URL both; nothing there changes
 - Test: `src/__tests__/unit/core/functionGroup/activateReportsFailure.test.ts` (create)
 
 **Interfaces:** consumes `assertActivationSucceeded` from `src/utils/activationUtils.ts`.
@@ -227,12 +228,10 @@ the collection's type.
 
 Assert, against a recording connection:
 
-- `update` issues **exactly one PUT** to the item URL with the new description in the body,
-  **optionally preceded by exactly one GET** of the same URL if it follows `package`'s
-  read-modify-write. The test asserts the PUT and tolerates the GET; it must not assert a total
-  request count of one. Whichever shape the implementation takes, the mock connection has to
-  answer that GET with a realistic body — an empty one is what silently corrupted
-  read-modify-write updates before;
+- `update` issues **exactly two requests, in order: a GET then a PUT**, both to the item URL,
+  with the new description in the PUT body. The mock answers the GET with a realistic
+  transport-request body — an empty one is what silently corrupted read-modify-write updates
+  before. Step 3 fixes this shape; the test does not leave it open;
 - `delete` issues exactly one **DELETE** to the item URL;
 - neither touches the collection or the search-configuration endpoint;
 - `update` without a description rejects **before** any request goes out.
@@ -306,8 +305,10 @@ and no type changes. The deletions that would have forced a major moved to Phase
   top of 11.0.0. Wait.
 - [ ] **Step 2: Sweep the docs** — `README.md` and all of `docs/`, not only the changelog.
   A doc describing the old contract is worse than none.
-- [ ] **Step 3: CHANGELOG** — three operations begin working; nothing is removed. No
-  runtime-break note belongs here: the deletions that would have needed one are in Phase C.
+- [ ] **Step 3: CHANGELOG** — three handlers receive behavioural fixes, across four methods:
+  `functionGroup.activate`, `unitTest.validate`, `transport.update` and `transport.delete`.
+  Nothing is removed, so no runtime-break note belongs here — the deletions that would have
+  needed one are in Phase C.
 - [ ] **Step 4: Bump, relock, build, full unit suite; read every log.**
 - [ ] **Step 5: PR, user review, merge, tag, GitHub release.** Then stop.
 
@@ -379,6 +380,43 @@ Deleting an exported type is breaking.
 ## Phase C — narrowing, in adt-clients
 
 Fifteen handlers. Same branch as Phase A if it is still open; otherwise a new one off `main`.
+
+### Task 6a: Take the published interfaces major
+
+**Files:** `package.json`, `package-lock.json`.
+
+Nothing else in Phase C compiles without it: `IAdtUpdatable` and `IAdtDeletable` do not exist
+in the installed version, and the deleted `IAdtNonVersionedObject` is still there — so a
+handler could keep declaring a type this work removed and nobody would notice.
+
+- [ ] **Step 1: Confirm it is on npm** — `npm view @mcp-abap-adt/interfaces version`. If it is
+  not, Phase C does not start; say so and stop.
+- [ ] **Step 2: Install it as a runtime dependency**
+
+```bash
+cd /home/okyslytsia/prj/mcp-abap-adt-clients
+rm -rf node_modules/@mcp-abap-adt/interfaces
+npm install @mcp-abap-adt/interfaces@<version> --save     # --save, not --save-dev
+grep '"version"' node_modules/@mcp-abap-adt/interfaces/package.json
+```
+
+`--save` matters: eight modules in `dist/` carry a real `require()` of this package, so
+dev-only would leave consumers resolving a module npm never installed for them. This was got
+wrong once already.
+
+- [ ] **Step 3: Verify the resolution**
+
+```bash
+node -e "console.log(require('./package.json').dependencies['@mcp-abap-adt/interfaces'])"
+grep -n '"link": true\|"file:' package-lock.json || echo "no local links — good"
+grep -rn "IAdtNonVersionedObject" node_modules/@mcp-abap-adt/interfaces/dist/ || echo "composite gone — good"
+```
+
+The last line is the point of the task: if that type is still in the installed package, the
+wrong version is installed.
+
+- [ ] **Step 4: Commit `package.json` and `package-lock.json` together**, before any source
+  change depends on them.
 
 ### Task 7: Delete the five `create()` aliases
 
@@ -477,8 +515,24 @@ handler classes exported from the package root** — so a class-based check is b
 handlers as well as to every getter's own type.
 
 ```ts
-type PublicContract<K extends HandlerGetter> = ReturnType<AdtClient[K]>;
+type PublicContract<C, K extends keyof C> = C[K] extends (...a: never[]) => infer R ? R : never;
 ```
+
+**Both clients, not just `AdtClient`.** `AdtClientLegacy` overrides several getters, and an
+override's return type can differ from what it overrides — a legacy handler could keep a wide
+contract while the modern one is narrowed, and a check over `AdtClient` alone would never look.
+So each registry entry names its variant, and the mapped product runs over both:
+
+```ts
+export const HANDLERS = {
+  'class@modern': { client: 'modern', factory: (c: AdtClient) => c.getClass(), … },
+  'request@legacy': { client: 'legacy', factory: (c: AdtClientLegacy) => c.getRequest(), … },
+};
+```
+
+The runtime side needs the same care: `Object.getOwnPropertyNames(AdtClientLegacy.prototype)`
+lists only what the subclass declares, so **walk the prototype chain** or the inherited getters
+vanish from completeness — the opposite of what that check exists to do.
 
 **Check 1 — shape, compile time, bidirectional and generated.** Not one line per pair: 37
 getters × 11 atoms, and a forgotten line is a silent hole in the check meant to close silent
