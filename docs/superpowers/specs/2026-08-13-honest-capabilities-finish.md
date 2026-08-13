@@ -44,6 +44,31 @@ interface. It is needed, but the inventory shows it closes none of the eleven ca
 own: only two handlers stub `delete`, and in one of them the stub is **wrong** rather than
 honest.
 
+## The target state: zero stubs
+
+Not "stubs are detected" — **there are none.** Every method a handler has does what its
+capability promises; anything that cannot be real is not declared, and therefore not present.
+
+Three checkable statements about the finished work:
+
+1. **No handler method throws "not supported".** After step 5,
+   `grep -rn "is not supported" src/core/*/Adt*.ts` returns nothing. `throwUnsupportedVersions`
+   has no remaining call site and is deleted with them.
+2. **No handler method returns an empty state in place of an answer.** This is the class a grep
+   cannot find, so it is the behaviour guard that holds it — but the target is the same:
+   `unitTest.readTransport`, `transport.validate` and the `validate` that calls itself a mock
+   are gone or made real, not merely undeclared.
+3. **The manifest agrees with every class in both directions**, over the full product of
+   handlers and atoms, so a capability cannot be declared without being implemented, nor
+   implemented while hidden.
+
+The guard is what keeps that true afterwards. It is not the goal; the goal is that it has
+nothing to report on the day it is written.
+
+**This is why the deletions are not optional.** A throwing method kept for a friendlier error
+message is still a stub — it fails statement 1 by inspection, and it fails the guard by forcing
+the manifest to claim a capability the behaviour test then rejects.
+
 ## What is actually broken, by cluster
 
 ### 1. Versions — ten handlers, and the fix already exists
