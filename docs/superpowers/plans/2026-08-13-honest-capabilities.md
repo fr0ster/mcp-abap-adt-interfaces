@@ -6,7 +6,7 @@
 does not do what its capability promises.
 
 **Architecture:** Two positive atoms split out of `IAdtModifiable`; one negative composite
-deleted; fifteen handlers narrowed to the exact intersection of atoms they satisfy; three
+deleted; fourteen handlers narrowed to the exact intersection of atoms they satisfy; three
 behavioural defects fixed; and a guard — manifest, compile-time equality over the full
 handler × atom product, and per-atom behaviour tests — that keeps the state true.
 
@@ -43,13 +43,20 @@ comes from it.
 | | count | who |
 |---|---|---|
 | handlers with a problem | 16 | the 11 below plus 5 `create()` aliases |
-| type/API subtraction | 15 | 10 declaring unsupported atoms + 5 alias holders |
+| type/API subtraction | **14** | **9** declaring unsupported atoms + 5 alias holders |
 | behavioural code | 3 | `transport`, `unitTest.validate`, `functionGroup.activate` |
 | dead-method deletion | 1 | `unitTest` — nine methods |
 
-**The ten declaring unsupported atoms:** `dataElement`, `domain`, `functionGroup`,
+**The nine declaring unsupported atoms:** `dataElement`, `domain`, `functionGroup`,
 `messageClass`, `authorizationField`, `featureToggle`, `package`, `AdtServiceBinding`,
-`transport`, `unitTest`.
+`transport`.
+
+**`unitTest` is not among them, and the spec's "ten" counts something else.** That ten is
+stub-*carriers*; this nine is handlers declaring an atom they cannot honour. `unitTest` carries
+version stubs but never declared `IAdtVersionable` — they are undeclared dead methods, deleted
+in Task 8a — and its one real overclaim, `IAdtValidatable` over a mock, is fixed behaviourally
+in Phase A rather than by narrowing. So it needs no type change at all, and subtraction is
+**14**, not 15. Two different criteria had been collapsed into one number.
 
 **The five alias holders:** `AdtMessageClassMessage`, `AdtLocalTestClass`, `AdtLocalTypes`,
 `AdtLocalDefinitions`, `AdtLocalMacros`. `AdtMessageClass` is **not** among them — a message
@@ -255,7 +262,9 @@ accepted, simplifying is cheap; guessing the other way corrupts data.
 
 ```bash
 MCP_ENV_PATH=/tmp/nonexistent-env npx jest src/__tests__/unit 2>&1 | tee unit-run.log
-npx tsc -p tsconfig.json && npm run lint
+npx tsc -p tsconfig.json     # production sources
+npm run test:check           # the tests — tsconfig.json excludes src/__tests__
+npm run lint
 git commit -m "fix(transport): update and delete work — the stubs were false
 
 ADT changes a transport request's description and deletes an empty one;
@@ -298,7 +307,7 @@ validation, as AdtClass does it."
 
 ### Task 4: Release adt-clients — behavioural fixes only
 
-**Additive, so a minor.** Three operations that threw or lied start working; nothing is removed
+**Additive, so a minor.** Three handlers get behavioural fixes across four methods; nothing is removed
 and no type changes. The deletions that would have forced a major moved to Phase C.
 
 - [ ] **Step 1: Ask the user for the version.** State the assessment: additive, so a minor on
@@ -379,7 +388,8 @@ Deleting an exported type is breaking.
 
 ## Phase C — narrowing, in adt-clients
 
-Fifteen handlers. Same branch as Phase A if it is still open; otherwise a new one off `main`.
+Fourteen handlers. **Always a new branch off the current `main`** — Phase A has been merged
+and released by now, so its branch is gone.
 
 ### Task 6a: Take the published interfaces major
 
@@ -435,7 +445,7 @@ PUT capability. Drop `IAdtCreatable` from each class's `implements`.
 - [ ] **Step 2:** delete the aliases and the `IAdtCreatable` declarations.
 - [ ] **Step 3:** verify; commit with a `BREAKING CHANGE:` footer naming all five.
 
-### Task 8: Narrow the nine
+### Task 8: Narrow the nine handlers that declare what they cannot do
 
 Per handler, replace the declared composite with the exact intersection of atoms it satisfies.
 The spec's cluster tables give the starting point; **read each class** before writing its list.
@@ -618,7 +628,7 @@ check that would have caught `functionGroup`.
 
 ### Task 10: Release adt-clients — the narrowing
 
-A major: fifteen handlers lose declared capabilities, five lose `create()`.
+A major: nine handlers lose declared capabilities and five lose `create()` — fourteen in all.
 
 - [ ] Ask for the version. Sweep the docs. CHANGELOG listing, per handler, what it no longer
   declares — a consumer needs to know which of its calls stops compiling.
