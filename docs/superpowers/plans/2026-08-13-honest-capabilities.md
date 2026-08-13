@@ -239,10 +239,16 @@ Assert, against a recording connection:
 
 - [ ] **Step 3: Implement, following `package`'s shape**
 
-`transport.update` is a description change. Whether it needs the read-modify-write dance that
-`package` uses — GET the current XML, patch, PUT it back — depends on whether ADT accepts a
-partial body; **follow `package` unless a test proves otherwise**, since building XML from
-scratch is what drops fields the client does not model.
+**Use read-modify-write: GET, patch the description, PUT.** This is decided here rather than
+left to the implementer, because no test in this plan can settle it — a recording mock cannot
+prove the server accepts a partial body, and the plan takes no SAP run. `package` does it this
+way for a reason that applies unchanged: building the XML from scratch drops every field the
+client does not model, which is how a domain update once shipped without its description and
+the server blamed something else.
+
+So the test asserts **exactly one GET followed by exactly one PUT**, and the mock answers the
+GET with a realistic transport-request body. If a later SAP run shows a partial PUT is
+accepted, simplifying is cheap; guessing the other way corrupts data.
 
 - [ ] **Step 4: Replace the stubs in `AdtRequest.ts`** and delete the "not supported" messages.
 
@@ -251,7 +257,7 @@ scratch is what drops fields the client does not model.
 ```bash
 MCP_ENV_PATH=/tmp/nonexistent-env npx jest src/__tests__/unit 2>&1 | tee unit-run.log
 npx tsc -p tsconfig.json && npm run lint
-git commit -m "fix(transport)!: update and delete work — the stubs were false
+git commit -m "fix(transport): update and delete work — the stubs were false
 
 ADT changes a transport request's description and deletes an empty one;
 AdtPackage does both against the same server. The stubs claimed the request
@@ -300,8 +306,8 @@ and no type changes. The deletions that would have forced a major moved to Phase
   top of 11.0.0. Wait.
 - [ ] **Step 2: Sweep the docs** — `README.md` and all of `docs/`, not only the changelog.
   A doc describing the old contract is worse than none.
-- [ ] **Step 3: CHANGELOG** — with the runtime-break note stated plainly, not filed under
-  "types narrowed".
+- [ ] **Step 3: CHANGELOG** — three operations begin working; nothing is removed. No
+  runtime-break note belongs here: the deletions that would have needed one are in Phase C.
 - [ ] **Step 4: Bump, relock, build, full unit suite; read every log.**
 - [ ] **Step 5: PR, user review, merge, tag, GitHub release.** Then stop.
 
@@ -451,9 +457,10 @@ changelog as one.
 - Create: `src/__tests__/unit/capabilities/behaviour.test.ts` — runtime
 - Create: `src/__tests__/unit/capabilities/completeness.test.ts` — runtime
 
-**This task must come after Task 8**, and the spec says why: TypeScript reads shape, not
-intent, so while a handler still carries an undeclared method it satisfies that atom
-structurally and the bidirectional check would demand the manifest claim it.
+**This task must come after Tasks 8 and 8a**, and the spec says why: TypeScript reads shape,
+not intent, so while a handler still carries an undeclared method — `unitTest`'s nine, deleted
+in 8a — it satisfies that atom structurally and the bidirectional check would demand the
+manifest claim it.
 
 **The subject of every check is the FACTORY RETURN TYPE, not the concrete class.** A consumer
 never names `AdtClass`; it calls `client.getClass()`, and that method's declared return type is
@@ -486,9 +493,30 @@ registry entry has a manifest entry, and nothing is in the manifest that is not 
 is what stops a new object type, copied from an existing one, arriving unchecked; that is how
 the sixteen arose.
 
-Deriving the getter list mechanically is preferable to typing it — `keyof AdtClient` filtered
-to `get*` returning an object gives it at compile time, and `Object.getOwnPropertyNames(AdtClient.prototype)`
-gives it at runtime for the completeness assertion. Write both; they catch different drift.
+**A `get*` filter is not the criterion.** Of the 37, `getUtils()` returns `AdtUtils` — search,
+where-used, package hierarchy — which is not an object handler and has no capability matrix.
+Any purely mechanical rule that admits it is wrong, and one that excludes it by name is a
+hand-maintained list wearing a filter's clothes.
+
+So the registry is **explicit and typed**, and it is the single source both checks read:
+
+```ts
+export const HANDLERS = {
+  class:   { factory: (c: AdtClient) => c.getClass(),   … },
+  program: { factory: (c: AdtClient) => c.getProgram(), … },
+  // one entry per object handler; getUtils and any other non-handler factory
+  // is simply absent, deliberately
+} as const;
+```
+
+Completeness then asserts, in both directions:
+
+- every getter on `AdtClient` and `AdtClientLegacy` is either in `HANDLERS` or in an explicit
+  `NOT_HANDLERS` list with a one-line reason — so a new factory cannot be ignored by silence,
+  only by a decision someone wrote down;
+- every `HANDLERS` entry names a getter that exists.
+
+`Object.getOwnPropertyNames(AdtClient.prototype)` supplies the runtime side of the first.
 
 **Check 3 — behaviour, runtime, driven by the manifest.** For each handler, for each atom it
 claims, assert that atom's semantics against a recording connection. Every method of every
