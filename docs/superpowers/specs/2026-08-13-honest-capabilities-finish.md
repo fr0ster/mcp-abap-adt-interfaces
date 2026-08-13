@@ -3,7 +3,7 @@
 **Status:** design, for review.
 **Date:** 2026-08-13
 **Repo:** this one. The design — atoms and composites — is decided here. The application side
-(narrowing ten handlers, deleting `unitTest`'s undeclared methods, fixing `transport`, the guard test) lands in
+(narrowing fifteen handlers, deleting `unitTest`'s undeclared methods, fixing three handlers' behaviour, the guard test) lands in
 `mcp-abap-adt-clients`, where the inventory below was measured.
 
 ## Why this exists
@@ -28,12 +28,20 @@ no-op `validate`), `unitTest` ten (eight plus the no-op `readTransport` plus the
 | stubs `readTransport` | 4 — `messageClass`, `authorizationField`, `featureToggle`, `functionInclude` |
 | stubs more than versions and `readTransport` | 4 — `transport` 9, `unitTest` 8, `messageClass` 5, `AdtServiceBinding` 4 |
 
+**16 of 30 handlers have a problem**: the 11 carrying a stub, plus five declaring
+`IAdtCreatable` over a `create()` that is an alias for a PUT — `AdtMessageClassMessage` and the
+four local class includes. The two groups do not overlap, so **15 need type or API
+subtraction**, and `unitTest` needs **behaviour implemented** as well as nine dead methods
+deleted.
+
 A stub here is **any method that does not do what its capability promises** — one that throws,
 one that returns an empty state, one whose comment calls its own answer a mock. The first kind
 is the only one a grep finds, which is why the counts below are a floor.
 
 **11 of 30 handlers carry at least one stub.** Ten need their **type narrowed** — they declare
-atoms ADT does not support. The eleventh, `unitTest`, needs **behaviour implemented**: its
+atoms ADT does not support. (Five more handlers need narrowing for a different reason, counted
+above; they carry no stub.) The eleventh stub-carrier, `unitTest`, needs **behaviour
+implemented**: its
 shape is already narrow, but it declares `IAdtValidatable` over a validate that returns what
 its own comment calls a mock, so it overclaims too — just not by declaring too many atoms. A caller reading the type
 is told an operation exists; calling it throws — or, worse, quietly returns an empty result
@@ -131,9 +139,11 @@ class.
 **Dropping the atom is not enough.** The structural guard recognises `IAdtCreatable` by the
 presence of a `create` method of the right shape, not by what the class declares — so a class
 keeping `create()` still satisfies it, and the bidirectional check would demand the manifest
-claim it. **The method itself must go**: either deleted, or renamed to what it does — `update`,
-since that is the operation, or `upsert` if the distinction matters to callers. Renaming is a
-breaking change for anyone calling `create()` on these handlers, and belongs in the same major.
+claim it. **The method itself must go — deleted, not renamed.** All five already have a separate
+`update()` (verified 2026-08-13), so `create()` is an alias over it and renaming would collide
+with the method that is already there. The existing `update()` stays as the single PUT
+capability. Deleting the alias is breaking for anyone calling `create()` on these handlers, and
+belongs in the same major.
 
 **Local class includes** (`AdtLocalTestClass`, `AdtLocalTypes`, `AdtLocalDefinitions`,
 `AdtLocalMacros`) — same shape, same treatment. An include is brought into existence by a
@@ -245,11 +255,18 @@ answered.
 description change, and deletion of an empty request. Narrowing the type around a stub that
 lies would carve the lie into the contract.
 
-## What this is not
+## Compatibility impact
 
-- **Not a rename.** No name changes meaning. One is **removed**: `IAdtNonVersionedObject`,
-  which is why the interfaces release is a **major**, not the minor an earlier draft assumed.
-  Everything else survives, with atoms added beneath it.
+**Two things are removed from consumers, and each makes its release a major:**
+
+- **`IAdtNonVersionedObject`**, exported from `@mcp-abap-adt/interfaces` — deleted. This is why
+  the interfaces release is a major, not the minor an earlier draft assumed.
+- **`create()` on five handlers** in adt-clients — `AdtMessageClassMessage`,
+  `AdtLocalTestClass`, `AdtLocalTypes`, `AdtLocalDefinitions`, `AdtLocalMacros`. A caller
+  switches to the `update()` those classes already have, which is the operation that was
+  happening anyway.
+
+No name changes meaning; everything else survives, with atoms added beneath it.
 - **A runtime breaking change, and this is the one to read twice.** Step 5 deletes the stub
   methods. Today a caller reaching one gets a controlled `Error("... is not supported ...")`;
   afterwards it gets `TypeError: x.delete is not a function`. TypeScript callers are stopped at
@@ -294,11 +311,10 @@ lies would carve the lie into the contract.
    makes this a **major**, not the minor an earlier draft claimed.
 3. ~~Composites.~~ **Removed** — this design adds none. See "No new composites" above.
 4. **Publish interfaces**, then narrow the overclaiming handlers in adt-clients, each to the
-   exact intersection of atoms it satisfies — not to a composite. **Fifteen handlers**, if the
-   two groups do not overlap: the ten declaring capabilities ADT does not support, plus
-   `AdtMessageClassMessage` and the four local class includes, whose `create()` must be
-   removed or renamed rather than merely undeclared. The plan checks the overlap and fixes the
-   number. `unitTest` is not among them — it is already narrow.
+   exact intersection of atoms it satisfies — not to a composite. **Fifteen handlers**: the ten
+   declaring capabilities ADT does not support, plus `AdtMessageClassMessage` and the four
+   local class includes, whose `create()` alias is deleted rather than merely undeclared. The
+   two groups do not overlap. `unitTest` is not among them — it is already narrow.
    **Breaking** for a consumer that named a wide type — a major.
 5. Delete each stub as its handler stops declaring the method — and for `unitTest`, delete the
    **nine** that were never declared: the eight that throw, plus `readTransport`, which does
@@ -520,7 +536,7 @@ The maintainer answered both: **these are ADT's limits, not unimplemented featur
 3. ~~Does the `readTransport` cluster need a composite?~~ **No.** Those four do not declare
    `IAdtTransportAware`. There is no cluster to name.
 
-This settles the shape of the work: **three handlers need code, ten need subtraction**, and
+This settles the shape of the work: **three handlers need code, fifteen need subtraction**, and
 `unitTest` is in both groups — its `validate` needs writing while nine dead methods need
 deleting. `functionGroup.activate` reports success whatever the server answered.
 `transport`'s `update` and `delete` are stubs that lie — ADT changes a request's description
