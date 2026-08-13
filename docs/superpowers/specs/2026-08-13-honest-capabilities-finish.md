@@ -55,7 +55,7 @@ composite includes it unconditionally.
 ### 3. The four deep cases — four different diagnoses
 
 **`transport` — a CRUD object with its hands tied, and two stubs that lie.**
-Real: `validate`, `create`, `read`, `readMetadata`, `list`, `listNodes`.
+Real: `create`, `read`, `readMetadata`, `list`, `listNodes`. `validate` is a no-op — it checks an argument and returns an empty state, and is deleted rather than implemented (see below).
 Stubbed: `update`, `delete`, `activate`, `check`, `readTransport`, `lock`, `unlock`,
 `getVersions`, `getVersionSource`.
 
@@ -207,7 +207,7 @@ lies would carve the lie into the contract.
    operation that is genuinely impossible, consider keeping the throwing method while removing
    it from the contract, so a JavaScript caller still gets a sentence instead of a `TypeError`.
 
-Steps 2 and 3 are one interfaces release. Step 4 is one adt-clients major.
+Step 2 is the interfaces release. Step 4 is one adt-clients major.
 
 ## Stubs that do not throw — and why the guard needs more than a `throw`
 
@@ -252,21 +252,39 @@ Three earlier attempts at this section were wrong, each in an instructive way:
 export const HANDLER_CAPABILITIES = {
   AdtClass: ['creatable', 'readable', 'updatable', 'deletable', 'validatable',
              'checkable', 'activatable', 'lockable', 'versionable', 'transportAware'],
-  AdtRequest: ['creatable', 'readable', 'updatable', 'deletable', 'validatable'],
+  AdtRequest: ['creatable', 'readable', 'updatable', 'deletable'],   // no validatable
   AdtServiceBinding: ['creatable', 'readable', 'updatable', 'deletable', 'validatable',
                       'checkable', 'activatable', 'transportAware'],
   // … one entry per exported handler
 } as const satisfies Record<string, readonly Capability[]>;
 ```
 
-**1. Shape — compile time.** Per handler, a type-level assertion that the class satisfies the
-intersection its manifest entry names. Catches a manifest that claims an atom the class does
-not implement:
+**1. Shape — compile time, and it must be BIDIRECTIONAL.**
+
+A one-way assertion "the class satisfies what the manifest claims" is not enough, and permits
+exactly the regression this guard exists to stop: a class declares `IAdtDeletable`, its
+`delete` throws, and the manifest simply omits `deletable`. All three checks pass while the
+public contract overclaims. Under-claiming is not the safe direction — it is a hiding place.
+
+So the assertion runs both ways: **the manifest names an atom if and only if the class's public
+type structurally satisfies it.**
 
 ```ts
-const _class: IAdtCreatable<IClassConfig, IClassState> &
-  IAdtReadable<IClassConfig, IClassState> & /* … */ = {} as AdtClass;
+type Has<C, A> = C extends A ? true : false;
+type Claims<H extends keyof typeof HANDLER_CAPABILITIES, A extends Capability> =
+  A extends (typeof HANDLER_CAPABILITIES)[H][number] ? true : false;
+
+// One line per handler × atom. Both directions in one equality.
+type _AdtRequestDeletable =
+  Assert<Equals<Has<AdtRequest, IAdtDeletable<ITransportConfig, ITransportState>>,
+                Claims<'AdtRequest', 'deletable'>>>;
 ```
+
+This only works once step 5 has deleted the undeclared stubs — while `AdtUnitTest` still
+carries a `delete` method it never declared, it satisfies `IAdtDeletable` structurally.
+TypeScript sees shape, not intent. **Order matters: delete the dead methods first, then this
+check becomes meaningful.** Until then it would demand the manifest claim capabilities the
+handler was never meant to have.
 
 **2. Completeness — runtime, and this part reflection *can* do.** Enumerate the package's
 exported classes — values, not types, so they survive compilation — and fail on any handler
@@ -288,7 +306,7 @@ assert that atom's own semantics against a recording connection:
 | `IAdtLockable` | `lock` returns a handle the server supplied; `unlock` issues a request releasing it |
 | `IAdtVersionable` | `getVersions` issues a GET and parses a feed; `getVersionSource` fetches a version's body |
 | `IAdtTransportAware` | `readTransport` reports a request the server named |
-| `IAdtTestRunnable` | `run` issues a POST; `getRunId`/`getStatusResponse`/`getResultResponse` return prior state **without** a request |
+| `IAdtTestRunnable` | `run` issues a POST; `getStatus` and `getResult` each issue a GET and report what came back; `getRunId`/`getStatusResponse`/`getResultResponse` return prior state **without** a request |
 
 Every method of an atom is covered, not one per atom — `readMetadata`, `unlock` and
 `getVersionSource` are exactly where stubs hid before.
@@ -312,9 +330,10 @@ transport.validate  argument check, then an empty state          nothing to vali
 unitTest.validate   argument check, then a "mock success"        stub
 ```
 
-**What none of the three catches:** a manifest entry that omits an atom the class does in fact
-implement. That is under-claiming — the safe direction, and the opposite of this document's
-subject.
+**What none of the three catches:** an atom nobody has thought of. The manifest and the
+behaviour table enumerate the atoms that exist; a capability with no atom is invisible to all
+three, and always will be. That is the limit of the design, and it is stated rather than
+hidden.
 
 ## Open questions — closed 2026-08-13
 
