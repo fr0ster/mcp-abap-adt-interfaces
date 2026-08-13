@@ -536,9 +536,8 @@ The maintainer answered both: **these are ADT's limits, not unimplemented featur
 3. ~~Does the `readTransport` cluster need a composite?~~ **No.** Those four do not declare
    `IAdtTransportAware`. There is no cluster to name.
 
-This settles the shape of the work: **three handlers need code, fifteen need subtraction**, and
-`unitTest` is in both groups — its `validate` needs writing while nine dead methods need
-deleting. `functionGroup.activate` reports success whatever the server answered.
+This settles the shape of the work: **three handlers need behavioural code, fifteen need
+type or API subtraction, and `unitTest` additionally needs nine dead methods deleted.** `functionGroup.activate` reports success whatever the server answered.
 `transport`'s `update` and `delete` are stubs that lie — ADT changes a request's description
 and deletes an empty one, which `package` proves against the same server. And
 `unitTest.validate()` returns a self-declared mock where a class's real validation belongs.
