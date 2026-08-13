@@ -208,6 +208,23 @@ It could not stay correct either: it fixes *everything else* while claiming only
 versions, so it carries check, activation, lock and transport awareness to handlers that lack
 them. Applying it "to fix" the version cluster would have swapped one lie for another.
 
+**And in a composed system a negative name is not merely redundant — it is unenforceable.**
+`Non` is not a negation to the type system; it is a name over a set that happens to omit
+something. So this compiles, silently:
+
+```ts
+type Both = IAdtNonVersionedObject<C, R> & IAdtVersionable<C>;
+```
+
+The intersection simply adds `getVersions` back. A type called "non-versioned" now hands out
+versions, and **no check can catch it** — not "hard to catch", but impossible in principle.
+Detecting the contradiction would require knowing the name was meant to carry a negation, and
+in a structural type system names carry nothing. Composition is exactly the feature that makes
+this unavoidable: anything that can be intersected will be.
+
+Omission has no such failure mode. A handler that does not declare `IAdtVersionable` cannot be
+intersected into declaring it by accident, because there is nothing to intersect.
+
 `IAdtSourceObject` is a different case: it names its set **positively**, and every handler
 matching it matches it exactly. It stays.
 
