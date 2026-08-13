@@ -121,15 +121,23 @@ competing contract and lost the other three. There is nothing to add here.
 **`messageClass`** — no activation, no check, no versions, no `readTransport`.
 **`AdtServiceBinding`** — 25 real methods, stubs only on `lock`/`unlock` and versions.
 
+**`AdtMessageClass`** — unaffected. A message class *is* created by a POST to its collection;
+it keeps `IAdtCreatable`. Only its *message* handler is in scope.
+
 **`AdtMessageClassMessage`** — declares `IAdtCreatable`, but a message is not a standalone ADT
 object: `create()` is an upsert delegating to the update path, which PUTs the parent message
-class. It loses `IAdtCreatable` and keeps `IAdtUpdatable`. Nothing about its behaviour changes;
-the type stops calling it creation.
+class.
+
+**Dropping the atom is not enough.** The structural guard recognises `IAdtCreatable` by the
+presence of a `create` method of the right shape, not by what the class declares — so a class
+keeping `create()` still satisfies it, and the bidirectional check would demand the manifest
+claim it. **The method itself must go**: either deleted, or renamed to what it does — `update`,
+since that is the operation, or `upsert` if the distinction matters to callers. Renaming is a
+breaking change for anyone calling `create()` on these handlers, and belongs in the same major.
 
 **Local class includes** (`AdtLocalTestClass`, `AdtLocalTypes`, `AdtLocalDefinitions`,
-`AdtLocalMacros`) — same shape. An include is brought into existence by a lock/check/update
-flow on its class, not by a POST to a collection. They are in the migration scope for the same
-reason and by the same rule.
+`AdtLocalMacros`) — same shape, same treatment. An include is brought into existence by a
+lock/check/update flow on its class, not by a POST to a collection.
 
 Note the name: the class is `AdtServiceBinding` and it lives in
 `src/core/service/AdtService.ts`. `AdtServiceDefinition`, in its own module, is **clean** — it
@@ -208,22 +216,15 @@ It could not stay correct either: it fixes *everything else* while claiming only
 versions, so it carries check, activation, lock and transport awareness to handlers that lack
 them. Applying it "to fix" the version cluster would have swapped one lie for another.
 
-**And in a composed system a negative name is not merely redundant — it is unenforceable.**
-`Non` is not a negation to the type system; it is a name over a set that happens to omit
-something. So this compiles, silently:
+**And a negative name has no meaning to the type system.** `Non` is not a negation; it is a
+name over a set that happens to omit something. `IAdtNonVersionedObject & IAdtVersionable`
+compiles and hands out `getVersions` — the name promises an absence the compiler never
+enforced and never could.
 
-```ts
-type Both = IAdtNonVersionedObject<C, R> & IAdtVersionable<C>;
-```
-
-The intersection simply adds `getVersions` back. A type called "non-versioned" now hands out
-versions, and **no check can catch it** — not "hard to catch", but impossible in principle.
-Detecting the contradiction would require knowing the name was meant to carry a negation, and
-in a structural type system names carry nothing. Composition is exactly the feature that makes
-this unavoidable: anything that can be intersected will be.
-
-Omission has no such failure mode. A handler that does not declare `IAdtVersionable` cannot be
-intersected into declaring it by accident, because there is nothing to intersect.
+The point is not that omission prevents a consumer composing whatever it likes — it does not,
+and nothing here can. It is that **a negative type does not belong in a capability vocabulary
+at all.** The vocabulary names capabilities; absence is expressed by not naming one. A type
+whose meaning lives only in its name is a comment pretending to be a type.
 
 `IAdtSourceObject` is a different case: it names its set **positively**, and every handler
 matching it matches it exactly. It stays.
@@ -292,8 +293,12 @@ lies would carve the lie into the contract.
    `IAdtModifiable` as their composite, and **remove `IAdtNonVersionedObject`**. The removal
    makes this a **major**, not the minor an earlier draft claimed.
 3. ~~Composites.~~ **Removed** — this design adds none. See "No new composites" above.
-4. **Publish interfaces**, then narrow the **ten** overclaiming handlers in adt-clients, each
-   to the exact intersection of atoms it satisfies — not to a composite. `unitTest` is not among them — it is already narrow.
+4. **Publish interfaces**, then narrow the overclaiming handlers in adt-clients, each to the
+   exact intersection of atoms it satisfies — not to a composite. **Fifteen handlers**, if the
+   two groups do not overlap: the ten declaring capabilities ADT does not support, plus
+   `AdtMessageClassMessage` and the four local class includes, whose `create()` must be
+   removed or renamed rather than merely undeclared. The plan checks the overlap and fixes the
+   number. `unitTest` is not among them — it is already narrow.
    **Breaking** for a consumer that named a wide type — a major.
 5. Delete each stub as its handler stops declaring the method — and for `unitTest`, delete the
    **nine** that were never declared: the eight that throw, plus `readTransport`, which does
