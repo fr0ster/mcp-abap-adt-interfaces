@@ -318,6 +318,11 @@ export type {
   ITransportConfig,
   ITransportSearchConfiguration,
   ITransportState,
+  ITransportTree,
+  ITransportTreeLink,
+  ITransportTreeNode,
+  ITransportTreeRequest,
+  ITransportTreeTask,
 } from './adt/IAdtTransport';
 export {
   TRANSPORT_SEARCH_CONFIGURATIONS_URL,

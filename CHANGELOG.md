@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [14.1.0] - 2026-08-12
+
+### Added
+
+- `ITransportTree`, `ITransportTreeRequest`, `ITransportTreeTask`,
+  `ITransportTreeNode`, `ITransportTreeLink` — the parsed shape of the CTS
+  transport tree.
+
+  Nothing on the root, a request or a task is dropped: the root's own attributes
+  (`adtcore:name` is the user the saved search ran for), every `atom:link` —
+  those carry the operation URIs, so a caller releasing a transport does not
+  rebuild them by convention — and `tm:long_desc`, with `undefined` for an absent
+  element and `''` for a present empty one.
+
+  Containers are an ordered list rather than named fields because the chain is
+  not fixed: captured on one trial 2026-08-12, `?configUri=` alone returns
+  `tm:workbench > tm:modifiable > tm:request`, while Eclipse's
+  `?targets=true&configUri=` returns `tm:workbench > tm:target > tm:modifiable >
+  tm:request`. They are kept rather than flattened away because `tm:target`
+  carries a human name the request itself does not have.
+
+  Attributes are verbatim — `tm:number`, not `number`.
+
 ## [14.0.0] - 2026-08-11
 
 ### Changed — BREAKING
