@@ -141,8 +141,12 @@ export class AdtUnitTest
     IAdtTestRunnable
 ```
 
-That is the pattern. It needs no name of its own, it reads as what the handler can do, and it
-cannot drift from the truth without a compile error.
+That is the pattern. It needs no name of its own and it reads as what the handler can do.
+
+It does **not** protect the truth on its own: a stub satisfies a structural interface
+perfectly — a `delete` that throws has exactly the signature `IAdtDeletable` asks for. The
+compiler guards the *shape*; only a behavioural test guards the *behaviour*. That is precisely
+how the present eleven arose, and why the guard below is not optional.
 
 `IAdtSourceObject` and `IAdtNonVersionedObject` stay for the handlers that genuinely match
 them and for consumers already naming them. They are not extended to new ones, and the plan
@@ -186,10 +190,9 @@ lies would carve the lie into the contract.
    below and shippable on its own.
 2. **Atoms** in `@mcp-abap-adt/interfaces`: `IAdtUpdatable`, `IAdtDeletable`,
    `IAdtModifiable` as their composite. Additive — a minor.
-3. **Composites**: whatever the `readTransport` cluster needs. `unitTest` needs none —
-   `IAdtTestRunnable` has covered it since 13.1.0. Additive.
-4. **Publish interfaces**, then narrow the **ten** overclaiming handlers in adt-clients to the
-   composite each actually satisfies. `unitTest` is not among them — it is already narrow.
+3. ~~Composites.~~ **Removed** — this design adds none. See "No new composites" above.
+4. **Publish interfaces**, then narrow the **ten** overclaiming handlers in adt-clients, each
+   to the exact intersection of atoms it satisfies — not to a composite. `unitTest` is not among them — it is already narrow.
    **Breaking** for a consumer that named a wide type — a major.
 5. Delete each stub as its handler stops declaring the method — and for `unitTest`, delete the
    **nine** that were never declared: the eight that throw, plus `readTransport`, which does
@@ -216,43 +219,81 @@ from a no-op. It did surface, besides `unitTest.readTransport`, the `validate()`
 `transport` and `unitTest`, each returning an empty state with a comment that ADT offers no
 validation endpoint — arguably the same pattern, arguably an honest "nothing to validate".
 
-So the guard test cannot be a grep. It has to assert the positive: **for every method a handler
-declares, a real request goes out** — checked against a recording connection, not by reading
-source. Anything weaker will keep missing this class, and this class is the one that produced
-`{"success": true, "count": 0}` over 55 real transport requests.
+So the guard test cannot be a grep over source. It has to assert **the semantics each atom
+promises**, against a recording connection — which is not the same as "a request goes out",
+since some capabilities legitimately make none. The next section works that out; this class of
+stub is the one that produced `{"success": true, "count": 0}` over 55 real transport requests,
+and it is the class a grep cannot see.
 
 ## How this is verified
 
-**One criterion, and it is not a grep.** An earlier draft defined a stub as a method that
-throws "not supported", then proposed the same parsing script as the guard test.
-`unitTest.readTransport()` disproves it: no throw, returns an empty state, equally dishonest.
-A later draft over-corrected to "every declared method must issue a real request", which is
-also wrong — `IAdtTestRunnable.getRunId()`, `getStatusResponse()` and `getResultResponse()` are
-state accessors that correctly touch no network, and a local `validate()` can be a genuine
-capability with no endpoint behind it.
+Three earlier attempts at this section were wrong, each in an instructive way:
 
-So the guard is **per atom, asserting that atom's own semantics**, against a recording
-connection:
+- **grep for `throw ... not supported`** — `unitTest.readTransport()` disproves it: no throw,
+  returns an empty state, equally dishonest.
+- **"every declared method issues a request"** — `IAdtTestRunnable.getRunId()`,
+  `getStatusResponse()` and `getResultResponse()` are state accessors that correctly touch no
+  network, and a local `validate()` can be a real capability with no endpoint.
+- **reflect over the classes to discover their atoms** — impossible. `implements`,
+  intersections and type aliases are erased at compile time; nothing at runtime can say which
+  atoms a class declared.
 
-| atom | what the test asserts of a handler declaring it |
+### The manifest is the source, and three checks defend it
+
+```ts
+// src/__tests__/unit/capabilities/manifest.ts  (adt-clients)
+export const HANDLER_CAPABILITIES = {
+  AdtClass: ['creatable', 'readable', 'updatable', 'deletable', 'validatable',
+             'checkable', 'activatable', 'lockable', 'versionable', 'transportAware'],
+  AdtRequest: ['creatable', 'readable', 'updatable', 'deletable', 'validatable'],
+  AdtServiceBinding: ['creatable', 'readable', 'updatable', 'deletable', 'validatable',
+                      'checkable', 'activatable', 'transportAware'],
+  // … one entry per exported handler
+} as const satisfies Record<string, readonly Capability[]>;
+```
+
+**1. Shape — compile time.** Per handler, a type-level assertion that the class satisfies the
+intersection its manifest entry names. Catches a manifest that claims an atom the class does
+not implement:
+
+```ts
+const _class: IAdtCreatable<IClassConfig, IClassState> &
+  IAdtReadable<IClassConfig, IClassState> & /* … */ = {} as AdtClass;
+```
+
+**2. Completeness — runtime, and this part reflection *can* do.** Enumerate the package's
+exported classes — values, not types, so they survive compilation — and fail on any handler
+absent from the manifest. This is what stops a new object type, copied from an existing one,
+from arriving unchecked; that is how the current eleven appeared.
+
+**3. Behaviour — runtime, driven by the manifest.** For each handler, for each atom it claims,
+assert that atom's own semantics against a recording connection:
+
+| atom | asserted of every handler claiming it |
 |---|---|
 | `IAdtCreatable` | `create` issues a POST to the object's collection |
-| `IAdtReadable` | `read` issues a GET and returns what came back |
+| `IAdtReadable` | `read` issues a GET and returns the body; `readMetadata` likewise |
 | `IAdtUpdatable` | `update` issues a PUT |
 | `IAdtDeletable` | `delete` issues a DELETE |
-| `IAdtLockable` | `lock` returns a handle the server supplied |
-| `IAdtVersionable` | `getVersions` issues a GET and parses a feed |
+| `IAdtValidatable` | `validate` either issues a request **or** returns a decision it computed — never an empty state with no decision in it |
+| `IAdtCheckable` | `check` issues a request and reports what came back |
+| `IAdtActivatable` | `activate` issues a POST to the activation resource |
+| `IAdtLockable` | `lock` returns a handle the server supplied; `unlock` issues a request releasing it |
+| `IAdtVersionable` | `getVersions` issues a GET and parses a feed; `getVersionSource` fetches a version's body |
 | `IAdtTransportAware` | `readTransport` reports a request the server named |
-| `IAdtTestRunnable` | `run` issues a POST; the `get*` accessors return prior state without a request |
+| `IAdtTestRunnable` | `run` issues a POST; `getRunId`/`getStatusResponse`/`getResultResponse` return prior state **without** a request |
 
-The shape is: **for every atom a handler declares, the behaviour that atom promises actually
-happens.** A method that throws fails it. A method that silently returns an empty state fails
-it too — which is the point, since that is the class the grep could not see and the class that
-produced `{"success": true, "count": 0}` over 55 real transport requests.
+Every method of an atom is covered, not one per atom — `readMetadata`, `unlock` and
+`getVersionSource` are exactly where stubs hid before.
 
-Handlers are enumerated by reflection over the exported classes, so a new object type is
-covered the day it is added — which is what stops this recurring, since the current eleven
-arose by copying an existing handler.
+`IAdtValidatable` is the awkward one and is stated deliberately: `transport.validate()` and
+`unitTest.validate()` return an empty state because ADT has no validation endpoint. Whether
+that is an honest local capability or a fourth stub is a judgement the test must force someone
+to make, not one it can settle.
+
+**What none of the three catches:** a manifest entry that omits an atom the class does in fact
+implement. That is under-claiming — the safe direction, and the opposite of this document's
+subject.
 
 ## Open questions — closed 2026-08-13
 
