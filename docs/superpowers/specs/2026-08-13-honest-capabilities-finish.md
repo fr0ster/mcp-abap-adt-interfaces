@@ -370,8 +370,8 @@ assert that atom's own semantics against a recording connection:
 | `IAdtUpdatable` | `update` issues a **PUT**. Always. |
 | `IAdtDeletable` | `delete` issues a DELETE |
 | `IAdtValidatable` | `validate` either issues a request **or** returns a decision it computed — never an empty state with no decision in it |
-| `IAdtCheckable` | `check` issues a request and reports what came back |
-| `IAdtActivatable` | `activate` issues a POST to the activation resource |
+| `IAdtCheckable` | `check` issues a **POST** and reports what came back |
+| `IAdtActivatable` | `activate` issues a **POST**, *and* an error-severity `<msg>` in the response reaches the caller — see `functionGroup` below |
 | `IAdtLockable` | `lock` returns a handle the server supplied; `unlock` issues a request releasing it |
 | `IAdtVersionable` | `getVersions` issues a GET and parses a feed; `getVersionSource` fetches a version's body |
 | `IAdtTransportAware` | `readTransport` reports a request the server named |
@@ -392,11 +392,45 @@ object** — it lives inside a message class, and there is no collection to POST
 handler does not create a resource; it modifies its parent. It should not declare
 `IAdtCreatable` at all, and the guard rejecting it is the guard working.
 
-The same question is owed to `update`, `check` and `activate` before the plan starts: the atom
-keeps one verb, and any handler that cannot meet it is telling us it does not have that
-capability. Local class includes, raised in the same review, are created through a
-lock/check/update flow — which is the same answer: that is updating a class, not creating an
-object.
+Local class includes, raised in the same review, answer the same way: a lock/check/update flow
+is updating a class, not creating an object.
+
+**`update`, `check` and `activate` were then checked across all 30 modules, 2026-08-13.
+The rule holds for every one of them:**
+
+| atom | verb | outcome |
+|---|---|---|
+| `update` | PUT | all 26 modules end in PUT |
+| `check` | POST | all go through `src/utils/checkRun.ts` |
+| `activate` | POST | all go through `src/utils/activationUtils.ts` — except one |
+
+`domain`, `package` and `dataElement` appear to start with a GET. They are read-modify-write:
+GET the current XML, patch the changed fields, PUT it back. The first request is not the
+operation, and building the XML from scratch instead would drop fields the client does not
+model.
+
+### A defect found while checking the verbs: `functionGroup.activate`
+
+`activateFunctionGroup` is the only activation not going through the shared helper. Its verb is
+correct — POST to `/sap/bc/adt/activation` — but it **returns the raw response and never reads
+`<msg type="E">`**, and neither does its caller: `AdtFunctionGroup.ts:711` takes the result and
+returns `{ activateResult: result, errors: [] }`, so `errors` is empty whatever the server
+said, at all three call sites.
+
+Nine handlers call `assertActivationSucceeded`. This one does not.
+
+That is the defect 10.0.2 fixed — activation judged by a flag rather than by the messages,
+where only `<msg type="E">` is the verdict. Nine modules were corrected then; `functionGroup`
+has its own implementation and was missed.
+
+**It belongs in step 1 with `transport` and `unitTest`** — a handler that reports success
+regardless of the answer is a stub wearing a working method's clothes, and no capability atom
+would catch it. Neither would the behaviour guard as specified: a POST does go out. Only
+reading the response body does.
+
+This is worth stating plainly: **the guard proves a request happens, not that its answer is
+believed.** For `activate`, the assertion must be that an error-severity message reaches the
+caller.
 
 `IAdtValidatable` was the awkward one. **Both cases are now decided, and oppositely** — which
 is what a test can force but never settle:
