@@ -15,6 +15,12 @@ handler modules on 2026-08-13:
 **Counts below overlap** — a handler can appear in more than one row. 11 of 30 have at least
 one stub:
 
+The counts below are **throw-detected only** — they come from looking for
+`throw ... not supported` and `throwUnsupportedVersions`, and are therefore a floor. Two
+handlers have more problem methods than their number shows: `transport` ten (nine plus the
+no-op `validate`), `unitTest` ten (eight plus the no-op `readTransport` plus the mock
+`validate`). See "Stubs that do not throw".
+
 | symptom | modules |
 |---|---|
 | clean | 19 |
@@ -22,9 +28,10 @@ one stub:
 | stubs `readTransport` | 4 — `messageClass`, `authorizationField`, `featureToggle`, `functionInclude` |
 | stubs more than versions and `readTransport` | 4 — `transport` 9, `unitTest` 8, `messageClass` 5, `AdtServiceBinding` 4 |
 
-**11 of 30 handlers carry at least one stub; 10 of them declare a contract wider than they
-implement.** `unitTest` is the eleventh and a different case — its contract is already narrow,
-and its stubs are undeclared dead code. A caller reading the type
+**11 of 30 handlers carry at least one stub.** Ten need their **type narrowed** — they declare
+atoms ADT does not support. The eleventh, `unitTest`, needs **behaviour implemented**: its
+shape is already narrow, but it declares `IAdtValidatable` over a validate that returns what
+its own comment calls a mock, so it overclaims too — just not by declaring too many atoms. A caller reading the type
 is told an operation exists; calling it throws. That is the defect 8.0.0 set out to remove.
 
 The trigger for this spec was narrower — the maintainer asked for `IAdtDeletable` as its own
@@ -173,9 +180,14 @@ lies would carve the lie into the contract.
 
   That is acceptable in a major — an object that never supported an operation should not carry
   a method for it — but it must be in the changelog as a runtime break, not filed under
-  "types narrowed". The alternative, keeping the stubs while removing them from the contract,
-  keeps the friendlier message and is worth considering for the handlers where the operation
-  is genuinely impossible rather than merely unimplemented.
+  "types narrowed".
+
+  **An earlier draft offered an alternative — keep the throwing method, remove it only from the
+  contract — for the friendlier message. It is withdrawn: it cannot coexist with the guard.**
+  A public throwing method structurally satisfies its atom, so the bidirectional check would
+  force the manifest to claim the capability, and the behaviour test would then fail on the
+  throw. Keeping the better error message would mean giving up the mechanism that stops this
+  recurring. The methods go.
 
 - **No change to any supported ADT operation** — every one that works today keeps working, and
   `transport` gains two. What does change is *failure* behaviour on the removed methods, as
@@ -203,7 +215,11 @@ lies would carve the lie into the contract.
    **Breaking** for a consumer that named a wide type — a major.
 5. Delete each stub as its handler stops declaring the method — and for `unitTest`, delete the
    **nine** that were never declared: the eight that throw, plus `readTransport`, which does
-   not throw at all (see "Stubs that do not throw" below). See the runtime-break note above before doing this: for an
+   not throw at all (see "Stubs that do not throw" below). `transport.validate` goes here too.
+
+   **This step must complete before the shape guard is switched on**, for the reason given
+   under check 1: TypeScript reads shape, not intent, so an undeclared method still satisfies
+   its atom. See the runtime-break note above before doing this: for an
    operation that is genuinely impossible, consider keeping the throwing method while removing
    it from the contract, so a JavaScript caller still gets a sentence instead of a `TypeError`.
 
