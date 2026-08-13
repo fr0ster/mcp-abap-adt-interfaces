@@ -196,13 +196,26 @@ perfectly — a `delete` that throws has exactly the signature `IAdtDeletable` a
 compiler guards the *shape*; only a behavioural test guards the *behaviour*. That is precisely
 how the present eleven arose, and why the guard below is not optional.
 
-**`IAdtNonVersionedObject` is deleted.** It exists only to say "everything except versions",
+**No interface may be defined by what an object does not support.** That is the rule; the
+composite is one instance of breaking it.
+
+**`IAdtNonVersionedObject` is deleted.** It came from a mistake and has only caused them: It exists only to say "everything except versions",
 which is what omitting an atom already says; keeping it would leave two ways to express one
 thing and invite the next handler to reach for the negative one. Removing an exported type is
 breaking, and belongs in the same major as the narrowing.
 
-`IAdtSourceObject` is a different case: it names the full set, positively, and every handler
-matching it matches it exactly. It stays. The plan adds no third composite.
+It could not stay correct either: it fixes *everything else* while claiming only to exclude
+versions, so it carries check, activation, lock and transport awareness to handlers that lack
+them. Applying it "to fix" the version cluster would have swapped one lie for another.
+
+`IAdtSourceObject` is a different case: it names its set **positively**, and every handler
+matching it matches it exactly. It stays.
+
+**The rule for anything added later:** a handler declares the intersection of atoms it
+satisfies — that is the whole vocabulary. A composite is legitimate only when it names a set
+positively and its members match exactly. A name reaching for "Non…", "…Without…" or
+"…Except…" means an atom should be dropped, not a type added. The plan adds no third
+composite.
 
 **What the plan needs from the inventory** is therefore not a composite design but, per
 handler, the atom list it satisfies. That is mechanical once the open questions below are
