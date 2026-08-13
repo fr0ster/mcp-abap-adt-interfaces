@@ -254,20 +254,25 @@ Handlers are enumerated by reflection over the exported classes, so a new object
 covered the day it is added — which is what stops this recurring, since the current eleven
 arose by copying an existing handler.
 
-## Open questions
+## Open questions — closed 2026-08-13
+
+The maintainer answered both: **these are ADT's limits, not unimplemented features.**
 
 1. **`AdtServiceBinding`** (not `AdtServiceDefinition`, which is clean) stubs `lock`/`unlock`
-   *and* versions. Is either ADT's truth or an
-   unimplemented feature? If the latter, it belongs with `transport` in step 1, not in a
-   narrowed composite.
-2. **`messageClass`** stubs `activate` and `check`. Same question.
-3. ~~Does the `readTransport` cluster need a composite?~~ **Answered: no.** Those four simply
-   do not declare `IAdtTransportAware`. There is no cluster to name.
+   and versions — **ADT does not offer them**. So they leave the atom list; there is no code
+   to write. It declares neither `IAdtLockable` nor `IAdtVersionable`.
+2. **`messageClass`** stubs `activate`, `check`, `readTransport` and versions — **also ADT's
+   limits**. Same treatment: those atoms are simply not declared.
+3. ~~Does the `readTransport` cluster need a composite?~~ **No.** Those four do not declare
+   `IAdtTransportAware`. There is no cluster to name.
 
-**Questions 1 and 2 gate the work**, and not only the wording: whether an operation is
-unimplemented or genuinely impossible decides whether it is fixed in code (like `transport`)
-or dropped from a handler's atom list. Until they are answered the per-handler atom lists
-cannot be written, so the plan cannot start with them open.
+This settles the shape of the work, and it is smaller than it looked: **`transport` is the
+only handler needing code.** Its `update` and `delete` are stubs that lie — ADT changes a
+request's description and deletes an empty one, which `package` proves against the same
+server. Everywhere else the fix is subtraction: stop declaring what ADT cannot do.
+
+It also means the per-handler atom lists are now writable without further probing, which is
+what the plan was waiting on.
 
 ## Related
 
