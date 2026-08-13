@@ -28,11 +28,16 @@ no-op `validate`), `unitTest` ten (eight plus the no-op `readTransport` plus the
 | stubs `readTransport` | 4 — `messageClass`, `authorizationField`, `featureToggle`, `functionInclude` |
 | stubs more than versions and `readTransport` | 4 — `transport` 9, `unitTest` 8, `messageClass` 5, `AdtServiceBinding` 4 |
 
+A stub here is **any method that does not do what its capability promises** — one that throws,
+one that returns an empty state, one whose comment calls its own answer a mock. The first kind
+is the only one a grep finds, which is why the counts below are a floor.
+
 **11 of 30 handlers carry at least one stub.** Ten need their **type narrowed** — they declare
 atoms ADT does not support. The eleventh, `unitTest`, needs **behaviour implemented**: its
 shape is already narrow, but it declares `IAdtValidatable` over a validate that returns what
 its own comment calls a mock, so it overclaims too — just not by declaring too many atoms. A caller reading the type
-is told an operation exists; calling it throws. That is the defect 8.0.0 set out to remove.
+is told an operation exists; calling it throws — or, worse, quietly returns an empty result
+that looks like an answer. That is the defect 8.0.0 set out to remove.
 
 The trigger for this spec was narrower — the maintainer asked for `IAdtDeletable` as its own
 interface. It is needed, but the inventory shows it closes none of the eleven cases on its
@@ -219,9 +224,9 @@ lies would carve the lie into the contract.
 
    **This step must complete before the shape guard is switched on**, for the reason given
    under check 1: TypeScript reads shape, not intent, so an undeclared method still satisfies
-   its atom. See the runtime-break note above before doing this: for an
-   operation that is genuinely impossible, consider keeping the throwing method while removing
-   it from the contract, so a JavaScript caller still gets a sentence instead of a `TypeError`.
+   its atom. The methods are **deleted**, without exception — the alternative of keeping a
+   throwing method for a friendlier JavaScript error was withdrawn above, because such a method
+   still satisfies its atom structurally and would force the manifest to claim the capability.
 
 Step 2 is the interfaces release. Step 4 is one adt-clients major.
 
@@ -290,11 +295,29 @@ type Has<C, A> = C extends A ? true : false;
 type Claims<H extends keyof typeof HANDLER_CAPABILITIES, A extends Capability> =
   A extends (typeof HANDLER_CAPABILITIES)[H][number] ? true : false;
 
-// One line per handler × atom. Both directions in one equality.
-type _AdtRequestDeletable =
-  Assert<Equals<Has<AdtRequest, IAdtDeletable<ITransportConfig, ITransportState>>,
-                Claims<'AdtRequest', 'deletable'>>>;
+// NOT one line per pair — a forgotten line is a silent hole, and there are
+// 30 handlers × 11 atoms of them. The product is generated, so nothing can be
+// left out: every mismatch surfaces as a key in Mismatches.
+type AtomFor<H, A extends Capability> = /* atom type for A, bound to H's config */ never;
+
+type Mismatches = {
+  [H in keyof typeof HANDLER_CAPABILITIES]: {
+    [A in Capability as
+      Has<HandlerClass<H>, AtomFor<H, A>> extends Claims<H, A> ? never : A
+    ]: ['structurally satisfies', Has<HandlerClass<H>, AtomFor<H, A>>,
+        'manifest claims',        Claims<H, A>];
+  };
+};
+
+// Every handler maps to {} when it agrees with its manifest entry.
+type _NoMismatches = Assert<Equals<Mismatches, EmptyPerHandler<typeof HANDLER_CAPABILITIES>>>;
 ```
+
+The `as` clause in the mapped type drops every atom that agrees, so a handler in disagreement
+keeps a key and the assertion fails **naming the handler and the atom**. `HandlerClass<H>` and
+`AtomFor<H, A>` are the two lookups the plan has to write — a registry of the exported classes
+and one of the atom types bound to each handler's config — and they are what makes the product
+enumerable rather than hand-listed.
 
 This only works once step 5 has deleted the undeclared stubs — while `AdtUnitTest` still
 carries a `delete` method it never declared, it satisfies `IAdtDeletable` structurally.
