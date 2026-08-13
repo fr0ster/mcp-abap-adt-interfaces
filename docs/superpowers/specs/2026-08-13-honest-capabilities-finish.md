@@ -12,12 +12,15 @@ Release 8.0.0 was called "honest capability types" and split the ADT contract in
 handler would declare what it can actually do. It did not finish. Measured across all 30
 handler modules on 2026-08-13:
 
-| | modules | stubbed methods |
-|---|---|---|
-| clean | 19 | — |
-| version stubs only | 9 | `getVersions`, `getVersionSource` |
-| `readTransport` stub | 4 | `readTransport` |
-| deep cases | 4 | `transport` 9, `unitTest` 8, `messageClass` 5, `service` 4 |
+**Counts below overlap** — a handler can appear in more than one row. 11 of 30 have at least
+one stub:
+
+| symptom | modules |
+|---|---|
+| clean | 19 |
+| stubs `getVersions`/`getVersionSource` | **10** — `dataElement`, `domain`, `functionGroup`, `messageClass`, `authorizationField`, `featureToggle`, `package`, `service`, `transport`, `unitTest` |
+| stubs `readTransport` | 4 — `messageClass`, `authorizationField`, `featureToggle`, `functionInclude` |
+| stubs more than versions and `readTransport` | 4 — `transport` 9, `unitTest` 8, `messageClass` 5, `service` 4 |
 
 **11 of 30 handlers declare a contract wider than they implement.** A caller reading the type
 is told an operation exists; calling it throws. That is the defect 8.0.0 set out to remove.
@@ -32,8 +35,10 @@ honest.
 ### 1. Versions — nine handlers, and the fix already exists
 
 `dataElement`, `domain`, `functionGroup`, `messageClass`, `authorizationField`,
-`featureToggle`, `package`, `transport`, `unitTest` all throw from `getVersions` and
-`getVersionSource`.
+`featureToggle`, `package`, `service`, `transport`, `unitTest` — **ten**, not nine. An earlier
+draft of this document said nine here and then named `service` as a version-stubber further
+down; both `throwUnsupportedVersions` calls are in its source. `service` was therefore about to
+be left without a migration.
 
 `IAdtNonVersionedObject` exists in `IAdtComposites.ts` for exactly this and is the same as
 `IAdtSourceObject` minus `IAdtVersionable`. This is not a design problem; it is a migration
@@ -58,11 +63,20 @@ request via `DELETE /cts/transportrequests/<NR>`. The stubs say "immutable after
 **This is a code defect, not a typing one** — and it must be fixed before the type is narrowed,
 or the narrowing will make the lie permanent.
 
-**`unitTest` — not a CRUD object at all.**
-Real: `validate`, `create`, `read`, `readMetadata`, `readTransport`, `run`, `getStatus`,
-`getResult`. Stubbed: eight, including `update` and `delete`.
-`create` means "start a run" and `read` means "read the result". Declaring it through
-`IAdtCrud` promises seven methods that throw. It needs its own composite, not an atom removed.
+**`unitTest` — already narrowed; the stubs are dead code, not overclaiming.**
+
+`AdtUnitTest` declares
+`IAdtCreatable, IAdtReadable, IAdtValidatable, IAdtTestRunnable` — **no `IAdtCrud`**. So its
+eight stubbed methods are implemented but *not declared*: nothing in the contract promises
+them, and a TypeScript caller cannot reach them through the handler's type at all.
+
+That is a different defect from the rest of this document, and a smaller one: **delete the
+methods**, do not narrow the type. The narrowing already happened.
+
+`IAdtTestRunnable` has existed since 13.1.0 and already carries `run`, `getStatus`,
+`getResult`, `getRunId`, `getStatusResponse`, `getResultResponse`. An earlier draft of this
+spec proposed a new `IAdtRunnable` with three of those six — it would have created a second,
+competing contract and lost the other three. There is nothing to add here.
 
 **`messageClass`** — no activation, no check, no versions, no `readTransport`.
 **`service`** — 25 real methods, stubs only on `lock`/`unlock` and versions.
@@ -97,12 +111,13 @@ parts, prefer the part you actually mean.
 
 ### Composites
 
-- Apply `IAdtNonVersionedObject` to the nine version-stubbing handlers.
+- Apply `IAdtNonVersionedObject` to the **ten** version-stubbing handlers, `service` included.
 - A composite without `IAdtTransportAware` for the four that stub `readTransport`. Name and
   membership to be settled in the plan, from what those four actually share.
-- **`IAdtRunnable`** for `unitTest`: `validate`, `create`, `read`, `readMetadata`, `run`,
-  `getStatus`, `getResult`, `readTransport`. No update, no delete, no activate, no lock, no
-  versions.
+- **Nothing new for `unitTest`.** It already composes
+  `IAdtCreatable + IAdtReadable + IAdtValidatable + IAdtTestRunnable`. If a named composite is
+  wanted for readability, it is an alias over those four — but the contract is correct today
+  and the work there is deleting undeclared methods, not adding a type.
 
 ### Code, before the types
 
@@ -113,7 +128,19 @@ lies would carve the lie into the contract.
 ## What this is not
 
 - **Not a rename.** Every existing name survives; atoms are added beneath them.
-- **Not a behaviour change** anywhere except `transport`, where two operations start working.
+- **A runtime breaking change, and this is the one to read twice.** Step 5 deletes the stub
+  methods. Today a caller reaching one gets a controlled `Error("... is not supported ...")`;
+  afterwards it gets `TypeError: x.delete is not a function`. TypeScript callers are stopped at
+  compile time, but **JavaScript consumers, and TypeScript ones going through `any` or a cast,
+  see the change only at runtime, and the message is worse.**
+
+  That is acceptable in a major — an object that never supported an operation should not carry
+  a method for it — but it must be in the changelog as a runtime break, not filed under
+  "types narrowed". The alternative, keeping the stubs while removing them from the contract,
+  keeps the friendlier message and is worth considering for the handlers where the operation
+  is genuinely impossible rather than merely unimplemented.
+
+- **No behaviour change** anywhere except `transport`, where two operations start working.
 - **Not `IAdtDeletable` alone.** Shipping only the atom would remove one stub of the eleven
   cases' many and leave the rest declaring what they cannot do.
 
@@ -123,10 +150,14 @@ lies would carve the lie into the contract.
    below and shippable on its own.
 2. **Atoms** in `@mcp-abap-adt/interfaces`: `IAdtUpdatable`, `IAdtDeletable`,
    `IAdtModifiable` as their composite. Additive — a minor.
-3. **Composites**: `IAdtRunnable`, and whatever the `readTransport` cluster needs. Additive.
+3. **Composites**: whatever the `readTransport` cluster needs. `unitTest` needs none —
+   `IAdtTestRunnable` has covered it since 13.1.0. Additive.
 4. **Publish interfaces**, then narrow the eleven handlers in adt-clients to the composite each
    one actually satisfies. **Breaking** for a consumer that named a wide type — a major.
-5. Delete each stub as its handler stops declaring the method.
+5. Delete each stub as its handler stops declaring the method — and for `unitTest`, delete the
+   eight that were never declared. See the runtime-break note above before doing this: for an
+   operation that is genuinely impossible, consider keeping the throwing method while removing
+   it from the contract, so a JavaScript caller still gets a sentence instead of a `TypeError`.
 
 Steps 2 and 3 are one interfaces release. Step 4 is one adt-clients major.
 
@@ -143,8 +174,9 @@ one, which is how the current eleven arose.
 
 ## Open questions
 
-1. **`service`** stubs `lock`/`unlock`. Is that ADT's truth or an unimplemented feature? If the
-   latter, it belongs with `transport` in step 1, not in a narrowed composite.
+1. **`service`** stubs `lock`/`unlock` *and* versions. Is either ADT's truth or an
+   unimplemented feature? If the latter, it belongs with `transport` in step 1, not in a
+   narrowed composite.
 2. **`messageClass`** stubs `activate` and `check`. Same question.
 3. Does the `readTransport` cluster share anything else, or does each need its own composite?
    Four handlers is enough to justify a name only if they are actually alike.
