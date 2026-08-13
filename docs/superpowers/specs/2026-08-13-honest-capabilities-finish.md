@@ -3,7 +3,7 @@
 **Status:** design, for review.
 **Date:** 2026-08-13
 **Repo:** this one. The design — atoms and composites — is decided here. The application side
-(narrowing eleven handlers, fixing `transport`, the guard test) lands in
+(narrowing ten handlers, deleting `unitTest`'s undeclared methods, fixing `transport`, the guard test) lands in
 `mcp-abap-adt-clients`, where the inventory below was measured.
 
 ## Why this exists
@@ -22,7 +22,9 @@ one stub:
 | stubs `readTransport` | 4 — `messageClass`, `authorizationField`, `featureToggle`, `functionInclude` |
 | stubs more than versions and `readTransport` | 4 — `transport` 9, `unitTest` 8, `messageClass` 5, `service` 4 |
 
-**11 of 30 handlers declare a contract wider than they implement.** A caller reading the type
+**11 of 30 handlers carry at least one stub; 10 of them declare a contract wider than they
+implement.** `unitTest` is the eleventh and a different case — its contract is already narrow,
+and its stubs are undeclared dead code. A caller reading the type
 is told an operation exists; calling it throws. That is the defect 8.0.0 set out to remove.
 
 The trigger for this spec was narrower — the maintainer asked for `IAdtDeletable` as its own
@@ -32,7 +34,7 @@ honest.
 
 ## What is actually broken, by cluster
 
-### 1. Versions — nine handlers, and the fix already exists
+### 1. Versions — ten handlers, and the fix already exists
 
 `dataElement`, `domain`, `functionGroup`, `messageClass`, `authorizationField`,
 `featureToggle`, `package`, `service`, `transport`, `unitTest` — **ten**, not nine. An earlier
@@ -140,7 +142,10 @@ lies would carve the lie into the contract.
   keeps the friendlier message and is worth considering for the handlers where the operation
   is genuinely impossible rather than merely unimplemented.
 
-- **No behaviour change** anywhere except `transport`, where two operations start working.
+- **No change to any supported ADT operation** — every one that works today keeps working, and
+  `transport` gains two. What does change is *failure* behaviour on the removed methods, as
+  described immediately above. Those are different claims and an earlier draft ran them
+  together.
 - **Not `IAdtDeletable` alone.** Shipping only the atom would remove one stub of the eleven
   cases' many and leave the rest declaring what they cannot do.
 
@@ -152,14 +157,38 @@ lies would carve the lie into the contract.
    `IAdtModifiable` as their composite. Additive — a minor.
 3. **Composites**: whatever the `readTransport` cluster needs. `unitTest` needs none —
    `IAdtTestRunnable` has covered it since 13.1.0. Additive.
-4. **Publish interfaces**, then narrow the eleven handlers in adt-clients to the composite each
-   one actually satisfies. **Breaking** for a consumer that named a wide type — a major.
+4. **Publish interfaces**, then narrow the **ten** overclaiming handlers in adt-clients to the
+   composite each actually satisfies. `unitTest` is not among them — it is already narrow.
+   **Breaking** for a consumer that named a wide type — a major.
 5. Delete each stub as its handler stops declaring the method — and for `unitTest`, delete the
-   eight that were never declared. See the runtime-break note above before doing this: for an
+   **nine** that were never declared: the eight that throw, plus `readTransport`, which does
+   not throw at all (see "Stubs that do not throw" below). See the runtime-break note above before doing this: for an
    operation that is genuinely impossible, consider keeping the throwing method while removing
    it from the contract, so a JavaScript caller still gets a sentence instead of a `TypeError`.
 
 Steps 2 and 3 are one interfaces release. Step 4 is one adt-clients major.
+
+## Stubs that do not throw — and why the guard needs more than a `throw`
+
+`unitTest.readTransport()` does not throw. It returns an empty state, and its own comment says
+a test run has no transport request. The dishonesty is identical to a throwing stub; only the
+disguise differs, and the contract correctly does not declare it.
+
+**This breaks the detection criterion**, not just the count. Every number in this document came
+from looking for `throw ... not supported` or `throwUnsupportedVersions`. A method that quietly
+returns nothing is invisible to that, so the inventory is a floor, not a total.
+
+A scan for the wider class — a body that issues no request and returns a bare state — was run
+across all 30 modules on 2026-08-13 and is **not reliable**: most of its hits are two-line
+delegates in `AdtUtils` that genuinely call an imported function, which a regex cannot tell
+from a no-op. It did surface, besides `unitTest.readTransport`, the `validate()` of both
+`transport` and `unitTest`, each returning an empty state with a comment that ADT offers no
+validation endpoint — arguably the same pattern, arguably an honest "nothing to validate".
+
+So the guard test cannot be a grep. It has to assert the positive: **for every method a handler
+declares, a real request goes out** — checked against a recording connection, not by reading
+source. Anything weaker will keep missing this class, and this class is the one that produced
+`{"success": true, "count": 0}` over 55 real transport requests.
 
 ## How this is verified
 
