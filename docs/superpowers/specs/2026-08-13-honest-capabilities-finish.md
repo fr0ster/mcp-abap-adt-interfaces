@@ -115,7 +115,41 @@ request via `DELETE /cts/transportrequests/<NR>`. The stubs say "immutable after
 **This is a code defect, not a typing one** — and it must be fixed before the type is narrowed,
 or the narrowing will make the lie permanent.
 
-**`unitTest` — already narrowed; the stubs are dead code, not overclaiming.**
+**`unitTest` — the stubs are a symptom of `create()` meaning the wrong thing.**
+
+Ruled by the maintainer 2026-08-13, and it changes this entry from "delete nine dead methods"
+to real work:
+
+> A unit test handler has **CRUD and run and the rest** — they are different things. The test
+> is created **once**; it is run **as many times as needed**. And `run` must work without
+> `create`, because the tests may already be in the class; but without `create`/`update` there
+> is nothing to run.
+
+So the honest shape is:
+
+| method | meaning |
+|---|---|
+| `create` | create the local test class — once |
+| `read` / `update` / `delete` | manage that test class |
+| `run` / `getStatus` / `getResult` | execute whatever tests the class holds, any number of times |
+
+`create` currently means "start a run". **That is why `update` and `delete` looked dead**: with
+creation meaning execution, there was nothing to update or delete. The stubs were a consequence
+of two different operations sharing one method, not of ADT lacking the capability —
+`AdtLocalTestClass` implements both, and the integration tests call it directly for exactly
+that reason.
+
+This retires the earlier plan to delete nine methods from `AdtUnitTest`. `update` and `delete`
+become real, wrapping `AdtLocalTestClass`. What genuinely does not exist — `activate`, `lock`,
+`unlock`, versions — is still deleted.
+
+It also makes `create` change meaning, which is breaking, and re-opens the `IUnitTestConfig`
+question with a reason this time: if `create` creates the test class, the config must carry its
+source.
+
+**Superseded below.** The paragraphs that follow describe the earlier reading — that
+`unitTest`'s contract was already narrow and its stubs were undeclared dead code. That was true
+of the *declarations* and wrong about the *cause*.
 
 `AdtUnitTest` declares
 `IAdtCreatable, IAdtReadable, IAdtValidatable, IAdtTestRunnable` — **no `IAdtCrud`**. So its
