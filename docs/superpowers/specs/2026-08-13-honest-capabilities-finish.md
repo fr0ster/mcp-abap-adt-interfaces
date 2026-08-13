@@ -18,9 +18,9 @@ one stub:
 | symptom | modules |
 |---|---|
 | clean | 19 |
-| stubs `getVersions`/`getVersionSource` | **10** — `dataElement`, `domain`, `functionGroup`, `messageClass`, `authorizationField`, `featureToggle`, `package`, `service`, `transport`, `unitTest` |
+| stubs `getVersions`/`getVersionSource` | **10** — `dataElement`, `domain`, `functionGroup`, `messageClass`, `authorizationField`, `featureToggle`, `package`, `AdtServiceBinding`, `transport`, `unitTest` |
 | stubs `readTransport` | 4 — `messageClass`, `authorizationField`, `featureToggle`, `functionInclude` |
-| stubs more than versions and `readTransport` | 4 — `transport` 9, `unitTest` 8, `messageClass` 5, `service` 4 |
+| stubs more than versions and `readTransport` | 4 — `transport` 9, `unitTest` 8, `messageClass` 5, `AdtServiceBinding` 4 |
 
 **11 of 30 handlers carry at least one stub; 10 of them declare a contract wider than they
 implement.** `unitTest` is the eleventh and a different case — its contract is already narrow,
@@ -37,7 +37,7 @@ honest.
 ### 1. Versions — ten handlers, and the fix already exists
 
 `dataElement`, `domain`, `functionGroup`, `messageClass`, `authorizationField`,
-`featureToggle`, `package`, `service`, `transport`, `unitTest` — **ten**, not nine. An earlier
+`featureToggle`, `package`, `AdtServiceBinding`, `transport`, `unitTest` — **ten**, not nine. An earlier
 draft of this document said nine here and then named `service` as a version-stubber further
 down; both `throwUnsupportedVersions` calls are in its source. `service` was therefore about to
 be left without a migration.
@@ -81,7 +81,12 @@ spec proposed a new `IAdtRunnable` with three of those six — it would have cre
 competing contract and lost the other three. There is nothing to add here.
 
 **`messageClass`** — no activation, no check, no versions, no `readTransport`.
-**`service`** — 25 real methods, stubs only on `lock`/`unlock` and versions.
+**`AdtServiceBinding`** — 25 real methods, stubs only on `lock`/`unlock` and versions.
+
+Note the name: the class is `AdtServiceBinding` and it lives in
+`src/core/service/AdtService.ts`. `AdtServiceDefinition`, in its own module, is **clean** — it
+has `lock.ts`, `unlock.ts` and `versions.ts` and stubs nothing. Saying "service" conflates
+them, as an earlier draft of this document did.
 
 ## The shape of the fix
 
@@ -121,7 +126,7 @@ a positive thing.** It means "CRUD, validation, check, activation, lock and tran
 atoms means you simply do not add `IAdtVersionable`.
 
 It is also wrong on the facts: it still carries check, activation, lock and transport
-awareness, which `transport`, `service`, `messageClass`, `authorizationField` and
+awareness, which `transport`, `AdtServiceBinding`, `messageClass`, `authorizationField` and
 `featureToggle` do not all have. Applying it to the ten would replace one lie with another.
 
 **So: no new composite, and no wider use of the existing ones.** Each handler declares the
@@ -251,7 +256,8 @@ arose by copying an existing handler.
 
 ## Open questions
 
-1. **`service`** stubs `lock`/`unlock` *and* versions. Is either ADT's truth or an
+1. **`AdtServiceBinding`** (not `AdtServiceDefinition`, which is clean) stubs `lock`/`unlock`
+   *and* versions. Is either ADT's truth or an
    unimplemented feature? If the latter, it belongs with `transport` in step 1, not in a
    narrowed composite.
 2. **`messageClass`** stubs `activate` and `check`. Same question.
