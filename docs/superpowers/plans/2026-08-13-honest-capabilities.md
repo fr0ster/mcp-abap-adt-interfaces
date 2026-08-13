@@ -6,7 +6,7 @@
 does not do what its capability promises.
 
 **Architecture:** Two positive atoms split out of `IAdtModifiable`; one negative composite
-deleted; fourteen handlers narrowed to the exact intersection of atoms they satisfy; three
+deleted; fifteen handlers narrowed to the exact intersection of atoms they satisfy; three
 behavioural defects fixed; and a guard — manifest, compile-time equality over the full
 handler × atom product, and per-atom behaviour tests — that keeps the state true.
 
@@ -43,20 +43,25 @@ comes from it.
 | | count | who |
 |---|---|---|
 | handlers with a problem | 16 | the 11 below plus 5 `create()` aliases |
-| type/API subtraction | **14** | **9** declaring unsupported atoms + 5 alias holders |
+| type/API subtraction | **15** | **10** declaring unsupported atoms + 5 alias holders |
 | behavioural code | 3 | `transport`, `unitTest.validate`, `functionGroup.activate` |
 | dead-method deletion | 1 | `unitTest` — nine methods |
 
-**The nine declaring unsupported atoms:** `dataElement`, `domain`, `functionGroup`,
-`messageClass`, `authorizationField`, `featureToggle`, `package`, `AdtServiceBinding`,
-`transport`.
+**The ten declaring unsupported atoms:** `dataElement`, `domain`, `functionGroup`, `package`,
+`messageClass`, `authorizationField`, `featureToggle`, **`functionInclude`**,
+`AdtServiceBinding`, `transport`.
 
-**`unitTest` is not among them, and the spec's "ten" counts something else.** That ten is
-stub-*carriers*; this nine is handlers declaring an atom they cannot honour. `unitTest` carries
-version stubs but never declared `IAdtVersionable` — they are undeclared dead methods, deleted
-in Task 8a — and its one real overclaim, `IAdtValidatable` over a mock, is fixed behaviourally
-in Phase A rather than by narrowing. So it needs no type change at all, and subtraction is
-**14**, not 15. Two different criteria had been collapsed into one number.
+Two different criteria feed that ten, which is why it is easy to miscount — and was
+miscounted, in both directions, before this line was written:
+
+- **nine by versions**: the ten version-stubbers *minus* `unitTest`. `unitTest` carries version
+  stubs but never *declared* `IAdtVersionable` — they are undeclared dead methods, deleted in
+  Task 8a — and its one real overclaim, `IAdtValidatable` over a mock, is fixed behaviourally
+  in Phase A rather than by narrowing. It needs no type change.
+- **plus `functionInclude`**, which has no version stub at all and joins by a different route:
+  it declares `IAdtTransportAware` while its `readTransport` throws.
+
+Nine plus one is ten, and ten plus the five alias holders is **15**.
 
 **The five alias holders:** `AdtMessageClassMessage`, `AdtLocalTestClass`, `AdtLocalTypes`,
 `AdtLocalDefinitions`, `AdtLocalMacros`. `AdtMessageClass` is **not** among them — a message
@@ -388,7 +393,7 @@ Deleting an exported type is breaking.
 
 ## Phase C — narrowing, in adt-clients
 
-Fourteen handlers. **Always a new branch off the current `main`** — Phase A has been merged
+Fifteen handlers. **Always a new branch off the current `main`** — Phase A has been merged
 and released by now, so its branch is gone.
 
 ### Task 6a: Take the published interfaces major
@@ -445,7 +450,7 @@ PUT capability. Drop `IAdtCreatable` from each class's `implements`.
 - [ ] **Step 2:** delete the aliases and the `IAdtCreatable` declarations.
 - [ ] **Step 3:** verify; commit with a `BREAKING CHANGE:` footer naming all five.
 
-### Task 8: Narrow the nine handlers that declare what they cannot do
+### Task 8: Narrow the ten handlers that declare what they cannot do
 
 Per handler, replace the declared composite with the exact intersection of atoms it satisfies.
 The spec's cluster tables give the starting point; **read each class** before writing its list.
@@ -628,7 +633,7 @@ check that would have caught `functionGroup`.
 
 ### Task 10: Release adt-clients — the narrowing
 
-A major: nine handlers lose declared capabilities and five lose `create()` — fourteen in all.
+A major: ten handlers lose declared capabilities and five lose `create()` — fifteen in all.
 
 - [ ] Ask for the version. Sweep the docs. CHANGELOG listing, per handler, what it no longer
   declares — a consumer needs to know which of its calls stops compiling.
