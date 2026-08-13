@@ -23,7 +23,7 @@ no-op `validate`), `unitTest` ten (eight plus the no-op `readTransport` plus the
 
 | symptom | modules |
 |---|---|
-| clean | 19 |
+| clean | 19 by the throw-count, but see below — `AdtMessageClassMessage` and the four local includes are in scope for a different reason: they declare `IAdtCreatable` without creating anything |
 | stubs `getVersions`/`getVersionSource` | **10** — `dataElement`, `domain`, `functionGroup`, `messageClass`, `authorizationField`, `featureToggle`, `package`, `AdtServiceBinding`, `transport`, `unitTest` |
 | stubs `readTransport` | 4 — `messageClass`, `authorizationField`, `featureToggle`, `functionInclude` |
 | stubs more than versions and `readTransport` | 4 — `transport` 9, `unitTest` 8, `messageClass` 5, `AdtServiceBinding` 4 |
@@ -121,6 +121,16 @@ competing contract and lost the other three. There is nothing to add here.
 **`messageClass`** — no activation, no check, no versions, no `readTransport`.
 **`AdtServiceBinding`** — 25 real methods, stubs only on `lock`/`unlock` and versions.
 
+**`AdtMessageClassMessage`** — declares `IAdtCreatable`, but a message is not a standalone ADT
+object: `create()` is an upsert delegating to the update path, which PUTs the parent message
+class. It loses `IAdtCreatable` and keeps `IAdtUpdatable`. Nothing about its behaviour changes;
+the type stops calling it creation.
+
+**Local class includes** (`AdtLocalTestClass`, `AdtLocalTypes`, `AdtLocalDefinitions`,
+`AdtLocalMacros`) — same shape. An include is brought into existence by a lock/check/update
+flow on its class, not by a POST to a collection. They are in the migration scope for the same
+reason and by the same rule.
+
 Note the name: the class is `AdtServiceBinding` and it lives in
 `src/core/service/AdtService.ts`. `AdtServiceDefinition`, in its own module, is **clean** — it
 has `lock.ts`, `unlock.ts` and `versions.ts` and stubs nothing. Saying "service" conflates
@@ -206,7 +216,9 @@ lies would carve the lie into the contract.
 
 ## What this is not
 
-- **Not a rename.** Every existing name survives; atoms are added beneath them.
+- **Not a rename.** No name changes meaning. One is **removed**: `IAdtNonVersionedObject`,
+  which is why the interfaces release is a **major**, not the minor an earlier draft assumed.
+  Everything else survives, with atoms added beneath it.
 - **A runtime breaking change, and this is the one to read twice.** Step 5 deletes the stub
   methods. Today a caller reaching one gets a controlled `Error("... is not supported ...")`;
   afterwards it gets `TypeError: x.delete is not a function`. TypeScript callers are stopped at
@@ -233,17 +245,22 @@ lies would carve the lie into the contract.
 
 ## Order of work
 
-1. **Code, with tests — two handlers, independent of everything below and shippable on their
-   own:**
+1. **Code, with tests — three handlers, independent of everything below and shippable on
+   their own:**
    - `transport.update` / `transport.delete` — description change, and deletion of an empty
      request;
    - `unitTest.validate` — real class-name validation, as `AdtClass` does, replacing the
-     self-declared mock.
+     self-declared mock;
+   - `functionGroup.activate` — read `<msg type="E">` from the response instead of returning
+     `errors: []` regardless, at all three call sites. It is the one handler whose method works
+     and whose answer is ignored, so no capability atom and no request-counting guard would
+     have caught it.
 
    `transport.validate` is **deleted** rather than implemented: the request number is
    system-generated, so there is nothing to validate.
-2. **Atoms** in `@mcp-abap-adt/interfaces`: `IAdtUpdatable`, `IAdtDeletable`,
-   `IAdtModifiable` as their composite. Additive — a minor.
+2. **`@mcp-abap-adt/interfaces`**: add `IAdtUpdatable` and `IAdtDeletable` with
+   `IAdtModifiable` as their composite, and **remove `IAdtNonVersionedObject`**. The removal
+   makes this a **major**, not the minor an earlier draft claimed.
 3. ~~Composites.~~ **Removed** — this design adds none. See "No new composites" above.
 4. **Publish interfaces**, then narrow the **ten** overclaiming handlers in adt-clients, each
    to the exact intersection of atoms it satisfies — not to a composite. `unitTest` is not among them — it is already narrow.
@@ -468,9 +485,10 @@ The maintainer answered both: **these are ADT's limits, not unimplemented featur
 3. ~~Does the `readTransport` cluster need a composite?~~ **No.** Those four do not declare
    `IAdtTransportAware`. There is no cluster to name.
 
-This settles the shape of the work: **two handlers need code, ten need subtraction**, and
+This settles the shape of the work: **three handlers need code, ten need subtraction**, and
 `unitTest` is in both groups — its `validate` needs writing while nine dead methods need
-deleting. `transport`'s `update` and `delete` are stubs that lie — ADT changes a request's description
+deleting. `functionGroup.activate` reports success whatever the server answered.
+`transport`'s `update` and `delete` are stubs that lie — ADT changes a request's description
 and deletes an empty one, which `package` proves against the same server. And
 `unitTest.validate()` returns a self-declared mock where a class's real validation belongs.
 Everywhere else the fix is subtraction: stop declaring what ADT cannot do.
