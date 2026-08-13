@@ -518,6 +518,34 @@ Completeness then asserts, in both directions:
 
 `Object.getOwnPropertyNames(AdtClient.prototype)` supplies the runtime side of the first.
 
+**The manifest is not a list of names.** Check 3 must *construct* each handler and *call* each
+method, and that needs more than capabilities: factories take arguments, every atom needs a
+valid object-specific config, and the recording connection has to answer differently for
+`read`, `lock`, `getVersions` and `activate`. So each entry carries its own fixture:
+
+```ts
+export const HANDLERS = {
+  class: {
+    factory: (c: AdtClient) => c.getClass(),
+    config: { className: 'ZCL_GUARD', packageName: '$TMP', description: 'guard' },
+    responses: {
+      read:        CLASS_XML,          // a realistic body, never ''
+      lock:        LOCK_HANDLE_XML,    // carries the handle the atom must return
+      getVersions: VERSIONS_FEED_XML,
+      activate:    '<chkl:messages/>',
+      default:     '',
+    },
+    capabilities: ['creatable', 'readable', 'updatable', 'deletable', 'validatable',
+                   'checkable', 'activatable', 'lockable', 'versionable', 'transportAware'],
+  },
+  // getLocalTestClass and friends take arguments — the factory closure hides that
+} as const;
+```
+
+**Writing these fixtures is the bulk of this task**, not an afterthought: one per handler, each
+body realistic enough that the assertion means something. An empty body is what let
+read-modify-write corrupt updates silently, and it would let this guard pass vacuously too.
+
 **Check 3 — behaviour, runtime, driven by the manifest.** For each handler, for each atom it
 claims, assert that atom's semantics against a recording connection. Every method of every
 atom, not one per atom — `readMetadata`, `unlock` and `getVersionSource` are where stubs hid.
