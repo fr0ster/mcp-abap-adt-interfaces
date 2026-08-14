@@ -1,4 +1,11 @@
-import type { IAdtObject, IAdtOperationOptions } from '../adt/IAdtObject';
+import type {
+  IAdtActivatable,
+  IAdtCheckable,
+  IAdtCrud,
+  IAdtTransportAware,
+  IAdtValidatable,
+} from '../adt/IAdtCapabilities';
+import type { IAdtOperationOptions } from '../adt/IAdtObject';
 import type {
   IDeleteServiceBindingParams,
   IServiceBindingConfig,
@@ -107,8 +114,22 @@ export interface ICreateAndGenerateServiceBindingParams
 export type ICreateAndGenerateServiceBindingParamsLegacy =
   ICreateAndGenerateServiceBindingParams;
 
+/**
+ * A service binding, and what ADT gives one.
+ *
+ * Until 17.0.0 this extended `IAdtObject`, the full set, and so promised
+ * version history and a lock. It has neither: the handler's `getVersions`,
+ * `getVersionSource`, `lock` and `unlock` all threw, and `getService()` hands
+ * out the same object, so it promised them twice over. The atoms below are what
+ * remains, plus the binding's own operations — generating, publishing and
+ * classifying a service.
+ */
 export interface IAdtServiceBinding
-  extends IAdtObject<IServiceBindingConfig, IServiceBindingState> {
+  extends IAdtCrud<IServiceBindingConfig, IServiceBindingState>,
+    IAdtValidatable<IServiceBindingConfig, IServiceBindingState>,
+    IAdtCheckable<IServiceBindingConfig, IServiceBindingState>,
+    IAdtActivatable<IServiceBindingConfig, IServiceBindingState>,
+    IAdtTransportAware<IServiceBindingConfig, IServiceBindingState> {
   getServiceBindingTypes(): Promise<IAdtResponse>;
   validateServiceBinding(
     params: IValidateServiceBindingParams,
@@ -158,10 +179,15 @@ export interface IAdtServiceBinding
   ): Promise<IAdtResponse>;
 }
 
-export type AdtServiceBindingType = IAdtObject<
-  IServiceBindingConfig,
-  IServiceBindingState
->;
+/**
+ * The same lie in a second place, until 17.0.0: this was `IAdtObject` over the
+ * binding's config, so a consumer naming it got version history and a lock that
+ * do not exist. It now points at {@link IAdtServiceBinding}.
+ *
+ * It is an alias, and this package has three of them here. Whether they stay is
+ * a separate decision from making them true, which is what this release does.
+ */
+export type AdtServiceBindingType = IAdtServiceBinding;
 
 // Backward compatibility aliases
 export type IAdtService = IAdtServiceBinding;
