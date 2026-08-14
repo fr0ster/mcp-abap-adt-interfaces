@@ -330,12 +330,12 @@ export {
 export type {
   ClassUnitTestDefinition,
   ClassUnitTestRunOptions,
-  IAdtCdsTestRunnable,
-  IAdtTestRunnable,
+  ICdsTestDoubleCheckable,
   ICdsUnitTestConfig,
   ICdsUnitTestState,
   IClassUnitTestDefinition,
   IClassUnitTestRunOptions,
+  ITestRunInformation,
   IUnitTestConfig,
   IUnitTestDuration,
   IUnitTestResultOptions,
@@ -408,6 +408,7 @@ export type {
   IProgramExecutionTarget,
   IProgramExecutor,
 } from './execution/IAdtExecutors';
+export type { IAdtRunnable } from './execution/IAdtRunnable';
 export type { IExecutor } from './execution/IExecutor';
 // Feeds domain
 export type { IFeedRepository } from './feeds/IFeedRepository';

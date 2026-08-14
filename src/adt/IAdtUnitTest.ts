@@ -24,42 +24,40 @@ export interface IUnitTestDuration {
   long?: boolean;
 }
 
-// Unit test configuration (camelCase)
+/**
+ * A unit test, as an object a caller manages.
+ *
+ * The subject is the container class and its `testclasses` include — the class
+ * that holds the tests, and the source of every local test class inside it.
+ * Running is not described here: `run` takes its arguments directly, and asking
+ * about a run is {@link ITestRunInformation}.
+ */
 export interface IUnitTestConfig {
-  tests?: Array<{
-    containerClass: string;
-    testClass: string;
-  }>; // Optional: required for test run, not needed for test class creation
-  options?: {
-    title?: string;
-    context?: string;
-    scope?: {
-      ownTests?: boolean;
-      foreignTests?: boolean;
-      addForeignTestsAsPreview?: boolean;
-    };
-    riskLevel?: {
-      harmless?: boolean;
-      dangerous?: boolean;
-      critical?: boolean;
-    };
-    duration?: {
-      short?: boolean;
-      medium?: boolean;
-      long?: boolean;
-    };
-  };
-  runId?: string; // Set after create, used for read operations
-  status?: unknown;
-  result?: unknown;
+  /** The class whose testclasses include holds the tests — CLAS/OC. */
+  className: string;
+
+  /**
+   * Source of the **whole** testclasses include, every local test class in it.
+   *
+   * ADT addresses the include, never one class inside it: reading GETs it
+   * whole, writing PUTs a source that replaces it whole, and deleting PUTs an
+   * empty one. A field naming a single test class would promise an addressing
+   * this contract does not have.
+   */
+  testClassSource?: string;
+
+  /** Where the container class goes, when `create` has to make it. */
+  packageName?: string;
+  /** What the container class is, when `create` has to make it. */
+  description?: string;
+  /** Template the container class is created from, when `create` has to make it. */
+  classTemplate?: string;
+
+  transportRequest?: string;
 }
 
-// Unit test state
-export interface IUnitTestState extends IAdtObjectState {
-  runId?: string;
-  runStatus?: unknown;
-  runResult?: unknown;
-}
+/** Result of managing a unit test's container class and include. */
+export interface IUnitTestState extends IAdtObjectState {}
 
 // Unit test definition types (local to adt-clients)
 export interface IClassUnitTestDefinition {
@@ -91,17 +89,17 @@ export interface IClassUnitTestRunOptions {
 export type ClassUnitTestDefinition = IClassUnitTestDefinition;
 export type ClassUnitTestRunOptions = IClassUnitTestRunOptions;
 
-// CDS unit-test config/state — promoted verbatim from adt-clients
-// src/core/unitTest/AdtCdsUnitTest.ts (publicly exported, IAdtObject config/state).
+/**
+ * A unit test against a CDS view.
+ *
+ * Everything about the container class and its include is inherited: a CDS test
+ * lives in a global class exactly as a class's own tests do — the view cannot
+ * hold a test class, so one is generated for it. Only the view itself is
+ * CDS-specific.
+ */
 export interface ICdsUnitTestConfig extends IUnitTestConfig {
-  // CDS-specific fields
-  className?: string;
-  packageName?: string;
+  /** The CDS view under test. */
   cdsViewName?: string;
-  classTemplate?: string;
-  testClassSource?: string;
-  description?: string;
-  transportRequest?: string;
 }
 
 export interface ICdsUnitTestState extends IUnitTestState {
@@ -118,71 +116,44 @@ export interface IUnitTestResultOptions {
 }
 
 /**
- * Running ABAP Unit and collecting the outcome.
+ * Asking about a test run.
  *
- * This is the reason a unit-test handler exists, and until 13.1.0 no interface
- * described it: the handler was typed as an ADT object, which covers creating
- * and reading a run but says nothing about starting one or fetching its result.
- * Consumers reached the methods by casting past the declared type.
+ * Separate from running on purpose: a run is started once and asked about
+ * whenever, by whoever holds its id. Nothing in ADT is "the run this handler
+ * happened to start last", so nothing here reads a handler's memory — every
+ * method takes the run it is about.
  *
- * `getStatus` and `getResult` hand back the raw ADT response rather than a
- * parsed report. That is what the operation currently is, and the contract says
- * so instead of promising a shape nothing produces.
+ * What this does **not** declare is a listing. ADT addresses runs one at a
+ * time in every request this package makes — `POST /abapunit/runs`,
+ * `GET /abapunit/runs/{id}`, `GET /abapunit/results/{id}` — and whether it
+ * answers a collection GET is unverified. An unproven method is exactly what
+ * this contract exists not to promise.
  */
-export interface IAdtTestRunnable {
-  /**
-   * Start a run and return its run id.
-   * @param tests the test classes to execute, each with its container class
-   */
-  run(
-    tests: IClassUnitTestDefinition[],
-    options?: IClassUnitTestRunOptions,
-  ): Promise<string>;
-
-  /** Run id of the most recent {@link run}, if one has been started. */
-  getRunId(): string | undefined;
-
+export interface ITestRunInformation {
   /**
    * Poll a run.
+   * @param runId the run to ask about
    * @param withLongPolling let ADT hold the request until the run progresses
    */
   getStatus(runId: string, withLongPolling?: boolean): Promise<IAdtResponse>;
-
-  /** Response of the most recent {@link getStatus}, if one has been made. */
-  getStatusResponse(): IAdtResponse | undefined;
 
   /** Fetch the result document of a finished run. */
   getResult(
     runId: string,
     options?: IUnitTestResultOptions,
   ): Promise<IAdtResponse>;
-
-  /** Response of the most recent {@link getResult}, if one has been made. */
-  getResultResponse(): IAdtResponse | undefined;
 }
 
 /**
- * ABAP Unit against a CDS view.
+ * Checking whether a CDS view can be tested with test doubles.
  *
- * Adds the test-double check that has no equivalent for a plain class, and
- * widens `run` to accept a class name — a CDS run is normally started from the
- * generated test class rather than from an explicit test list.
+ * Its own capability rather than part of running: it answers a question about
+ * the view, and it is asked before there is anything to run.
  */
-export interface IAdtCdsTestRunnable extends IAdtTestRunnable {
-  run(
-    testsOrClassName: IClassUnitTestDefinition[] | string,
-    options?: IClassUnitTestRunOptions,
-  ): Promise<string>;
-
+export interface ICdsTestDoubleCheckable {
   /**
    * Check whether a CDS view can be tested with test doubles.
    * @param cdsViewName the view to inspect
    */
   checkCdsTestDoubles(cdsViewName: string): Promise<ICdsUnitTestState>;
-
-  /** Name of the generated test class, once one is known. */
-  getClassName(): string | undefined;
-
-  /** Name of the CDS view under test, once one is known. */
-  getCdsViewName(): string | undefined;
 }
