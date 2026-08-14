@@ -32,7 +32,7 @@ This package contains all interfaces organized by domain:
 - **`session/`** - Session storage interface
 - **`serviceKey/`** - Service key storage interface
 - **`connection/`** - Connection and realtime transport interfaces (AbapConnection, request options, WebSocket transport contracts, deferred-response detection)
-- **`execution/`** - Execution contracts for runnable entities (`IExecutor`, class/program executors with profiling)
+- **`execution/`** - Execution contracts for runnable entities (`IAdtRunnable`, `IExecutor`, class/program executors with profiling)
 - **`feeds/`** - Feed access interfaces (IFeedRepository, feed entries, system messages, gateway errors)
 - **`runtime/`** - Runtime analysis domain interfaces (debugger, profiler, traces, dumps, logs, memory snapshots, etc.)
 - **`sap/`** - SAP-specific configuration (SapConfig, SapAuthType)
@@ -180,7 +180,8 @@ This package is responsible for:
   - `IAdtVersionable` — `getVersions`, `getVersionSource`
   - `IAdtTransportAware` — `readTransport`
   - `IAdtSearchable` — `search`; not per-object-type, implemented by whatever locates objects
-  - `IAdtTestRunnable` / `IAdtCdsTestRunnable` (`adt/IAdtUnitTest.ts`, since 13.1.0) — running ABAP Unit and collecting the outcome. Kept with the unit-test types rather than in `IAdtCapabilities.ts`, because unlike the atoms above it is not generic over an object type.
+  - `IAdtRunnable<TTarget, TResult, TOptions>` (`execution/IAdtRunnable.ts`, since 16.0.0) — the capability of being executed, one method. `IExecutor` extends it, and a unit-test handler declares it directly: there is no test-specific runnable, because two differently-shaped contracts for "this can be executed" would be two vocabularies for one idea.
+  - `ITestRunInformation` and `ICdsTestDoubleCheckable` (`adt/IAdtUnitTest.ts`, since 16.0.0) — asking about a run by its id, and asking whether a CDS view can be tested with doubles. Both were part of `IAdtTestRunnable` until 16.0.0; neither is running.
   - Since 13.0.0 `IAdtObject` is *assembled* from these atoms rather than declaring the methods itself, so the atoms are the definitions and the composite cannot drift from them. The shape is unchanged — a compile-time proof in the same file still asserts both directions of the equivalence, which now also catches a method added to `IAdtObject` directly instead of to an atom.
   - The grain follows ADT, not taste: `lock`/`unlock` and `getVersions`/`getVersionSource` are honoured or refused as pairs, because each is one operation seen from two ends. `update` and `delete` were taken for a third such pair until 15.0.0 and are separate atoms since — nothing in ADT ties changing an object to removing it, and a handler that supports one can now say so without claiming the other.
   - There is no atom or composite for "everything but versions" — a capability vocabulary states what an object supports, never what it lacks. A handler that is the full set minus `IAdtVersionable` declares `IAdtCrud & IAdtValidatable & IAdtCheckable & IAdtActivatable & IAdtLockable & IAdtTransportAware` directly (see the [15.0.0 CHANGELOG entry](CHANGELOG.md) for why the earlier `IAdtNonVersionedObject` composite was removed).
@@ -287,11 +288,12 @@ This package is responsible for:
 - `IGatewayException`, `ICallStackEntry`, `ISourceCodeLine` - Supporting types for error details
 
 ### Execution Domain (`execution/`)
-- `IExecutor<TTarget, TResult, TRunWithProfilerOptions, TRunWithProfilingOptions, TRunWithProfilingResult>`
-  - Generic contract for entities that support:
-    - `run(target)`
-    - `runWithProfiler(target, options)`
-    - `runWithProfiling(target, options?)`
+- `IAdtRunnable<TTarget, TResult, TOptions>` (since 16.0.0)
+  - `run(target, options?)` — the whole of being executable. Everything else an executing handler offers is a different capability with its own interface.
+- `IExecutor<TTarget, TResult, TRunWithProfilerOptions, TRunWithProfilingOptions, TRunWithProfilingResult>` **extends `IAdtRunnable`**
+  - `run(target)` — inherited; the shape is unchanged by the extraction, asserted in both directions by a compile-time proof
+  - `runWithProfiler(target, options)`
+  - `runWithProfiling(target, options?)`
 - **Executors** (`execution/IAdtExecutors.ts`, since 14.0.0) — `IClassExecutor`/`IProgramExecutor`, each an `IExecutor` instantiated for its target (`IClassExecutionTarget`/`IProgramExecutionTarget`) with its profiler options and profiling result (`IClassExecuteWithProfiler/ProfilingOptions`, `IClassExecuteWithProfilingResult`, and the program equivalents — program profiling has no `traceId`, since program execution is fire-and-forget and the trace is written asynchronously). Moved verbatim from `adt-clients`' `AdtExecutor`, which still owns the implementation.
 
 ### Runtime Domain (`runtime/`)

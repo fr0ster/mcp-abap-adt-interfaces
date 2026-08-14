@@ -7,6 +7,101 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [16.0.0] - 2026-08-14
+
+### Added
+
+- **`IAdtRunnable<TTarget, TResult, TOptions>`** (`execution/IAdtRunnable.ts`) — the capability
+  of being executed, and one method is the whole of it: `run(target, options?)`. `IExecutor`
+  now extends it and keeps its profiler variants, so **`IExecutor`'s shape is unchanged** and
+  nothing implementing or calling an executor has to move. A compile-time proof in
+  `src/__typechecks__/runnableSplit.ts` asserts that in both directions.
+
+  There is deliberately **no test-specific runnable**. Two differently-shaped contracts for
+  "this can be executed" would be two vocabularies for one idea, so a unit-test handler
+  declares `IAdtRunnable` like anything else that runs.
+
+- **`ITestRunInformation`** — `getStatus(runId, withLongPolling?)` and
+  `getResult(runId, options?)`. Asking about a run is not running: a run is started once and
+  asked about whenever, by whoever holds its id.
+
+  It declares **no listing**. Every request this package makes addresses one run —
+  `POST /abapunit/runs`, `GET /abapunit/runs/{id}`, `GET /abapunit/results/{id}`, and the legacy
+  `/abapunit/testruns/{id}` — and whether ADT answers a collection GET is unverified. An
+  unproven method is exactly what a contract should not promise.
+
+- **`ICdsTestDoubleCheckable`** — `checkCdsTestDoubles(cdsViewName)`. It answers a question
+  about a view, and it is asked before there is anything to run.
+
+### Removed — BREAKING
+
+- **`IAdtTestRunnable` and `IAdtCdsTestRunnable`.** They declared six members and eight
+  respectively, of which one was running. Three were the handler's memory of its own last call
+  — `getRunId`, `getStatusResponse`, `getResultResponse` returned whatever the previous
+  invocation had stored — and nothing in ADT is "the run this handler happened to start last".
+  Two were the polling machinery, which belongs to asking about a run. The CDS variant added a
+  view check and two more remembered names.
+
+  **Migration** — declare the parts a handler actually has:
+
+  ```typescript
+  // Before
+  class AdtUnitTest implements IAdtTestRunnable { … }
+
+  // After
+  class AdtUnitTest
+    implements IAdtRunnable<IClassUnitTestDefinition[], string, IClassUnitTestRunOptions> { … }
+
+  // and, where the same object also answers questions about runs:
+  //   ITestRunInformation
+  // and for the CDS flavour:
+  //   ICdsTestDoubleCheckable
+  ```
+
+  The removed *methods* need not disappear from an implementation — `getRunId` and the two
+  response getters can stay as conveniences. They are simply no longer part of any contract.
+
+### Changed — BREAKING
+
+- **`IUnitTestConfig` describes a unit test, not a run.** It carried `tests`, `options`,
+  `runId`, `status` and `result`, every one of them there to serve `create()` meaning "start a
+  run" and `read(config.runId)` meaning "poll it". Running takes its arguments directly, so a
+  config for it was never needed. The type now names what a unit test *is* as an object: the
+  container class (`className`), the source of its whole `testclasses` include
+  (`testClassSource`), and the three fields creating that class needs — `packageName`,
+  `description`, `classTemplate` — plus `transportRequest`.
+
+  ```typescript
+  // Before
+  await unitTest.create({ tests: [{ containerClass: 'ZCL_X', testClass: 'LTCL_X' }] });
+  const state = await unitTest.read({ runId });
+  state.runStatus; state.runResult;
+
+  // After
+  await unitTest.create({ className: 'ZCL_TESTS', packageName: '$TMP',
+                          description: 'tests', classTemplate, testClassSource });
+  const runId = await unitTest.run([{ containerClass: 'ZCL_TESTS', testClass: 'LTCL_X' }]);
+  await testRuns.getStatus(runId);
+  await testRuns.getResult(runId);
+  ```
+
+- **`IUnitTestState`** loses `runId`, `runStatus` and `runResult`. After the split the methods
+  returning a state are the CRUD ones, and none of them produces a run.
+
+- **`ICdsUnitTestConfig`** adds only `cdsViewName` now. `className`, `packageName`,
+  `classTemplate`, `testClassSource`, `description` and `transportRequest` were declared twice —
+  it always inherited them — and a CDS test lives in a generated global class exactly as a
+  class's own tests do.
+
+- **`testClassName` is removed from `IUnitTestConfig` and `ILocalTestClassConfig`.** ADT
+  addresses the include, never one class inside it: reading GETs `/includes/testclasses` whole,
+  writing PUTs a source that replaces it whole, and deleting PUTs an empty one. A
+  `delete({ testClassName: 'LTCL_ONE' })` would have removed every test class in the include.
+  The field named an addressing that does not exist.
+
+  `IClassConfig.testClassName` **stays** — that one is real. It names the test class to activate
+  through the `#testclass=NAME` fragment, which is the single place ADT addresses one.
+
 ## [15.0.0] - 2026-08-14
 
 ### Added
