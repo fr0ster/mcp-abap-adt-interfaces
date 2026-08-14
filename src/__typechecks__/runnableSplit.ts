@@ -67,6 +67,29 @@ export type _RunnableIsOneMethod = Assert<
   Equal<keyof IAdtRunnable<unknown, unknown>, 'run'>
 >;
 
+/**
+ * The parameter list is identical, not merely assignable.
+ *
+ * Mutual `extends` does not see an added optional parameter — `[t]` and
+ * `[t, o?]` are assignable both ways — so a consumer reading
+ * `Parameters<IExecutor['run']>`, or building a wrapper from tuple types, would
+ * have seen a signature change that every other assertion here called
+ * unchanged. Found in review of PR #36.
+ */
+export type _ExecutorRunTakesExactlyTarget = Assert<
+  Equal<Parameters<Executor['run']>, [target: { name: string }]>
+>;
+
+/** And a flavour that has options still declares them. */
+export type _RunnableKeepsItsOptions = Assert<
+  Equal<
+    Parameters<
+      IAdtRunnable<{ name: string }, IAdtResponse, { deep: true }>['run']
+    >,
+    [target: { name: string }, options?: { deep: true }]
+  >
+>;
+
 /** A type with only `run` satisfies the atom and not the executor. */
 interface OnlyRuns {
   run(target: { name: string }): Promise<IAdtResponse>;

@@ -15,7 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   of being executed, and one method is the whole of it: `run(target, options?)`. `IExecutor`
   now extends it and keeps its profiler variants, so **`IExecutor`'s shape is unchanged** and
   nothing implementing or calling an executor has to move. A compile-time proof in
-  `src/__typechecks__/runnableSplit.ts` asserts that in both directions.
+  `src/__typechecks__/runnableSplit.ts` asserts that in both directions **and asserts the
+  parameter list itself**: with the default `TOptions = never` the options parameter is absent
+  rather than optional, so `Parameters<IExecutor['run']>` is still `[target]` and a wrapper built
+  from tuple types keeps compiling.
 
   There is deliberately **no test-specific runnable**. Two differently-shaped contracts for
   "this can be executed" would be two vocabularies for one idea, so a unit-test handler

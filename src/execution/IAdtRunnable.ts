@@ -15,8 +15,17 @@ export interface IAdtRunnable<TTarget, TResult, TOptions = never> {
   /**
    * Execute the target.
    *
+   * The second parameter exists only for a flavour that has options. With the
+   * default `TOptions = never` the rest tuple is empty, so `run` takes exactly
+   * one parameter — not one plus an `options?: undefined` that would show up in
+   * `Parameters<…>`, break a wrapper built from tuple types, and quietly change
+   * the signature of every executor that inherits this.
+   *
    * @param target what to run — a program, a class, a list of test classes
-   * @param options flavour-specific execution options, where the flavour has any
+   * @param args flavour-specific execution options, where the flavour has any
    */
-  run(target: TTarget, options?: TOptions): Promise<TResult>;
+  run(
+    target: TTarget,
+    ...args: [TOptions] extends [never] ? [] : [options?: TOptions]
+  ): Promise<TResult>;
 }
