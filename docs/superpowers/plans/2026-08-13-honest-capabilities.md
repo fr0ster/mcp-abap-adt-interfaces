@@ -6,8 +6,8 @@
 does not do what its capability promises.
 
 **Architecture:** Two positive atoms split out of `IAdtModifiable`; one negative composite
-deleted; fifteen handlers narrowed to the exact intersection of atoms they satisfy; three
-behavioural defects fixed; and a guard — manifest, compile-time equality over the full
+deleted; eleven handlers narrowed to the exact intersection of atoms they satisfy; `unitTest`'s
+CRUD half given a subject; three behavioural defects fixed; and a guard — manifest, compile-time equality over the full
 handler × atom product, and per-atom behaviour tests — that keeps the state true.
 
 **Tech Stack:** TypeScript (strict, CommonJS), Jest, Biome. Two npm packages.
@@ -42,8 +42,8 @@ comes from it.
 
 | | count | who |
 |---|---|---|
-| handlers with a problem | 16 | the 11 below plus 5 `create()` aliases |
-| type/API subtraction | **15** | **10** declaring unsupported atoms + 5 alias holders |
+| handlers with a problem | 12 | the 11 below plus 1 `create()` alias |
+| type/API subtraction | **11** | **10** declaring unsupported atoms + 1 alias holder |
 | behavioural code | 3 | `transport`, `unitTest.validate`, `functionGroup.activate` |
 | dead-method deletion | 1 | `unitTest` — seven methods; `update`/`delete` are implemented instead |
 
@@ -62,11 +62,13 @@ miscounted, in both directions, before this line was written:
 - **plus `functionInclude`**, which has no version stub at all and joins by a different route:
   it declares `IAdtTransportAware` while its `readTransport` throws.
 
-Nine plus one is ten, and ten plus the five alias holders is **15**.
+Nine plus one is ten, and ten plus the one alias holder is **11**.
 
-**The five alias holders:** `AdtMessageClassMessage`, `AdtLocalTestClass`, `AdtLocalTypes`,
-`AdtLocalDefinitions`, `AdtLocalMacros`. `AdtMessageClass` is **not** among them — a message
-class is created by a POST and keeps `IAdtCreatable`.
+**The one alias holder:** `AdtMessageClassMessage`, whose `create` and `update` are the same
+line — `return this._upsertMessage(config)` — twice. It was five until 2026-08-14; see Task 7
+for what the other four turned out to be, and why a second `create` is not by itself a defect.
+`AdtMessageClass` is **not** among them either way — a message class is created by a POST and
+keeps `IAdtCreatable`.
 
 ---
 
@@ -400,7 +402,7 @@ Deleting an exported type is breaking.
 
 ## Phase C — narrowing, in adt-clients
 
-Fifteen handlers, plus `unitTest`, whose entry stopped being a deletion. **Always a new branch
+Eleven handlers, plus `unitTest`, whose entry stopped being a deletion. **Always a new branch
 off the current `main`** — Phase A has been merged and released by now, so its branch is gone.
 
 **One release, two packages.** The maintainer's ruling on `unitTest` (spec, "the stubs are a
@@ -450,22 +452,38 @@ wrong version is installed.
 - [ ] **Step 4: Commit `package.json` and `package-lock.json` together**, before any source
   change depends on them.
 
-### Task 7: Delete the five `create()` aliases
+### Task 7: Delete the one real `create()` alias
 
-**Files:** `src/core/messageClass/AdtMessageClassMessage.ts`,
-`src/core/class/AdtLocalTestClass.ts`, `AdtLocalTypes.ts`, `AdtLocalDefinitions.ts`,
-`AdtLocalMacros.ts`; their barrels; the tests naming `create` on them.
+**Files:** `src/core/messageClass/AdtMessageClassMessage.ts`; its barrel; the tests naming
+`create` on it.
 
-All five already have a separate `update()` — verified 2026-08-13 — so `create()` is an alias
-over it and there is nothing to rename into. Delete the alias; `update()` remains the single
-PUT capability. Drop `IAdtCreatable` from each class's `implements`.
+**This task was "delete five aliases" until 2026-08-14, and four of the five were not aliases.**
+The 2026-08-13 verification established only that each class has a *separate* `update()`; it
+never compared the two bodies. Read side by side, they differ:
 
-`AdtMessageClass` is **untouched**: a message class is created by a POST and keeps the atom.
+| handler | `create` vs `update` |
+|---|---|
+| `AdtMessageClassMessage` | both are `return this._upsertMessage(config)` — the same line twice |
+| `AdtLocalTestClass` | `create` honours `activateOnCreate`; `update` honours `activateOnUpdate` **and** a low-level `options.lockHandle` path that writes inside an existing lock window |
+| `AdtLocalTypes`, `AdtLocalDefinitions`, `AdtLocalMacros` | same low-level `lockHandle` path on `update` only |
 
-- [ ] **Step 1:** `grep -rn "\.create(" src/__tests__` for calls on these five and update them
-  to `update()` before deleting anything.
-- [ ] **Step 2:** delete the aliases and the `IAdtCreatable` declarations.
-- [ ] **Step 3:** verify; commit with a `BREAKING CHANGE:` footer naming all five.
+The maintainer's rule, restated 2026-08-14: **a separate `create` and `update` is the library's
+convention, not a defect.** Almost every object here has both, some also have `run`, and the two
+verbs mean different things to a caller even where ADT answers both with one PUT. An alias is
+only an alias when the bodies are the same call — which is one handler, not five.
+
+So `AdtMessageClassMessage.create` goes and `update()` remains its single upsert capability;
+`IAdtCreatable` is dropped from that class alone. **`AdtLocalTestClass`, `AdtLocalTypes`,
+`AdtLocalDefinitions` and `AdtLocalMacros` keep both methods and keep the atom.**
+
+`AdtMessageClass` is **untouched** either way: a message class is created by a POST.
+
+- [ ] **Step 1: Re-read the two bodies before deleting anything.** If `create` and `update`
+  have diverged since this table was written, the finding is the table's, not the code's.
+- [ ] **Step 2:** `grep -rn "\.create(" src/__tests__` for calls on `AdtMessageClassMessage` and
+  move them to `update()`.
+- [ ] **Step 3:** delete the alias and its `IAdtCreatable` declaration.
+- [ ] **Step 4:** verify; commit with a `BREAKING CHANGE:` footer naming the one method.
 
 ### Task 8: Narrow the ten handlers that declare what they cannot do
 
@@ -511,14 +529,14 @@ So the target is:
 Everything else — `activate`, `check`, `lock`, `unlock`, `getVersions`, `getVersionSource`,
 `readTransport` — is deleted, as before.
 
-**`create` is not in that table, and that is a decision to confirm.** At ADT there is one PUT
-on the `testclasses` include: `AdtLocalTestClass.create()` is lock → check → **PUT** → unlock,
-and `update()` is the same chain — which is precisely why Task 7 deletes that `create` as an
-alias. Applying the same rule here leaves `update()` as the single writer and `AdtUnitTest`
-**without `IAdtCreatable`**. The ruling's "created once" is preserved as a fact about how a
-caller uses it, not as a second method that would do what `update` does. *This plan is written
-that way; a decision to keep a `create()` alias for this one handler changes Task 8b and
-nothing else.*
+**`create` stays, and `IAdtCreatable` with it** — ruled 2026-08-14: a separate `create` and
+`update` is this library's convention, almost every object has both, and some have `run` on top.
+An earlier draft of this plan proposed deleting it on the grounds that ADT answers both with one
+PUT on the `testclasses` include. That is true of the wire and beside the point: `create` and
+`update` differ in what they mean to a caller, and in `AdtLocalTestClass` they differ in code
+too — `update` carries a low-level `options.lockHandle` path that writes inside an existing lock
+window, and each honours a different activate flag. `create` writes the test class; `update`
+replaces it; `run` needs neither to have been called in this process.
 
 ### Task 8a: The config describes a test class, not a run — interfaces major
 
@@ -592,16 +610,18 @@ Take the new interfaces version first — `--save`, then the same three resoluti
   and while it delegates to `create` it cannot be honest about that.
 - **`readMetadata`** follows `read` — same subject, or delete it if `read` covers it.
 
-`AdtCdsUnitTest` already creates a class, activates it and puts a test class inside; check what
-its `create` becomes once the parent's `create` is gone, and keep its own chain intact.
+`AdtCdsUnitTest` already creates a class, activates it and puts a test class inside — its own
+`create` chain stays as it is; check only that it still lines up with the parent's new meaning.
 
 - [ ] **Step 1: Write the failing tests first** — `update` PUTs the source it was given;
   `delete` PUTs empty source; `read` returns the include, not a run; `run` issues the run request
   **with no preceding create**; `validate` issues both the container read and the source check.
-- [ ] **Step 2: Implement.** Delete `create()` and drop `IAdtCreatable` (see the decision above).
+- [ ] **Step 2: Implement.** `create()` **stays** and keeps `IAdtCreatable` (see the ruling
+  above); it writes the test class where `update` replaces it, over the corresponding
+  `AdtLocalTestClass` methods.
 - [ ] **Step 3: Verify** — `npx tsc -p tsconfig.json`, `npm run test:check`, the unit suite.
-- [ ] **Step 4: Commit** with a `BREAKING CHANGE:` footer covering all three: `create` is gone,
-  `read` changes subject, and the config changes shape.
+- [ ] **Step 4: Commit** with a `BREAKING CHANGE:` footer covering all three: `create` changes
+  subject from a run to the test class, `read` with it, and the config changes shape.
 
 ### Task 8c: Delete what unit testing genuinely does not have
 
@@ -630,8 +650,8 @@ intent, so a class carrying `check` satisfies `IAdtCheckable` however little it 
 sed -n '/^export class AdtUnitTest/,/^{/p' src/core/unitTest/AdtUnitTest.ts
 ```
 
-Expected after Task 8b: `IAdtReadable`, `IAdtUpdatable`, `IAdtDeletable`, `IAdtValidatable`,
-`IAdtTestRunnable`. If any of the seven **is** declared, it is a contract change and needs saying
+Expected after Task 8b: `IAdtCreatable`, `IAdtReadable`, `IAdtUpdatable`, `IAdtDeletable`,
+`IAdtValidatable`, `IAdtTestRunnable`. If any of the seven **is** declared, it is a contract change and needs saying
 in the changelog as one.
 
 - [ ] **Step 2: Delete them; update any test that calls one.**
@@ -770,7 +790,7 @@ check that would have caught `functionGroup`.
 
 ### Task 10: Release adt-clients — the narrowing
 
-A major: ten handlers lose declared capabilities and five lose `create()` — fifteen in all — and
+A major: ten handlers lose declared capabilities and one loses `create()` — eleven in all — and
 `unitTest` changes what its methods mean.
 
 - [ ] Ask for the version. Sweep the docs. CHANGELOG listing, per handler, what it no longer
