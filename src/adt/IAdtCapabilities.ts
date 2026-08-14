@@ -77,14 +77,7 @@ export interface IAdtReadable<TConfig, TReadResult = TConfig> {
   ): Promise<TReadResult>;
 }
 
-/**
- * Change or remove an existing object.
- *
- * The two travel together: every handler that refuses one refuses the other.
- * Objects that record an event rather than hold state — unit-test runs,
- * transport requests — honour neither.
- */
-export interface IAdtModifiable<TConfig, TReadResult = TConfig> {
+export interface IAdtUpdatable<TConfig, TReadResult = TConfig> {
   /**
    * Update object with full operation chain:
    * lock → check(inactive) → update → unlock → check → activate (optional)
@@ -99,7 +92,9 @@ export interface IAdtModifiable<TConfig, TReadResult = TConfig> {
     config: Partial<TConfig>,
     options?: IAdtOperationOptions,
   ): Promise<TReadResult>;
+}
 
+export interface IAdtDeletable<TConfig, TReadResult = TConfig> {
   /**
    * Delete object
    * Performs deletion check before deleting.
@@ -110,6 +105,17 @@ export interface IAdtModifiable<TConfig, TReadResult = TConfig> {
    */
   delete(config: Partial<TConfig>): Promise<TReadResult>;
 }
+
+/**
+ * Change or remove an existing object.
+ *
+ * The two travel together: every handler that refuses one refuses the other.
+ * Objects that record an event rather than hold state — unit-test runs,
+ * transport requests — honour neither.
+ */
+export interface IAdtModifiable<TConfig, TReadResult = TConfig>
+  extends IAdtUpdatable<TConfig, TReadResult>,
+    IAdtDeletable<TConfig, TReadResult> {}
 
 /**
  * create / read / readMetadata / update / delete.

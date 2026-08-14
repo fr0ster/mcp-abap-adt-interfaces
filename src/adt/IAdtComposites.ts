@@ -27,17 +27,6 @@ export type IAdtSourceObject<TConfig, TReadResult = TConfig> = IAdtCrud<
   IAdtVersionable<TConfig> &
   IAdtTransportAware<TConfig, TReadResult>;
 
-/** Objects with no source resource — everything except version history. */
-export type IAdtNonVersionedObject<TConfig, TReadResult = TConfig> = IAdtCrud<
-  TConfig,
-  TReadResult
-> &
-  IAdtValidatable<TConfig, TReadResult> &
-  IAdtCheckable<TConfig, TReadResult> &
-  IAdtActivatable<TConfig, TReadResult> &
-  IAdtLockable<TConfig, TReadResult> &
-  IAdtTransportAware<TConfig, TReadResult>;
-
 /** Assertion helper: instantiating with `false` is a compile error. */
 type Assert<T extends true> = T;
 

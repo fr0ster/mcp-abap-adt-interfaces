@@ -68,11 +68,13 @@ export type {
   IAdtCheckable,
   IAdtCreatable,
   IAdtCrud,
+  IAdtDeletable,
   IAdtLockable,
   IAdtModifiable,
   IAdtReadable,
   IAdtSearchable,
   IAdtTransportAware,
+  IAdtUpdatable,
   IAdtValidatable,
   IAdtVersionable,
 } from './adt/IAdtCapabilities';
@@ -90,10 +92,7 @@ export type {
   IAdtClientOptions,
   IAdtSystemContext,
 } from './adt/IAdtClientOptions';
-export type {
-  IAdtNonVersionedObject,
-  IAdtSourceObject,
-} from './adt/IAdtComposites';
+export type { IAdtSourceObject } from './adt/IAdtComposites';
 export type { IAdtContentTypes, IAdtHeaders } from './adt/IAdtContentTypes';
 export type {
   DataElementTypeKind,
