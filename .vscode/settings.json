@@ -16,6 +16,8 @@
       "ETIMEDOUT",
       "PKCE",
       "relogin",
+      "Validatable",
+      "Versionable",
       "ZTEST"
     ]
 }

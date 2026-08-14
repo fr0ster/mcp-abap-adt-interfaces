@@ -65,8 +65,11 @@ export interface IClassState extends IAdtObjectState {
 // (publicly exported, IAdtObject configs).
 export interface ILocalTestClassConfig {
   className: string;
+  /**
+   * Source of the whole testclasses include. ADT addresses the include, not a
+   * single test class inside it, so there is no field naming one.
+   */
   testClassCode?: string;
-  testClassName?: string;
   transportRequest?: string;
 }
 
