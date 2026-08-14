@@ -107,11 +107,14 @@ export interface IAdtDeletable<TConfig, TReadResult = TConfig> {
 }
 
 /**
- * Change or remove an existing object.
+ * Change **and** remove an existing object — the composite for handlers that do
+ * both.
  *
- * The two travel together: every handler that refuses one refuses the other.
- * Objects that record an event rather than hold state — unit-test runs,
- * transport requests — honour neither.
+ * The two do not travel together, which is why they are separate atoms: a
+ * transport request, for one, takes a new description and can be deleted while
+ * empty, but a handler may well support only the first. Name
+ * {@link IAdtUpdatable} or {@link IAdtDeletable} when only one is required, and
+ * this one when a consumer genuinely needs both.
  */
 export interface IAdtModifiable<TConfig, TReadResult = TConfig>
   extends IAdtUpdatable<TConfig, TReadResult>,
@@ -120,9 +123,10 @@ export interface IAdtModifiable<TConfig, TReadResult = TConfig>
 /**
  * create / read / readMetadata / update / delete.
  *
- * Retained as the composite of the three atoms above so existing consumers keep
- * compiling. Prefer naming the atom you actually need: this one claims an
- * object can be changed and removed, which is not true of every handler.
+ * Retained as the composite of {@link IAdtCreatable}, {@link IAdtReadable} and
+ * {@link IAdtModifiable} so existing consumers keep compiling. Prefer naming the
+ * atom you actually need: this one claims an object can be changed and removed,
+ * which is not true of every handler.
  */
 export interface IAdtCrud<TConfig, TReadResult = TConfig>
   extends IAdtCreatable<TConfig, TReadResult>,

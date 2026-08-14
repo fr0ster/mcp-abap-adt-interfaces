@@ -23,9 +23,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`IAdtNonVersionedObject`.** It was `IAdtSourceObject` minus `IAdtVersionable` —
   `IAdtCrud & IAdtValidatable & IAdtCheckable & IAdtActivatable & IAdtLockable &
   IAdtTransportAware`, i.e. six capabilities enumerated in full just to spell out the one
-  being omitted. Every handler that used it was handed check, activation, lock and
-  transport-awareness methods regardless of whether it genuinely had them, purely so the
-  "no version history" fact could be stated once under one name.
+  being omitted. Its three users — `getDomain`, `getDataElement`, `getFunctionGroup` — do
+  implement all six, so nothing was misdescribed in practice; the flaw is that the composite
+  fixes *every other* capability, so it can only ever describe a handler whose remainder
+  matches exactly. Applied to any other handler that also lacks version history — a message
+  class, which has no activation or check; a service binding, which has no lock — it would
+  hand over methods that handler does not have. A name for "everything except versions"
+  leaves no room for a different everything.
 
   Worse, `Non` means nothing to the type system: a composite is a set of methods, and
   omitting one method from a union does not forbid a *different* union from re-adding it.
