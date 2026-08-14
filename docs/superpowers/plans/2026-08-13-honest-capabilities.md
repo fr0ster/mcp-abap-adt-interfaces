@@ -45,7 +45,7 @@ comes from it.
 | handlers with a problem | 16 | the 11 below plus 5 `create()` aliases |
 | type/API subtraction | **15** | **10** declaring unsupported atoms + 5 alias holders |
 | behavioural code | 3 | `transport`, `unitTest.validate`, `functionGroup.activate` |
-| dead-method deletion | 1 | `unitTest` — nine methods |
+| dead-method deletion | 1 | `unitTest` — seven methods; `update`/`delete` are implemented instead |
 
 **The ten declaring unsupported atoms:** `dataElement`, `domain`, `functionGroup`, `package`,
 `messageClass`, `authorizationField`, `featureToggle`, **`functionInclude`**,
@@ -56,8 +56,9 @@ miscounted, in both directions, before this line was written:
 
 - **nine by versions**: the ten version-stubbers *minus* `unitTest`. `unitTest` carries version
   stubs but never *declared* `IAdtVersionable` — they are undeclared dead methods, deleted in
-  Task 8a — and its one real overclaim, `IAdtValidatable` over a mock, is fixed behaviourally
-  in Phase A rather than by narrowing. It needs no type change.
+  Task 8c — and its one real overclaim, `IAdtValidatable` over a mock, is fixed behaviourally
+  in Phase A rather than by narrowing. It needs no *narrowing*; Task 8a changes its config type
+  for a different reason — its CRUD half gains a subject.
 - **plus `functionInclude`**, which has no version stub at all and joins by a different route:
   it declares `IAdtTransportAware` while its `readTransport` throws.
 
@@ -285,27 +286,33 @@ was immutable and undeletable."
 - Modify: `src/core/unitTest/AdtUnitTest.ts`
 - Test: `src/__tests__/unit/core/unitTest/validateIsReal.test.ts` (create)
 
-**The nine dead methods are NOT deleted here.** They move to Phase C, next to the other
+**The dead methods are NOT deleted here.** They move to Phase C, next to the other
 deletions and immediately before the shape guard that needs them gone. Keeping them out of
 Phase A is what lets that release stay additive.
 
 **`validate()`** currently checks an argument and returns what its own comment calls "a mock
-success response". A unit test **is** a class, so validation there is a class's validation:
-`AdtClass.validate()` calls `validateClassName` against the server. Do the same.
+success response". **Validation follows what is created, not which handler you are in.** A run
+against a class creates only the local test class, so the container is confirmed to exist and
+the test code is checked; `validateClassName` — a name check for an object that does not exist
+yet — would be meaningless against a class that is already there. `AdtCdsUnitTest` does create a
+global dummy class, so that name *is* validated, and it needs its own override.
 
 - [ ] **Step 1: Write the failing test** — `validate` issues a request and reports what came
-  back; a name the server rejects produces errors rather than an empty success.
+  back; a container that is not there produces errors rather than an empty success.
 
-- [ ] **Step 2: Implement `validate` on `AdtClass`'s pattern.** Delete nothing.
+- [ ] **Step 2: Implement it from the existing checks** — `AdtClass.read` for the container,
+  `checkClassLocalTestClass` via `this.adtLocalTestClass` for the code, `validateClassName` for
+  the CDS dummy class. Delete nothing, and write no new low-level function.
 
 - [ ] **Step 3: Verify and commit**
 
 ```bash
-git commit -m "fix(unitTest): real validation instead of a self-declared mock
+git commit -m "fix(unitTest): validate what is actually created
 
-validate() checked an argument and returned what its own comment called a mock
-success response. A unit test is a class, so validation there is a class's
-validation, as AdtClass does it."
+A unit test's validation depends on what is born, not on the handler. Testing
+a class creates only the local test class, so that is what gets checked, and
+the container is confirmed to exist. Testing CDS creates a global dummy class
+too, so that name is validated before creating it."
 ```
 
 ---
@@ -393,8 +400,18 @@ Deleting an exported type is breaking.
 
 ## Phase C — narrowing, in adt-clients
 
-Fifteen handlers. **Always a new branch off the current `main`** — Phase A has been merged
-and released by now, so its branch is gone.
+Fifteen handlers, plus `unitTest`, whose entry stopped being a deletion. **Always a new branch
+off the current `main`** — Phase A has been merged and released by now, so its branch is gone.
+
+**One release, two packages.** The maintainer's ruling on `unitTest` (spec, "the stubs are a
+symptom of `create()` meaning the wrong thing") makes its `update` and `delete` real rather than
+dead, and that needs a config type describing a **test class** where the current one describes a
+**test run**. So Phase C carries an `interfaces` round-trip in the middle of it: Task 8a changes
+that contract and releases it, and the adt-clients work that depends on it waits for npm.
+
+The order below is deliberate. Tasks 7 and 8 touch neither `unitTest` nor the new config, so
+they proceed while 8a is in review and while its release is being published — nothing in the
+phase is blocked on that except 8b.
 
 ### Task 6a: Take the published interfaces major
 
@@ -463,8 +480,8 @@ The spec's cluster tables give the starting point; **read each class** before wr
 | `functionInclude` | `IAdtTransportAware` |
 | `AdtServiceBinding` | `IAdtVersionable`, `IAdtLockable` |
 | `transport` | everything ADT does not give it; `IAdtValidatable` goes too — a request's number is system-generated, so `validate()` is deleted, not implemented |
-`unitTest` is deliberately absent: its declared atoms are already correct. Its nine dead
-methods are deleted in Task 8a below, which is where the shape guard needs them gone.
+`unitTest` is deliberately absent from this table: its declared atoms are correct as far as they
+go, and what it needs is not narrowing but implementation — Tasks 8a to 8c.
 
 Then delete every stub whose atom is gone, until
 `grep -rn "is not supported" src/core/*/Adt*.ts` returns nothing and
@@ -472,34 +489,154 @@ Then delete every stub whose atom is gone, until
 
 - [ ] One commit per handler, so a reviewer can reject one without the rest.
 
-### Task 8a: Delete `unitTest`'s nine undeclared methods
+### `unitTest` — what changed, and why it is three tasks
+
+An earlier version of this plan deleted nine methods from `AdtUnitTest` and called it done. The
+maintainer's ruling replaced that: a unit-test handler has **CRUD and run, and they are different
+things**. The test class is created **once**; it is run **as many times as needed**, and `run`
+must work with no CRUD call at all, because the tests may already be in the class.
+
+`create()` today means "start a run". **That is the whole reason `update` and `delete` looked
+dead** — with creation meaning execution there was nothing to update or delete. The stubs were
+two operations sharing one method, not ADT lacking a capability: `AdtLocalTestClass` implements
+every one of them, and the integration tests call it directly for exactly that reason.
+
+So the target is:
+
+| method | subject | meaning |
+|---|---|---|
+| `read` / `update` / `delete` / `validate` | the local test class | manage the test code inside its container |
+| `run` / `getRunId` / `getStatus` / `getResult` | a run | execute whatever tests the class holds, any number of times |
+
+Everything else — `activate`, `check`, `lock`, `unlock`, `getVersions`, `getVersionSource`,
+`readTransport` — is deleted, as before.
+
+**`create` is not in that table, and that is a decision to confirm.** At ADT there is one PUT
+on the `testclasses` include: `AdtLocalTestClass.create()` is lock → check → **PUT** → unlock,
+and `update()` is the same chain — which is precisely why Task 7 deletes that `create` as an
+alias. Applying the same rule here leaves `update()` as the single writer and `AdtUnitTest`
+**without `IAdtCreatable`**. The ruling's "created once" is preserved as a fact about how a
+caller uses it, not as a second method that would do what `update` does. *This plan is written
+that way; a decision to keep a `create()` alias for this one handler changes Task 8b and
+nothing else.*
+
+### Task 8a: The config describes a test class, not a run — interfaces major
+
+**Repo:** `mcp-abap-adt-interfaces`, new branch off `master`.
+**Files:** `src/adt/IAdtUnitTest.ts`, `CHANGELOG.md`, `README.md`, `package.json`.
+
+This is the new interface the rework needs. `IUnitTestConfig` currently describes a **run** —
+`tests`, `options`, `runId`, `status`, `result` — and every one of those fields exists to serve
+`create(config)` meaning "start a run" and `read(config.runId)` meaning "poll it". Once the CRUD
+half addresses the test class, none of them has a producer or a consumer: `IAdtTestRunnable.run`
+already takes `IClassUnitTestDefinition[]` and `IClassUnitTestRunOptions` **as arguments**, so
+running needs no config at all.
+
+```ts
+export interface IUnitTestConfig {
+  /** The class holding the local test class — CLAS/OC, must already exist. */
+  className: string;
+  /** ABAP source of the local test class; required to write it, absent when reading. */
+  testClassSource?: string;
+  /** Name of the test class inside the include, when it must be named. */
+  testClassName?: string;
+  transportRequest?: string;
+}
+```
+
+`className` and `testClassSource` are **not new names invented here**: `ICdsUnitTestConfig`,
+which extends this type, already carries both with exactly these meanings — the class that holds
+the tests and the source that goes into it. Aligning the parent lets the CDS config stop
+redeclaring them.
+
+`IUnitTestState`'s `runId`, `runStatus` and `runResult` go the same way and for the same reason:
+after the split, the methods that return a state are the CRUD ones, and none of them produces a
+run.
+
+- [ ] **Step 1: Confirm the field-by-field claim before deleting anything** — for each of
+  `tests`, `options`, `runId`, `status`, `result`, `runStatus`, `runResult`, grep both repos for
+  readers. A field with a live reader outside the run half is a fact this plan got wrong; report
+  it rather than deleting it.
+- [ ] **Step 2:** rewrite `IUnitTestConfig` and `IUnitTestState`; drop the now-duplicated members
+  from `ICdsUnitTestConfig`.
+- [ ] **Step 3:** `npm run build`, `npm run test:check`, `npm run lint:check`.
+- [ ] **Step 4: Release.** Removing exported members is breaking, so a major. Ask the user for
+  the version; sweep `README.md` and all of `docs/`; CHANGELOG with a migration showing a run
+  moving from `create({tests})` to `run(tests)`, since that is what a consumer must rewrite.
+- [ ] **Step 5:** PR, user review, merge, tag, GitHub release. **Then stop** — Task 8b does not
+  start until this is on npm, and `npm view @mcp-abap-adt/interfaces version` is how that is
+  established, not the tag.
+
+### Task 8b: `AdtUnitTest`'s CRUD half becomes real
+
+**Files:** `src/core/unitTest/AdtUnitTest.ts`, `AdtCdsUnitTest.ts`,
+`src/core/unitTest/types.ts`; the tests naming `create` on the handler.
+
+Take the new interfaces version first — `--save`, then the same three resolution checks as Task
+6a. Then, in `AdtUnitTest`:
+
+- **`update(config)`** → `this.adtLocalTestClass.update({ className, testClassCode:
+  config.testClassSource, testClassName, transportRequest })`. The member already exists on the
+  class; this task wires it up, it does not build a second implementation.
+- **`delete(config)`** → `this.adtLocalTestClass.delete(...)`, which is a PUT of empty source.
+  Say so in the doc comment: a caller deleting a test class is not deleting an ADT object.
+- **`read(config)`** → the test class source, via `this.adtLocalTestClass.read(...)`. It no
+  longer takes a `runId`, and **that is the breaking change a consumer feels most**: polling a
+  run moves to `getStatus(runId)`, which has existed since 13.1.0.
+- **`validate(config)`** keeps the container-existence check written in Task 3 and finally wires
+  in the second half that task had to leave out — `checkClassLocalTestClass` via
+  `this.adtLocalTestClass`, once `config.testClassSource` exists to check. Task 3's report says
+  in as many words that it was omitted only because the config carried nothing to check.
+- **`run(tests, options)`** stops going through `create()` and calls `startClassUnitTestRun`
+  directly. This is the ruling's load-bearing half: **`run` must work without any CRUD call**,
+  and while it delegates to `create` it cannot be honest about that.
+- **`readMetadata`** follows `read` — same subject, or delete it if `read` covers it.
+
+`AdtCdsUnitTest` already creates a class, activates it and puts a test class inside; check what
+its `create` becomes once the parent's `create` is gone, and keep its own chain intact.
+
+- [ ] **Step 1: Write the failing tests first** — `update` PUTs the source it was given;
+  `delete` PUTs empty source; `read` returns the include, not a run; `run` issues the run request
+  **with no preceding create**; `validate` issues both the container read and the source check.
+- [ ] **Step 2: Implement.** Delete `create()` and drop `IAdtCreatable` (see the decision above).
+- [ ] **Step 3: Verify** — `npx tsc -p tsconfig.json`, `npm run test:check`, the unit suite.
+- [ ] **Step 4: Commit** with a `BREAKING CHANGE:` footer covering all three: `create` is gone,
+  `read` changes subject, and the config changes shape.
+
+### Task 8c: Delete what unit testing genuinely does not have
 
 **Files:** `src/core/unitTest/AdtUnitTest.ts`; any test naming them.
 
-Implemented but never declared, so nothing in the contract promises them and no TypeScript
-caller can reach them: `update`, `delete`, `activate`, `check`, `lock`, `unlock`,
-`getVersions`, `getVersionSource` — all throwing — plus **`readTransport`**, which does not
-throw at all: it returns an empty state and says in its own comment that a test run has no
-transport request.
+Seven methods, implemented but never declared, so nothing in the contract promises them and no
+TypeScript caller can reach them: `activate`, `check`, `lock`, `unlock`, `getVersions`,
+`getVersionSource` — all throwing — plus **`readTransport`**, which does not throw at all: it
+returns an empty state and says in its own comment that a test run has no transport request.
+
+`update` and `delete` are **not** on this list any more; Task 8b implements them.
+
+`check` is deleted rather than implemented even though the include does have a check resource —
+`validate` makes exactly that call, and two names for one request is how `create` and `run` got
+into this state. `lock`/`unlock` are the parent class's, taken and released inside
+`AdtLocalTestClass`'s own chain, and are not the unit test's to expose.
 
 They sit here rather than in Phase A for two reasons. Deleting a public method is a runtime
 break for JavaScript callers, and Phase A is otherwise additive — no need to force a major for
 it. And the shape guard in Task 9 cannot run while they exist: TypeScript reads shape, not
-intent, so a class carrying `delete` satisfies `IAdtDeletable` however little it declares.
+intent, so a class carrying `check` satisfies `IAdtCheckable` however little it declares.
 
-- [ ] **Step 1: Confirm the class declares none of the nine**
+- [ ] **Step 1: Confirm the class declares none of the seven**
 
 ```bash
 sed -n '/^export class AdtUnitTest/,/^{/p' src/core/unitTest/AdtUnitTest.ts
 ```
 
-Expected: `IAdtCreatable`, `IAdtReadable`, `IAdtValidatable`, `IAdtTestRunnable` — no
-`IAdtCrud`. If any of the nine **is** declared, it is a contract change and needs saying in the
-changelog as one.
+Expected after Task 8b: `IAdtReadable`, `IAdtUpdatable`, `IAdtDeletable`, `IAdtValidatable`,
+`IAdtTestRunnable`. If any of the seven **is** declared, it is a contract change and needs saying
+in the changelog as one.
 
 - [ ] **Step 2: Delete them; update any test that calls one.**
 - [ ] **Step 3: Verify** — `npx tsc -p tsconfig.json`, `npm run test:check`, the unit suite.
-- [ ] **Step 4: Commit** with a `BREAKING CHANGE:` footer naming all nine and the runtime
+- [ ] **Step 4: Commit** with a `BREAKING CHANGE:` footer naming all seven and the runtime
   consequence: a JavaScript caller moves from a sentence to `TypeError: … is not a function`.
 
 ### Task 9: The guard
@@ -510,9 +647,9 @@ changelog as one.
 - Create: `src/__tests__/unit/capabilities/behaviour.test.ts` — runtime
 - Create: `src/__tests__/unit/capabilities/completeness.test.ts` — runtime
 
-**This task must come after Tasks 8 and 8a**, and the spec says why: TypeScript reads shape,
-not intent, so while a handler still carries an undeclared method — `unitTest`'s nine, deleted
-in 8a — it satisfies that atom structurally and the bidirectional check would demand the
+**This task must come after Tasks 8 and 8c**, and the spec says why: TypeScript reads shape,
+not intent, so while a handler still carries an undeclared method — `unitTest`'s seven, deleted
+in 8c — it satisfies that atom structurally and the bidirectional check would demand the
 manifest claim it.
 
 **The subject of every check is the FACTORY RETURN TYPE, not the concrete class.** A consumer
@@ -633,10 +770,15 @@ check that would have caught `functionGroup`.
 
 ### Task 10: Release adt-clients — the narrowing
 
-A major: ten handlers lose declared capabilities and five lose `create()` — fifteen in all.
+A major: ten handlers lose declared capabilities and five lose `create()` — fifteen in all — and
+`unitTest` changes what its methods mean.
 
 - [ ] Ask for the version. Sweep the docs. CHANGELOG listing, per handler, what it no longer
   declares — a consumer needs to know which of its calls stops compiling.
+- [ ] `unitTest` needs its own entry, because a consumer there is not losing a capability but
+  finding a different one: `create({tests})` becomes `run(tests)`, `read({runId})` becomes
+  `getStatus(runId)`, and `update`/`delete` start working instead of throwing. Give the before
+  and after, not the list of methods.
 - [ ] PR, user review, merge, tag, GitHub release. Then stop.
 
 ---
@@ -644,9 +786,10 @@ A major: ten handlers lose declared capabilities and five lose `create()` — fi
 ## What this plan does not do
 
 - **No SAP run.** Every check here is a unit test or a type check. `transport.update`/`delete`
-  are exercised against a recording connection; whether ADT accepts the exact body is proved by
-  the first integration run after release, and the plan says so rather than implying coverage
-  it does not have.
+  and `unitTest`'s rewired CRUD are exercised against a recording connection; whether ADT accepts
+  the exact body is proved by the first integration run after release, and the plan says so
+  rather than implying coverage it does not have. For `unitTest` there is a reason to expect it
+  will: the calls are `AdtLocalTestClass`'s, which the integration suite already runs.
 - **No new composite.** `IAdtSourceObject` stays; nothing is added beside it.
 - **`AdtMessageClass` is untouched** — it is created by a POST and keeps `IAdtCreatable`.
 - **The `IAdtValidatable` question for other handlers is not reopened.** Only `transport`
