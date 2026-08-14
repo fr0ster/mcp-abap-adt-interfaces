@@ -8,13 +8,14 @@
  * type learns what the object can do rather than what the fattest object can do.
  *
  * The grain comes from ADT itself: a lock and its unlock are one operation seen
- * from two ends, a version list is useless without the source behind an entry,
- * and an object that merely records an event is never edited afterwards. The
- * handlers in @mcp-abap-adt/adt-clients bear this out — `lock`/`unlock` and
- * `getVersions`/`getVersionSource` are honoured or refused as pairs, and the
- * only split inside CRUD is `update`+`delete`, refused together by test runs
- * and transport requests while `create`/`read`/`readMetadata` are refused by
- * nobody.
+ * from two ends, and a version list is useless without the source behind an
+ * entry. The handlers in @mcp-abap-adt/adt-clients bear both out — each pair is
+ * honoured or refused whole.
+ *
+ * `update` and `delete` were taken for a third such pair until 15.0.0. They are
+ * not: nothing in ADT ties changing an object to removing it, so they are now
+ * separate atoms and a handler that supports one can say so without claiming
+ * the other.
  */
 import type { IAdtOperationOptions, IObjectVersion } from './IAdtObject';
 import type { IAdtObjectHit, ISearchObjectsParams } from './IAdtShared';
