@@ -169,8 +169,10 @@ This package is responsible for:
 - **Capability atoms** (`adt/IAdtCapabilities.ts`, since 11.2.0) — small interfaces that partition the 13 methods of `IAdtObject`, each method belonging to exactly one, so a consumer can depend on just the capability it needs instead of the whole contract:
   - `IAdtCreatable` — `create`
   - `IAdtReadable` — `read`, `readMetadata`
-  - `IAdtModifiable` — `update`, `delete`
-  - `IAdtCrud` — the composite of the three above, retained for consumers that genuinely do all five
+  - `IAdtUpdatable` — `update` (since 15.0.0)
+  - `IAdtDeletable` — `delete` (since 15.0.0)
+  - `IAdtModifiable` — the composite of `IAdtUpdatable` and `IAdtDeletable`. Before 15.0.0 it declared both methods itself; the split gives a handler that honours one without the other (there is none yet in `adt-clients`, but the shape now allows it) a way to say so, while `IAdtModifiable` keeps its old shape for a consumer that already implements both
+  - `IAdtCrud` — the composite of create/read/readMetadata/update/delete, retained for consumers that genuinely do all five; unchanged in shape by the `IAdtModifiable` split
   - `IAdtValidatable` — `validate`
   - `IAdtCheckable` — `check`
   - `IAdtActivatable` — `activate`
@@ -180,7 +182,8 @@ This package is responsible for:
   - `IAdtSearchable` — `search`; not per-object-type, implemented by whatever locates objects
   - `IAdtTestRunnable` / `IAdtCdsTestRunnable` (`adt/IAdtUnitTest.ts`, since 13.1.0) — running ABAP Unit and collecting the outcome. Kept with the unit-test types rather than in `IAdtCapabilities.ts`, because unlike the atoms above it is not generic over an object type.
   - Since 13.0.0 `IAdtObject` is *assembled* from these atoms rather than declaring the methods itself, so the atoms are the definitions and the composite cannot drift from them. The shape is unchanged — a compile-time proof in the same file still asserts both directions of the equivalence, which now also catches a method added to `IAdtObject` directly instead of to an atom.
-  - The grain follows ADT, not taste: `lock`/`unlock` and `getVersions`/`getVersionSource` are honoured or refused as pairs, and `update`+`delete` split from `create`/`read`/`readMetadata` because objects that record an event (unit-test runs, transport requests) are never edited afterwards.
+  - The grain follows ADT, not taste: `lock`/`unlock` and `getVersions`/`getVersionSource` are honoured or refused as pairs, `update`/`delete` split from `create`/`read`/`readMetadata` because objects that record an event (unit-test runs, transport requests) are never edited afterwards, and since 15.0.0 `update` and `delete` are themselves separate atoms because refusing one does not imply refusing the other.
+  - There is no atom or composite for "everything but versions" — a capability vocabulary states what an object supports, never what it lacks. A handler that is the full set minus `IAdtVersionable` declares `IAdtCrud & IAdtValidatable & IAdtCheckable & IAdtActivatable & IAdtLockable & IAdtTransportAware` directly (see the [15.0.0 CHANGELOG entry](CHANGELOG.md) for why the earlier `IAdtNonVersionedObject` composite was removed).
 - `IAdtOperationOptions` - Unified options for create and update operations
   - Fields: `activateOnCreate`, `activateOnUpdate`, `deleteOnFailure`, `sourceCode`, `xmlContent`, `timeout`
 - `AdtObjectErrorCodes` - Error code constants for ADT object operations

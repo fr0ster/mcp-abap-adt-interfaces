@@ -7,6 +7,65 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [15.0.0] - 2026-08-14
+
+### Added
+
+- **`IAdtUpdatable` and `IAdtDeletable`**, split out of `IAdtModifiable` — `update` and
+  `delete` as their own atoms, so a handler that supports one but not the other now has a
+  way to say so. `IAdtModifiable` stays, as their composite, with the same method shape it
+  had before this release: a consumer that already implements both `update` and `delete` is
+  unaffected by this change. `IAdtCrud` is unchanged in shape for the same reason — nothing
+  that already implements everything needs to touch this release.
+
+### Removed — BREAKING
+
+- **`IAdtNonVersionedObject`.** It was `IAdtSourceObject` minus `IAdtVersionable` —
+  `IAdtCrud & IAdtValidatable & IAdtCheckable & IAdtActivatable & IAdtLockable &
+  IAdtTransportAware`, i.e. six capabilities enumerated in full just to spell out the one
+  being omitted. Every handler that used it was handed check, activation, lock and
+  transport-awareness methods regardless of whether it genuinely had them, purely so the
+  "no version history" fact could be stated once under one name.
+
+  Worse, `Non` means nothing to the type system: a composite is a set of methods, and
+  omitting one method from a union does not forbid a *different* union from re-adding it.
+  `IAdtNonVersionedObject<C, R> & IAdtVersionable<C>` compiled without error and handed out
+  a working `getVersions` — the name promised an absence the compiler never enforced. A
+  capability vocabulary can only state what an object supports; it has no mechanism to state
+  what it lacks, so a composite defined by subtraction is a name with no type behind it.
+  `IAdtSourceObject` is unaffected — it names its set positively and stays exactly as it was.
+
+  **Migration** — declare the atoms the handler actually satisfies, written positively. The
+  set is exactly what `IAdtNonVersionedObject` used to assemble, minus nothing:
+
+  ```typescript
+  // Before
+  import type { IAdtNonVersionedObject } from '@mcp-abap-adt/interfaces';
+
+  function getDomain(): IAdtNonVersionedObject<IDomainConfig, IDomainState> { /* ... */ }
+
+  // After
+  import type {
+    IAdtActivatable,
+    IAdtCheckable,
+    IAdtCrud,
+    IAdtLockable,
+    IAdtTransportAware,
+    IAdtValidatable,
+  } from '@mcp-abap-adt/interfaces';
+
+  function getDomain():
+    & IAdtCrud<IDomainConfig, IDomainState>
+    & IAdtValidatable<IDomainConfig, IDomainState>
+    & IAdtCheckable<IDomainConfig, IDomainState>
+    & IAdtActivatable<IDomainConfig, IDomainState>
+    & IAdtLockable<IDomainConfig, IDomainState>
+    & IAdtTransportAware<IDomainConfig, IDomainState> { /* ... */ }
+  ```
+
+  If a consumer instead named `IAdtModifiable` directly — rather than through `IAdtCrud` or
+  `IAdtNonVersionedObject` — no change is needed: its shape did not move.
+
 ## [14.1.0] - 2026-08-12
 
 ### Added
