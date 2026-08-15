@@ -7,6 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [17.0.0] - 2026-08-15
+
+### Changed — BREAKING
+
+- **`IFeatureToggleObject` and `IAdtServiceBinding` state what ADT gives them.** Both extended
+  `IAdtObject` — the full capability set — and so promised version history, plus a transport for
+  the toggle and a lock for the binding. The handlers implementing them refused all of it at
+  runtime: `getVersions`, `getVersionSource`, `readTransport` on the toggle; `getVersions`,
+  `getVersionSource`, `lock`, `unlock` on the binding. Each now extends the atoms it satisfies,
+  plus its own operations, which are untouched — switching a toggle and reading its runtime
+  state, generating and publishing a binding.
+
+  ```typescript
+  // Before
+  interface IFeatureToggleObject extends IAdtObject<…> { switchOn(…); … }
+  interface IAdtServiceBinding  extends IAdtObject<…> { publishODataV2(…); … }
+
+  // After
+  interface IFeatureToggleObject
+    extends IAdtCrud<…>, IAdtValidatable<…>, IAdtCheckable<…>,
+            IAdtActivatable<…>, IAdtLockable<…> { switchOn(…); … }
+
+  interface IAdtServiceBinding
+    extends IAdtCrud<…>, IAdtValidatable<…>, IAdtCheckable<…>,
+            IAdtActivatable<…>, IAdtTransportAware<…> { publishODataV2(…); … }
+  ```
+
+  **Migration** — a consumer calling any of the seven removed methods was calling something that
+  threw. There is nothing to move the call to: a feature toggle has no version history and a
+  service binding has no lock, so the call goes away. Everything else compiles unchanged.
+
+- **`AdtServiceBindingType`** was a second alias over `IAdtObject` for the same config, carrying
+  the same promise. It now points at `IAdtServiceBinding`.
+
+### Why this is the last of them
+
+This finishes the work 15.0.0 and 16.0.0 began: after it, **no type in this package declares a
+capability the object does not have**. That is not a claim from reading — it is what a guard in
+`@mcp-abap-adt/adt-clients` asserts, comparing all 36 factory return types against 10 atoms in
+both directions, and calling each declared method against a recording connection to check it
+issues the request its capability names.
+
+The three releases should have been one. 15.0.0 was cut because a phase ended rather than
+because the work was done, and nothing ever resolved it: its consumer went straight from
+`^14.1.0` to `^16.0.0`. A version now appears when the task is finished and ready to hand over.
+
 ## [16.0.0] - 2026-08-14
 
 ### Added
