@@ -2,7 +2,13 @@
  * Feature Toggle (FTG2/FT) ADT operation parameter interfaces (low-level)
  */
 
-import type { IAdtObject } from './IAdtObject';
+import type {
+  IAdtActivatable,
+  IAdtCheckable,
+  IAdtCrud,
+  IAdtLockable,
+  IAdtValidatable,
+} from './IAdtCapabilities';
 import type { IAdtObjectState } from './IAdtObjectState';
 
 export type FeatureToggleState = 'on' | 'off' | 'undefined';
@@ -122,8 +128,21 @@ export interface IFeatureToggleState extends IAdtObjectState {
   sourceResult?: IFeatureToggleSource;
 }
 
+/**
+ * A feature toggle, and what ADT gives one.
+ *
+ * Until this release it extended `IAdtObject`, the full set, and so promised
+ * version history and a transport of its own. It has neither: the handler's
+ * `getVersions`, `getVersionSource` and `readTransport` all threw. The atoms
+ * below are what remains, named positively, plus the operations that are the
+ * point of a toggle — switching it and asking what it is doing right now.
+ */
 export interface IFeatureToggleObject
-  extends IAdtObject<IFeatureToggleConfig, IFeatureToggleState> {
+  extends IAdtCrud<IFeatureToggleConfig, IFeatureToggleState>,
+    IAdtValidatable<IFeatureToggleConfig, IFeatureToggleState>,
+    IAdtCheckable<IFeatureToggleConfig, IFeatureToggleState>,
+    IAdtActivatable<IFeatureToggleConfig, IFeatureToggleState>,
+    IAdtLockable<IFeatureToggleConfig, IFeatureToggleState> {
   switchOn(
     config: Partial<IFeatureToggleConfig>,
     opts: { transportRequest: string; userSpecific?: boolean },
