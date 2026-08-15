@@ -131,7 +131,7 @@ export interface IFeatureToggleState extends IAdtObjectState {
 /**
  * A feature toggle, and what ADT gives one.
  *
- * Until 17.0.0 this extended `IAdtObject`, the full set, and so promised
+ * Until this release it extended `IAdtObject`, the full set, and so promised
  * version history and a transport of its own. It has neither: the handler's
  * `getVersions`, `getVersionSource` and `readTransport` all threw. The atoms
  * below are what remains, named positively, plus the operations that are the
