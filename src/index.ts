@@ -447,6 +447,16 @@ export type {
   IGetCheckFailureLogsOptions,
 } from './runtime/IAtcLog';
 export type {
+  AtcObjectType,
+  IAtcFindings,
+  IAtcObjectRef,
+  IAtcRunOptions,
+  IAtcRunResult,
+  IAtcRunStatus,
+  IAtcRunStatusReadable,
+  IAtcRunTarget,
+} from './runtime/IAtcRun';
+export type {
   ICrossTrace,
   IListCrossTracesOptions,
 } from './runtime/ICrossTrace';

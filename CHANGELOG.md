@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [17.1.0] - 2026-08-17
+
+### Added
+
+- **The ATC run contract** — `src/runtime/IAtcRun.ts`: `AtcObjectType`, `IAtcObjectRef`,
+  `IAtcRunTarget`, `IAtcRunOptions`, `IAtcRunResult`, `IAtcRunStatus`, `IAtcRunStatusReadable`,
+  `IAtcFindings`. Three capabilities — start a check run, ask whether it is done, read the
+  worklist — declared as `IAdtRunnable` plus two readers rather than `IAdtObject`, because a
+  check run is not created, locked, activated or versioned.
+
+  Separate from the existing `IAtcLog`, which is untouched: that reads the execution log and the
+  check-failure logs, two different resources, neither taking a worklist id.
+
+  Every shape here was forced by captured traffic rather than chosen, and the doc comments say
+  which. The three worth knowing about:
+
+  - **`AtcObjectType` has seven members**, each confirmed by a run submitted at the URI a client
+    builds whose *finished* worklist then listed that object under that type — acceptance alone
+    proves nothing, since a URI that cannot exist is answered `201` too. `program` and `include`
+    are absent because ABAP Cloud refuses to hold either (`403`, `S_DEVELOP`). **Widening this
+    union later is a breaking change**: adding a member is invisible to a caller passing a value
+    and fatal to one exhausting it.
+  - **`IAtcRunResult` is a discriminated union on `waited`**, because the server answers two ways
+    — `clientWait=false` with `201`, an empty body and a run id in `Location`; `clientWait=true`
+    with `200`, `FINDING_STATS` and no `Location`. One interface with optional fields would let a
+    caller write `result.runId!` and be wrong exactly when they waited.
+  - **`isFinished` is completion, not success**, and there is no `isTerminal` or `isFailed`: no
+    failed run has been observed, so any state named for one would be invented.
+
+  There is deliberately no `waitForRun` helper — waiting needs a stopping condition for the run
+  that does not finish, and the caller who knows how long their checks take is the one who can
+  supply it.
+
 ## [17.0.0] - 2026-08-15
 
 ### Changed — BREAKING
