@@ -352,6 +352,10 @@ export type {
   IAuthorizationStrategy,
 } from './auth/IAuthorizationStrategy';
 export type {
+  IAuthProvider,
+  ICredentialTransport,
+} from './auth/IAuthProvider';
+export type {
   CallbackServerFactory,
   ICallbackServerHandle,
   ICallbackServerOptions,
