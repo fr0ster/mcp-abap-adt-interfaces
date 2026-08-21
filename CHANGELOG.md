@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [17.2.0] - 2026-08-21
+
+### Added
+
+- **The credential contract** — `src/auth/IAuthProvider.ts`: `IAuthProvider` and
+  `ICredentialTransport`. How a connection proves who it is on each request, as
+  opposed to which system it is dialling. Four of the five ways in are not tokens
+  — basic is a header built from a username, a certificate is TLS material and no
+  header at all, SPNEGO is a negotiation with the server — so this is deliberately
+  not "give me a token".
+
+  It lived in `@mcp-abap-adt/connection`, which pinned every credential inside that
+  package: `@mcp-abap-adt/auth-providers` could not host one without depending on
+  the connection package, which is backwards. Half of its world was already here —
+  `ICertificateMaterialLoader` — and the contract itself had not followed.
+
+  Distinct from `IAuthorizationStrategy`, one layer up: that is how an interactive
+  login is conducted, asked once by a human, and its output becomes a token some
+  implementation of this hands out. This one is asked on every request.
+
+  Three corrections came with it rather than after it:
+
+  - `authorizationHeader()` answers `string | null`, not `string`. The empty string
+    is a legal header value, so using it to mean "this credential is not a header"
+    gave one type two meanings and left every caller checking truthiness.
+  - TLS material is `transportMaterial(): ICertificateMaterial`, not
+    `httpsAgentOptions(): AgentOptions`. This package has no `node:` imports and
+    the shape a client needs is what the loader already produces; the old member
+    would have introduced the first one.
+  - `fetchCsrfToken()` takes an `ICredentialTransport`, not a URL string. A
+    credential that owns the fetch owns what the fetch produces: the SPNEGO round
+    trip is the request the server answers with the session cookie, and that cookie
+    has to reach the connection. Handed a URL and returning a string, it had
+    nowhere to put it — which is why that member was declared, wired at its call
+    site, and implemented by nobody.
+
+  Additive: nothing existing changes shape, so this is a minor. What breaks is
+  downstream, where the local copies are deleted.
+
+  Compile-only coverage in `src/__typechecks__/authProvider.ts`, checked to fail on
+  each of the three corrections being reverted.
+
 ## [17.1.0] - 2026-08-17
 
 ### Added
@@ -1281,4 +1323,5 @@ connection.setSessionState(state);
   - `validation/` - Validation interfaces
   - `utils/` - Utility types and interfaces
 
+[17.2.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/releases/tag/v17.2.0
 [0.1.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/releases/tag/v0.1.0

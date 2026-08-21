@@ -27,7 +27,7 @@ npm install @mcp-abap-adt/interfaces
 This package contains all interfaces organized by domain:
 
 - **`adt/`** - ADT object operations interfaces (IAdtObject, operation options, error codes), plus the abapGit client contract, batch payload shapes, ADT client options, and the content-type/header contract
-- **`auth/`** - Core authentication interfaces (configs, auth types)
+- **`auth/`** - Core authentication interfaces: configs and auth types, the credential contract a connection authenticates with (`IAuthProvider`), and how an interactive login is conducted (`IAuthorizationStrategy`)
 - **`token/`** - Token-related interfaces (token provider, results, options)
 - **`session/`** - Session storage interface
 - **`serviceKey/`** - Service key storage interface
@@ -55,6 +55,7 @@ This ensures consistency across all packages and follows TypeScript naming conve
 ```typescript
 import {
   IAuthorizationConfig,
+  IAuthProvider,
   IConnectionConfig,
   ISessionStore,
   IServiceKeyStore,
@@ -68,6 +69,89 @@ import {
   TOKEN_PROVIDER_ERROR_CODES,
   STORE_ERROR_CODES
 } from '@mcp-abap-adt/interfaces';
+```
+
+### Writing Your Own Credential
+
+`IAuthProvider` is here, rather than beside any one implementation, so that an
+authentication nothing ships can still be used. Implement the two required members;
+add the optional ones only where they mean something.
+
+```typescript
+import type { IAuthProvider } from '@mcp-abap-adt/interfaces';
+
+class HeaderTokenProvider implements IAuthProvider {
+  readonly kind = 'my-gateway-token';
+
+  constructor(private readonly token: string) {}
+
+  async authorizationHeader(): Promise<string | null> {
+    return `Bearer ${this.token}`;
+  }
+}
+```
+
+A credential that authenticates through TLS has no header at all, and says so with
+`null` rather than an empty string:
+
+```typescript
+import type {
+  IAuthProvider,
+  ICertificateMaterial,
+} from '@mcp-abap-adt/interfaces';
+
+class PfxProvider implements IAuthProvider {
+  readonly kind = 'pfx';
+
+  constructor(private readonly pfx: Buffer, private readonly passphrase: string) {}
+
+  async authorizationHeader(): Promise<string | null> {
+    return null;
+  }
+
+  transportMaterial(): ICertificateMaterial {
+    return { pfx: this.pfx, passphrase: this.passphrase };
+  }
+}
+```
+
+Only a credential whose way in IS a round trip implements `fetchCsrfToken`, and it is
+given the connection's transport so the cookies the exchange earns land where every
+later request will look for them:
+
+```typescript
+import type {
+  IAuthProvider,
+  ICredentialTransport,
+} from '@mcp-abap-adt/interfaces';
+
+class NegotiateProvider implements IAuthProvider {
+  readonly kind = 'spnego';
+  private spent = false;
+
+  constructor(private readonly token: string) {}
+
+  async authorizationHeader(): Promise<string | null> {
+    // Once the exchange has happened the session cookie carries the session,
+    // and the one-shot token must not be replayed.
+    return this.spent ? null : `Negotiate ${this.token}`;
+  }
+
+  async fetchCsrfToken(transport: ICredentialTransport): Promise<string> {
+    const response = await transport.send({
+      method: 'GET',
+      url: `${transport.baseUrl}/sap/bc/adt/discovery`,
+      headers: {
+        Authorization: `Negotiate ${this.token}`,
+        'x-csrf-token': 'fetch',
+      },
+      adoptCookies: true,
+    });
+    this.spent = true;
+    const headers = response.headers as Record<string, string> | undefined;
+    return headers?.['x-csrf-token'] ?? '';
+  }
+}
 ```
 
 ### ADT Object Operations
@@ -231,6 +315,33 @@ This package is responsible for:
   bound. `authorize()` resolves with an `AuthorizationOutcome` that carries the redirect URI
   alongside the payload, because the token exchange must send that same URI and, with an
   ephemeral port, has no other way to learn it.
+- `ICertificateMaterial` / `ICertificateMaterialLoader` - Loaded TLS client-certificate
+  material (`cert` / `key` / `pfx` / `passphrase`) and the loader that produces it from a
+  config. Structural on purpose: it is the shape an HTTPS client needs, named without
+  importing one, because this package has no runtime.
+- `IAuthProvider` / `ICredentialTransport` (since 17.2.0) - **How a connection proves who it
+  is on each request**, as opposed to which system it is dialling. Deliberately not "give me a
+  token": four of the five ways in are not tokens — basic is a header built from a username, a
+  certificate is TLS material and no header at all, SPNEGO is a negotiation with the server.
+  `kind` and `authorizationHeader()` are the whole of the required surface, so a consumer's own
+  credential compiles without implementing what it does not have; `prepare()`, `renew()`,
+  `cookies()`, `transportMaterial()` and `fetchCsrfToken()` are each present only where they
+  mean something.
+
+  `authorizationHeader()` answers `string | null` — `null`, not `''`, because the empty string
+  is a legal header value and a credential that authenticates through TLS genuinely has no
+  header. `transportMaterial()` returns `ICertificateMaterial` for those.
+
+  `fetchCsrfToken(transport)` is for the one case where the way in IS a round trip: a SPNEGO
+  token is consumed by a single request, so the exchange is the fetch. It is given an
+  `ICredentialTransport` — `baseUrl` plus a `send()` whose `adoptCookies` puts what the
+  exchange produces where every later request will look for it — rather than a URL, because a
+  credential that owns the fetch owns what the fetch produces, and the session cookie the
+  server answers with has to reach the connection.
+
+  Distinct from `IAuthorizationStrategy` above, which is one layer up: that is how an
+  *interactive* login is conducted, asked once by a human, and its output eventually becomes a
+  token some implementation of this hands out. This one is asked on every request.
 
 ### Token Domain (`token/`)
 - `ITokenProvider` - Token provider interface (stateful token lifecycle)
