@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [18.0.0] - 2026-08-22
+
+### Changed
+
+- **BREAKING** — `ISessionLifecycleAware.disconnect()` takes no arguments. The
+  `options.deadlineMs` it accepted was a bound on waiting for the goodbye to be
+  answered, and the method does not act on that answer: it TELLS the server the
+  session is finished, and whether and when the session is freed is the server's
+  affair. Waiting for a reply nobody reads bought a caller nothing, while being
+  the one thing that could make a teardown unbounded — a goodbye carries no
+  request timeout by design, so a server that never answers would have held the
+  teardown open.
+
+  The doc comment now says what the method is: a notification. Everything else
+  about it is unchanged — it still resolves rather than throws, still always
+  settles, still performs whatever is owed on a repeat call, and still does not
+  wait for in-flight requests.
+
+  **Migration.** Drop the argument:
+
+  ```ts
+  - await conn.disconnect({ deadlineMs: 5000 });
+  + await conn.disconnect();
+  ```
+
+  An implementation that accepted the options object keeps compiling — a
+  parameter nobody passes is not an error — but should drop it, along with any
+  `SAP_RELEASE_DEADLINE_MS` handling, since nothing will ever supply one.
+
+
 ## [17.2.0] - 2026-08-21
 
 ### Added
@@ -1323,5 +1353,6 @@ connection.setSessionState(state);
   - `validation/` - Validation interfaces
   - `utils/` - Utility types and interfaces
 
+[18.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v17.2.0...v18.0.0
 [17.2.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/releases/tag/v17.2.0
 [0.1.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/releases/tag/v0.1.0
