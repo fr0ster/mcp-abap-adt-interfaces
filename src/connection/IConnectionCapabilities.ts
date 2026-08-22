@@ -38,24 +38,25 @@ export type AdtSessionErrorCode =
  */
 export interface ISessionLifecycleAware {
   /**
-   * Tears the session down.
+   * Tells the server this session is finished.
+   *
+   * **It notifies; it does not confirm.** Whether and when the session is
+   * actually freed is the server's affair, and nothing here checks afterwards.
+   * That is why there is no deadline to pass: waiting for the answer to a
+   * message whose answer is not acted on buys the caller nothing, and a
+   * goodbye carries no request timeout by design — so waiting is the one thing
+   * that could make a teardown unbounded.
    *
    * Resolves rather than throws, and **always settles**: whatever it could not
    * finish is the connection's own state, not the caller's problem. A repeat
-   * call performs whatever is still owed — a transport release that did not
-   * complete, a cleanup skipped because the deadline expired — so a caller that
-   * wants the connection fully released simply calls it again.
+   * call performs whatever is still owed, so a caller that wants the connection
+   * fully released simply calls it again.
    *
    * In-flight requests are NOT waited for. They continue as their caller
    * arranged and nothing is aborted; their results can no longer affect this
    * connection.
-   *
-   * @param options.deadlineMs How long to wait for the transport release before
-   *   detaching it, measured from this call and including any time spent queued
-   *   behind another lifecycle transition. Defaults to `SAP_RELEASE_DEADLINE_MS`.
-   *   Must be finite and non-negative; `0` means do not wait at all.
    */
-  disconnect(options?: { deadlineMs?: number }): Promise<void>;
+  disconnect(): Promise<void>;
 
   /** Whether a caller may start work. False throughout a pending teardown. */
   isConnected(): boolean;

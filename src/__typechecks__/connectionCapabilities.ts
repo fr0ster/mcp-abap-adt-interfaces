@@ -47,6 +47,8 @@ void _void;
 
 // The deadline is optional, and omitting it is not "no bound" — see the doc
 // comment. Both call shapes must type-check.
+// No options. A deadline would be a wait for an answer nobody acts on.
+// @ts-expect-error disconnect() takes nothing
 void _full.disconnect({ deadlineMs: 0 });
 
 // The codes are values, so a consumer can match on them rather than on a
