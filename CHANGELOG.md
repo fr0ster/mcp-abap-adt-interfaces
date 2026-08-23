@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [21.0.0] - 2026-08-23
+
+### Removed
+
+- **BREAKING** — `ICredentialOwningItsFetch` and `ICredentialTransport`.
+
+  Both existed so a credential could run the CSRF exchange itself, on the reading
+  that SPNEGO needs to: its token is consumed by one request, so the way in and
+  the fetch are the same act. **Nothing ever implemented either.** The seam was
+  built twice in `@mcp-abap-adt/connection` — once as a transport-shaped
+  parameter, once as the atom added here in 20.0.0 — and the branch that read it
+  was asked about no credential at all.
+
+  They are removed because nothing implements them, and for no stronger reason
+  than that. In particular they are NOT replaced by "answer with the token once
+  and `null` afterwards": a wire asks `authorizationHeader()` per attempt and
+  retries a failed establishment, so a credential that marked itself spent when
+  the header was handed out would send nothing on the second attempt — after a
+  timeout, an abort, or a refusal that never reached the server. From inside
+  `authorizationHeader()` there is no way to know whether the request went out.
+
+  A credential that may only be presented once therefore has no home here yet,
+  and the requirement is stated rather than papered over: it needs either an
+  exchange it owns end to end, or a signal that the establishing request
+  succeeded. Whoever adds SPNEGO decides which, from that requirement — which is
+  the thing these two contracts were written without.
+
+  This is the third time this shape has been removed from this contract: a member
+  declared, wired at a call site, and implemented by nobody. The first version of
+  `fetchCsrfToken` took a URL and could not be implemented at all; the second
+  could, and was not.
+
+  **Migration.** Nothing shipped implements either, so nothing shipped changes.
+
+
 ## [20.0.0] - 2026-08-23
 
 ### Changed
@@ -1440,6 +1475,7 @@ connection.setSessionState(state);
   - `validation/` - Validation interfaces
   - `utils/` - Utility types and interfaces
 
+[21.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v20.0.0...v21.0.0
 [20.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v19.0.0...v20.0.0
 [19.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v18.0.0...v19.0.0
 [18.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v17.2.0...v18.0.0

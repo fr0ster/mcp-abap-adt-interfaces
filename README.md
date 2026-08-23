@@ -76,8 +76,8 @@ import {
 `IAuthProvider` is here, rather than beside any one implementation, so that an
 authentication nothing ships can still be used. A credential states all of itself: `kind`,
 `prepare()`, `authorizationHeader()`, `cookies()` and `transportMaterial()`, each empty
-where there is nothing to say. Only a credential whose way in IS a round trip adds anything,
-by implementing `ICredentialOwningItsFetch`.
+where there is nothing to say. That is the whole of it — there is nothing further to add
+and nothing to declare.
 
 ```typescript
 import type {
@@ -134,52 +134,22 @@ class PfxProvider implements IAuthProvider {
 }
 ```
 
-Only a credential whose way in IS a round trip earns the CSRF token itself, and it says so
-by implementing `ICredentialOwningItsFetch`. It is given the connection's transport, so the
-cookies the exchange earns land where every later request will look for them:
+**A credential that may only be presented once has no home here yet.** SPNEGO is the case —
+its token is consumed by the request that carries it — and this package shipped two contracts
+for it, `ICredentialOwningItsFetch` and `ICredentialTransport`, which nothing ever
+implemented. They were removed in 21.0.0.
 
-```typescript
-import type {
-  ICredentialOwningItsFetch,
-  ICredentialTransport,
-} from '@mcp-abap-adt/interfaces';
+They are not replaced by "answer with the token once and `null` afterwards", which looks
+right and is not: a wire asks `authorizationHeader()` **per attempt** and retries a failed
+establishment, so a credential that marked itself spent when the header was handed out would
+send nothing at all on the second attempt — after a timeout, an aborted connection, or a
+refusal that never reached the server. It has no way to know whether the request it was asked
+for went out, let alone succeeded.
 
-class NegotiateProvider implements ICredentialOwningItsFetch {
-  readonly kind = 'spnego';
-  private spent = false;
-
-  constructor(private readonly token: string) {}
-
-  async prepare(): Promise<void> {}
-  cookies(): string | null {
-    return null;
-  }
-  transportMaterial() {
-    return {};
-  }
-
-  async authorizationHeader(): Promise<string | null> {
-    // Once the exchange has happened the session cookie carries the session,
-    // and the one-shot token must not be replayed.
-    return this.spent ? null : `Negotiate ${this.token}`;
-  }
-
-  async fetchCsrfToken(transport: ICredentialTransport): Promise<string> {
-    const response = await transport.send({
-      method: 'GET',
-      url: `${transport.baseUrl}/sap/bc/adt/discovery`,
-      headers: {
-        Authorization: `Negotiate ${this.token}`,
-        'x-csrf-token': 'fetch',
-      },
-      adoptCookies: true,
-    });
-    this.spent = true;
-    const headers = response.headers as Record<string, string> | undefined;
-    return headers?.['x-csrf-token'] ?? '';
-  }
-}
-```
+So the problem is open, and it is a real one: such a credential needs either an exchange it
+owns end to end, or a signal that the establishing request succeeded. Whoever adds SPNEGO
+decides which — from that requirement, rather than from a contract written before anything
+needed it.
 
 ### ADT Object Operations
 
@@ -346,7 +316,7 @@ This package is responsible for:
   material (`cert` / `key` / `pfx` / `passphrase`) and the loader that produces it from a
   config. Structural on purpose: it is the shape an HTTPS client needs, named without
   importing one, because this package has no runtime.
-- `IAuthProvider` / `ICredentialTransport` (since 17.2.0) - **How a connection proves who it
+- `IAuthProvider` (since 17.2.0) - **How a connection proves who it
   is on each request**, as opposed to which system it is dialling. Deliberately not "give me a
   token": four of the five ways in are not tokens — basic is a header built from a username, a
   certificate is TLS material and no header at all, SPNEGO is a negotiation with the server.
@@ -367,14 +337,15 @@ This package is responsible for:
   is a legal header value and a credential that authenticates through TLS genuinely has no
   header. `transportMaterial()` returns `ICertificateMaterial` for those.
 
-  `ICredentialOwningItsFetch` (since 20.0.0) is the atom for the one case where the way in IS
-  a round trip: a SPNEGO token is consumed by a single request, so the exchange is the fetch.
-  An atom rather than a member of every credential because an empty implementation would be a
-  LIE — it would report a token that was never earned. `fetchCsrfToken()` is given an
-  `ICredentialTransport` — `baseUrl` plus a `send()` whose `adoptCookies` puts what the
-  exchange produces where every later request will look for it — rather than a URL, because a
-  credential that owns the fetch owns what the fetch produces, and the session cookie the
-  server answers with has to reach the connection.
+  A credential that may only be presented ONCE — SPNEGO, whose token is consumed by the
+  request that carries it — has no home here yet. `ICredentialOwningItsFetch` and
+  `ICredentialTransport` existed for it and were removed in 21.0.0, having never been
+  implemented; and they are not replaced by answering once and `null` afterwards, because
+  `authorizationHeader()` is asked per ATTEMPT and a failed establishment is retried, so a
+  credential that marked itself spent when the header was handed out would send nothing on the
+  next attempt. Such a credential needs either an exchange it owns end to end, or a signal
+  that the establishing request succeeded. See
+  [Writing Your Own Credential](#writing-your-own-credential).
 
   Distinct from `IAuthorizationStrategy` above, which is one layer up: that is how an
   *interactive* login is conducted, asked once by a human, and its output eventually becomes a
