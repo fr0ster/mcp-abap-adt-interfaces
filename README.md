@@ -337,11 +337,15 @@ This package is responsible for:
   is a legal header value and a credential that authenticates through TLS genuinely has no
   header. `transportMaterial()` returns `ICertificateMaterial` for those.
 
-  A credential that may only be presented ONCE needs nothing further (`ICredentialOwningItsFetch`
-  and `ICredentialTransport` existed for that and were removed in 21.0.0, having never been
-  implemented). `authorizationHeader()` is asked per attempt, so such a credential answers with
-  its token the first time and `null` afterwards, and the exchange is the establishing call —
-  with nobody arbitrating between two possible owners of one job.
+  A credential that may only be presented ONCE — SPNEGO, whose token is consumed by the
+  request that carries it — has no home here yet. `ICredentialOwningItsFetch` and
+  `ICredentialTransport` existed for it and were removed in 21.0.0, having never been
+  implemented; and they are not replaced by answering once and `null` afterwards, because
+  `authorizationHeader()` is asked per ATTEMPT and a failed establishment is retried, so a
+  credential that marked itself spent when the header was handed out would send nothing on the
+  next attempt. Such a credential needs either an exchange it owns end to end, or a signal
+  that the establishing request succeeded. See
+  [Writing Your Own Credential](#writing-your-own-credential).
 
   Distinct from `IAuthorizationStrategy` above, which is one layer up: that is how an
   *interactive* login is conducted, asked once by a human, and its output eventually becomes a
