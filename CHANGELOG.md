@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [19.0.0] - 2026-08-23
+
+### Changed
+
+- **BREAKING** — `IAuthProvider.renew()` moves out into its own atom,
+  `IRenewableCredential`. Only some credentials have it: a password is a
+  password, and a SAML session was negotiated elsewhere and handed over — making
+  the member optional on every credential asked each of them to carry a
+  possibility most of them do not have.
+
+  The same split, and the same reason, as `ISessionLifecycleAware` beside
+  `IAbapConnection`. A consumer narrows to it rather than casting:
+
+  ```ts
+  function isRenewable(c: IAuthProvider): c is IRenewableCredential {
+    return typeof (c as Partial<IRenewableCredential>).renew === 'function';
+  }
+  ```
+
+  **Nothing in a request path should call it.** Renewal on an expiry the provider
+  can see happens inside `authorizationHeader()`, which is asked per request.
+  This is the other case — a credential the provider still believes in and the
+  server refuses — and deciding what that MEANT is the caller's, made with what
+  the caller knows. `@mcp-abap-adt/connection` stopped calling it for exactly
+  that reason, which is what left it with no caller and prompted this.
+
+  **Migration.** An implementation that declared `renew()` keeps working; say so
+  in its type:
+
+  ```ts
+  - class TokenAuthProvider implements IAuthProvider {
+  + class TokenAuthProvider implements IRenewableCredential {
+  ```
+
+  A consumer that called `credential.renew?.()` on a bare `IAuthProvider` now
+  narrows first — which is the point: the optional call compiled everywhere and
+  did nothing on most credentials.
+
+
 ## [18.0.0] - 2026-08-22
 
 ### Changed
@@ -1353,6 +1392,7 @@ connection.setSessionState(state);
   - `validation/` - Validation interfaces
   - `utils/` - Utility types and interfaces
 
+[19.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v18.0.0...v19.0.0
 [18.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v17.2.0...v18.0.0
 [17.2.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/releases/tag/v17.2.0
 [0.1.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/releases/tag/v0.1.0

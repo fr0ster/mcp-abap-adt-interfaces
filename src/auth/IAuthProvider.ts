@@ -92,19 +92,6 @@ export interface IAuthProvider {
   authorizationHeader(): Promise<string | null>;
 
   /**
-   * The server refused what this last handed out; get a new one.
-   *
-   * Separate from {@link authorizationHeader} because the two questions are
-   * different, and the token contract says so: `getToken()` may return a cached
-   * token while it is still valid, while `refreshToken()` is the one to call
-   * when a token has been rejected. Asking the first again after a 401 gets the
-   * same rejected token back, and the renewal never happens.
-   *
-   * Omitted by credentials that cannot be renewed — a password is a password.
-   */
-  renew?(): Promise<void>;
-
-  /**
    * Cookies this credential authenticates with, for the ways in where the
    * session was negotiated elsewhere and handed over — SAML is one.
    *
@@ -141,4 +128,42 @@ export interface IAuthProvider {
    * could not be implemented.
    */
   fetchCsrfToken?(transport: ICredentialTransport): Promise<string>;
+}
+
+/**
+ * A credential that can be told to get a new one.
+ *
+ * ADDITIVE to {@link IAuthProvider}, and separate from it for the reason the
+ * connection capability atoms are separate: only some credentials have this. A
+ * password is a password — there is nothing behind it to ask again — and a
+ * SAML session was negotiated elsewhere and handed over. Making the member
+ * mandatory would force those to implement a lie.
+ *
+ * **Nothing in the request path calls this.** Renewal on an expiry the provider
+ * can see happens inside `authorizationHeader()`, which is asked per request;
+ * this is the other case — a credential the provider still believes in and the
+ * server refuses. That is a judgement about what a 401 MEANT, and it is the
+ * caller's to make with what the caller knows, which is why a refusal surfaces
+ * rather than being answered underneath them.
+ *
+ * So this exists to be narrowed to. A consumer holding an `IAuthProvider` and a
+ * refusal asks whether there is anything to try, instead of casting and hoping:
+ *
+ * ```ts
+ * if (isRenewable(credential)) {
+ *   await credential.renew();
+ *   // ... and decide for yourself whether to try again
+ * }
+ * ```
+ */
+export interface IRenewableCredential extends IAuthProvider {
+  /**
+   * The server refused what this last handed out; get a new one.
+   *
+   * Distinct from asking for a header again, and the token contract says why:
+   * `getToken()` may return a cached token while it believes it is valid, which
+   * after a refusal is precisely what it wrongly believes. This is the contract's
+   * answer for that.
+   */
+  renew(): Promise<void>;
 }

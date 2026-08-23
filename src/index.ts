@@ -354,6 +354,7 @@ export type {
 export type {
   IAuthProvider,
   ICredentialTransport,
+  IRenewableCredential,
 } from './auth/IAuthProvider';
 export type {
   CallbackServerFactory,

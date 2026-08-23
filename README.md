@@ -324,9 +324,16 @@ This package is responsible for:
   token": four of the five ways in are not tokens — basic is a header built from a username, a
   certificate is TLS material and no header at all, SPNEGO is a negotiation with the server.
   `kind` and `authorizationHeader()` are the whole of the required surface, so a consumer's own
-  credential compiles without implementing what it does not have; `prepare()`, `renew()`,
+  credential compiles without implementing what it does not have; `prepare()`,
   `cookies()`, `transportMaterial()` and `fetchCsrfToken()` are each present only where they
   mean something.
+
+  `IRenewableCredential` (since 19.0.0) is the atom for the one that used to sit among them:
+  `renew()`, "the server refused what you last handed out, get a new one". Only some credentials
+  have it — a password is a password, and a SAML session was negotiated elsewhere — so it is
+  narrowed to rather than carried by all. Nothing in a request path should call it: renewal on an
+  expiry the provider can see happens inside `authorizationHeader()`, which is asked per request,
+  and this is the other case, where deciding what a refusal MEANT belongs to the caller.
 
   `authorizationHeader()` answers `string | null` — `null`, not `''`, because the empty string
   is a legal header value and a credential that authenticates through TLS genuinely has no
