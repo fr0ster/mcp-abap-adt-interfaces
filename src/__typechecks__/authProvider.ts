@@ -8,9 +8,10 @@ import type {
 } from '../auth/IAuthProvider';
 import type { ICertificateMaterial } from '../auth/ICertificateMaterialLoader';
 
-// The minimum: a credential is a kind and a header. Everything else is optional
-// because four of the five ways in do not need it — if any member below moves
-// out of the optional group, this stops compiling.
+// The whole contract, stated: a credential says all of itself, and the empty
+// answers are as much a statement as the others. If a member below ever becomes
+// optional again, the partial credential under it starts compiling and this
+// file stops being a check.
 const _minimal: IAuthProvider = {
   kind: 'basic',
   // Empty where there is nothing to say, and that is the point: a credential

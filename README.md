@@ -74,8 +74,10 @@ import {
 ### Writing Your Own Credential
 
 `IAuthProvider` is here, rather than beside any one implementation, so that an
-authentication nothing ships can still be used. Implement the two required members;
-add the optional ones only where they mean something.
+authentication nothing ships can still be used. A credential states all of itself: `kind`,
+`prepare()`, `authorizationHeader()`, `cookies()` and `transportMaterial()`, each empty
+where there is nothing to say. Only a credential whose way in IS a round trip adds anything,
+by implementing `ICredentialOwningItsFetch`.
 
 ```typescript
 import type {
