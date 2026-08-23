@@ -3,6 +3,7 @@
 import type {
   IAuthProvider,
   ICredentialTransport,
+  IRenewableCredential,
 } from '../auth/IAuthProvider';
 import type { ICertificateMaterial } from '../auth/ICertificateMaterialLoader';
 
@@ -46,13 +47,28 @@ const _negotiating: IAuthProvider = {
   },
 };
 
-// A stateful token credential: renewable, and asked again per request rather
-// than cached by the caller.
-const _renewable: IAuthProvider = {
+// Renewability is an ATOM, not a member every credential carries. A bare
+// IAuthProvider has no `renew` to call — which is the whole point, since a
+// password has nothing behind it to ask again.
+const _plainToken: IAuthProvider = {
+  kind: 'token',
+  authorizationHeader: async () => 'Bearer x',
+};
+
+const _renewable: IRenewableCredential = {
   kind: 'token',
   authorizationHeader: async () => 'Bearer x',
   renew: async () => {},
 };
+
+// The narrowing a consumer writes: evidence, not a cast.
+function isRenewable(c: IAuthProvider): c is IRenewableCredential {
+  return typeof (c as Partial<IRenewableCredential>).renew === 'function';
+}
+void isRenewable(_plainToken);
+
+// @ts-expect-error a bare credential has no renew(); that is what the atom is for
+void _plainToken.renew;
 
 // A credential that carries a session negotiated elsewhere.
 const _handedOver: IAuthProvider = {
@@ -68,6 +84,7 @@ const _providers: IAuthProvider[] = [
   _minimal,
   _headerless,
   _negotiating,
+  _plainToken,
   _renewable,
   _handedOver,
 ];
