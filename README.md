@@ -134,38 +134,22 @@ class PfxProvider implements IAuthProvider {
 }
 ```
 
-A credential that may only be presented ONCE — a SPNEGO token is consumed by the request
-that carries it — needs no contract of its own for that. `authorizationHeader()` is asked
-per attempt, so it answers with the token the first time and `null` afterwards, and the
-exchange is simply the establishing call:
+**A credential that may only be presented once has no home here yet.** SPNEGO is the case —
+its token is consumed by the request that carries it — and this package shipped two contracts
+for it, `ICredentialOwningItsFetch` and `ICredentialTransport`, which nothing ever
+implemented. They were removed in 21.0.0.
 
-```typescript
-import type { IAuthProvider, ICertificateMaterial } from '@mcp-abap-adt/interfaces';
+They are not replaced by "answer with the token once and `null` afterwards", which looks
+right and is not: a wire asks `authorizationHeader()` **per attempt** and retries a failed
+establishment, so a credential that marked itself spent when the header was handed out would
+send nothing at all on the second attempt — after a timeout, an aborted connection, or a
+refusal that never reached the server. It has no way to know whether the request it was asked
+for went out, let alone succeeded.
 
-class NegotiateProvider implements IAuthProvider {
-  readonly kind = 'spnego';
-  private spent = false;
-
-  constructor(private readonly token: string) {}
-
-  async prepare(): Promise<void> {}
-  cookies(): string | null {
-    return null;
-  }
-  transportMaterial(): ICertificateMaterial {
-    return {};
-  }
-
-  async authorizationHeader(): Promise<string | null> {
-    // Once it has gone out the session cookie carries the session, and the
-    // one-shot token must not be replayed. Nobody arbitrates: the wire asks
-    // again, and this answers differently.
-    if (this.spent) return null;
-    this.spent = true;
-    return `Negotiate ${this.token}`;
-  }
-}
-```
+So the problem is open, and it is a real one: such a credential needs either an exchange it
+owns end to end, or a signal that the establishing request succeeded. Whoever adds SPNEGO
+decides which — from that requirement, rather than from a contract written before anything
+needed it.
 
 ### ADT Object Operations
 

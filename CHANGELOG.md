@@ -20,21 +20,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   parameter, once as the atom added here in 20.0.0 — and the branch that read it
   was asked about no credential at all.
 
-  It is not needed. A wire asks `authHeaders()` PER ATTEMPT while establishing,
-  so a one-shot token is offered on the establishing call and withheld afterwards
-  by the credential itself, with nobody deciding anything — the same mechanism by
-  which a token provider renews. The connection arbitrating between two possible
-  owners of one job was the invention.
+  They are removed because nothing implements them, and for no stronger reason
+  than that. In particular they are NOT replaced by "answer with the token once
+  and `null` afterwards": a wire asks `authorizationHeader()` per attempt and
+  retries a failed establishment, so a credential that marked itself spent when
+  the header was handed out would send nothing on the second attempt — after a
+  timeout, an abort, or a refusal that never reached the server. From inside
+  `authorizationHeader()` there is no way to know whether the request went out.
+
+  A credential that may only be presented once therefore has no home here yet,
+  and the requirement is stated rather than papered over: it needs either an
+  exchange it owns end to end, or a signal that the establishing request
+  succeeded. Whoever adds SPNEGO decides which, from that requirement — which is
+  the thing these two contracts were written without.
 
   This is the third time this shape has been removed from this contract: a member
   declared, wired at a call site, and implemented by nobody. The first version of
   `fetchCsrfToken` took a URL and could not be implemented at all; the second
   could, and was not.
 
-  **Migration.** If you implemented either — nothing shipped does — a credential
-  that must be presented once is a credential that answers
-  `authorizationHeader()` once and `null` afterwards, which needs no contract of
-  its own.
+  **Migration.** Nothing shipped implements either, so nothing shipped changes.
 
 
 ## [20.0.0] - 2026-08-23
