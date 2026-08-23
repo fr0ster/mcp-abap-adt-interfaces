@@ -2,8 +2,6 @@
 
 import type {
   IAuthProvider,
-  ICredentialOwningItsFetch,
-  ICredentialTransport,
   IRenewableCredential,
 } from '../auth/IAuthProvider';
 import type { ICertificateMaterial } from '../auth/ICertificateMaterialLoader';
@@ -39,30 +37,6 @@ const _headerless: IAuthProvider = {
     cert: 'PEM',
     key: 'PEM',
   }),
-};
-
-// A credential whose way in is a round trip. The transport is what makes this
-// implementable at all: the exchange must be able to SEND, and the cookies it
-// comes back with must be adoptable by the connection, or the session the
-// exchange just opened is lost the moment the token is spent.
-const _negotiating: ICredentialOwningItsFetch = {
-  kind: 'spnego',
-  prepare: async () => {},
-  authorizationHeader: async () => 'Negotiate AAAA',
-  cookies: () => null,
-  transportMaterial: () => ({}),
-  fetchCsrfToken: async (transport: ICredentialTransport) => {
-    const response = await transport.send({
-      method: 'GET',
-      url: `${transport.baseUrl}/sap/bc/adt/discovery`,
-      headers: { 'x-csrf-token': 'fetch' },
-      adoptCookies: true,
-    });
-    // `headers` is deliberately `unknown`: a contract package cannot name any
-    // one client's header type, and a caller narrows what it needs.
-    const headers = response.headers as Record<string, string> | undefined;
-    return headers?.['x-csrf-token'] ?? '';
-  },
 };
 
 // Renewability is an ATOM, not a member every credential carries. A bare
@@ -103,26 +77,12 @@ const _handedOver: IAuthProvider = {
   transportMaterial: () => ({}),
 };
 
-// The one question left about a credential, and the only one whose answer
-// changes what the connection DOES rather than what it sends.
-function ownsItsFetch(c: IAuthProvider): c is ICredentialOwningItsFetch {
-  return (
-    typeof (c as Partial<ICredentialOwningItsFetch>).fetchCsrfToken ===
-    'function'
-  );
-}
-void ownsItsFetch(_minimal);
-
-// @ts-expect-error a bare credential does not earn the token itself
-void _minimal.fetchCsrfToken;
-
 // Everything a provider needs beyond `kind`/`authorizationHeader` is optional,
 // so a consumer's own credential compiles without implementing what it does not
 // have. This is the whole reason the contract lives in this package.
 const _providers: IAuthProvider[] = [
   _minimal,
   _headerless,
-  _negotiating,
   _partial,
   _plainToken,
   _renewable,

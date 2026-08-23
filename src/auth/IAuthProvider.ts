@@ -26,35 +26,6 @@
 
 import type { ICertificateMaterial } from './ICertificateMaterialLoader';
 
-/**
- * What a credential needs from the connection to talk to the server itself.
- *
- * Only credentials whose way in IS a round trip use this — see
- * {@link ICredentialOwningItsFetch.fetchCsrfToken}. Deliberately the connection's own
- * transport rather than an HTTP client of the credential's: the cookies the
- * exchange produces have to land where every later request will look for them,
- * and a credential holding its own client would put them somewhere else.
- */
-export interface ICredentialTransport {
-  /** Absolute base URL of the system. */
-  baseUrl: string;
-
-  /** Issue a raw request and hand back status, headers and body. */
-  send(request: {
-    method: 'GET' | 'DELETE';
-    url: string;
-    headers: Record<string, string>;
-    timeoutMs?: number;
-    /**
-     * Whether the cookies this answers with become the connection's.
-     *
-     * True for an exchange that establishes the session — its `SAP_SESSIONID`
-     * IS the session, and every later request authenticates with it.
-     */
-    adoptCookies?: boolean;
-  }): Promise<{ status: number; headers: unknown; data: unknown }>;
-}
-
 export interface IAuthProvider {
   /** For logs, so which credential ran is never inferred from behaviour. */
   readonly kind: string;
@@ -123,40 +94,6 @@ export interface IAuthProvider {
    * merges it merges nothing.
    */
   transportMaterial(): ICertificateMaterial;
-}
-
-/**
- * A credential whose way in IS a round trip, and which therefore earns the CSRF
- * token itself.
- *
- * Only SPNEGO: its token is consumed by one request, so the exchange and the
- * fetch are the same act. An atom rather than a member of every credential
- * because, unlike `prepare()` or `cookies()`, an empty implementation here
- * would be a LIE — it would report a token that was never earned, and the
- * connection would stop doing the fetch that nobody then did.
- *
- * The connection narrows to it, which is the one question about a credential it
- * still has to ask, and the only one where the answer changes what it DOES
- * rather than what it sends.
- */
-export interface ICredentialOwningItsFetch extends IAuthProvider {
-  /**
-   * Fetch the CSRF token this credential's own way.
-   *
-   * Only SPNEGO needs it: its token is consumed by one request, so the exchange
-   * IS the fetch. Everything else omits it and gets the connection's shared
-   * path.
-   *
-   * Given a transport rather than a URL, because a credential that owns the
-   * fetch owns what the fetch produces. The SPNEGO round trip is the request
-   * the server answers with the session cookie, and that cookie has to reach
-   * the connection — every later request authenticates with it, and the
-   * `Negotiate` token is spent by then. An earlier signature passed a URL and
-   * took back a string, which left the cookie with nowhere to go; it was
-   * declared, wired at the call site, and implemented by nobody, because it
-   * could not be implemented.
-   */
-  fetchCsrfToken(transport: ICredentialTransport): Promise<string>;
 }
 
 /**

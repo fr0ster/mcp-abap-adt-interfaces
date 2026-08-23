@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [21.0.0] - 2026-08-23
+
+### Removed
+
+- **BREAKING** — `ICredentialOwningItsFetch` and `ICredentialTransport`.
+
+  Both existed so a credential could run the CSRF exchange itself, on the reading
+  that SPNEGO needs to: its token is consumed by one request, so the way in and
+  the fetch are the same act. **Nothing ever implemented either.** The seam was
+  built twice in `@mcp-abap-adt/connection` — once as a transport-shaped
+  parameter, once as the atom added here in 20.0.0 — and the branch that read it
+  was asked about no credential at all.
+
+  It is not needed. A wire asks `authHeaders()` PER ATTEMPT while establishing,
+  so a one-shot token is offered on the establishing call and withheld afterwards
+  by the credential itself, with nobody deciding anything — the same mechanism by
+  which a token provider renews. The connection arbitrating between two possible
+  owners of one job was the invention.
+
+  This is the third time this shape has been removed from this contract: a member
+  declared, wired at a call site, and implemented by nobody. The first version of
+  `fetchCsrfToken` took a URL and could not be implemented at all; the second
+  could, and was not.
+
+  **Migration.** If you implemented either — nothing shipped does — a credential
+  that must be presented once is a credential that answers
+  `authorizationHeader()` once and `null` afterwards, which needs no contract of
+  its own.
+
+
 ## [20.0.0] - 2026-08-23
 
 ### Changed
@@ -1440,6 +1470,7 @@ connection.setSessionState(state);
   - `validation/` - Validation interfaces
   - `utils/` - Utility types and interfaces
 
+[21.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v20.0.0...v21.0.0
 [20.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v19.0.0...v20.0.0
 [19.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v18.0.0...v19.0.0
 [18.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v17.2.0...v18.0.0

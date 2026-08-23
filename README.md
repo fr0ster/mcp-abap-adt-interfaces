@@ -76,8 +76,8 @@ import {
 `IAuthProvider` is here, rather than beside any one implementation, so that an
 authentication nothing ships can still be used. A credential states all of itself: `kind`,
 `prepare()`, `authorizationHeader()`, `cookies()` and `transportMaterial()`, each empty
-where there is nothing to say. Only a credential whose way in IS a round trip adds anything,
-by implementing `ICredentialOwningItsFetch`.
+where there is nothing to say. That is the whole of it — there is nothing further to add
+and nothing to declare.
 
 ```typescript
 import type {
@@ -134,17 +134,15 @@ class PfxProvider implements IAuthProvider {
 }
 ```
 
-Only a credential whose way in IS a round trip earns the CSRF token itself, and it says so
-by implementing `ICredentialOwningItsFetch`. It is given the connection's transport, so the
-cookies the exchange earns land where every later request will look for them:
+A credential that may only be presented ONCE — a SPNEGO token is consumed by the request
+that carries it — needs no contract of its own for that. `authorizationHeader()` is asked
+per attempt, so it answers with the token the first time and `null` afterwards, and the
+exchange is simply the establishing call:
 
 ```typescript
-import type {
-  ICredentialOwningItsFetch,
-  ICredentialTransport,
-} from '@mcp-abap-adt/interfaces';
+import type { IAuthProvider, ICertificateMaterial } from '@mcp-abap-adt/interfaces';
 
-class NegotiateProvider implements ICredentialOwningItsFetch {
+class NegotiateProvider implements IAuthProvider {
   readonly kind = 'spnego';
   private spent = false;
 
@@ -154,29 +152,17 @@ class NegotiateProvider implements ICredentialOwningItsFetch {
   cookies(): string | null {
     return null;
   }
-  transportMaterial() {
+  transportMaterial(): ICertificateMaterial {
     return {};
   }
 
   async authorizationHeader(): Promise<string | null> {
-    // Once the exchange has happened the session cookie carries the session,
-    // and the one-shot token must not be replayed.
-    return this.spent ? null : `Negotiate ${this.token}`;
-  }
-
-  async fetchCsrfToken(transport: ICredentialTransport): Promise<string> {
-    const response = await transport.send({
-      method: 'GET',
-      url: `${transport.baseUrl}/sap/bc/adt/discovery`,
-      headers: {
-        Authorization: `Negotiate ${this.token}`,
-        'x-csrf-token': 'fetch',
-      },
-      adoptCookies: true,
-    });
+    // Once it has gone out the session cookie carries the session, and the
+    // one-shot token must not be replayed. Nobody arbitrates: the wire asks
+    // again, and this answers differently.
+    if (this.spent) return null;
     this.spent = true;
-    const headers = response.headers as Record<string, string> | undefined;
-    return headers?.['x-csrf-token'] ?? '';
+    return `Negotiate ${this.token}`;
   }
 }
 ```
@@ -346,7 +332,7 @@ This package is responsible for:
   material (`cert` / `key` / `pfx` / `passphrase`) and the loader that produces it from a
   config. Structural on purpose: it is the shape an HTTPS client needs, named without
   importing one, because this package has no runtime.
-- `IAuthProvider` / `ICredentialTransport` (since 17.2.0) - **How a connection proves who it
+- `IAuthProvider` (since 17.2.0) - **How a connection proves who it
   is on each request**, as opposed to which system it is dialling. Deliberately not "give me a
   token": four of the five ways in are not tokens — basic is a header built from a username, a
   certificate is TLS material and no header at all, SPNEGO is a negotiation with the server.
@@ -367,14 +353,11 @@ This package is responsible for:
   is a legal header value and a credential that authenticates through TLS genuinely has no
   header. `transportMaterial()` returns `ICertificateMaterial` for those.
 
-  `ICredentialOwningItsFetch` (since 20.0.0) is the atom for the one case where the way in IS
-  a round trip: a SPNEGO token is consumed by a single request, so the exchange is the fetch.
-  An atom rather than a member of every credential because an empty implementation would be a
-  LIE — it would report a token that was never earned. `fetchCsrfToken()` is given an
-  `ICredentialTransport` — `baseUrl` plus a `send()` whose `adoptCookies` puts what the
-  exchange produces where every later request will look for it — rather than a URL, because a
-  credential that owns the fetch owns what the fetch produces, and the session cookie the
-  server answers with has to reach the connection.
+  A credential that may only be presented ONCE needs nothing further (`ICredentialOwningItsFetch`
+  and `ICredentialTransport` existed for that and were removed in 21.0.0, having never been
+  implemented). `authorizationHeader()` is asked per attempt, so such a credential answers with
+  its token the first time and `null` afterwards, and the exchange is the establishing call —
+  with nobody arbitrating between two possible owners of one job.
 
   Distinct from `IAuthorizationStrategy` above, which is one layer up: that is how an
   *interactive* login is conducted, asked once by a human, and its output eventually becomes a
