@@ -353,6 +353,7 @@ export type {
 } from './auth/IAuthorizationStrategy';
 export type {
   IAuthProvider,
+  ICredentialOwningItsFetch,
   ICredentialTransport,
   IRenewableCredential,
 } from './auth/IAuthProvider';

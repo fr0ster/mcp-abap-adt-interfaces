@@ -78,12 +78,24 @@ authentication nothing ships can still be used. Implement the two required membe
 add the optional ones only where they mean something.
 
 ```typescript
-import type { IAuthProvider } from '@mcp-abap-adt/interfaces';
+import type {
+  IAuthProvider,
+  ICertificateMaterial,
+} from '@mcp-abap-adt/interfaces';
 
 class HeaderTokenProvider implements IAuthProvider {
   readonly kind = 'my-gateway-token';
 
   constructor(private readonly token: string) {}
+
+  // Empty where there is nothing to say, which is most of a header credential.
+  async prepare(): Promise<void> {}
+  cookies(): string | null {
+    return null;
+  }
+  transportMaterial(): ICertificateMaterial {
+    return {};
+  }
 
   async authorizationHeader(): Promise<string | null> {
     return `Bearer ${this.token}`;
@@ -105,6 +117,11 @@ class PfxProvider implements IAuthProvider {
 
   constructor(private readonly pfx: Buffer, private readonly passphrase: string) {}
 
+  async prepare(): Promise<void> {}
+  cookies(): string | null {
+    return null;
+  }
+
   async authorizationHeader(): Promise<string | null> {
     return null;
   }
@@ -115,21 +132,29 @@ class PfxProvider implements IAuthProvider {
 }
 ```
 
-Only a credential whose way in IS a round trip implements `fetchCsrfToken`, and it is
-given the connection's transport so the cookies the exchange earns land where every
-later request will look for them:
+Only a credential whose way in IS a round trip earns the CSRF token itself, and it says so
+by implementing `ICredentialOwningItsFetch`. It is given the connection's transport, so the
+cookies the exchange earns land where every later request will look for them:
 
 ```typescript
 import type {
-  IAuthProvider,
+  ICredentialOwningItsFetch,
   ICredentialTransport,
 } from '@mcp-abap-adt/interfaces';
 
-class NegotiateProvider implements IAuthProvider {
+class NegotiateProvider implements ICredentialOwningItsFetch {
   readonly kind = 'spnego';
   private spent = false;
 
   constructor(private readonly token: string) {}
+
+  async prepare(): Promise<void> {}
+  cookies(): string | null {
+    return null;
+  }
+  transportMaterial() {
+    return {};
+  }
 
   async authorizationHeader(): Promise<string | null> {
     // Once the exchange has happened the session cookie carries the session,
@@ -323,10 +348,11 @@ This package is responsible for:
   is on each request**, as opposed to which system it is dialling. Deliberately not "give me a
   token": four of the five ways in are not tokens — basic is a header built from a username, a
   certificate is TLS material and no header at all, SPNEGO is a negotiation with the server.
-  `kind` and `authorizationHeader()` are the whole of the required surface, so a consumer's own
-  credential compiles without implementing what it does not have; `prepare()`,
-  `cookies()`, `transportMaterial()` and `fetchCsrfToken()` are each present only where they
-  mean something.
+  Since 20.0.0 a credential states ALL of itself: `kind`, `prepare()`,
+  `authorizationHeader()`, `cookies()` and `transportMaterial()` are required, and each is
+  empty where there is nothing to say — "nothing to prepare", "I am not cookies", "I
+  contribute no TLS material". Those are facts, and a fact is stated rather than left for a
+  caller to discover by checking whether a method exists.
 
   `IRenewableCredential` (since 19.0.0) is the atom for the one that used to sit among them:
   `renew()`, "the server refused what you last handed out, get a new one". Only some credentials
@@ -339,8 +365,10 @@ This package is responsible for:
   is a legal header value and a credential that authenticates through TLS genuinely has no
   header. `transportMaterial()` returns `ICertificateMaterial` for those.
 
-  `fetchCsrfToken(transport)` is for the one case where the way in IS a round trip: a SPNEGO
-  token is consumed by a single request, so the exchange is the fetch. It is given an
+  `ICredentialOwningItsFetch` (since 20.0.0) is the atom for the one case where the way in IS
+  a round trip: a SPNEGO token is consumed by a single request, so the exchange is the fetch.
+  An atom rather than a member of every credential because an empty implementation would be a
+  LIE — it would report a token that was never earned. `fetchCsrfToken()` is given an
   `ICredentialTransport` — `baseUrl` plus a `send()` whose `adoptCookies` puts what the
   exchange produces where every later request will look for it — rather than a URL, because a
   credential that owns the fetch owns what the fetch produces, and the session cookie the

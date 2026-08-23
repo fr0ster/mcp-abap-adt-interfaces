@@ -7,6 +7,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [20.0.0] - 2026-08-23
+
+### Changed
+
+- **BREAKING** — `IAuthProvider` states all of itself. `prepare()`, `cookies()`
+  and `transportMaterial()` are required; `cookies()` answers `string | null`.
+
+  They were optional, so a connection asked `credential.prepare?.()` — a runtime
+  question about a collaborator it was handed, which is the thing a contract
+  exists to answer instead. An empty implementation of each is TRUE of a
+  credential that has nothing to say: "nothing to prepare", "I am not cookies",
+  "I contribute no TLS material". A fact is stated, not left for a caller to
+  discover by checking whether a method exists.
+
+  `null` rather than `''` from `cookies()` for the reason `authorizationHeader()`
+  already uses it: an empty string is a legal cookie header, so it cannot also
+  mean there is none.
+
+- **BREAKING** — `fetchCsrfToken()` leaves `IAuthProvider` for its own atom,
+  `ICredentialOwningItsFetch`. The same criterion, the other way: an empty
+  implementation here would be a LIE — it would report a token that was never
+  earned, and the connection would stop doing a fetch that nobody then did. Only
+  SPNEGO has it, because only there is the way in itself a round trip.
+
+  This is the one question about a credential a connection still asks, and the
+  only one whose answer changes what it DOES rather than what it sends.
+
+  **Migration.**
+
+  ```diff
+  - class BasicAuthProvider implements IAuthProvider {
+      readonly kind = 'basic';
+  +   async prepare(): Promise<void> {}
+      async authorizationHeader(): Promise<string | null> { … }
+  +   cookies(): string | null { return null; }
+  +   transportMaterial(): ICertificateMaterial { return {}; }
+    }
+  ```
+
+  ```diff
+  - class SpnegoProvider implements IAuthProvider {
+  + class SpnegoProvider implements ICredentialOwningItsFetch {
+  ```
+
+  A consumer that called `credential.cookies?.()` can drop the `?.`; one that
+  called `fetchCsrfToken?.()` narrows first.
+
+
 ## [19.0.0] - 2026-08-23
 
 ### Changed
@@ -1392,6 +1440,7 @@ connection.setSessionState(state);
   - `validation/` - Validation interfaces
   - `utils/` - Utility types and interfaces
 
+[20.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v19.0.0...v20.0.0
 [19.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v18.0.0...v19.0.0
 [18.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v17.2.0...v18.0.0
 [17.2.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/releases/tag/v17.2.0

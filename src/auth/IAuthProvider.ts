@@ -67,11 +67,16 @@ export interface IAuthProvider {
    * asking it IS the preparation — and holding what it returned would hide the
    * renewal it exists to do.
    *
-   * Optional because most credentials are ready as constructed. A credential
-   * that throws here fails the connect, which is correct — it has nothing to
-   * authenticate with.
+   * **Required, and empty where there is nothing to do** — which is true of
+   * most credentials, since they are ready as constructed. Empty is a fact
+   * about a credential; optional made the connection ask `prepare?.()`, a
+   * runtime question about a collaborator it was handed, which is what a
+   * contract exists to answer instead.
+   *
+   * A credential that throws here fails the connect, which is correct — it has
+   * nothing to authenticate with.
    */
-  prepare?(): Promise<void>;
+  prepare(): Promise<void>;
 
   /**
    * The `Authorization` header value, or `null` when this credential is not a
@@ -98,8 +103,12 @@ export interface IAuthProvider {
    * Part of the contract rather than a method a provider happens to have: an
    * earlier version left it off, a SAML provider held the cookies, nothing ever
    * asked for them, and the connection authenticated with nothing at all.
+   *
+   * `null` where this credential is not cookies, which most are not. `null`
+   * rather than `''` for the reason the header uses it: an empty string is a
+   * legal cookie header, so it cannot also mean "there is none".
    */
-  cookies?(): string;
+  cookies(): string | null;
 
   /**
    * TLS material for credentials that live in the transport rather than in a
@@ -108,26 +117,12 @@ export interface IAuthProvider {
    * {@link ICertificateMaterial} rather than Node's `AgentOptions`: this is a
    * contract package with no runtime and no `node:` imports, and the shape a
    * client needs is exactly what the loader already produces.
-   */
-  transportMaterial?(): ICertificateMaterial;
-
-  /**
-   * Fetch the CSRF token this credential's own way.
    *
-   * Only SPNEGO needs it: its token is consumed by one request, so the exchange
-   * IS the fetch. Everything else omits it and gets the connection's shared
-   * path.
-   *
-   * Given a transport rather than a URL, because a credential that owns the
-   * fetch owns what the fetch produces. The SPNEGO round trip is the request
-   * the server answers with the session cookie, and that cookie has to reach
-   * the connection — every later request authenticates with it, and the
-   * `Negotiate` token is spent by then. An earlier signature passed a URL and
-   * took back a string, which left the cookie with nowhere to go; it was
-   * declared, wired at the call site, and implemented by nobody, because it
-   * could not be implemented.
+   * An empty object where this credential lives in a header instead, which is
+   * most of them — "I contribute no TLS material" is a fact, and a wire that
+   * merges it merges nothing.
    */
-  fetchCsrfToken?(transport: ICredentialTransport): Promise<string>;
+  transportMaterial(): ICertificateMaterial;
 }
 
 /**
@@ -156,6 +151,40 @@ export interface IAuthProvider {
  * }
  * ```
  */
+/**
+ * A credential whose way in IS a round trip, and which therefore earns the CSRF
+ * token itself.
+ *
+ * Only SPNEGO: its token is consumed by one request, so the exchange and the
+ * fetch are the same act. An atom rather than a member of every credential
+ * because, unlike `prepare()` or `cookies()`, an empty implementation here
+ * would be a LIE — it would report a token that was never earned, and the
+ * connection would stop doing the fetch that nobody then did.
+ *
+ * The connection narrows to it, which is the one question about a credential it
+ * still has to ask, and the only one where the answer changes what it does
+ * rather than what it sends.
+ */
+export interface ICredentialOwningItsFetch extends IAuthProvider {
+  /**
+   * Fetch the CSRF token this credential's own way.
+   *
+   * Only SPNEGO needs it: its token is consumed by one request, so the exchange
+   * IS the fetch. Everything else omits it and gets the connection's shared
+   * path.
+   *
+   * Given a transport rather than a URL, because a credential that owns the
+   * fetch owns what the fetch produces. The SPNEGO round trip is the request
+   * the server answers with the session cookie, and that cookie has to reach
+   * the connection — every later request authenticates with it, and the
+   * `Negotiate` token is spent by then. An earlier signature passed a URL and
+   * took back a string, which left the cookie with nowhere to go; it was
+   * declared, wired at the call site, and implemented by nobody, because it
+   * could not be implemented.
+   */
+  fetchCsrfToken(transport: ICredentialTransport): Promise<string>;
+}
+
 export interface IRenewableCredential extends IAuthProvider {
   /**
    * The server refused what this last handed out; get a new one.
