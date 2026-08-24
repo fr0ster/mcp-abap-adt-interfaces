@@ -45,9 +45,11 @@ void _full;
 const _void: Promise<void> = _full.disconnect();
 void _void;
 
-// The deadline is optional, and omitting it is not "no bound" — see the doc
-// comment. Both call shapes must type-check.
-// No options. A deadline would be a wait for an answer nobody acts on.
+// No options, and this is what keeps it that way: a deadline bounded a wait for
+// an answer nothing acts on, so passing one must NOT compile. The two lines this
+// replaces were left over from the old contract — "the deadline is optional...
+// both call shapes must type-check" — sitting directly above the assertion that
+// one of those shapes does not.
 // @ts-expect-error disconnect() takes nothing
 void _full.disconnect({ deadlineMs: 0 });
 
