@@ -204,6 +204,42 @@ Until that is answered, `listObjectTypes()` and `listProcessTypes()` are kept an
 measured destination would be inventing the API**, which is what this spec is against — but so
 would deleting the catalogues that clearly exist and answer.
 
+## Step 0, half done: what `abaptraces` actually carries
+
+Measured against the trial, so the entry type above is transcription rather than design. Six
+entries, and these in every one of them:
+
+| from | fields |
+|---|---|
+| atom | `id` (a URI), `published`, `updated`, `title`, `author/name`, `content` (points at `hitlist`), `link` ×14 |
+| trc | `user`, `client`, `system`, `host`, `objectName`, `size`, `runtime`, `runtimeABAP`, `runtimeSystem`, `runtimeDatabase`, `isAggregated`, `state`, `expiration`, `amdpFileSize` |
+
+Two of those change what the contract should say:
+
+- **`trc:state`** — `value="R" text="Finished"` on every entry here. A trace has a lifecycle, so
+  "it exists" and "it is readable" are not the same claim. The entry type carries it.
+- **`trc:expiration`** — about four weeks out on this system. It sharpens the asynchrony premise:
+  reading a week later is fine, reading a year later is not, and the entry says when.
+
+The links name the views, which is independent confirmation of the three this spec settled on:
+`hitlist`, `statements` (advertised with `id`, `withDetails`, `autoDrillDownThreshold` in the
+query, exactly the published option type) and `dbAccesses`. Also present: `delete`, and two `edit`
+links for `title` and `expiration` — the trace is mutable in two narrow ways, which is out of scope
+here and worth knowing before someone assumes reading is all there is.
+
+### What could NOT be measured, and why it matters
+
+`crosstrace` on the trial answers `200` with an **empty** document —
+`<sxt:traces xmlns:sxt="…"/>` — and its activations likewise. There are no cross traces on this
+system, so `ICrossTraceDocument`, `ICrossTraceRecords` and `ICrossTraceRecordContent` remain
+unmeasured, exactly as ST05 does.
+
+The listing content type is settled, at least: `crosstrace` refuses `application/xml` with `406`
+and names `application/vnd.sap.adt.crosstrace.traces.v1+xml`.
+
+**So step 0 is half closed.** The profiler half is evidence; the cross-trace half needs a system
+that has cross traces, which the trial is not.
+
 ## The split
 
 **Recording is the executor's.** Scheduling a measurement produces a *request id*, and a request
@@ -227,15 +263,27 @@ family names its own types instead of everyone agreeing on `IAdtResponse`.
 canonical example failed with `TS2344`.
 
 ```ts
-/** One trace, as every family can describe it. */
+/**
+ * One trace, from what the feed actually carries.
+ *
+ * Measured on the trial: six entries, and every field below present in all six.
+ * The optional ones are optional because a family other than `abaptraces` may
+ * not have them, not because this one sometimes omits them.
+ */
 export interface ITraceEntry {
-  /** The id the reading members take. */
+  /** `atom:id` — a URI, not an opaque token. */
   id: string;
-  /** When the system wrote it. Position in a feed is not age. */
+  /** `atom:published`. Position in a feed is not age. */
   recordedAt: string;
+  /** `trc:user`, which equals `atom:author/name`. */
   user?: string;
+  /** `trc:objectName`, e.g. `ZOK_CL_CLEANER================CP`. */
   objectName?: string;
   uri?: string;
+  /** `trc:state` — `R`/Finished on every entry seen. A trace has a lifecycle. */
+  state?: { value: string; text: string };
+  /** `trc:expiration`. Traces are deleted by the system, ~4 weeks out. */
+  expiresAt?: string;
 }
 
 /** What a view yields, and what it must be given. */
