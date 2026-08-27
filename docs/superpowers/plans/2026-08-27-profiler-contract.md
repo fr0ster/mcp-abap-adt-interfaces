@@ -196,8 +196,9 @@ document nobody has read is worse than no contract.
 
 This is the phase the earlier version of this plan got wrong twice: it put the check after the
 tag, and it expected a green build from an adt-clients that had not been changed yet. Neither can
-work. A contract is proved by a real implementation satisfying it, and the implementation is the
-work of Phase 3 — so Phase 3 happens **here**, against a package that exists only locally.
+work. A contract is proved by a real implementation satisfying it, so **the consumer
+implementation happens here**, against a package that exists only locally — before anything is
+merged, tagged or published.
 
 - [ ] **Task 2.1 — Build the tarball.** `npm pack` on the interfaces branch. Nothing is merged,
       nothing is tagged, nothing is on npm.
