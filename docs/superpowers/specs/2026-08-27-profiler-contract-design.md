@@ -1,6 +1,6 @@
 # One contract for reading what a run produced
 
-**Status:** design — split and scope approved; contract sketch compiles; correlation unmeasured
+**Status:** design — split and scope approved; contract sketch compiles
 **Packages:** this one (breaking, 22.0.0), consumed by `@mcp-abap-adt/adt-clients`
 **Evidence:** measured in `@mcp-abap-adt/adt-clients`, the main consumer of `IProfiler`
 **Supersedes:** fr0ster/mcp-abap-adt-interfaces#45, which adds two members to the bag this dismantles
@@ -240,56 +240,42 @@ Proposed in #45 — and already implemented on the concrete `Profiler` here, whi
 should stay. It is a trap the measurements already sprang: SAP writes traces asynchronously, so
 *newest* is not *mine*.
 
-But the replacement this spec first offered — snapshot the listing, run, poll for an id that is
-new — is only better, not correct. It proves a trace is **new**, not that it is **yours**: a
-concurrent run by the same user, or another session of that user, puts a stranger's trace between
-the two listings. Rejecting "newest is mine" and then proposing "newest since I looked" is the
-same mistake with a smaller window. See *Correlation* below. A caller that needs its own snapshots `list()` before
+And the replacement an earlier draft offered — snapshot, run, poll for a new id — is not a safer
+version of the same idea: it has a smaller window and the identical defect. Both invent a link
+between a run and a trace that the system does not maintain. See *There is no link* below. A caller that needs its own snapshots `list()` before
 running and polls for an id that is new. A contract member that looks like the answer and is not
 is worse than no member. The convenience may live in an implementation; it does not belong in a
 contract.
 
-## Correlation — which trace is mine
+## There is no link between a run and a trace, and that is the point
 
-**Unsolved, and the contract must not pretend otherwise.**
+A run and a trace are **separate things with separate lifetimes**. A run can happen and leave no
+trace at all — tracing was off, the quota was full, the request expired unfulfilled. A trace can
+outlive everything that knows about it, or be deleted while its run is still being talked about.
+Neither owns the other.
 
-Three members take a trace id. Something has to produce the *right* one, and neither candidate
-does:
+So "which trace belongs to this run" is not a missing feature. It is a question the domain does not
+answer, and asking a contract to answer it is asking it to invent a relationship the system does
+not maintain. That is precisely why these are separate entities with separate contracts: a
+`list()` that reports what exists, and a run that reports what it did, and no promised arrow
+between them.
 
-- `latestTraceId()` — newest is not mine.
-- snapshot-and-poll — new is not mine either, under any concurrency.
+This settles two things the earlier drafts got wrong in opposite directions:
 
-What is measured today: a parsed entry carries `id` and the timestamp the feed publishes, and
-nothing that points back at the request that scheduled the measurement. So on the reading side
-alone, the question cannot be answered.
+- `latestTraceId()` is not merely unreliable. It answers a question that has no answer — it dresses
+  "the newest one I can see" as "the one you caused".
+- Snapshot-and-poll is not a safer version of it. It has a smaller window and the same defect, and
+  proposing it as the replacement was inventing the same arrow with more steps.
 
-That places it on the recording side, which is consistent with the split: the executor holds the
-`requestId` it scheduled, and scheduling accepts a `description`. **A unique token in that
-description, stamped at schedule time and matched in the listing, is the candidate mechanism** —
-it makes the link something the caller created rather than something inferred from order or time.
+**The contract therefore promises neither.** `list()` says what traces exist; `read()` says what is
+in one. Whoever wants a particular trace identifies it the way anything else is identified — by
+what the listing tells them, with their own knowledge on top. If a server ever hands a run a trace
+reference of its own accord, an executor is free to pass that along as part of *its* result; the
+reading contract does not require it, and does not degrade when it is absent.
 
-It depends on one fact nobody here has measured: whether a trace entry exposes the description (or
-any other field carried over from its request). The probe is small and must run before this part
-is implemented:
-
-```
-schedule a trace with description "adt-clients-<uuid>"
-run the object
-list the traces and dump one entry in full
-→ does any field carry that token, or the request id?
-```
-
-Three outcomes, and the design differs in each:
-
-1. **The token comes through.** `ITraceEntry` gains the field, the executor returns the trace it
-   correlated, and correlation is exact.
-2. **Only the request id comes through.** Same, keyed on the id instead.
-3. **Nothing comes through.** Then the contract says so in as many words: traces can be listed and
-   read, and identifying *your own* is not possible through this API. The executor returns
-   candidates with their timestamps and the caller decides. A documented gap beats a member that
-   looks like an answer.
-
-Until that probe runs, no member of this contract claims to return "your" trace.
+The first version of this section called this "unsolved" and specified a probe to fix it. That was
+the wrong frame: it treated the absence of a relationship as a gap in our knowledge rather than as
+a fact about the two entities — the same fact that justifies the split in the first place.
 
 ## What is deleted
 
@@ -372,8 +358,9 @@ yours to begin with.
 
 ## Consequences worth stating
 
-- **Correlation must be measured before the recording side is implemented.** The split is sound
-  without it; the answer to "which trace is mine" is not.
+- **Nothing here promises to tell you which trace your run produced.** A run may leave no trace,
+  and a trace may outlive or predecease anything that knows of it. That is not a gap to close
+  later; it is the reason the two are separate contracts.
 - **Typing the results is the bulk of the work**, not the split. Parsing `hitlist`, `statements`
   and `dbAccesses` into real types is where the effort is; without it these atoms are three tidy
   bags instead of one untidy one. First pass types `list()` and `hitlist` — what consumers
