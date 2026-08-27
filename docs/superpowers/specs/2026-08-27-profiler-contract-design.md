@@ -126,15 +126,6 @@ export interface ITraceView<TResult, TOptions = void> {
   options: TOptions;
 }
 
-/**
- * `object`, not `Record<string, …>`.
- *
- * A view map is written as an `interface`, and an interface has no implicit
- * index signature, so `Record<string, unknown>` rejects it. This is the
- * constraint that admits both.
- */
-export type TraceViews = object;
-
 export type ViewResult<TViews, K extends keyof TViews> =
   TViews[K] extends ITraceView<infer R, infer _O> ? R : never;
 export type ViewOptions<TViews, K extends keyof TViews> =
@@ -155,7 +146,19 @@ export interface ITraceListing<
   list(options?: TOptions): Promise<TEntry[]>;
 }
 
-export interface ITraceReading<TViews extends TraceViews> {
+/**
+ * What is inside one trace.
+ *
+ * The constraint is self-mapped — every property of the map must BE a view.
+ * `Record<string, unknown>` cannot be used, because an `interface` has no
+ * implicit index signature; and a bare `object` would accept anything, so
+ * `interface BadViews { hitlist: string }` would compile and only fail later,
+ * silently, with a result of `never` at the call. This form needs no index
+ * signature and refuses the bad map where it is written.
+ */
+export interface ITraceReading<
+  TViews extends { [K in keyof TViews]: ITraceView<unknown, unknown> },
+> {
   read<K extends keyof TViews>(
     traceId: string,
     view: K,
@@ -408,8 +411,9 @@ have an id and a time. Folding it in then is additive and costs nothing; folding
 put an unverified shape into a published type — the same defect this spec exists to remove.
 
 Note also that once ST05 *is* folded in, it needs no contract of its own: it becomes
-`IProfiler<'st05Trace'>`, one instantiation with no views. A published name that is exactly an
-instantiation of another type earns nothing.
+`ITraceFamily<'st05Trace'>`, one instantiation with no views — `ITraceFamily`, not `IProfiler`,
+which after this change is the ABAP family itself and takes no parameters. A published name that
+is exactly an instantiation of another type earns nothing.
 
 ## What is deleted
 
@@ -496,9 +500,18 @@ yours to begin with.
    `ITraceReading`, `ITraceFamily`, `IAbapTraceViews`, `ICrossTraceViews` and the result types.
    Deleted: the seven members listed above. Unchanged: `ISt05Trace`, and every option type.
    Published first.
-2. `@mcp-abap-adt/adt-clients` — consumes it: `Profiler` implements the new shape and returns
-   parsed entries; `ClassExecutor`/`ProgramExecutor` take scheduling; the deep imports and the
-   `as Profiler` cast go.
+2. `@mcp-abap-adt/adt-clients` — consumes it. **Both concrete classes change, not one:**
+   - `Profiler` — `list()` returns parsed `ITraceEntry[]` (the branch already has
+     `parseTraceFeedEntries` for this); the three getters become `read(id, view)`.
+   - `CrossTrace` — the same work, and none of it exists yet: its `list()` returns a raw
+     `IAdtResponse` and it has no `read()`. It needs a feed parser of its own and the three
+     members folded into `read()`. Its payload has been read even less than the profiler's, so
+     this step includes measuring what its listing and its records actually contain.
+   - `ClassExecutor` / `ProgramExecutor` — take scheduling; the deep imports and the
+     `as Profiler` cast go.
+
+   Skipping the cross-trace half would leave a published contract with no implementation behind
+   it, which is the defect this spec is named after.
 3. `#45` closed with a comment: its content is here, its shape is not.
 
 ## Consequences worth stating
