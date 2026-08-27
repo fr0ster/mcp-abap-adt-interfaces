@@ -46,8 +46,10 @@ is missing the type waits — that is why ST05 is untouched and why Phase 0 exis
 
 ## Phase 0 — Close the measurement gates
 
-Two questions decide shapes in Phase 1. Neither can be answered on the BTP trial: it has no cross
-traces, and its parameters endpoint refuses GET. **On-prem, by the user.**
+Three of the five shapes Phase 1 publishes are already measured on the trial and written into the
+spec: `ITraceEntry` from six feed entries, and `hitlist` / `statements` / `dbAccesses` from a real
+trace. What is left cannot be answered there — the trial has no cross traces, and its parameters
+endpoint refuses GET. **On-prem, by the user.**
 
 - [ ] **Task 0.1 — What a cross trace looks like.** On a system that has them:
       `GET /sap/bc/adt/crosstrace/traces` with
@@ -92,9 +94,13 @@ One branch, `feat/one-contract-for-trace-results`. Every task ends with
       member is refused **where it is declared**, a required option cannot be omitted, an unknown
       view is rejected, and a result is typed rather than `any`.
 
-- [ ] **Task 1.2 — The result types.** Add `IAbapTraceHitList`, `IAbapTraceStatements`,
-      `IAbapTraceDbAccesses` and the cross-trace three, with the fields Phase 0 measured.
-      **Verify:** every field traceable to a measurement; none invented.
+- [ ] **Task 1.2 — The result types.** `IAbapTraceHitList`, `IAbapTraceStatements` and
+      `IAbapTraceDbAccesses` from the tables already in the spec — 473 `trc:entry`, 1801
+      `trc:statement`, and `trc:dbAccess` with its `trc:accessTime`, all read from one real trace.
+      The cross-trace three come from Task 0.1.
+      **Verify:** every field traceable to a measurement; none invented. If Task 0.1 has not
+      happened, the cross-trace views are declared as their parsed document and nothing more — the
+      spec permits that explicitly, and it is better than three invented shapes.
 
 - [ ] **Task 1.3 — The published families.** `IProfiler` and `ICrossTrace` keep their names and
       become compositions. `ICrossTrace.list()` keeps `IListCrossTracesOptions` — all three of
@@ -120,9 +126,12 @@ One branch, `feat/one-contract-for-trace-results`. Every task ends with
       **Verify:** the two profiling option types are now identical, and a typecheck asserts a run
       result offers no `traceId`.
 
-- [ ] **Task 1.7 — CHANGELOG and version.** `22.0.0`, with the accounting from the spec: five
-      deleted, three moved, the executor fields removed, `ISt05Trace` and every reading option type
-      unchanged. Ask which version before writing it; run
+- [ ] **Task 1.7 — CHANGELOG and version.** **`22.0.0`, fixed by the spec** and already relied on
+      by the phase heading, the npm wait and the consumer's dependency range — so it is not asked
+      again here. Deviating means changing it in all four places, deliberately, not discovering the
+      mismatch when Phase 2 waits forever for a version nobody published.
+      The entry carries the accounting from the spec: five deleted, three moved, the executor
+      fields removed, `ISt05Trace` and every reading option type unchanged. Run
       `npm install --package-lock-only` in the same commit.
       **Verify:** `npm run build && npm run test:check`. There is no `check:docs` in this
       repository — that script is adt-clients'. The CHANGELOG link definitions are checked by eye
@@ -132,16 +141,32 @@ One branch, `feat/one-contract-for-trace-results`. Every task ends with
 
 ---
 
-## Phase 2 — Wait for 22.0.0 on npm
+## Phase 2 — Prove a consumer can implement it, then wait for npm
 
-- [ ] **Task 2.1** — `npm view @mcp-abap-adt/interfaces version` reports `22.0.0`. Nothing in
-      Phase 3 starts before that: no tarball, no `file:`, no link.
+Between "the contract compiles" and "a real class satisfies it" there is a gap that typechecks
+inside the interfaces package cannot close: they use written-for-the-purpose stand-ins. If the
+real `Profiler`, `CrossTrace` and executors turn out not to fit, the version that says they must
+is already on npm and cannot be taken back.
+
+- [ ] **Task 2.1 — A throwaway consumer gate, before the tag.** `npm pack` the interfaces branch,
+      install the tarball into a **scratch copy** of adt-clients — `/tmp`, or a git worktree —
+      and compile the three real implementations against it.
+      **Verify:** `npm run build` and `npm run test:check` pass there.
+      **This does not touch the repository.** No tarball, `file:` or `"link": true` is committed
+      to `package.json` or `package-lock.json`; the scratch copy is deleted afterwards. The rule
+      that forbids them governs what the repository *depends on*, not what a throwaway workspace
+      compiles against — and a rule that made this check impossible would be trading a real
+      failure for a tidy lockfile.
+
+- [ ] **Task 2.2** — `npm view @mcp-abap-adt/interfaces version` reports `22.0.0`. Phase 3 starts
+      only then, and installs from the registry.
 
 ---
 
 ## Phase 3 — `@mcp-abap-adt/adt-clients`, in PR #118
 
-- [ ] **Task 3.1 — Bump and install.** `@mcp-abap-adt/interfaces` to `^22.0.0`.
+- [ ] **Task 3.1 — Bump and install.** `@mcp-abap-adt/interfaces` to `^22.0.0` — the same
+      version as everywhere else in this plan.
       **Verify:** no `"link": true` in `package-lock.json`; `npm run build` shows what actually
       broke.
 

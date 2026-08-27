@@ -227,6 +227,23 @@ query, exactly the published option type) and `dbAccesses`. Also present: `delet
 links for `title` and `expiration` — the trace is mutable in two narrow ways, which is out of scope
 here and worth knowing before someone assumes reading is all there is.
 
+### And the three views, from one real trace
+
+Read on the trial, trace `F8234F6C97EC11F1B02EB696EA3AB424`, all three `200`:
+
+| view | root | rows | the row |
+|---|---|---|---|
+| `hitlist` | `trc:hitlist` | 473 `trc:entry` | `topDownIndex`, `index`, `hitCount`, `stackCount`, `recursionDepth`, `description`, `proceduralEntryAnchor`; children `trc:callingProgram` (`adtcore:name`/`type`/`uri`/`context`, `byteCodeOffset`), `trc:calledProgram`, `trc:grossTime` |
+| `statements` | `trc:statements` | 1801 `trc:statement` | `id`, `index`, `callLevel`, `text`, `variable`, `package`, `component`, `componentDescription`, `hitlistAnchor`, `isProcedureLike`; children `trc:callingProgram` (with an `objectReferenceQuery` URI), `trc:grossTime`, `trc:traceEventNetTime` |
+| `dbAccesses` | `trc:dbAccesses` | `trc:dbAccess` | `index`, `tableName`, `statement`, `type`, `totalCount`, `bufferedCount`; child `trc:accessTime` (`total`, `applicationServer`, `database`, `ratioOfTraceTotal`) |
+
+Sizes are worth knowing before designing around them: 319KB, 1.3MB and 750 bytes for the same
+trace. `statements` is not a thing to fetch casually, and `hitlistAnchor` on a statement pointing
+at `proceduralEntryAnchor` on a hitlist entry says the two views are meant to be cross-referenced.
+
+So `IAbapTraceHitList`, `IAbapTraceStatements` and `IAbapTraceDbAccesses` are transcription too,
+not design.
+
 ### What could NOT be measured, and why it matters
 
 `crosstrace` on the trial answers `200` with an **empty** document —
