@@ -1,6 +1,6 @@
 # One contract for reading what a run produced
 
-**Status:** design — split and scope approved; typing plan open
+**Status:** design — split and scope approved; contract sketch compiles; correlation unmeasured
 **Packages:** this one (breaking, 22.0.0), consumed by `@mcp-abap-adt/adt-clients`
 **Evidence:** measured in `@mcp-abap-adt/adt-clients`, the main consumer of `IProfiler`
 **Supersedes:** fr0ster/mcp-abap-adt-interfaces#45, which adds two members to the bag this dismantles
@@ -102,6 +102,11 @@ which removes the confusion between it and `traceId` at the source.
 Two atoms, composed. Parameterised over what each family's entries and views actually are, so a
 family names its own types instead of everyone agreeing on `IAdtResponse`.
 
+**Every declaration below compiles under `--strict`, and the refusals below it were proven with
+`@ts-expect-error`.** The first draft of this spec did not: it constrained the view map to
+`Record<string, unknown>`, which an `interface` cannot satisfy — no index signature — so its own
+canonical example failed with `TS2344`.
+
 ```ts
 /** One trace, as every family can describe it. */
 export interface ITraceEntry {
@@ -109,60 +114,119 @@ export interface ITraceEntry {
   id: string;
   /** When the system wrote it. Position in a feed is not age. */
   recordedAt: string;
-  /** Whose run produced it, where the family knows. */
   user?: string;
-  /** What was running, where the family knows. */
   objectName?: string;
-  /** The ADT URI of the trace itself. */
   uri?: string;
 }
 
-/** What traces exist. */
+/** What a view yields, and what it must be given. */
+export interface ITraceView<TResult, TOptions = void> {
+  result: TResult;
+  options: TOptions;
+}
+
+/**
+ * `object`, not `Record<string, …>`.
+ *
+ * A view map is written as an `interface`, and an interface has no implicit
+ * index signature, so `Record<string, unknown>` rejects it. This is the
+ * constraint that admits both.
+ */
+export type TraceViews = object;
+
+export type ViewResult<TViews, K extends keyof TViews> =
+  TViews[K] extends ITraceView<infer R, infer _O> ? R : never;
+export type ViewOptions<TViews, K extends keyof TViews> =
+  TViews[K] extends ITraceView<infer _R, infer O> ? O : never;
+
+/** Options are required when the view says so, and absent when it says `void`. */
+export type ViewArgs<TViews, K extends keyof TViews> =
+  ViewOptions<TViews, K> extends void
+    ? [options?: undefined]
+    : undefined extends ViewOptions<TViews, K>
+      ? [options?: ViewOptions<TViews, K>]
+      : [options: ViewOptions<TViews, K>];
+
 export interface ITraceListing<
   TEntry extends ITraceEntry = ITraceEntry,
-  TOptions = undefined,
+  TOptions = void,
 > {
   list(options?: TOptions): Promise<TEntry[]>;
 }
 
-/**
- * What is inside one trace.
- *
- * `TViews` names the family's views and their result types, so `read()` is
- * typed per view rather than returning a union the caller must narrow.
- */
-export interface ITraceReading<TViews extends Record<string, unknown>> {
+export interface ITraceReading<TViews extends TraceViews> {
   read<K extends keyof TViews>(
     traceId: string,
     view: K,
-    options?: TraceViewOptions<TViews, K>,
-  ): Promise<TViews[K]>;
+    ...args: ViewArgs<TViews, K>
+  ): Promise<ViewResult<TViews, K>>;
 }
 
 export interface IProfiler<
+  TKind extends string,
   TEntry extends ITraceEntry = ITraceEntry,
-  TViews extends Record<string, unknown> = Record<string, unknown>,
-  TOptions = undefined,
+  TViews extends TraceViews = Record<never, never>,
+  TOptions = void,
 > extends ITraceListing<TEntry, TOptions>,
     ITraceReading<TViews> {
-  readonly kind: string;
+  /** Literal, so it still discriminates — see below. */
+  readonly kind: TKind;
 }
 ```
 
-The ABAP profiler then says what it is:
+Each family then says what it is:
 
 ```ts
 export interface IAbapTraceViews {
-  hitlist: IAbapTraceHitList;
-  statements: IAbapTraceStatements;
-  dbAccesses: IAbapTraceDbAccesses;
+  hitlist: ITraceView<IAbapTraceHitList, { withSystemEvents?: boolean } | undefined>;
+  statements: ITraceView<IAbapTraceStatements, { withDetails?: boolean } | undefined>;
+  dbAccesses: ITraceView<IAbapTraceDbAccesses, { withSystemEvents?: boolean } | undefined>;
 }
+type AbapProfiler = IProfiler<'profiler', ITraceEntry, IAbapTraceViews, { user?: string }>;
 
-type AbapProfiler = IProfiler<ITraceEntry, IAbapTraceViews, { user?: string }>;
+export interface ICrossTraceViews {
+  records: ITraceView<ICrossTraceRecords>;
+  /** Required, and the compiler enforces it. */
+  recordContent: ITraceView<ICrossTraceRecordContent, { recordNumber: number }>;
+}
+type CrossTrace = IProfiler<'crossTrace', ITraceEntry, ICrossTraceViews>;
+
+/** A listing and no views. */
+type St05 = IProfiler<'st05Trace'>;
 ```
 
-and cross-trace says what *it* is, with the same two atoms and different views
-(`records`, `recordContent`). ST05 implements the listing only; it has no per-trace views.
+### What the compiler accepts, and what it refuses
+
+```ts
+const hits = await p.read('t1', 'hitlist');            // options optional
+const gross: number = hits.entries[0].grossTime;       // result typed, not `any`
+await x.read('t2', 'recordContent', { recordNumber: 3 });
+
+// @ts-expect-error a required option may not be omitted
+await x.read('t2', 'recordContent');
+// @ts-expect-error a view the family does not have
+await p.read('t1', 'callGraph');
+// @ts-expect-error the result is typed
+const wrong: string = (await p.read('t1', 'hitlist')).entries[0].grossTime;
+```
+
+All three `@ts-expect-error` lines fire, so the types constrain rather than merely compile.
+
+### Why the options live in the view map
+
+An earlier draft wrote `TraceViewOptions<TViews, K>` and never declared it — and it could not have
+been declared, because a map of result types has nowhere to keep options. They cannot be inferred
+either: nothing about `IAbapTraceStatements` implies `{ withDetails?: boolean }`, and cross-trace's
+`recordContent` needs a `recordNumber` that no result type mentions. So a view is a pair from the
+start, and `ViewArgs` turns "this view has required options" into a compiler error rather than a
+runtime surprise.
+
+### Why `kind` stays literal
+
+`IRuntimeAnalysisObject<TKind extends string>` exists so `kind` discriminates — `'profiler'`,
+`'crossTrace'`, `'st05Trace'`. An earlier draft wrote `readonly kind: string`, which keeps the
+field and throws away the reason for it, exactly when several implementations share one contract
+and narrowing matters most. `TKind` is a parameter, and each family passes its literal.
 
 ### Why `read(id, view)` and not three members
 
@@ -174,11 +238,58 @@ that a plain `result()` would force — which would be `IAdtResponse` again unde
 
 Proposed in #45 — and already implemented on the concrete `Profiler` here, which is where it
 should stay. It is a trap the measurements already sprang: SAP writes traces asynchronously, so
-*newest* is not *mine*, and the on-prem test that uses it has to snapshot the listing before its
-run and poll for an id that is new. A caller that needs its own snapshots `list()` before
+*newest* is not *mine*.
+
+But the replacement this spec first offered — snapshot the listing, run, poll for an id that is
+new — is only better, not correct. It proves a trace is **new**, not that it is **yours**: a
+concurrent run by the same user, or another session of that user, puts a stranger's trace between
+the two listings. Rejecting "newest is mine" and then proposing "newest since I looked" is the
+same mistake with a smaller window. See *Correlation* below. A caller that needs its own snapshots `list()` before
 running and polls for an id that is new. A contract member that looks like the answer and is not
 is worse than no member. The convenience may live in an implementation; it does not belong in a
 contract.
+
+## Correlation — which trace is mine
+
+**Unsolved, and the contract must not pretend otherwise.**
+
+Three members take a trace id. Something has to produce the *right* one, and neither candidate
+does:
+
+- `latestTraceId()` — newest is not mine.
+- snapshot-and-poll — new is not mine either, under any concurrency.
+
+What is measured today: a parsed entry carries `id` and the timestamp the feed publishes, and
+nothing that points back at the request that scheduled the measurement. So on the reading side
+alone, the question cannot be answered.
+
+That places it on the recording side, which is consistent with the split: the executor holds the
+`requestId` it scheduled, and scheduling accepts a `description`. **A unique token in that
+description, stamped at schedule time and matched in the listing, is the candidate mechanism** —
+it makes the link something the caller created rather than something inferred from order or time.
+
+It depends on one fact nobody here has measured: whether a trace entry exposes the description (or
+any other field carried over from its request). The probe is small and must run before this part
+is implemented:
+
+```
+schedule a trace with description "adt-clients-<uuid>"
+run the object
+list the traces and dump one entry in full
+→ does any field carry that token, or the request id?
+```
+
+Three outcomes, and the design differs in each:
+
+1. **The token comes through.** `ITraceEntry` gains the field, the executor returns the trace it
+   correlated, and correlation is exact.
+2. **Only the request id comes through.** Same, keyed on the id instead.
+3. **Nothing comes through.** Then the contract says so in as many words: traces can be listed and
+   read, and identifying *your own* is not possible through this API. The executor returns
+   candidates with their timestamps and the caller decides. A documented gap beats a member that
+   looks like an answer.
+
+Until that probe runs, no member of this contract claims to return "your" trace.
 
 ## What is deleted
 
@@ -261,6 +372,8 @@ yours to begin with.
 
 ## Consequences worth stating
 
+- **Correlation must be measured before the recording side is implemented.** The split is sound
+  without it; the answer to "which trace is mine" is not.
 - **Typing the results is the bulk of the work**, not the split. Parsing `hitlist`, `statements`
   and `dbAccesses` into real types is where the effort is; without it these atoms are three tidy
   bags instead of one untidy one. First pass types `list()` and `hitlist` — what consumers
