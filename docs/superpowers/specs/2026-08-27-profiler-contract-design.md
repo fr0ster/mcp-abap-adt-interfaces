@@ -174,6 +174,36 @@ A nuance from the same measurement: `objecttypes` lists `report` on cloud, where
 thing you can create. The catalogue describes what the profiler can measure, not what the system
 lets you author.
 
+### And the chosen values have nowhere to go yet
+
+Reading the catalogues is only half a flow. `IProfilerTraceParameters` — the payload of the
+configuring call — has no field for an object type or a process type, and the builder confirms it:
+`buildTraceParametersXml` emits `<trc:parameters>` with the booleans and the two numbers, and
+nothing else. So `INamedItem.name`, the URI those two endpoints exist to hand you, is currently
+unpassable.
+
+Two explanations, and this spec does not choose between them by reasoning:
+
+1. **The parameters payload takes more than we model.** `IProfilerTraceParameters` would then be
+   incomplete, and the missing elements are additive to it.
+2. **The catalogues feed a different request.** `parameters` says *how* to measure — booleans,
+   limits, aggregation. What to measure and whose runs to measure is the sort of thing a trace
+   *request* carries, and `requests` is a published collection we have only ever read from.
+
+Both are testable, and the probe joins step 0:
+
+```
+POST a parameters resource, then GET the Location it returns
+→ does the stored document carry object/process type elements?   (explanation 1)
+inspect what an ADT client sends when it schedules from the cloud UI, or
+GET /requests on a system where one exists                        (explanation 2)
+```
+
+Until that is answered, `listObjectTypes()` and `listProcessTypes()` are kept and typed, and
+`scheduleTrace()` takes `IProfilerTraceParameters` unchanged. **Adding a field for a URI with no
+measured destination would be inventing the API**, which is what this spec is against — but so
+would deleting the catalogues that clearly exist and answer.
+
 ## The split
 
 **Recording is the executor's.** Scheduling a measurement produces a *request id*, and a request
@@ -444,7 +474,7 @@ A breaking change is only specified when nothing is left implicit. All **19** op
 | `getStatements(id, o)` | `read(id, 'statements', o)` |
 | `getDbAccesses(id, o)` | `read(id, 'dbAccesses', o)` |
 | `createParameters(o)` | moves to the executor (recording) |
-| `getParameters()` | **deleted as a duplicate.** Whether ONE such operation must survive on the executor side is open — see *The one thing this leaves unresolved* |
+| `getParameters()` | **deleted.** Measured: `GET` on that URL answers 405 on cloud as elsewhere, so no operation reads through it. Reading what is available is `listObjectTypes` / `listProcessTypes`, which move rather than die |
 | `getParametersForCallstack()` | **deleted** — byte-identical to `getParameters` |
 | `getParametersForAmdp()` | **deleted** — byte-identical to `getParameters` |
 | `listRequests()` | **deleted** — empty by construction |
@@ -523,8 +553,8 @@ argument to a run, not to a read.
 
 ## What the executor gains
 
-This spec moves exactly one member: `createParameters`, which must leave `IProfiler` because the
-reading contract cannot keep it. `IExecutor` already carries `runWithProfiler` and
+This spec moves three members out of `IProfiler`, all of them about configuring a measurement
+rather than reading one: `createParameters`, `listObjectTypes` and `listProcessTypes`. `IExecutor` already carries `runWithProfiler` and
 `runWithProfiling`, both parameterised, so scheduling joins an existing surface rather than
 inventing one.
 
@@ -590,7 +620,7 @@ in time* — and `traceRequestsResponse` goes because it is always the empty fee
 then describe the same thing, which they do not today. An earlier draft of this section invented an
 `IExecutionResult` that does not exist; the real per-executor result types are the ones above.
 
-**Nothing else moves here.** `ICrossTrace.getActivations()` and `ISt05Trace.getState()` are
+**Nothing else moves.** `ICrossTrace.getActivations()` and `ISt05Trace.getState()` are
 recording by nature, and an earlier draft said they "join them" — but naming a member's nature is
 not the same as giving it a destination, and this spec designs one only for scheduling. They stay
 where they are until a recording contract exists to receive them. ST05 in particular is untouched,
@@ -659,7 +689,8 @@ yours to begin with.
    names and change meaning: each becomes a composition of `ITraceFamily` with `ITraceReading`,
    as spelled out in *The published surface*. Added: `ITraceEntry`, `ITraceView`, `ITraceListing`,
    `ITraceReading`, `ITraceFamily`, `IAbapTraceViews`, `ICrossTraceViews` and the result types.
-   Deleted: the seven members listed above. Unchanged: `ISt05Trace`, and every option type.
+   Deleted: the five members listed above. Moved to the configuring side: `createParameters`,
+   `listObjectTypes`, `listProcessTypes`. Unchanged: `ISt05Trace`, and every option type.
    Published first.
 2. `@mcp-abap-adt/adt-clients` — consumes it. **Both concrete classes change, not one:**
    - `Profiler` — `list()` returns parsed `ITraceEntry[]` (the branch already has
