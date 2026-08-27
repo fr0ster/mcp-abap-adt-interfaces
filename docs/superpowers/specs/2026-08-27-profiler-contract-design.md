@@ -110,6 +110,51 @@ disagree, and the one that promises more is the one that cannot keep it.
 It carries `traceRequestsResponse` as well — the response from the requests collection, which is
 empty by construction. A mandatory field whose content is always an empty feed.
 
+## How a run is profiled, and where the two systems differ
+
+A class and a report are profiled **the same way**. The only difference is the first call, the one
+that configures the measurement:
+
+- **On-prem** — write the parameters and start.
+- **On cloud** — read the parameters that are available, choose among them, set the ones you want,
+  then run.
+
+That configuring call answers with the config id **in the `Location` header** — an endpoint with
+the id in it. Verified in the consumer: `extractProfilerIdFromResponse` reads `location` /
+`content-location` and nothing else. The run is then given that id. So the id that travels from
+configuration to run is the *request*, and it is a URI, not an opaque token.
+
+Reading afterwards, on-prem, goes **by user first and then by id**: list the traces belonging to a
+user, then read the one you want. That is why `list({ user })` is the primary way in rather than a
+filter bolted onto it, and it is the same two steps this contract has — `list()` then
+`read(id, view)`.
+
+Two consequences for this design:
+
+- The class and program executors should differ in nothing but their target. Today they do not:
+  one promises a `traceId` and the other does not. See *Running and reading are separated in time*.
+- "Read the parameters that are available" is a real operation on cloud, and it belongs to
+  configuring a run — the executor side — not to reading results.
+
+### The one thing this leaves unresolved
+
+Three `getParameters*` members are deleted below for two reasons: they are byte-identical to each
+other, and a comment in the consumer's test records that `GET` on that URL answers `405`.
+
+The first reason is solid — three names for one call. **The second is not established.** The 405
+is a code comment whose provenance is unrecorded, and the cloud flow above requires reading the
+available parameters, which is what such a GET would be for. An attempt to measure it against the
+trial failed for an unrelated reason: the session token had expired.
+
+So the deletion of the *three duplicates* stands, and whether a single "read available parameters"
+operation must exist — on the executor side — is **open, and must be measured before 22.0.0**:
+
+```
+GET /sap/bc/adt/runtime/traces/abaptraces/parameters   on cloud, and on-prem
+→ 405 everywhere? then nothing reads parameters and the cloud flow uses another endpoint
+→ 200 on cloud? then configuring a run needs it, and it belongs to ITraceScheduling
+```
+
 ## The split
 
 **Recording is the executor's.** Scheduling a measurement produces a *request id*, and a request
@@ -380,7 +425,7 @@ A breaking change is only specified when nothing is left implicit. All **19** op
 | `getStatements(id, o)` | `read(id, 'statements', o)` |
 | `getDbAccesses(id, o)` | `read(id, 'dbAccesses', o)` |
 | `createParameters(o)` | moves to the executor (recording) |
-| `getParameters()` | **deleted** — identical to the two below, and GET on that URL is 405 |
+| `getParameters()` | **deleted as a duplicate.** Whether ONE such operation must survive on the executor side is open — see *The one thing this leaves unresolved* |
 | `getParametersForCallstack()` | **deleted** — byte-identical to `getParameters` |
 | `getParametersForAmdp()` | **deleted** — byte-identical to `getParameters` |
 | `listRequests()` | **deleted** — empty by construction |
@@ -449,8 +494,9 @@ is exactly an instantiation of another type earns nothing.
 
 ## What is deleted
 
-Seven members, listed with their reasons in the accounting above: three `getParameters*` (identical
-to each other, and GET on that URL answers 405), `listRequests` and `getRequestsByUri` (empty by
+Seven members, listed with their reasons in the accounting above: three `getParameters*` (three
+names for one byte-identical call — whether one of them must reappear on the executor side is the
+open question above), `listRequests` and `getRequestsByUri` (empty by
 construction — the requests collection is consumed by the run), and `listObjectTypes` /
 `listProcessTypes` (catalogue lookups, not results of a run, and with no caller).
 
@@ -470,7 +516,10 @@ profiling.
 
 ```ts
 export interface ITraceScheduling {
-  /** The request id. What the run is given, not what it produces. */
+  /**
+   * The request id, taken from the `Location` header of the configuring call.
+   * What the run is GIVEN, not what it produces.
+   */
   scheduleTrace(options?: IProfilerTraceParameters): Promise<string>;
 }
 
