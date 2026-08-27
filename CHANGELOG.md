@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [21.1.0] - 2026-08-27
+
+### Added
+
+- `IProfiler.listTraceIds()` and `IProfiler.latestTraceId()`, plus the
+  `ITraceFeedEntry` they return.
+
+  The contract asked three of its own methods for a trace id — `getHitList()`,
+  `getStatements()`, `getDbAccesses()` all take one as their first argument —
+  and offered nowhere to get one. Everything it returned was an unparsed
+  `IAdtResponse`, so a consumer that wanted a trace had to write a regex over an
+  Atom feed, and every consumer wrote its own.
+
+  Measured against an on-prem system while adding these, because the shape of
+  the gap was not obvious:
+
+  - `list()` is the ONLY member that can reach a trace. It finds the one a run
+    has just produced.
+  - `getRequestsByUri()` and `listRequests()` cannot, by construction. A trace
+    REQUEST schedules a measurement and is consumed by the run that fulfils it;
+    asked for the very object that had just been traced, both answered `200`
+    with an empty 345-byte feed.
+  - Position in the feed is not age. Its first entries were minutes old while
+    its last were eight days older, so "the first id in the document" — all a
+    regex over the whole body can give — is a trace chosen at random as far as
+    the caller is concerned. `latestTraceId()` sorts by timestamp for that
+    reason.
+
+  `latestTraceId()` answers "what is newest", which is not "what did my run just
+  produce": SAP writes traces asynchronously, so a caller that needs its own
+  notes what `listTraceIds()` held before running and polls for one that is new.
+  That is why the parsed listing is here and not only the convenience on top.
+
+  Additive: every existing implementation keeps compiling, and
+  `@mcp-abap-adt/adt-clients` already implements both on its `Profiler`.
+
+
 ## [21.0.0] - 2026-08-23
 
 ### Removed

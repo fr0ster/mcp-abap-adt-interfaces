@@ -500,6 +500,7 @@ export type {
   IProfilerTraceHitListOptions,
   IProfilerTraceParameters,
   IProfilerTraceStatementsOptions,
+  ITraceFeedEntry,
 } from './runtime/IProfiler';
 export type {
   IRuntimeDumpReadOptions,
