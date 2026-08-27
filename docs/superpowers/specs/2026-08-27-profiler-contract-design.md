@@ -338,6 +338,25 @@ consumer has ever read ST05 content** — `st05.ts` is two raw GETs with no pars
 tests assert that the factory returns an instance. Saying `list(): Promise<ITraceEntry[]>` asserts
 that its directory yields things with an identity and a timestamp, which nobody here has seen.
 
+The resource itself is not in doubt — that was checked separately. ADT publishes it as its own
+workspace, on an on-prem system (E19) and on a cloud tenant alike:
+
+```xml
+<app:workspace><atom:title>Performance Trace</atom:title>
+  <app:collection href="/sap/bc/adt/st05/trace/state">
+    <atom:title>Performance Trace State</atom:title>
+  <app:collection href="/sap/bc/adt/st05/trace/directory">
+    <atom:title>Performance Trace Drirectory</atom:title>
+```
+
+Only E77 lacks it — BASIS < 7.50, which lacks `crosstrace` too. So the two endpoints implemented
+here are exactly the two the system advertises. What discovery does **not** say is what either
+returns: both collections declare no `<app:accept>`, where neighbouring collections in the same
+document declare theirs. Existence is not shape, and it is the shape that is missing.
+
+(The title's misspelling — `Drirectory` — is SAP's, and matters only if anything ever matches on
+it.)
+
 So ST05 keeps its own small contract until someone parses that directory and can show the entries
 have an id and a time. Folding it in then is additive and costs nothing; folding it in now would
 put an unverified shape into a published type — the same defect this spec exists to remove.
