@@ -86,6 +86,30 @@ Two concepts, three vocabularies — though only the first two are reshaped here
 for why ST05 waits. `ISt05Trace.getState()` — "am I recording" — is the odd member,
 and it is odd because it belongs to the recording side, which is exactly the split this spec makes.
 
+## Running and reading are separated in time
+
+This is the premise the rest follows from, and it is not a subtlety:
+
+- A run can be started and its result **never read**.
+- It can be read **a week later**, when whoever ran it has gone home.
+- It can be read **by a different process** than the one that ran it, from a different machine.
+- SAP writes the trace **asynchronously**, so it may not exist at the moment the run returns.
+- And it may never exist — tracing off, quota full, request unfulfilled — or exist and later be
+  deleted.
+
+So "run, then read the result" is not one operation with two halves. It is two acts that may be
+separated by days, performed by different parties, and either of which may happen without the
+other.
+
+**A published type already violates this.** `IClassExecuteWithProfilingResult` requires a
+`traceId: string` — so the class executor cannot return until it has found a trace, for a thing
+the server may not have written yet, and the only ways to "find" it are the heuristics this spec
+rejects. Its sibling `IProgramExecuteWithProfilingResult` promises no such thing. The two
+disagree, and the one that promises more is the one that cannot keep it.
+
+It carries `traceRequestsResponse` as well — the response from the requests collection, which is
+empty by construction. A mandatory field whose content is always an empty feed.
+
 ## The split
 
 **Recording is the executor's.** Scheduling a measurement produces a *request id*, and a request
@@ -415,6 +439,14 @@ Note also that once ST05 *is* folded in, it needs no contract of its own: it bec
 which after this change is the ABAP family itself and takes no parameters. A published name that
 is exactly an instantiation of another type earns nothing.
 
+### Executor types (`@mcp-abap-adt/interfaces`, same release)
+
+| today | becomes | why |
+|---|---|---|
+| `IClassExecuteWithProfilingResult.traceId: string` | **removed** | a run cannot promise a trace that may not exist yet, may never exist, and may be read a week later |
+| `IClassExecuteWithProfilingResult.traceRequestsResponse` | **removed** | always the empty feed |
+| `IClassExecutor`, `IProgramExecutor` | `& ITraceScheduling` | scheduling gets a home without obliging every `IExecutor` |
+
 ## What is deleted
 
 Seven members, listed with their reasons in the accounting above: three `getParameters*` (identical
@@ -428,13 +460,44 @@ argument to a run, not to a read.
 ## What the executor gains
 
 This spec moves exactly one member: `createParameters`, which must leave `IProfiler` because the
-reading contract cannot keep it. `ClassExecutor` and `ProgramExecutor` already do this work; the
-change is that they own it openly instead of importing raw functions past the contract:
+reading contract cannot keep it. `IExecutor` already carries `runWithProfiler` and
+`runWithProfiling`, both parameterised, so scheduling joins an existing surface rather than
+inventing one.
+
+It joins as a **capability composed in**, not as a member of `IExecutor`: adding it there would
+oblige every executor that ever exists to schedule traces, and most have nothing to do with
+profiling.
 
 ```ts
-scheduleTrace(options?: IProfilerTraceParameters): Promise<string>;   // the request id
-runWithProfiling(target, options): Promise<IExecutionResult>;
+export interface ITraceScheduling {
+  /** The request id. What the run is given, not what it produces. */
+  scheduleTrace(options?: IProfilerTraceParameters): Promise<string>;
+}
+
+export type IClassExecutor = IExecutor<
+  IClassExecutionTarget, IAdtResponse, IClassExecuteWithProfilerOptions,
+  IClassExecuteWithProfilingOptions, IClassExecuteWithProfilingResult
+> & ITraceScheduling;
+
+export type IProgramExecutor = IExecutor<
+  IProgramExecutionTarget, IAdtResponse, IProgramExecuteWithProfilerOptions,
+  IProgramExecuteWithProfilingOptions, IProgramExecuteWithProfilingResult
+> & ITraceScheduling;
 ```
+
+**And the profiling results say only what the run produced:**
+
+```ts
+export interface IClassExecuteWithProfilingResult {
+  response: IAdtResponse;
+  profilerId: string;      // the request the run was given
+}                          // no traceId, and no traceRequestsResponse
+```
+
+`traceId` goes because a run cannot honestly promise one — see *Running and reading are separated
+in time* — and `traceRequestsResponse` goes because it is always the empty feed. Both executors
+then describe the same thing, which they do not today. An earlier draft of this section invented an
+`IExecutionResult` that does not exist; the real per-executor result types are the ones above.
 
 **Nothing else moves here.** `ICrossTrace.getActivations()` and `ISt05Trace.getState()` are
 recording by nature, and an earlier draft said they "join them" — but naming a member's nature is
@@ -490,7 +553,14 @@ yours to begin with.
 
 ## Versioning and order
 
-0. Land this branch first. It already carries the parsing work (`parseTraceFeedEntries`,
+0. **Measure the payloads first, then publish.** `ITraceEntry`, `ICrossTraceDocument`,
+   `ICrossTraceRecords` and `ICrossTraceRecordContent` are types for documents this repository has
+   partly never read: the profiler's feed is parsed on the consumer branch, cross-trace's is not
+   parsed at all. Publishing them before reading them would be the exact mistake ST05 was excluded
+   for, made deliberately. So a probe branch in the consumer parses both first, and the field lists
+   below are whatever it finds.
+
+0b. Land this branch. It already carries the parsing work (`parseTraceFeedEntries`,
    `listTraceIds`, `latestTraceId`) on the concrete `Profiler`, which is what the typed `list()`
    below is built from — the contract change should consume a fix that is already proven against
    a system, not arrive at the same time as it.
@@ -505,8 +575,8 @@ yours to begin with.
      `parseTraceFeedEntries` for this); the three getters become `read(id, view)`.
    - `CrossTrace` — the same work, and none of it exists yet: its `list()` returns a raw
      `IAdtResponse` and it has no `read()`. It needs a feed parser of its own and the three
-     members folded into `read()`. Its payload has been read even less than the profiler's, so
-     this step includes measuring what its listing and its records actually contain.
+     members folded into `read()`. Its payload is measured in step 0, before any of these types
+     are published.
    - `ClassExecutor` / `ProgramExecutor` — take scheduling; the deep imports and the
      `as Profiler` cast go.
 
