@@ -136,24 +136,43 @@ Two consequences for this design:
 - "Read the parameters that are available" is a real operation on cloud, and it belongs to
   configuring a run — the executor side — not to reading results.
 
-### The one thing this leaves unresolved
+### Measured: where the cloud reads its parameters
 
-Three `getParameters*` members are deleted below for two reasons: they are byte-identical to each
-other, and a comment in the consumer's test records that `GET` on that URL answers `405`.
-
-The first reason is solid — three names for one call. **The second is not established.** The 405
-is a code comment whose provenance is unrecorded, and the cloud flow above requires reading the
-available parameters, which is what such a GET would be for. An attempt to measure it against the
-trial failed for an unrelated reason: the session token had expired.
-
-So the deletion of the *three duplicates* stands, and whether a single "read available parameters"
-operation must exist — on the executor side — is **open, and must be measured before 22.0.0**:
+The configuring endpoint is POST-only on cloud too — measured against the trial, all three `Accept`
+types:
 
 ```
-GET /sap/bc/adt/runtime/traces/abaptraces/parameters   on cloud, and on-prem
-→ 405 everywhere? then nothing reads parameters and the cloud flow uses another endpoint
-→ 200 on cloud? then configuring a run needs it, and it belongs to ITraceScheduling
+GET /sap/bc/adt/runtime/traces/abaptraces/parameters
+→ 405  ExceptionMethodNotSupported: Resource controller does not support method GET
 ```
+
+So the three `getParameters*` deletions stand for both reasons after all: three names for one
+byte-identical call, on a URL that refuses GET.
+
+**But the "read what is available" step is real, and it is two other endpoints.** Discovery
+publishes exactly five collections under `runtime/traces`, identical on cloud and on-prem, and two
+of them answer:
+
+| endpoint | cloud |
+|---|---|
+| `objecttypes` | **200**, a `namedItemList` of 7 — `report`/Program, `transaction`/Transaction, … |
+| `processtypes` | **200**, a `namedItemList` of 8 — `any`/Any, `dialog`/Dialog, … |
+| `parameters` (GET) | 405, as above |
+| `requests` | 400 on cloud today; 200 with an empty feed on E19 |
+
+`listObjectTypes()` and `listProcessTypes()` **are** the catalogue the cloud flow chooses from.
+An earlier version of this spec deleted them as "catalogue lookups, not results of a run, and with
+no caller" — the observation was right and the conclusion was wrong. Having no caller in one
+consumer says that consumer never implemented the cloud configuration flow; it does not say the
+operation is pointless.
+
+They are therefore **not deleted**. They move to the configuring side with `scheduleTrace`, because
+that is what they are for: what you may trace, before you say what to trace. Their payload has a
+shape worth typing — a list of `{ name, description }` where the name is itself a URI.
+
+A nuance from the same measurement: `objecttypes` lists `report` on cloud, where reports are not a
+thing you can create. The catalogue describes what the profiler can measure, not what the system
+lets you author.
 
 ## The split
 
@@ -430,8 +449,8 @@ A breaking change is only specified when nothing is left implicit. All **19** op
 | `getParametersForAmdp()` | **deleted** — byte-identical to `getParameters` |
 | `listRequests()` | **deleted** — empty by construction |
 | `getRequestsByUri(uri)` | **deleted** — empty by construction |
-| `listObjectTypes()` | **deleted** — a catalogue, not a result of a run |
-| `listProcessTypes()` | **deleted** — a catalogue, not a result of a run |
+| `listObjectTypes()` | **moves to the configuring side** — measured `200` with 7 entries; this is what the cloud flow chooses from |
+| `listProcessTypes()` | **moves to the configuring side** — measured `200` with 8 entries |
 
 ### `ICrossTrace`
 
@@ -494,11 +513,10 @@ is exactly an instantiation of another type earns nothing.
 
 ## What is deleted
 
-Seven members, listed with their reasons in the accounting above: three `getParameters*` (three
-names for one byte-identical call — whether one of them must reappear on the executor side is the
-open question above), `listRequests` and `getRequestsByUri` (empty by
-construction — the requests collection is consumed by the run), and `listObjectTypes` /
-`listProcessTypes` (catalogue lookups, not results of a run, and with no caller).
+Five members, listed with their reasons in the accounting above: three `getParameters*` (three
+names for one byte-identical call, on a URL measured to refuse GET), `listRequests` and `getRequestsByUri` (empty by
+construction — the requests collection is consumed by the run), . `listObjectTypes` and `listProcessTypes` are NOT among
+them — they move to the configuring side, measured and working.
 
 `IProfilerTraceParameters` moves with `createParameters`: it says *what to measure*, which is an
 argument to a run, not to a read.
@@ -515,7 +533,16 @@ oblige every executor that ever exists to schedule traces, and most have nothing
 profiling.
 
 ```ts
+export interface INamedItem {
+  /** A URI, as the server writes it. */
+  name: string;
+  description: string;
+}
+
 export interface ITraceScheduling {
+  /** What may be traced. The cloud flow reads these before choosing. */
+  listObjectTypes(): Promise<INamedItem[]>;
+  listProcessTypes(): Promise<INamedItem[]>;
   /**
    * The request id, taken from the `Location` header of the configuring call.
    * What the run is GIVEN, not what it produces.
