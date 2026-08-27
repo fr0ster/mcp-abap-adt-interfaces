@@ -184,11 +184,11 @@ Each family then says what it is:
 
 ```ts
 export interface IAbapTraceViews {
-  hitlist: ITraceView<IAbapTraceHitList, { withSystemEvents?: boolean } | undefined>;
-  statements: ITraceView<IAbapTraceStatements, { withDetails?: boolean } | undefined>;
-  dbAccesses: ITraceView<IAbapTraceDbAccesses, { withSystemEvents?: boolean } | undefined>;
+  hitlist: ITraceView<IAbapTraceHitList, IProfilerTraceHitListOptions | undefined>;
+  statements: ITraceView<IAbapTraceStatements, IProfilerTraceStatementsOptions | undefined>;
+  dbAccesses: ITraceView<IAbapTraceDbAccesses, IProfilerTraceDbAccessesOptions | undefined>;
 }
-type AbapProfiler = IProfiler<'profiler', ITraceEntry, { user?: string }> &
+type AbapProfiler = IProfiler<'profiler', ITraceEntry, IProfilerListOptions> &
   ITraceReading<IAbapTraceViews>;
 
 export interface ICrossTraceViews {
@@ -229,6 +229,12 @@ const wrong: string = (await p.read('t1', 'hitlist')).entries[0].grossTime;
 ```
 
 Every `@ts-expect-error` fires, so the types constrain rather than merely compile.
+
+The option types are the published ones, **carried over whole and not retyped**. An earlier draft
+wrote them out inline and abbreviated them — `statements` lost `id`, `autoDrillDownThreshold` and
+`withSystemEvents`, so calls that are valid in 21.0.0 would have stopped compiling while the
+accounting still called the mapping direct. Compiled: every option the 21.0.0 signature accepted
+still passes, and an option that was never there is still refused.
 
 ### Why the options live in the view map
 
@@ -295,8 +301,9 @@ a fact about the two entities — the same fact that justifies the split in the 
 
 ## Every member of the three contracts, accounted for
 
-A breaking change is only specified when nothing is left implicit. All fifteen members of
-`IProfiler`, `ICrossTrace` and `ISt05Trace` as published in 21.0.0:
+A breaking change is only specified when nothing is left implicit. All **19** operations of
+`IProfiler`, `ICrossTrace` and `ISt05Trace` as published in 21.0.0 — 12, 5 and 2, counted from the
+`.d.ts` rather than by eye, `list()` included where it is inherited:
 
 ### `IProfiler`
 
@@ -323,7 +330,7 @@ A breaking change is only specified when nothing is left implicit. All fifteen m
 | `getById(id, includeSensitiveData?)` | `read(id, 'trace', { includeSensitiveData })` — the trace document is a view of the trace |
 | `getRecords(id)` | `read(id, 'records')` |
 | `getRecordContent(id, recordNumber)` | `read(id, 'recordContent', { recordNumber })` — required, enforced |
-| `getActivations()` | moves to the executor (recording): it reports what is currently being traced, which is a statement about recording, not a result |
+| `getActivations()` | **unchanged for now.** It reports what is currently being traced, which is recording rather than a result — but this spec designs no home for it, and moving a member without a destination is not a migration. It goes when the recording contract is written. |
 
 ### `ISt05Trace` — left alone, on purpose
 
@@ -377,15 +384,20 @@ argument to a run, not to a read.
 
 ## What the executor gains
 
-`ClassExecutor` and `ProgramExecutor` already do this; the change is that they own it openly
-instead of importing raw functions past the contract:
+This spec moves exactly one member: `createParameters`, which must leave `IProfiler` because the
+reading contract cannot keep it. `ClassExecutor` and `ProgramExecutor` already do this work; the
+change is that they own it openly instead of importing raw functions past the contract:
 
 ```ts
-scheduleTrace(options?: ITraceParameters): Promise<string>;   // the request id
+scheduleTrace(options?: IProfilerTraceParameters): Promise<string>;   // the request id
 runWithProfiling(target, options): Promise<IExecutionResult>;
 ```
 
-ST05's `getState()` joins them as recording control.
+**Nothing else moves here.** `ICrossTrace.getActivations()` and `ISt05Trace.getState()` are
+recording by nature, and an earlier draft said they "join them" — but naming a member's nature is
+not the same as giving it a destination, and this spec designs one only for scheduling. They stay
+where they are until a recording contract exists to receive them. ST05 in particular is untouched,
+as the scope says.
 
 ## Scope — decided
 
