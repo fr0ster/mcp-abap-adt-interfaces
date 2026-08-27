@@ -539,6 +539,9 @@ is exactly an instantiation of another type earns nothing.
 |---|---|---|
 | `IClassExecuteWithProfilingResult.traceId: string` | **removed** | a run cannot promise a trace that may not exist yet, may never exist, and may be read a week later |
 | `IClassExecuteWithProfilingResult.traceRequestsResponse` | **removed** | always the empty feed |
+| `IClassExecuteWithProfilingOptions.traceLookupUris` | **removed** | asks where to look for a trace the run no longer waits for |
+| `IClassExecuteWithProfilingOptions.maxTraceAttempts` | **removed** | how many times to poll for it |
+| `IClassExecuteWithProfilingOptions.traceRetryDelayMs` | **removed** | how long to wait between polls |
 | `IClassExecutor`, `IProgramExecutor` | `& ITraceScheduling` | scheduling gets a home without obliging every `IExecutor` |
 
 ## What is deleted
@@ -576,6 +579,12 @@ stated exactly where it is true.
 `IExecutor` also shows why a class and a report need nothing else to tell them apart: they are the
 same specialisation with a different target, which is the domain fact from the section above,
 already expressed in the type.
+
+```ts
+> **Provisional until step 0a.** The two catalogue readers are certain — measured, they answer.
+> What `scheduleTrace` takes is not: the URIs they return have no destination in today's
+> parameters payload, and which of the two explanations holds decides whether this signature
+> changes. See *And the chosen values have nowhere to go yet*.
 
 ```ts
 export interface INamedItem {
@@ -616,7 +625,19 @@ export interface IClassExecuteWithProfilingResult {
 ```
 
 `traceId` goes because a run cannot honestly promise one — see *Running and reading are separated
-in time* — and `traceRequestsResponse` goes because it is always the empty feed. Both executors
+in time* — and `traceRequestsResponse` goes because it is always the empty feed.
+
+**The three polling options go with it.** `traceLookupUris`, `maxTraceAttempts` and
+`traceRetryDelayMs` exist only to hunt for that `traceId` after the run; they are read in exactly
+one place, `ClassExecutor`'s polling loop, and they are absent from the program executor's options
+— the same asymmetry as the result. Leaving them would publish a contract that accepts instructions
+no implementation may carry out.
+
+With them gone, `IClassExecuteWithProfilingOptions` and `IProgramExecuteWithProfilingOptions` are
+both `{ profilerParameters?: IProfilerTraceParameters }` — which is the domain fact from above
+arriving in the types: a class and a report are profiled the same way. Whether to collapse them
+into one name is a judgement for the implementation; this spec only removes what cannot be
+honoured. Both executors
 then describe the same thing, which they do not today. An earlier draft of this section invented an
 `IExecutionResult` that does not exist; the real per-executor result types are the ones above.
 
@@ -681,6 +702,19 @@ yours to begin with.
    for, made deliberately. So a probe branch in the consumer parses both first, and the field lists
    below are whatever it finds.
 
+0a. **Apply what step 0 found, before anything is published.** Two of its answers can move the
+   contract, not just fill in field lists:
+
+   - if the parameters payload turns out to carry object and process types, `IProfilerTraceParameters`
+     gains them and `scheduleTrace` keeps its shape;
+   - if the catalogues feed a trace *request* instead, `ITraceScheduling` gains that operation and
+     the request becomes the thing `scheduleTrace` returns from.
+
+   Either way the sketch in *What the executor gains* is provisional until this step closes.
+   The gate is: **probe → update the scheduling types to match the evidence → typecheck under
+   `--strict` → publish.** Publishing the sketch as written, before the probe, would be inventing
+   the API — the thing this spec exists to stop.
+
 0b. Land this branch. It already carries the parsing work (`parseTraceFeedEntries`,
    `listTraceIds`, `latestTraceId`) on the concrete `Profiler`, which is what the typed `list()`
    below is built from — the contract change should consume a fix that is already proven against
@@ -689,8 +723,11 @@ yours to begin with.
    names and change meaning: each becomes a composition of `ITraceFamily` with `ITraceReading`,
    as spelled out in *The published surface*. Added: `ITraceEntry`, `ITraceView`, `ITraceListing`,
    `ITraceReading`, `ITraceFamily`, `IAbapTraceViews`, `ICrossTraceViews` and the result types.
-   Deleted: the five members listed above. Moved to the configuring side: `createParameters`,
-   `listObjectTypes`, `listProcessTypes`. Unchanged: `ISt05Trace`, and every option type.
+   Deleted: the five members listed above, plus `traceId`, `traceRequestsResponse` and the three
+   trace-polling options on the class executor. Moved to the configuring side:
+   `createParameters`, `listObjectTypes`, `listProcessTypes`. Unchanged: `ISt05Trace`, and the
+   reading option types — `IProfilerListOptions`, `IListCrossTracesOptions` and the three view
+   option types.
    Published first.
 2. `@mcp-abap-adt/adt-clients` — consumes it. **Both concrete classes change, not one:**
    - `Profiler` — `list()` returns parsed `ITraceEntry[]` (the branch already has
