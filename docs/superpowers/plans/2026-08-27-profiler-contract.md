@@ -77,9 +77,23 @@ endpoint refuses GET. **On-prem, by the user.**
       **Decides:** whether `scheduleTrace(options?: IProfilerTraceParameters)` keeps its signature,
       gains fields, or gains a sibling operation.
 
-- [ ] **Task 0.3 — Write the answers into the spec** and mark the provisional note resolved.
-      **Verify:** the spec's "Provisional until step 0a" block is gone, and no type in it is
-      described as unmeasured except ST05's.
+- [ ] **Task 0.3 — Write the answers into the spec.** What is written depends on which of them
+      came back, and the two are independent:
+
+      **0.2 answered** — `scheduleTrace` takes its settled shape and the "Provisional until step
+      0a" block goes. This one has no other branch: without 0.2 there is no release.
+
+      **0.1 answered** — the cross-trace result types get their measured field tables, beside the
+      ones `abaptraces` already has.
+
+      **0.1 not answered** — the spec says so, in the same voice it uses for ST05: cross-trace is
+      **excluded from 22.0.0**, `ICrossTrace` is untouched, and it joins when someone can read one.
+      Its unmeasured notes stay, because they are true.
+
+      **Verify:** no type is described as both unmeasured and being published. That is the actual
+      rule — not "nothing is unmeasured", which the ST05 section has always contradicted on
+      purpose. An unmeasured type is fine in this document as long as the spec also says it is not
+      shipping.
 
 **Gate, and what it does when it is not met.** Publishing a type for a document nobody has read is
 the mistake ST05 was excluded for, so:
