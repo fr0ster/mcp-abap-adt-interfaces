@@ -82,7 +82,8 @@ while promising nothing about content.
 | crossTrace | `list()` | `getById` / `getRecords` / `getRecordContent(traceId)` |
 | st05 | `getDirectory()` | — |
 
-Two concepts, three vocabularies. `ISt05Trace.getState()` — "am I recording" — is the odd member,
+Two concepts, three vocabularies — though only the first two are reshaped here; see the accounting
+for why ST05 waits. `ISt05Trace.getState()` — "am I recording" — is the odd member,
 and it is odd because it belongs to the recording side, which is exactly the split this spec makes.
 
 ## The split
@@ -199,8 +200,9 @@ export interface ICrossTraceViews {
 }
 type CrossTrace = IProfiler<'crossTrace'> & ITraceReading<ICrossTraceViews>;
 
-/** A listing and no views — and now the type says exactly that. */
-type St05 = IProfiler<'st05Trace'>;
+// ST05 is NOT modelled here yet — see the accounting below. When its directory
+// has been read, it is `IProfiler<'st05Trace'>`: a listing, no views, no
+// contract of its own.
 ```
 
 ### Why reading is composed in, not inherited
@@ -222,8 +224,6 @@ await x.read('t2', 'recordContent', { recordNumber: 3 });
 await x.read('t2', 'recordContent');
 // @ts-expect-error a view the family does not have
 await p.read('t1', 'callGraph');
-// @ts-expect-error ST05 lists; it has no read at all
-await st05.read('t3', 'anything');
 // @ts-expect-error the result is typed
 const wrong: string = (await p.read('t1', 'hitlist')).entries[0].grossTime;
 ```
@@ -325,15 +325,26 @@ A breaking change is only specified when nothing is left implicit. All fifteen m
 | `getRecordContent(id, recordNumber)` | `read(id, 'recordContent', { recordNumber })` — required, enforced |
 | `getActivations()` | moves to the executor (recording): it reports what is currently being traced, which is a statement about recording, not a result |
 
-### `ISt05Trace`
+### `ISt05Trace` — left alone, on purpose
 
 | today | becomes |
 |---|---|
-| `getDirectory()` | `list()` — it is the listing, under the name every other family uses |
-| `getState()` | moves to the executor (recording): "am I recording" |
+| `getDirectory()` | unchanged |
+| `getState()` | unchanged |
 
-ST05 therefore composes `ITraceListing` alone. It has no per-trace views, and after this change its
-type no longer claims any.
+An earlier version of this spec folded ST05 in: `getDirectory()` → `list()`, `getState()` → the
+recording side. That was a claim about ST05's payload, and it was not measured. **Nothing in the
+consumer has ever read ST05 content** — `st05.ts` is two raw GETs with no parser, and the only
+tests assert that the factory returns an instance. Saying `list(): Promise<ITraceEntry[]>` asserts
+that its directory yields things with an identity and a timestamp, which nobody here has seen.
+
+So ST05 keeps its own small contract until someone parses that directory and can show the entries
+have an id and a time. Folding it in then is additive and costs nothing; folding it in now would
+put an unverified shape into a published type — the same defect this spec exists to remove.
+
+Note also that once ST05 *is* folded in, it needs no contract of its own: it becomes
+`IProfiler<'st05Trace'>`, one instantiation with no views. A published name that is exactly an
+instantiation of another type earns nothing.
 
 ## What is deleted
 
@@ -359,7 +370,11 @@ ST05's `getState()` joins them as recording control.
 
 ## Scope — decided
 
-In scope: traces a run produces — `abaptraces`, `crosstrace`, `st05`.
+In scope: `abaptraces` and `crosstrace` — the two whose payloads have been read.
+
+`st05` is named in this spec only to say it is **not** being changed: its content has never been
+parsed here, so any statement about the shape of its listing would be invented. See the accounting
+below.
 
 Not merged in, and not "for now": `IRuntimeDumps`, `IApplicationLog`, `IGatewayErrorLog`,
 `ISystemMessages`, `IMemorySnapshots`. "Out of scope" would be the wrong words — dumps are not
