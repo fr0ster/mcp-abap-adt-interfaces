@@ -580,7 +580,6 @@ stated exactly where it is true.
 same specialisation with a different target, which is the domain fact from the section above,
 already expressed in the type.
 
-```ts
 > **Provisional until step 0a.** The two catalogue readers are certain — measured, they answer.
 > What `scheduleTrace` takes is not: the URIs they return have no destination in today's
 > parameters payload, and which of the two explanations holds decides whether this signature
