@@ -109,18 +109,27 @@ One branch, `feat/one-contract-for-trace-results`. Every task ends with
       member is refused **where it is declared**, a required option cannot be omitted, an unknown
       view is rejected, and a result is typed rather than `any`.
 
-- [ ] **Task 1.2 — The result types.** `IAbapTraceHitList`, `IAbapTraceStatements` and
+- [ ] **Task 1.2 — The ABAP result types.** `IAbapTraceHitList`, `IAbapTraceStatements` and
       `IAbapTraceDbAccesses` from the tables already in the spec — 473 `trc:entry`, 1801
       `trc:statement`, and `trc:dbAccess` with its `trc:accessTime`, all read from one real trace.
-      The cross-trace three come from Task 0.1.
       **Verify:** every field traceable to a measurement; none invented.
 
-- [ ] **Task 1.3 — The published families.** `IProfiler` and `ICrossTrace` keep their names and
-      become compositions. `ICrossTrace.list()` keeps `IListCrossTracesOptions` — all three of
-      `traceUser`, `actCreateUser`, `actChangeUser`. `getActivations()` stays on it, declared, with
-      the comment saying it is recording and moves when a recording contract exists.
-      **Verify:** `__typechecks__` shows a consumer's own implementation satisfying each, and a
-      cross-trace option offered to the profiler's listing refused.
+- [ ] **Task 1.2c — The cross-trace result types. ONLY if Task 0.1 was answered.**
+      `ICrossTraceDocument`, `ICrossTraceRecords`, `ICrossTraceRecordContent` from what it
+      measured. **If 0.1 was not answered this task does not run**, and neither do 1.3c, 2.4 or the
+      cross-trace lines of the CHANGELOG — see *Two shapes this release can take*.
+
+- [ ] **Task 1.3 — `IProfiler` becomes a composition**, keeping its name.
+      **Verify:** `__typechecks__` shows a consumer's own implementation satisfying it.
+
+- [ ] **Task 1.3c — `ICrossTrace` becomes one too. ONLY if Task 0.1 was answered.** It keeps its
+      name; `list()` keeps `IListCrossTracesOptions` — all three of `traceUser`, `actCreateUser`,
+      `actChangeUser`; `getActivations()` stays declared, with the comment saying it is recording
+      and moves when a recording contract exists.
+      **Verify:** a consumer's own implementation satisfies it, and a cross-trace option offered to
+      the profiler's listing is refused.
+      **If 0.1 was not answered, `ICrossTrace` is not touched at all** — not reshaped, not
+      deprecated, not annotated.
 
 - [ ] **Task 1.4 — Delete the five.** `getParameters`, `getParametersForCallstack`,
       `getParametersForAmdp`, `listRequests`, `getRequestsByUri`.
@@ -144,11 +153,26 @@ One branch, `feat/one-contract-for-trace-results`. Every task ends with
       again here. Deviating means changing it in all four places, deliberately, not discovering the
       mismatch when the wait never ends.
       The entry carries the accounting from the spec: five deleted, three moved, the executor
-      fields removed, `ISt05Trace` and every reading option type unchanged. Run
+      fields removed, `ISt05Trace` and every reading option type unchanged — **and whichever of the
+      two shapes above this release took**, said plainly, so a consumer reading the CHANGELOG knows
+      whether `ICrossTrace` changed. Run
       `npm install --package-lock-only` in the same commit.
       **Verify:** `npm run build && npm run test:check`. There is no `check:docs` in this
       repository — that script is adt-clients'. The CHANGELOG link definitions are checked by eye
       here, and a missing one has failed a publish in a sibling package before, so check them.
+
+### Two shapes this release can take
+
+| | Task 0.1 answered | Task 0.1 not answered |
+|---|---|---|
+| `IProfiler` | reshaped | reshaped |
+| `ICrossTrace` | reshaped | **untouched** |
+| Tasks 1.2c, 1.3c, 2.4 | run | skipped |
+| CHANGELOG | both families | profiler only, and says cross-trace waits on a measurement |
+| the spec | provisional notes resolved | its cross-trace section keeps them, and says so |
+
+The second column is not a failure. It is the same judgement ST05 already got: a contract for a
+document nobody has read is worse than no contract.
 
 **The interfaces branch stops here — not merged, not tagged.** What proves it is Phase 2.
 
@@ -223,8 +247,20 @@ work of Phase 3 — so Phase 3 happens **here**, against a package that exists o
       `package-lock.json`; the installed `package.json` says `22.0.0`; build and tests still green.
       This is the commit the dependency change lands in — the first one that touches the lockfile.
 
-- [ ] **Task 4.2 — CHANGELOG (ask which version), tag, GitHub release.** `npm publish` is the
-      user's.
+- [ ] **Task 4.2 — CHANGELOG.** Ask which version. `npm install --package-lock-only` in the same
+      commit.
+
+- [ ] **Task 4.3 — Green on the published dependency.** `npm run build`, `lint:check` (which runs
+      `check:docs`), `test:check`, `test:check:integration`, unit tests, and a full run on each
+      system. Phase 2's runs were against a tarball; this is the same code against what consumers
+      will actually install.
+
+- [ ] **Task 4.4 — Review, then merge PR #118 into `main`.** A reviewed PR, per the standing rule.
+      Nothing is tagged before this: a tag on a feature branch does not put the release on the
+      default branch, and the one thing a release tag must be is reachable from `main`.
+
+- [ ] **Task 4.5 — Tag the merged commit on `main`, then the GitHub release.** `npm publish` is
+      the user's.
 
 ---
 
