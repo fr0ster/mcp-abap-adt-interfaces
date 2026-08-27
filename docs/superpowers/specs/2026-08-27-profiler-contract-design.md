@@ -169,8 +169,11 @@ export interface ITraceReading<TViews extends TraceViews> {
  * Reading is NOT extended in here. A family that has views composes
  * `ITraceReading` in; a family that has none says nothing about reading, which
  * is the only way a type can state that truthfully.
+ *
+ * This is the base, and it is deliberately NOT called `IProfiler` — that name
+ * belongs to the family consumers already import. See *The published surface*.
  */
-export interface IProfiler<
+export interface ITraceFamily<
   TKind extends string,
   TEntry extends ITraceEntry = ITraceEntry,
   TOptions = void,
@@ -180,7 +183,16 @@ export interface IProfiler<
 }
 ```
 
-Each family then says what it is:
+## The published surface
+
+The names below are what `@mcp-abap-adt/interfaces` exports and what consumers import. An earlier
+draft showed the families as local aliases (`AbapProfiler`, `CrossTrace`) and never said what
+happens to the exported `IProfiler` and `ICrossTrace` — so it described a design without
+describing the API. **`IProfiler` and `ICrossTrace` keep their names**; what changes is what they
+mean.
+
+Every declaration in this section compiles under `--strict`, and the refusal at the end was proven
+with `@ts-expect-error`.
 
 ```ts
 export interface IAbapTraceViews {
@@ -188,8 +200,6 @@ export interface IAbapTraceViews {
   statements: ITraceView<IAbapTraceStatements, IProfilerTraceStatementsOptions | undefined>;
   dbAccesses: ITraceView<IAbapTraceDbAccesses, IProfilerTraceDbAccessesOptions | undefined>;
 }
-type AbapProfiler = IProfiler<'profiler', ITraceEntry, IProfilerListOptions> &
-  ITraceReading<IAbapTraceViews>;
 
 export interface ICrossTraceViews {
   /** `getById` — the trace document itself is a view of the trace. */
@@ -198,11 +208,40 @@ export interface ICrossTraceViews {
   /** Required, and the compiler enforces it. */
   recordContent: ITraceView<ICrossTraceRecordContent, { recordNumber: number }>;
 }
-type CrossTrace = IProfiler<'crossTrace'> & ITraceReading<ICrossTraceViews>;
 
-// ST05 is NOT modelled here yet — see the accounting below. When its directory
-// has been read, it is `IProfiler<'st05Trace'>`: a listing, no views, no
-// contract of its own.
+/** Same name consumers import today. */
+export type IProfiler = ITraceFamily<'profiler', ITraceEntry, IProfilerListOptions> &
+  ITraceReading<IAbapTraceViews>;
+
+/** Same name too — and its listing keeps every option it has today. */
+export type ICrossTrace = ITraceFamily<'crossTrace', ITraceEntry, IListCrossTracesOptions> &
+  ITraceReading<ICrossTraceViews> & {
+    /**
+     * Recording by nature, and still here because this spec gives it nowhere to
+     * go. Declared explicitly so the contract keeps offering it: leaving it out
+     * of the type while calling it "unchanged" would remove it in practice.
+     */
+    getActivations(): Promise<IAdtResponse>;
+  };
+
+/** Unchanged in 22.0.0 — see the accounting. */
+export interface ISt05Trace { /* as published in 21.0.0 */ }
+```
+
+`IProfilerListOptions`, `IListCrossTracesOptions` and the three view-option types are the published
+ones, unchanged. `ICrossTrace.list()` therefore still takes `traceUser`, `actCreateUser` and
+`actChangeUser` — an earlier draft instantiated cross-trace without its options at all and would
+have dropped all three.
+
+```ts
+await p.list({ user: 'SOMEONE' });
+await x.list({ traceUser: 'A', actCreateUser: 'B', actChangeUser: 'C' });
+await x.getActivations();
+await p.read('t1', 'statements', { id: 7, withDetails: true, autoDrillDownThreshold: 20, withSystemEvents: false });
+const k: 'profiler' = p.kind;                       // still discriminates
+
+// @ts-expect-error a cross-trace option is not a profiler option
+await p.list({ traceUser: 'A' });
 ```
 
 ### Why reading is composed in, not inherited
@@ -451,8 +490,12 @@ yours to begin with.
    `listTraceIds`, `latestTraceId`) on the concrete `Profiler`, which is what the typed `list()`
    below is built from — the contract change should consume a fix that is already proven against
    a system, not arrive at the same time as it.
-1. `@mcp-abap-adt/interfaces` **22.0.0** — breaking: `IProfiler` reshaped, members deleted,
-   `ITraceEntry` / `ITraceListing` / `ITraceReading` added. Published first.
+1. `@mcp-abap-adt/interfaces` **22.0.0** — breaking. `IProfiler` and `ICrossTrace` keep their
+   names and change meaning: each becomes a composition of `ITraceFamily` with `ITraceReading`,
+   as spelled out in *The published surface*. Added: `ITraceEntry`, `ITraceView`, `ITraceListing`,
+   `ITraceReading`, `ITraceFamily`, `IAbapTraceViews`, `ICrossTraceViews` and the result types.
+   Deleted: the seven members listed above. Unchanged: `ISt05Trace`, and every option type.
+   Published first.
 2. `@mcp-abap-adt/adt-clients` — consumes it: `Profiler` implements the new shape and returns
    parsed entries; `ClassExecutor`/`ProgramExecutor` take scheduling; the deep imports and the
    `as Profiler` cast go.
