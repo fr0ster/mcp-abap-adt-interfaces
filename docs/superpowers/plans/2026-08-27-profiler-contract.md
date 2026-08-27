@@ -24,8 +24,14 @@ below comes from it.
 
 - All repository artifacts in **English**.
 - Contract types live in `@mcp-abap-adt/interfaces` and are imported; never redefined locally.
-- **Publish the dependency first.** interfaces must be on npm before adt-clients consumes it. No
-  `file:`, no tarball, no `"link": true` — verify `package-lock.json` after every `npm install`.
+- **The dependency that LANDS is the published one.** What adt-clients commits — `package.json`
+  and `package-lock.json` — resolves from the npm registry. No `file:`, no tarball path, no
+  `"link": true` reaches a commit; verify `package-lock.json` after every `npm install`.
+  **This governs what ships, not what compiles during validation.** Phase 2 deliberately builds
+  the consumer against a local `npm pack` tarball and reverts it, because the alternative is that
+  the first consumer of a breaking contract is production. The rule and the gate are about
+  different moments: one is what the repository depends on, the other is how we find out whether
+  it can.
 - Claude opens PRs, merges **reviewed** PRs, tags. `npm publish` is the user's, on the user's
   timing — state the dependency, never chase it.
 - Biome: single quotes, semicolons, 2-space indent. `npm run lint` before every commit.
@@ -75,8 +81,17 @@ endpoint refuses GET. **On-prem, by the user.**
       **Verify:** the spec's "Provisional until step 0a" block is gone, and no type in it is
       described as unmeasured except ST05's.
 
-**Gate:** Phase 1 does not start until 0.1 and 0.2 are answered. Publishing a type for a document
-nobody has read is the mistake ST05 was excluded for.
+**Gate, and what it does when it is not met.** Publishing a type for a document nobody has read is
+the mistake ST05 was excluded for, so:
+
+- **0.2 blocks the release.** `ITraceScheduling` cannot be written without it.
+- **0.1 blocks cross-trace, not the release.** If nobody can measure a cross trace, `ICrossTrace`
+  stays exactly as it is in 22.0.0 and joins in a later one — the ST05 treatment, for the same
+  reason. It does **not** get "declared as its parsed document": that is publishing an unmeasured
+  shape with a vaguer name.
+
+Choosing this at the gate is the point. Discovering it in Task 1.2 and improvising a fallback is
+how a hard rule becomes a soft one.
 
 ---
 
@@ -98,9 +113,7 @@ One branch, `feat/one-contract-for-trace-results`. Every task ends with
       `IAbapTraceDbAccesses` from the tables already in the spec — 473 `trc:entry`, 1801
       `trc:statement`, and `trc:dbAccess` with its `trc:accessTime`, all read from one real trace.
       The cross-trace three come from Task 0.1.
-      **Verify:** every field traceable to a measurement; none invented. If Task 0.1 has not
-      happened, the cross-trace views are declared as their parsed document and nothing more — the
-      spec permits that explicitly, and it is better than three invented shapes.
+      **Verify:** every field traceable to a measurement; none invented.
 
 - [ ] **Task 1.3 — The published families.** `IProfiler` and `ICrossTrace` keep their names and
       become compositions. `ICrossTrace.list()` keeps `IListCrossTracesOptions` — all three of
@@ -129,7 +142,7 @@ One branch, `feat/one-contract-for-trace-results`. Every task ends with
 - [ ] **Task 1.7 — CHANGELOG and version.** **`22.0.0`, fixed by the spec** and already relied on
       by the phase heading, the npm wait and the consumer's dependency range — so it is not asked
       again here. Deviating means changing it in all four places, deliberately, not discovering the
-      mismatch when Phase 2 waits forever for a version nobody published.
+      mismatch when the wait never ends.
       The entry carries the accounting from the spec: five deleted, three moved, the executor
       fields removed, `ISt05Trace` and every reading option type unchanged. Run
       `npm install --package-lock-only` in the same commit.
@@ -137,75 +150,81 @@ One branch, `feat/one-contract-for-trace-results`. Every task ends with
       repository — that script is adt-clients'. The CHANGELOG link definitions are checked by eye
       here, and a missing one has failed a publish in a sibling package before, so check them.
 
-- [ ] **Task 1.8 — PR, review, merge, tag.** Then **stop**: `npm publish` is the user's.
+**The interfaces branch stops here — not merged, not tagged.** What proves it is Phase 2.
 
 ---
 
-## Phase 2 — Prove a consumer can implement it, then wait for npm
+## Phase 2 — A real consumer implements it, against a tarball, before anything is published
 
-Between "the contract compiles" and "a real class satisfies it" there is a gap that typechecks
-inside the interfaces package cannot close: they use written-for-the-purpose stand-ins. If the
-real `Profiler`, `CrossTrace` and executors turn out not to fit, the version that says they must
-is already on npm and cannot be taken back.
+This is the phase the earlier version of this plan got wrong twice: it put the check after the
+tag, and it expected a green build from an adt-clients that had not been changed yet. Neither can
+work. A contract is proved by a real implementation satisfying it, and the implementation is the
+work of Phase 3 — so Phase 3 happens **here**, against a package that exists only locally.
 
-- [ ] **Task 2.1 — A throwaway consumer gate, before the tag.** `npm pack` the interfaces branch,
-      install the tarball into a **scratch copy** of adt-clients — `/tmp`, or a git worktree —
-      and compile the three real implementations against it.
-      **Verify:** `npm run build` and `npm run test:check` pass there.
-      **This does not touch the repository.** No tarball, `file:` or `"link": true` is committed
-      to `package.json` or `package-lock.json`; the scratch copy is deleted afterwards. The rule
-      that forbids them governs what the repository *depends on*, not what a throwaway workspace
-      compiles against — and a rule that made this check impossible would be trading a real
-      failure for a tidy lockfile.
+- [ ] **Task 2.1 — Build the tarball.** `npm pack` on the interfaces branch. Nothing is merged,
+      nothing is tagged, nothing is on npm.
 
-- [ ] **Task 2.2** — `npm view @mcp-abap-adt/interfaces version` reports `22.0.0`. Phase 3 starts
-      only then, and installs from the registry.
+- [ ] **Task 2.2 — Install it into the adt-clients branch, uncommitted.** PR #118's branch,
+      `npm install /path/to/mcp-abap-adt-interfaces-22.0.0.tgz` — and **the change to
+      `package.json` and `package-lock.json` is not committed**. It exists to compile against and
+      is reverted in Phase 4. The rule against `file:` and tarballs governs what the repository
+      *ships as a dependency*; it cannot also forbid the only way to find out whether the contract
+      works, because then the first consumer of a breaking change is production.
 
----
-
-## Phase 3 — `@mcp-abap-adt/adt-clients`, in PR #118
-
-- [ ] **Task 3.1 — Bump and install.** `@mcp-abap-adt/interfaces` to `^22.0.0` — the same
-      version as everywhere else in this plan.
-      **Verify:** no `"link": true` in `package-lock.json`; `npm run build` shows what actually
-      broke.
-
-- [ ] **Task 3.2 — `Profiler` implements the new shape.** `list()` returns parsed
-      `ITraceEntry[]` — the branch already has `parseTraceFeedEntries`, which is where the measured
-      fields go. The three getters become `read(id, view, options)`.
+- [ ] **Task 2.3 — `Profiler` implements the new shape.** `list()` returns parsed `ITraceEntry[]`
+      — `parseTraceFeedEntries` is already on the branch and is where the measured fields go. The
+      three getters become `read(id, view, options)`.
       **Verify:** unit tests over a fixture of the real feed, including that `state` and
       `expiresAt` survive parsing.
 
-- [ ] **Task 3.3 — `CrossTrace` implements it too.** It has none of this today: `list()` returns a
-      raw `IAdtResponse` and there is no `read()`. It needs its own feed parser and the three
-      members folded in.
-      **Verify:** unit tests over a fixture captured in Task 0.1.
+- [ ] **Task 2.4 — `CrossTrace` implements it**, if Task 0.1 was answered. It has none of this
+      today: `list()` returns a raw `IAdtResponse` and there is no `read()`.
+      **Verify:** unit tests over a fixture captured in Task 0.1. If 0.1 was not answered, this
+      task does not exist and neither does the cross-trace half of 22.0.0.
 
-- [ ] **Task 3.4 — Executors take scheduling.** `ClassExecutor` and `ProgramExecutor` implement
+- [ ] **Task 2.5 — Executors take scheduling.** `ClassExecutor` and `ProgramExecutor` implement
       `ITraceScheduling`; the trace-polling loop and its three options go; `runWithProfiling`
       returns `{ response, profilerId }`.
-      **Verify:** both executors' results are the same shape, and nothing imports profiler
-      functions past the contract.
+      **Verify:** both results are the same shape; nothing imports profiler functions past the
+      contract.
 
-- [ ] **Task 3.5 — The tests stop reaching around the contract.**
+- [ ] **Task 2.6 — The tests stop reaching around the contract.**
       `(runtime.getProfiler() as Profiler).extractIdFromResponse(...)` goes; the
       schedule-without-running test either goes or becomes an executor test — it is the only
       producer of orphaned trace requests.
-      **Verify:** no `as Profiler` in the test tree; a full run leaves no unfulfilled request.
+      **Verify:** no `as Profiler` in the test tree.
 
-- [ ] **Task 3.6 — Docs.** `CLIENT_API_REFERENCE.md` and any usage page showing the old profiler
-      calls.
-      **Verify:** `npm run check:docs` — added to `lint:check` on this branch precisely for this.
+- [ ] **Task 2.7 — Docs.** `CLIENT_API_REFERENCE.md` and any usage page showing the old profiler
+      calls. **Verify:** `npm run check:docs`, which is in `lint:check` on this branch.
 
-- [ ] **Task 3.7 — Full runs.** Cloud from here, on-prem from the other machine.
-      **Verify:** no regression against the numbers in PR #118; profiling tests pass on both.
+- [ ] **Task 2.8 — The gate itself.** `npm run build`, `npm run test:check`,
+      `npm run test:check:integration`, unit tests, and a full run on each system — cloud from
+      here, on-prem from the other machine.
+      **Verify:** green everywhere. **Only now** is the contract known to be implementable.
 
 ---
 
-## Phase 4 — Release adt-clients
+## Phase 3 — Publish the interfaces
 
-- [ ] **Task 4.1** — CHANGELOG (ask which version), `npm install --package-lock-only` in the same
-      commit, PR reviewed and merged, tag, GitHub release. `npm publish` is the user's.
+- [ ] **Task 3.1 — Interfaces PR: review, merge, tag.** With Phase 2's evidence in the PR — the
+      consumer compiles and its tests pass against this exact tarball.
+
+- [ ] **Task 3.2** — `npm publish` is the user's. State that it is ready; do not chase it.
+
+- [ ] **Task 3.3** — `npm view @mcp-abap-adt/interfaces version` reports `22.0.0`.
+
+---
+
+## Phase 4 — Land the consumer on the published version
+
+- [ ] **Task 4.1 — Swap the tarball for the registry.** `@mcp-abap-adt/interfaces` to `^22.0.0`,
+      `rm -rf node_modules/@mcp-abap-adt/interfaces && npm install`.
+      **Verify:** no `"link": true`, no `file:` and no tarball path anywhere in
+      `package-lock.json`; the installed `package.json` says `22.0.0`; build and tests still green.
+      This is the commit the dependency change lands in — the first one that touches the lockfile.
+
+- [ ] **Task 4.2 — CHANGELOG (ask which version), tag, GitHub release.** `npm publish` is the
+      user's.
 
 ---
 
