@@ -162,13 +162,18 @@ export interface ITraceReading<TViews extends TraceViews> {
   ): Promise<ViewResult<TViews, K>>;
 }
 
+/**
+ * A trace family: what it is called, and what it lists.
+ *
+ * Reading is NOT extended in here. A family that has views composes
+ * `ITraceReading` in; a family that has none says nothing about reading, which
+ * is the only way a type can state that truthfully.
+ */
 export interface IProfiler<
   TKind extends string,
   TEntry extends ITraceEntry = ITraceEntry,
-  TViews extends TraceViews = Record<never, never>,
   TOptions = void,
-> extends ITraceListing<TEntry, TOptions>,
-    ITraceReading<TViews> {
+> extends ITraceListing<TEntry, TOptions> {
   /** Literal, so it still discriminates — see below. */
   readonly kind: TKind;
 }
@@ -182,18 +187,29 @@ export interface IAbapTraceViews {
   statements: ITraceView<IAbapTraceStatements, { withDetails?: boolean } | undefined>;
   dbAccesses: ITraceView<IAbapTraceDbAccesses, { withSystemEvents?: boolean } | undefined>;
 }
-type AbapProfiler = IProfiler<'profiler', ITraceEntry, IAbapTraceViews, { user?: string }>;
+type AbapProfiler = IProfiler<'profiler', ITraceEntry, { user?: string }> &
+  ITraceReading<IAbapTraceViews>;
 
 export interface ICrossTraceViews {
+  /** `getById` — the trace document itself is a view of the trace. */
+  trace: ITraceView<ICrossTraceDocument, { includeSensitiveData?: boolean } | undefined>;
   records: ITraceView<ICrossTraceRecords>;
   /** Required, and the compiler enforces it. */
   recordContent: ITraceView<ICrossTraceRecordContent, { recordNumber: number }>;
 }
-type CrossTrace = IProfiler<'crossTrace', ITraceEntry, ICrossTraceViews>;
+type CrossTrace = IProfiler<'crossTrace'> & ITraceReading<ICrossTraceViews>;
 
-/** A listing and no views. */
+/** A listing and no views — and now the type says exactly that. */
 type St05 = IProfiler<'st05Trace'>;
 ```
+
+### Why reading is composed in, not inherited
+
+An earlier draft had `IProfiler` extend `ITraceReading<TViews>` unconditionally and gave ST05
+`Record<never, never>`. That makes the views uncallable but leaves the member in the contract:
+compiled, an ST05 implementation without `read` fails with *"Property 'read' is missing … but
+required"*, so it would have to carry a meaningless `read<K extends never>`. A type must state what
+IS supported; a family with no views says nothing about reading.
 
 ### What the compiler accepts, and what it refuses
 
@@ -206,11 +222,13 @@ await x.read('t2', 'recordContent', { recordNumber: 3 });
 await x.read('t2', 'recordContent');
 // @ts-expect-error a view the family does not have
 await p.read('t1', 'callGraph');
+// @ts-expect-error ST05 lists; it has no read at all
+await st05.read('t3', 'anything');
 // @ts-expect-error the result is typed
 const wrong: string = (await p.read('t1', 'hitlist')).entries[0].grossTime;
 ```
 
-All three `@ts-expect-error` lines fire, so the types constrain rather than merely compile.
+Every `@ts-expect-error` fires, so the types constrain rather than merely compile.
 
 ### Why the options live in the view map
 
@@ -242,10 +260,8 @@ should stay. It is a trap the measurements already sprang: SAP writes traces asy
 
 And the replacement an earlier draft offered — snapshot, run, poll for a new id — is not a safer
 version of the same idea: it has a smaller window and the identical defect. Both invent a link
-between a run and a trace that the system does not maintain. See *There is no link* below. A caller that needs its own snapshots `list()` before
-running and polls for an id that is new. A contract member that looks like the answer and is not
-is worse than no member. The convenience may live in an implementation; it does not belong in a
-contract.
+between a run and a trace that the system does not maintain. See *There is no link* below. A contract member that looks like the answer and is not is worse than no member. The convenience
+may live in an implementation; it does not belong in a contract.
 
 ## There is no link between a run and a trace, and that is the point
 
@@ -277,14 +293,54 @@ The first version of this section called this "unsolved" and specified a probe t
 the wrong frame: it treated the absence of a relationship as a gap in our knowledge rather than as
 a fact about the two entities — the same fact that justifies the split in the first place.
 
+## Every member of the three contracts, accounted for
+
+A breaking change is only specified when nothing is left implicit. All fifteen members of
+`IProfiler`, `ICrossTrace` and `ISt05Trace` as published in 21.0.0:
+
+### `IProfiler`
+
+| today | becomes |
+|---|---|
+| `list(options)` | `list(options)` — typed entries |
+| `getHitList(id, o)` | `read(id, 'hitlist', o)` |
+| `getStatements(id, o)` | `read(id, 'statements', o)` |
+| `getDbAccesses(id, o)` | `read(id, 'dbAccesses', o)` |
+| `createParameters(o)` | moves to the executor (recording) |
+| `getParameters()` | **deleted** — identical to the two below, and GET on that URL is 405 |
+| `getParametersForCallstack()` | **deleted** — byte-identical to `getParameters` |
+| `getParametersForAmdp()` | **deleted** — byte-identical to `getParameters` |
+| `listRequests()` | **deleted** — empty by construction |
+| `getRequestsByUri(uri)` | **deleted** — empty by construction |
+| `listObjectTypes()` | **deleted** — a catalogue, not a result of a run |
+| `listProcessTypes()` | **deleted** — a catalogue, not a result of a run |
+
+### `ICrossTrace`
+
+| today | becomes |
+|---|---|
+| `list(options)` | `list(options)` — typed entries |
+| `getById(id, includeSensitiveData?)` | `read(id, 'trace', { includeSensitiveData })` — the trace document is a view of the trace |
+| `getRecords(id)` | `read(id, 'records')` |
+| `getRecordContent(id, recordNumber)` | `read(id, 'recordContent', { recordNumber })` — required, enforced |
+| `getActivations()` | moves to the executor (recording): it reports what is currently being traced, which is a statement about recording, not a result |
+
+### `ISt05Trace`
+
+| today | becomes |
+|---|---|
+| `getDirectory()` | `list()` — it is the listing, under the name every other family uses |
+| `getState()` | moves to the executor (recording): "am I recording" |
+
+ST05 therefore composes `ITraceListing` alone. It has no per-trace views, and after this change its
+type no longer claims any.
+
 ## What is deleted
 
-| member | why |
-|---|---|
-| `getParameters`, `getParametersForCallstack`, `getParametersForAmdp` | byte-identical, and the endpoint refuses GET with 405 |
-| `listRequests`, `getRequestsByUri` | empty by construction; the collection is consumed by the run |
-| `listObjectTypes`, `listProcessTypes` | catalogue lookups, not results of a run; no caller |
-| `createParameters` | moves to the executor with the rest of recording |
+Seven members, listed with their reasons in the accounting above: three `getParameters*` (identical
+to each other, and GET on that URL answers 405), `listRequests` and `getRequestsByUri` (empty by
+construction — the requests collection is consumed by the run), and `listObjectTypes` /
+`listProcessTypes` (catalogue lookups, not results of a run, and with no caller).
 
 `IProfilerTraceParameters` moves with `createParameters`: it says *what to measure*, which is an
 argument to a run, not to a read.
