@@ -528,9 +528,24 @@ reading contract cannot keep it. `IExecutor` already carries `runWithProfiler` a
 `runWithProfiling`, both parameterised, so scheduling joins an existing surface rather than
 inventing one.
 
-It joins as a **capability composed in**, not as a member of `IExecutor`: adding it there would
-oblige every executor that ever exists to schedule traces, and most have nothing to do with
-profiling.
+It joins as a **capability composed in**, not as a member of `IExecutor` or `IAdtRunnable`. That
+is not an aesthetic preference — the runnable atom already has implementations for which trace
+scheduling would be nonsense:
+
+| runnable | target | traces? |
+|---|---|---|
+| `AdtAtc` | `IAdtRunnable<IAtcRunTarget, IAtcRunResult, IAtcRunOptions>` | no |
+| `AdtUnitTest` | `IAdtRunnable<IClassUnitTestDefinition[], string, …>` | no |
+| `ClassExecutor` | `IExecutor<IClassExecutionTarget, …>` | yes |
+| `ProgramExecutor` | `IExecutor<IProgramExecutionTarget, …>` | yes |
+
+Put `scheduleTrace` on `IAdtRunnable` and an ATC run has to answer for trace parameters. Put it on
+`IExecutor` and it is only two implementations away from the same problem. Composed in, it is
+stated exactly where it is true.
+
+`IExecutor` also shows why a class and a report need nothing else to tell them apart: they are the
+same specialisation with a different target, which is the domain fact from the section above,
+already expressed in the type.
 
 ```ts
 export interface INamedItem {
