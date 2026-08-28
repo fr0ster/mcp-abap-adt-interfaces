@@ -115,9 +115,13 @@ endpoint refuses GET. **On-prem, by the user.**
 | **0.4** | `/includes/validation` takes `objname`, `objtype`, `packagename`; `/programs/validation` takes the same three | **no** `IValidateIncludeParams` — Task 1b.3 does not run |
 
 **Left open on purpose:** the body Eclipse submits to `/abaptraces/requests`. What was measured is
-the *stored* entry, not the *submitted* document, and that is where `requestTrace()`'s argument
-type is decided. Reconstruct it from the stored shape and say so in the JSDoc — do not present a
-guess as a measurement.
+the *stored* entry, not the *submitted* document.
+
+An earlier version of this line said to reconstruct the argument from the stored shape and say so
+in the JSDoc. **That was not enough, and review caught it:** a published method promises its
+argument is the wire shape, and a JSDoc disclaimer does not travel with a call site. So 22.0.0
+ships no submit operation at all. One Eclipse capture — body plus `Content-Type` — makes it
+additive in a minor.
 
 **Gate, and what it does when it is not met.** Publishing a type for a document nobody has read is
 the mistake ST05 was excluded for, so:
