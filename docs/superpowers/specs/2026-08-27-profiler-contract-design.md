@@ -622,10 +622,14 @@ is exactly an instantiation of another type earns nothing.
 
 ## What is deleted
 
-Five members, listed with their reasons in the accounting above: three `getParameters*` (three
-names for one byte-identical call, on a URL measured to refuse GET), `listRequests` and `getRequestsByUri` (empty by
-construction — the requests collection is consumed by the run), . `listObjectTypes` and `listProcessTypes` are NOT among
-them — they move to the configuring side, measured and working.
+**Three**, not five: the `getParameters*` trio — three names for one byte-identical call, on a URL
+measured to refuse `GET` on both platforms.
+
+Five members **move** to the configuring side instead of dying: `createParameters`,
+`listObjectTypes`, `listProcessTypes`, and — after the measurement corrected me — `listRequests`
+and `getRequestsByUri`, which read the collection scheduling actually happens in. I had them down
+as "empty by construction"; they are empty when nothing is scheduled, which is a different
+sentence.
 
 `IProfilerTraceParameters` moves with `createParameters`: it says *what to measure*, which is an
 argument to a run, not to a read.
@@ -672,6 +676,22 @@ export interface ITraceScheduling {
   /** What may be traced. The cloud flow reads these before choosing. */
   listObjectTypes(): Promise<INamedItem[]>;
   listProcessTypes(): Promise<INamedItem[]>;
+
+  /**
+   * Schedule a measurement — the operation Task 0.2 settled.
+   *
+   * The catalogue URIs go here, not into the parameters document: a stored
+   * request carries `trc:processTypeId` and `trc:objectTypeId` as exactly the
+   * URIs the two readers above hand out.
+   *
+   * The argument type is NOT settled: what is measured is the *stored* entry,
+   * not the *submitted* document, and no Eclipse capture exists. Whoever
+   * implements this reconstructs the body from the stored shape and says so.
+   */
+  requestTrace(request: ITraceRequest): Promise<string>;
+
+  /** The schedule. Serves `application/atom+xml;type=feed` and nothing else. */
+  listRequests(): Promise<ITraceRequestEntry[]>;
   /**
    * The request id, taken from the `Location` header of the configuring call.
    * What the run is GIVEN, not what it produces.
@@ -798,10 +818,11 @@ yours to begin with.
    names and change meaning: each becomes a composition of `ITraceFamily` with `ITraceReading`,
    as spelled out in *The published surface*. Added: `ITraceEntry`, `ITraceView`, `ITraceListing`,
    `ITraceReading`, `ITraceFamily`, `IAbapTraceViews`, `ICrossTraceViews` and the result types.
-   Deleted: the five members listed above, plus `traceId`, `traceRequestsResponse` and the three
+   Deleted: the three `getParameters*`, plus `traceId`, `traceRequestsResponse` and the three
    trace-polling options on the class executor. Moved to the configuring side:
-   `createParameters`, `listObjectTypes`, `listProcessTypes`. Unchanged: `ISt05Trace`, and the
-   reading option types — `IProfilerListOptions`, `IListCrossTracesOptions` and the three view
+   `createParameters`, `listObjectTypes`, `listProcessTypes`, `listRequests`, `getRequestsByUri`.
+   Unchanged: `ISt05Trace`, **`ICrossTrace`** — measured, E19 has no cross traces either, so it
+   ships as it is and joins a later release — and the reading option types — `IProfilerListOptions`, `IListCrossTracesOptions` and the three view
    option types.
    Published first.
 2. `@mcp-abap-adt/adt-clients` — consumes it. **Both concrete classes change, not one:**
