@@ -61,7 +61,7 @@ spec: `ITraceEntry` from six feed entries, and `hitlist` / `statements` / `dbAcc
 trace. What is left cannot be answered there — the trial has no cross traces, and its parameters
 endpoint refuses GET. **On-prem, by the user.**
 
-- [ ] **Task 0.1 — What a cross trace looks like.** On a system that has them:
+- [x] **Task 0.1 — What a cross trace looks like.** On a system that has them:
       `GET /sap/bc/adt/crosstrace/traces` with
       `Accept: application/vnd.sap.adt.crosstrace.traces.v1+xml` (it answers `406` and names this
       type if you ask for `application/xml`), then `…/traces/{id}`, `…/{id}/records`, and
@@ -70,7 +70,7 @@ endpoint refuses GET. **On-prem, by the user.**
       **Decides:** `ICrossTraceDocument`, `ICrossTraceRecords`, `ICrossTraceRecordContent`, and
       whether `ITraceEntry` covers a cross-trace entry or needs widening.
 
-- [ ] **Task 0.2 — Where the catalogue choices go.** `listObjectTypes()` and `listProcessTypes()`
+- [x] **Task 0.2 — Where the catalogue choices go.** `listObjectTypes()` and `listProcessTypes()`
       answer `200` with `namedItemList`s of URIs, and `IProfilerTraceParameters` has nowhere to put
       one. Either:
       **(a)** `POST` a parameters resource, `GET` the `Location` it returns, and see whether the
@@ -81,14 +81,14 @@ endpoint refuses GET. **On-prem, by the user.**
       **Decides:** whether `scheduleTrace(options?: IProfilerTraceParameters)` keeps its signature,
       gains fields, or gains a sibling operation.
 
-- [ ] **Task 0.4 — What `/sap/bc/adt/includes/validation` takes.** An include validates at its own
+- [x] **Task 0.4 — What `/sap/bc/adt/includes/validation` takes.** An include validates at its own
       collection, not at `/programs/validation`, and #47 says outright that its query parameters
       have not been measured. Submit one validation and record the parameters it accepts.
       **Decides:** whether Phase 1b needs `IValidateIncludeParams` or reuses the program's.
       **If unanswered:** Phase 1b ships the other five types and no validation params — the same
       treatment as cross-trace, for the same reason.
 
-- [ ] **Task 0.3 — Write the answers into the spec.** What is written depends on which of them
+- [x] **Task 0.3 — Write the answers into the spec.** What is written depends on which of them
       came back, and the two are independent:
 
       **0.2 answered** — `scheduleTrace` takes its settled shape and the "Provisional until step
@@ -105,6 +105,19 @@ endpoint refuses GET. **On-prem, by the user.**
       rule — not "nothing is unmeasured", which the ST05 section has always contradicted on
       purpose. An unmeasured type is fine in this document as long as the spec also says it is not
       shipping.
+
+### Answered, 2026-08-28 on E19 — `mcp-abap-adt-clients@5cbf53e`
+
+| | answer | consequence |
+|---|---|---|
+| **0.2** | **(b)** — a stored request carries `trc:processTypeId` and `trc:objectTypeId`, the catalogue URIs | `ITraceScheduling` gains `requestTrace()`; `IProfilerTraceParameters` and `scheduleTrace()` unchanged |
+| **0.1** | E19 has **no cross traces either** | `ICrossTrace` ships unchanged — Tasks 1.2c, 1.3c and 2.4 do **not** run |
+| **0.4** | `/includes/validation` takes `objname`, `objtype`, `packagename`; `/programs/validation` takes the same three | **no** `IValidateIncludeParams` — Task 1b.3 does not run |
+
+**Left open on purpose:** the body Eclipse submits to `/abaptraces/requests`. What was measured is
+the *stored* entry, not the *submitted* document, and that is where `requestTrace()`'s argument
+type is decided. Reconstruct it from the stored shape and say so in the JSDoc — do not present a
+guess as a measurement.
 
 **Gate, and what it does when it is not met.** Publishing a type for a document nobody has read is
 the mistake ST05 was excluded for, so:
@@ -161,7 +174,10 @@ One branch, `feat/one-contract-for-trace-results`. Every task ends with
       **Verify:** none appears anywhere in `src/`.
 
 - [ ] **Task 1.5 — `ITraceScheduling`.** `listObjectTypes()`, `listProcessTypes()` returning
-      `INamedItem[]`, and `scheduleTrace()` in whatever shape Phase 0 settled. Composed into
+      `INamedItem[]`; `scheduleTrace()` unchanged, as 0.2 settled; **`requestTrace()`**, the
+      operation 0.2 added, taking the catalogue URIs; and `listRequests()` / `getRequestsByUri()`,
+      which move here rather than being deleted — that collection is the schedule, and it serves
+      `application/atom+xml;type=feed` only, answering anything else `400 acceptHeaderMissing`. Composed into
       `IClassExecutor` and `IProgramExecutor` — **not** added to `IExecutor` or `IAdtRunnable`,
       which `AdtAtc` and `AdtUnitTest` also implement and which have no business with traces.
       **Verify:** a typecheck showing an ATC-shaped runnable still compiles without any scheduling
@@ -221,8 +237,9 @@ branch so one major carries both.
       interface**, which is why it waits for a major rather than going out on its own.
       **Verify:** the two implementations in the consumer compile in Phase 2.
 
-- [ ] **Task 1b.3 — Validation params, only if Task 0.4 answered.** Otherwise the five types ship
-      without them and #47 says which half remains.
+- [x] **Task 1b.3 — Validation params: not needed.** Measured — `/includes/validation` and
+      `/programs/validation` require the same three (`objname`, `objtype`, `packagename`;
+      `description` optional). No `IValidateIncludeParams`.
 
 - [ ] **Task 1b.4 — CHANGELOG.** Under the same `22.0.0` entry, as its own section: this is not
       part of the profiler story and a reader should not have to infer that.
