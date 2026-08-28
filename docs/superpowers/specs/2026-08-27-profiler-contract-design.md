@@ -38,13 +38,30 @@ recorded in `ProfilerTraces.test.ts`:
 
 Three members of a published contract that cannot succeed.
 
-### Two members are empty by construction
+### Two members read the schedule — and I twice called it dead
 
-Measured on E19: `listRequests()` and `getRequestsByUri()` answer `200` with a 345-byte empty
-feed — including for the very object just traced. A trace *request* schedules a measurement and
-is consumed by the run that fulfils it; the finished trace lands in the traces collection. The
-names invite the opposite reading, and this repository fell for it: a helper looked for finished
-traces in the requests collection.
+`listRequests()` and `getRequestsByUri()` answer `200` with an empty feed when nothing is
+scheduled. A trace *request* schedules a measurement and is consumed by the run that fulfils it;
+the finished trace lands in the traces collection. That much holds, and this repository once fell
+for the opposite reading: a helper looked for finished traces in the requests collection.
+
+**"Empty by construction" was the wrong conclusion**, and half the evidence for it was my own
+mistake. Measured on E19, 2026-08-28: the collection serves `application/atom+xml;type=feed` and
+answers any other Accept with **`400 acceptHeaderMissing`** — "Accept header missing", with a
+header present. The `400` I recorded from cloud was that, not a broken endpoint.
+
+**It is a queue, not a history.** Two measurements look contradictory until that is said.
+Immediately after scheduling, the feed holds the new request — which is how Task 0.2 was answered.
+In a probe run that executed a program under profiling, the same feed answered `200` with **345
+bytes and zero entries** while the traces feed went from 56 to 57, and `getRequestsByUri()`
+returned no ids for **any** URI form, for the very object just traced. Both are one fact: a run
+**consumes** the request that scheduled it. The collection answers "what is scheduled and not yet
+fulfilled", so it is usually empty, and nothing about a finished trace is ever in it.
+
+An empty queue reads exactly like a broken endpoint, and only scheduling something tells them
+apart — which no amount of reading the collection could have done. And this collection turned out
+to be **where scheduling happens**, so these two members are not deleted: they move to the
+configuring side with the rest of it.
 
 ### Nothing in it returns what three of its members require
 
@@ -108,7 +125,8 @@ rejects. Its sibling `IProgramExecuteWithProfilingResult` promises no such thing
 disagree, and the one that promises more is the one that cannot keep it.
 
 It carries `traceRequestsResponse` as well — the response from the requests collection, which is
-empty by construction. A mandatory field whose content is always an empty feed.
+the schedule, and a finished run has consumed its request — so this field is empty by the time
+anyone could read it. A mandatory field whose content is always an empty feed.
 
 ## How a run is profiled, and where the two systems differ
 
@@ -174,7 +192,44 @@ A nuance from the same measurement: `objecttypes` lists `report` on cloud, where
 thing you can create. The catalogue describes what the profiler can measure, not what the system
 lets you author.
 
-### And the chosen values have nowhere to go yet
+### Task 0.2, answered: the catalogues feed a trace request
+
+Measured on E19, 2026-08-28 — `mcp-abap-adt-clients@5cbf53e`,
+`docs/evidence/2026-08-28-profiler-contract-e19.md`.
+
+A created entry in `/abaptraces/requests` carries both choices, as the very URIs the two catalogue
+endpoints hand out:
+
+```xml
+<trc:processType trc:processTypeId="/sap/bc/adt/runtime/traces/abaptraces/processtypes/any"/>
+<trc:object trc:objectTypeId="/sap/bc/adt/runtime/traces/abaptraces/objecttypes/any"/>
+```
+
+beside `trc:description`, `trc:isAggregated`, `trc:expires`, `trc:executions maximal/completed`,
+`trc:client role`, `trc:host`, `trc:server` and `trc:requestIndex`.
+
+**So `IProfilerTraceParameters` gains nothing and `scheduleTrace()` keeps its signature** — and
+`ITraceScheduling` gains an operation, which is the branch that made this a release blocker.
+
+The other explanation is refuted, and firmly: `POST …/parameters` answers `200` with a `Location`,
+and a `GET` of that `Location` answers **`200` with a zero-byte body** — under `application/xml`,
+under `*/*`, under its own `application/atom+xml;type=entry`, and under a made-up type. A stored
+parameters resource cannot be read back at all there, so it cannot be shown to carry a type: it
+carries nothing.
+
+**One thing is still not measured**, and the design must not pretend otherwise: that is the
+**stored** entry, not the **submitted** document. What Eclipse POSTs has not been captured, so the
+request body has to be reconstructed from the stored shape. It is the gap between "we know what a
+request holds" and "we know how to make one", and it is where the new operation's argument type is
+decided.
+
+Recorded because it was an assumption that proved wrong: the POST that produced that entry was
+sent with a deliberately invalid content type and an empty body, *expecting a rejection naming the
+accepted type*. It was accepted — `200`, request index 26 — and then matched and produced a trace
+file. Both were deleted and the deletions verified. This collection takes a POST with no usable
+body and schedules something.
+
+### The reading this replaced
 
 Reading the catalogues is only half a flow. `IProfilerTraceParameters` — the payload of the
 configuring call — has no field for an object type or a process type, and the builder confirms it:
@@ -553,8 +608,8 @@ A breaking change is only specified when nothing is left implicit. All **19** op
 | `getParameters()` | **deleted.** Measured: `GET` on that URL answers 405 on cloud as elsewhere, so no operation reads through it. Reading what is available is `listObjectTypes` / `listProcessTypes`, which move rather than die |
 | `getParametersForCallstack()` | **deleted** — byte-identical to `getParameters` |
 | `getParametersForAmdp()` | **deleted** — byte-identical to `getParameters` |
-| `listRequests()` | **deleted** — empty by construction |
-| `getRequestsByUri(uri)` | **deleted** — empty by construction |
+| `listRequests()` | **moves to the configuring side** — measured: this is the schedule, not a dead collection |
+| `getRequestsByUri(uri)` | **moves to the configuring side**, for the same reason |
 | `listObjectTypes()` | **moves to the configuring side** — measured `200` with 7 entries; this is what the cloud flow chooses from |
 | `listProcessTypes()` | **moves to the configuring side** — measured `200` with 8 entries |
 
@@ -663,7 +718,8 @@ already expressed in the type.
 > **Provisional until step 0a.** The two catalogue readers are certain — measured, they answer.
 > What `scheduleTrace` takes is not: the URIs they return have no destination in today's
 > parameters payload, and which of the two explanations holds decides whether this signature
-> changes. See *And the chosen values have nowhere to go yet*.
+> was settled by measurement — see *Task 0.2, answered: the catalogues feed a trace request*. What
+> remains provisional is only the argument type, because the submitted body was never captured.
 
 ```ts
 export interface INamedItem {
