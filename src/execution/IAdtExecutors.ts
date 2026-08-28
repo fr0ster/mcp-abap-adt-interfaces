@@ -9,6 +9,7 @@
 import type { IAdtResponse } from '../connection/IAbapConnection';
 import type { IProfilerTraceParameters } from '../runtime/IProfiler';
 import type { IExecutor } from './IExecutor';
+import type { ITraceScheduling } from './ITraceScheduling';
 
 export interface IClassExecutionTarget {
   className: string;
@@ -18,30 +19,40 @@ export interface IClassExecuteWithProfilerOptions {
   profilerId: string;
 }
 
+/**
+ * The three polling options are gone: a run does not wait for a trace, so
+ * "where to look", "how many times" and "how long between tries" were asking
+ * the caller to configure a search that no longer happens.
+ */
 export interface IClassExecuteWithProfilingOptions {
   profilerParameters?: IProfilerTraceParameters;
-  traceLookupUris?: string[];
-  /** Maximum number of polling attempts to find the trace (default: 5) */
-  maxTraceAttempts?: number;
-  /** Delay in ms between polling attempts (default: 2000) */
-  traceRetryDelayMs?: number;
 }
 
+/**
+ * A run reports what it did, not what SAP will write afterwards.
+ *
+ * `traceId` is gone because a run cannot promise a trace that may not exist
+ * yet, may never exist, and may be read a week later; `traceRequestsResponse`
+ * because it was measured to be the empty feed every time. Reading a trace is
+ * `IProfiler.list()` and `read()`, whenever the caller is ready.
+ *
+ * This makes the class result identical to the program one, which was already
+ * honest about exactly this — see the comment it has carried all along.
+ */
 export interface IClassExecuteWithProfilingResult {
   response: IAdtResponse;
   profilerId: string;
-  traceId: string;
-  traceRequestsResponse: IAdtResponse;
 }
 
 export interface IClassExecutor
   extends IExecutor<
-    IClassExecutionTarget,
-    IAdtResponse,
-    IClassExecuteWithProfilerOptions,
-    IClassExecuteWithProfilingOptions,
-    IClassExecuteWithProfilingResult
-  > {}
+      IClassExecutionTarget,
+      IAdtResponse,
+      IClassExecuteWithProfilerOptions,
+      IClassExecuteWithProfilingOptions,
+      IClassExecuteWithProfilingResult
+    >,
+    ITraceScheduling {}
 
 export interface IProgramExecutionTarget {
   programName: string;
@@ -65,9 +76,10 @@ export interface IProgramExecuteWithProfilingResult {
 
 export interface IProgramExecutor
   extends IExecutor<
-    IProgramExecutionTarget,
-    IAdtResponse,
-    IProgramExecuteWithProfilerOptions,
-    IProgramExecuteWithProfilingOptions,
-    IProgramExecuteWithProfilingResult
-  > {}
+      IProgramExecutionTarget,
+      IAdtResponse,
+      IProgramExecuteWithProfilerOptions,
+      IProgramExecuteWithProfilingOptions,
+      IProgramExecuteWithProfilingResult
+    >,
+    ITraceScheduling {}

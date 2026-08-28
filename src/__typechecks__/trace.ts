@@ -10,6 +10,8 @@ import type {
   ITraceListing,
   ITraceReading,
   ITraceView,
+  ViewArgs,
+  ViewResult,
 } from '../runtime/ITrace';
 
 interface IHitList {
@@ -99,3 +101,78 @@ async function _assertions(
 
 export type { Reader, WithViews, ListingOnly };
 export { _listingOnly, _assertions };
+
+// ---------------------------------------------------------------------------
+// The published families, and who is NOT obliged to schedule.
+
+import type { IAdtRunnable } from '../execution/IAdtRunnable';
+import type {
+  IAtcRunOptions,
+  IAtcRunResult,
+  IAtcRunTarget,
+} from '../runtime/IAtcRun';
+import type { IAbapTraceViews, IProfiler } from '../runtime/IProfiler';
+
+/**
+ * A consumer's own profiler. Nothing from this package implements it here —
+ * that is the point: the contract must be satisfiable by somebody else's class.
+ */
+const _profiler: IProfiler = {
+  kind: 'profiler',
+  list: async (options?: { user?: string }) => {
+    void options?.user;
+    return [];
+  },
+  // An implementer must write this generically — a union parameter does NOT
+  // satisfy it, and the compiler says so. That is the contract working: the
+  // return type depends on which view was asked for, and a method that took a
+  // union could not honour that dependency.
+  read: async <K extends keyof IAbapTraceViews>(
+    traceId: string,
+    view: K,
+    ...args: ViewArgs<IAbapTraceViews, K>
+  ): Promise<ViewResult<IAbapTraceViews, K>> => {
+    void traceId;
+    void view;
+    void args;
+    // A real one parses the response; the assertion here is about the
+    // signature, so this is the narrowest thing that satisfies it.
+    return undefined as never;
+  },
+};
+void _profiler;
+
+async function _profilerCalls(p: IProfiler) {
+  const rows = (await p.read('t1', 'hitlist')).entries;
+  await p.read('t1', 'statements', {
+    id: 7,
+    withDetails: true,
+    autoDrillDownThreshold: 20,
+    withSystemEvents: false,
+  });
+  const total = (await p.read('t1', 'dbAccesses')).accesses[0]?.accessTime
+    ?.total;
+  const kind: 'profiler' = p.kind;
+
+  // @ts-expect-error a cross-trace option is not a profiler option
+  await p.list({ traceUser: 'A' });
+
+  return { rows, total, kind };
+}
+void _profilerCalls;
+
+/**
+ * An ATC-shaped runnable owes nothing to scheduling.
+ *
+ * If `ITraceScheduling` ever migrates onto `IAdtRunnable` or `IExecutor`, this
+ * stops compiling — which is the guard, because the cost of that mistake is an
+ * ATC run having to answer for trace parameters.
+ */
+const _atc: IAdtRunnable<IAtcRunTarget, IAtcRunResult, IAtcRunOptions> = {
+  run: async (target, options) => {
+    void target;
+    void options;
+    return undefined as never;
+  },
+};
+void _atc;
