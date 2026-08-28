@@ -465,6 +465,16 @@ export type {
   IListCrossTracesOptions,
 } from './runtime/ICrossTrace';
 export type {
+  ITraceEntry,
+  ITraceFamily,
+  ITraceListing,
+  ITraceReading,
+  ITraceView,
+  ViewArgs,
+  ViewOptions,
+  ViewResult,
+} from './runtime/ITrace';
+export type {
   IDdicActivation,
   IGetActivationGraphOptions,
 } from './runtime/IDdicActivation';
