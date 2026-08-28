@@ -20,6 +20,15 @@ export interface IAdtContentTypes {
   programCreate(): IAdtHeaders;
   programRead(): IAdtHeaders;
 
+  /**
+   * Standalone `PROG/I` include creation.
+   *
+   * Measured `application/vnd.sap.adt.programs.includes.v2+xml` — NOT the
+   * program type. The two collections advertise different accepts, so reusing
+   * `programCreate()` here posts a document the server does not accept.
+   */
+  includeCreate(): IAdtHeaders;
+
   // Class
   classCreate(): IAdtHeaders;
   classRead(): IAdtHeaders;

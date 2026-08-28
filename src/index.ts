@@ -213,6 +213,13 @@ export type {
   IUpdateProgramSourceParams,
 } from './adt/IAdtProgram';
 export type {
+  ICreateIncludeParams,
+  IDeleteIncludeParams,
+  IIncludeConfig,
+  IIncludeState,
+  IUpdateIncludeSourceParams,
+} from './adt/IAdtInclude';
+export type {
   ICreateScalarFunctionParams,
   IDeleteScalarFunctionParams,
   IScalarFunctionConfig,

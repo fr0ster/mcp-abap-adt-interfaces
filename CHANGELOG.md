@@ -7,6 +7,166 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [22.0.0] - 2026-08-28
+
+### Changed
+
+- **BREAKING** — `IProfiler` is now reading only, and everything about
+  configuring a measurement moved to the executors.
+
+  It keeps its name, and what it means changed. A profiler answers two
+  questions: what traces exist (`list()`), and what is inside one
+  (`read(traceId, view)`). The read returns the view's own type — the three
+  views are typed, so `hitlist` yields a hit list and `statements` yields
+  statements, instead of an `IAdtResponse` every caller re-parsed by hand.
+
+  `getHitList()`, `getStatements()` and `getDbAccesses()` are gone as separate
+  members. They were one operation under three names, differing only in a path
+  segment and an options type, and the feed itself confirms the three: every
+  trace entry carries one link per view.
+
+  **Migration.** `p.getHitList(id)` becomes `p.read(id, 'hitlist')`;
+  `p.getStatements(id, o)` becomes `p.read(id, 'statements', o)`;
+  `p.getDbAccesses(id, o)` becomes `p.read(id, 'dbAccesses', o)`. The option
+  types are unchanged, and an unknown view name is now a compile error rather
+  than a 404.
+
+- **BREAKING** — `IClassExecuteWithProfilingResult` no longer carries `traceId`
+  or `traceRequestsResponse`.
+
+  A run cannot promise a trace. SAP writes it asynchronously, so at the moment
+  a run returns there may be no trace, there may never be one, and the caller
+  may legitimately read it a week later — the feed carries an expiration about
+  four weeks out. `traceId` invited callers to build polling around a promise
+  the contract could not keep, and `traceRequestsResponse` was measured to be
+  the empty feed every time.
+
+  **Migration.** After running, use `IProfiler.list()` to find the trace when
+  you want it, and `read()` to open it. With this removal the class and program
+  profiling results say the same thing — the program one had been honest about
+  exactly this all along, in a comment.
+
+- **BREAKING** — `IClassExecuteWithProfilingOptions` loses `traceLookupUris`,
+  `maxTraceAttempts` and `traceRetryDelayMs`. They configured a search for the
+  trace that the run no longer performs. The class and program profiling
+  options are now literally the same shape.
+
+- **BREAKING** — `IClassExecutor` and `IProgramExecutor` now compose
+  `ITraceScheduling`, so an implementation must provide it.
+
+  Scheduling is composed into the two executors rather than added to
+  `IExecutor` or `IAdtRunnable`. Both of those are implemented by ATC and
+  unit-test runners as well, and neither has any business answering for trace
+  parameters. A typecheck pins this: an ATC-shaped runnable compiles with no
+  scheduling member, and stops compiling if scheduling ever migrates upward.
+
+### Added
+
+- `ITraceEntry`, `ITraceView`, `ITraceListing`, `ITraceReading`, `ITraceFamily`
+  and the `ViewResult` / `ViewOptions` / `ViewArgs` helpers — the atoms a trace
+  family is composed from. A family with views composes reading in; a family
+  with none says nothing about reading, which is the only truthful way for a
+  type to say it.
+
+  `ITraceEntry` is transcribed from measurement, not designed: every field is
+  one an `abaptraces` feed entry carries, present in every entry on both an
+  on-prem system and a cloud tenant. That includes two nobody would have asked
+  for — `state`, because a trace has a lifecycle and "exists" is not
+  "readable", and `expiresAt`, because the system deletes traces.
+
+- `IAbapTraceHitList`, `IAbapTraceStatements`, `IAbapTraceDbAccesses` and the
+  row types beneath them, read off one real trace across all three views.
+
+  Two members are declared but typed `unknown`: `grossTime` and
+  `traceEventNetTime`. Both elements were seen on every row; their attributes
+  were never captured, unlike `accessTime`'s, which are typed. Publishing four
+  plausible attribute names would have been indistinguishable, to a consumer,
+  from four measured ones.
+
+- `ITraceScheduling`, with `listObjectTypes()`, `listProcessTypes()`,
+  `requestTrace()`, `listRequests()`, `getRequestsByUri()` and
+  `scheduleTrace()`; plus `INamedItem`, `ITraceRequest` and
+  `ITraceRequestEntry`.
+
+  `requestTrace()` is new, and it is where the catalogue URIs go: a stored
+  request carries `trc:processTypeId` and `trc:objectTypeId` as exactly the
+  URIs the two catalogue readers hand out. Its *argument* type is not settled
+  by measurement — what was measured is the stored entry, not the submitted
+  document — and the interface says so where an implementer will read it.
+
+### Removed
+
+- **BREAKING** — `IProfiler.getParameters()`,
+  `IProfiler.getParametersForCallstack()` and
+  `IProfiler.getParametersForAmdp()`. Three names for one byte-identical call,
+  on a URL measured to refuse `GET` with `405` on both an on-prem system and a
+  cloud tenant. Nothing reads through it; what reads the available choices is
+  `listObjectTypes()` / `listProcessTypes()`, which moved rather than died.
+
+  **Migration.** There is no replacement, because there was no operation.
+
+### Moved
+
+Five members left `IProfiler` for `ITraceScheduling`, which the executors
+compose in. They are all about configuring a measurement rather than reading
+one, and a scheduled request's life is bounded by the run that fulfils it.
+
+| was | is now |
+|---|---|
+| `IProfiler.createParameters(o)` | `IClassExecutor \| IProgramExecutor` → `scheduleTrace(o)`, resolving to the request id |
+| `IProfiler.listObjectTypes()` | the executors' `listObjectTypes()`, now returning `INamedItem[]` |
+| `IProfiler.listProcessTypes()` | the executors' `listProcessTypes()`, now returning `INamedItem[]` |
+| `IProfiler.listRequests()` | the executors' `listRequests()`, now returning `ITraceRequestEntry[]` |
+| `IProfiler.getRequestsByUri(u)` | the executors' `getRequestsByUri(u)` |
+
+`createParameters` is renamed because it created nothing a caller could read
+back; it configures a run and yields a request id.
+
+`listRequests` was nearly deleted in an earlier draft as "empty by
+construction". It is empty when nothing is scheduled, which is a different
+sentence — that collection is the schedule, consumed by the runs that fulfil
+it. It serves `application/atom+xml;type=feed` and answers anything else
+`400 acceptHeaderMissing`, which reads like a missing header and is not.
+
+### Unchanged
+
+Stated because a reader should not have to infer it: `ISt05Trace` is untouched,
+and so is **`ICrossTrace`** — not reshaped, not deprecated, not annotated. Its
+result documents could not be measured: the systems available answer `200` with
+an empty document, so there are no cross traces to read. A contract for a
+document nobody has read is worse than no contract, which is the same
+judgement `ISt05Trace` already had. Cross-trace waits on a system that has
+them.
+
+`IProfilerListOptions`, `IProfilerTraceParameters` and the three view-option
+types are unchanged in shape.
+
+### PROG/I includes
+
+Unrelated to the profiler, and in this release because it shares the major.
+
+- **Added** — `IIncludeConfig`, `IIncludeState`, `ICreateIncludeParams`,
+  `IUpdateIncludeSourceParams` and `IDeleteIncludeParams`.
+
+  A standalone include is a different resource from a program, measured: it
+  answers with `include:abapInclude`, its own namespace, `adtcore:type="PROG/I"`
+  and `include:contextRefCount`, against a program's `program:abapProgram`,
+  `program:programType` and `PROG/P`. The two collections advertise different
+  accepted content types. Modelling an include as a flavour of program would
+  build the wrong document and post it to the wrong collection.
+
+  There is no `IValidateIncludeParams`: `/includes/validation` was measured to
+  require the same three parameters as `/programs/validation`.
+
+- **BREAKING** — `IAdtContentTypes.includeCreate(): IAdtHeaders`, whose measured
+  value is `application/vnd.sap.adt.programs.includes.v2+xml`. Breaking for
+  every implementer of that interface, which is why it waited for a major.
+
+  Creating an include is a **modern on-prem** capability: only there does
+  discovery give the includes collection an `app:accept`, and a collection
+  without one is not a POST target. The types are the same everywhere; whether
+  the system accepts the request is not.
+
 ## [21.0.0] - 2026-08-23
 
 ### Removed
@@ -1475,6 +1635,7 @@ connection.setSessionState(state);
   - `validation/` - Validation interfaces
   - `utils/` - Utility types and interfaces
 
+[22.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v21.0.0...v22.0.0
 [21.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v20.0.0...v21.0.0
 [20.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v19.0.0...v20.0.0
 [19.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v18.0.0...v19.0.0

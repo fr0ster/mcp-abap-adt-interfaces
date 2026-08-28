@@ -138,7 +138,7 @@ how a hard rule becomes a soft one.
 One branch, `feat/one-contract-for-trace-results`. Every task ends with
 `npm run build && npm run test:check` clean.
 
-- [ ] **Task 1.1 — The atoms.** Add `ITraceEntry`, `ITraceView`, `ITraceListing`, `ITraceReading`,
+- [x] **Task 1.1 — The atoms.** Add `ITraceEntry`, `ITraceView`, `ITraceListing`, `ITraceReading`,
       `ITraceFamily`, and the `ViewResult` / `ViewOptions` / `ViewArgs` helpers, exactly as the
       spec compiles them. `ITraceReading`'s constraint is self-mapped —
       `TViews extends { [K in keyof TViews]: ITraceView<unknown, unknown> }` — not `object` and not
@@ -147,20 +147,20 @@ One branch, `feat/one-contract-for-trace-results`. Every task ends with
       member is refused **where it is declared**, a required option cannot be omitted, an unknown
       view is rejected, and a result is typed rather than `any`.
 
-- [ ] **Task 1.2 — The ABAP result types.** `IAbapTraceHitList`, `IAbapTraceStatements` and
+- [x] **Task 1.2 — The ABAP result types.** `IAbapTraceHitList`, `IAbapTraceStatements` and
       `IAbapTraceDbAccesses` from the tables already in the spec — 473 `trc:entry`, 1801
       `trc:statement`, and `trc:dbAccess` with its `trc:accessTime`, all read from one real trace.
       **Verify:** every field traceable to a measurement; none invented.
 
-- [ ] **Task 1.2c — The cross-trace result types. ONLY if Task 0.1 was answered.**
+- [~] **Task 1.2c — The cross-trace result types. ONLY if Task 0.1 was answered.**
       `ICrossTraceDocument`, `ICrossTraceRecords`, `ICrossTraceRecordContent` from what it
       measured. **If 0.1 was not answered this task does not run**, and neither do 1.3c, 2.4 or the
       cross-trace lines of the CHANGELOG — see *Two shapes this release can take*.
 
-- [ ] **Task 1.3 — `IProfiler` becomes a composition**, keeping its name.
+- [x] **Task 1.3 — `IProfiler` becomes a composition**, keeping its name.
       **Verify:** `__typechecks__` shows a consumer's own implementation satisfying it.
 
-- [ ] **Task 1.3c — `ICrossTrace` becomes one too. ONLY if Task 0.1 was answered.** It keeps its
+- [~] **Task 1.3c — `ICrossTrace` becomes one too. ONLY if Task 0.1 was answered.** It keeps its
       name; `list()` keeps `IListCrossTracesOptions` — all three of `traceUser`, `actCreateUser`,
       `actChangeUser`; `getActivations()` stays declared, with the comment saying it is recording
       and moves when a recording contract exists.
@@ -169,13 +169,13 @@ One branch, `feat/one-contract-for-trace-results`. Every task ends with
       **If 0.1 was not answered, `ICrossTrace` is not touched at all** — not reshaped, not
       deprecated, not annotated.
 
-- [ ] **Task 1.4 — Delete the three.** `getParameters`, `getParametersForCallstack`,
+- [x] **Task 1.4 — Delete the three.** `getParameters`, `getParametersForCallstack`,
       `getParametersForAmdp` — three names for one byte-identical call, on a URL measured to refuse
       `GET` on both platforms. `listRequests` and `getRequestsByUri` are NOT here: the measurement
       corrected that, and they move in Task 1.5.
       **Verify:** none of the three appears anywhere in `src/`, and both movers still do.
 
-- [ ] **Task 1.5 — `ITraceScheduling`.** `listObjectTypes()`, `listProcessTypes()` returning
+- [x] **Task 1.5 — `ITraceScheduling`.** `listObjectTypes()`, `listProcessTypes()` returning
       `INamedItem[]`; `scheduleTrace()` unchanged, as 0.2 settled; **`requestTrace()`**, the
       operation 0.2 added, taking the catalogue URIs; and `listRequests()` / `getRequestsByUri()`,
       which move here rather than being deleted — that collection is the schedule, and it serves
@@ -185,13 +185,13 @@ One branch, `feat/one-contract-for-trace-results`. Every task ends with
       **Verify:** a typecheck showing an ATC-shaped runnable still compiles without any scheduling
       member.
 
-- [ ] **Task 1.6 — The executor results tell the truth.** Remove `traceId` and
+- [x] **Task 1.6 — The executor results tell the truth.** Remove `traceId` and
       `traceRequestsResponse` from `IClassExecuteWithProfilingResult`, and `traceLookupUris`,
       `maxTraceAttempts`, `traceRetryDelayMs` from `IClassExecuteWithProfilingOptions`.
       **Verify:** the two profiling option types are now identical, and a typecheck asserts a run
       result offers no `traceId`.
 
-- [ ] **Task 1.7 — CHANGELOG and version.** **`22.0.0`, fixed by the spec** and already relied on
+- [x] **Task 1.7 — CHANGELOG and version.** **`22.0.0`, fixed by the spec** and already relied on
       by the phase heading, the npm wait and the consumer's dependency range — so it is not asked
       again here. Deviating means changing it in all four places, deliberately, not discovering the
       mismatch when the wait never ends.
@@ -226,7 +226,7 @@ document nobody has read is worse than no contract.
 Issue #47. Independent of everything above except the version it rides in — do it on the same
 branch so one major carries both.
 
-- [ ] **Task 1b.1 — The five types**, mirroring what `program` already has here:
+- [x] **Task 1b.1 — The five types**, mirroring what `program` already has here:
       `IIncludeConfig`, `IIncludeState`, `ICreateIncludeParams`, `IUpdateIncludeSourceParams`,
       `IDeleteIncludeParams`. Additive.
       **Verify:** a `__typechecks__` file where a consumer's own include handler satisfies them,
@@ -234,7 +234,7 @@ branch so one major carries both.
       element, namespace, `adtcore:type` and accepted content type, which is the whole reason this
       is not modelled as a program.
 
-- [ ] **Task 1b.2 — `IAdtContentTypes.includeCreate(): IAdtHeaders`.** The measured value is
+- [x] **Task 1b.2 — `IAdtContentTypes.includeCreate(): IAdtHeaders`.** The measured value is
       `application/vnd.sap.adt.programs.includes.v2+xml`. **Breaking for every implementer of that
       interface**, which is why it waits for a major rather than going out on its own.
       **Verify:** the two implementations in the consumer compile in Phase 2.
@@ -243,7 +243,7 @@ branch so one major carries both.
       `/programs/validation` require the same three (`objname`, `objtype`, `packagename`;
       `description` optional). No `IValidateIncludeParams`.
 
-- [ ] **Task 1b.4 — CHANGELOG.** Under the same `22.0.0` entry, as its own section: this is not
+- [x] **Task 1b.4 — CHANGELOG.** Under the same `22.0.0` entry, as its own section: this is not
       part of the profiler story and a reader should not have to infer that.
 
 **Where it can be exercised.** Discovery says the includes collection is a creation target on
