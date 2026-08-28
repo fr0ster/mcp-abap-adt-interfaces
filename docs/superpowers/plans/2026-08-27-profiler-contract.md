@@ -110,14 +110,18 @@ endpoint refuses GET. **On-prem, by the user.**
 
 | | answer | consequence |
 |---|---|---|
-| **0.2** | **(b)** — a stored request carries `trc:processTypeId` and `trc:objectTypeId`, the catalogue URIs | `ITraceScheduling` gains `requestTrace()`; `IProfilerTraceParameters` and `scheduleTrace()` unchanged |
+| **0.2** | **(b)** — a stored request carries `trc:processTypeId` and `trc:objectTypeId`, the catalogue URIs | the catalogues are scheduling inputs; `IProfilerTraceParameters` and `scheduleTrace()` unchanged. A `requestTrace()` was written and then **not shipped** — see Task 1.5 |
 | **0.1** | E19 has **no cross traces either** | `ICrossTrace` ships unchanged — Tasks 1.2c, 1.3c and 2.4 do **not** run |
 | **0.4** | `/includes/validation` takes `objname`, `objtype`, `packagename`; `/programs/validation` takes the same three | **no** `IValidateIncludeParams` — Task 1b.3 does not run |
 
 **Left open on purpose:** the body Eclipse submits to `/abaptraces/requests`. What was measured is
-the *stored* entry, not the *submitted* document, and that is where `requestTrace()`'s argument
-type is decided. Reconstruct it from the stored shape and say so in the JSDoc — do not present a
-guess as a measurement.
+the *stored* entry, not the *submitted* document.
+
+An earlier version of this line said to reconstruct the argument from the stored shape and say so
+in the JSDoc. **That was not enough, and review caught it:** a published method promises its
+argument is the wire shape, and a JSDoc disclaimer does not travel with a call site. So 22.0.0
+ships no submit operation at all. One Eclipse capture — body plus `Content-Type` — makes it
+additive in a minor.
 
 **Gate, and what it does when it is not met.** Publishing a type for a document nobody has read is
 the mistake ST05 was excluded for, so:
@@ -138,7 +142,7 @@ how a hard rule becomes a soft one.
 One branch, `feat/one-contract-for-trace-results`. Every task ends with
 `npm run build && npm run test:check` clean.
 
-- [ ] **Task 1.1 — The atoms.** Add `ITraceEntry`, `ITraceView`, `ITraceListing`, `ITraceReading`,
+- [x] **Task 1.1 — The atoms.** Add `ITraceEntry`, `ITraceView`, `ITraceListing`, `ITraceReading`,
       `ITraceFamily`, and the `ViewResult` / `ViewOptions` / `ViewArgs` helpers, exactly as the
       spec compiles them. `ITraceReading`'s constraint is self-mapped —
       `TViews extends { [K in keyof TViews]: ITraceView<unknown, unknown> }` — not `object` and not
@@ -147,20 +151,20 @@ One branch, `feat/one-contract-for-trace-results`. Every task ends with
       member is refused **where it is declared**, a required option cannot be omitted, an unknown
       view is rejected, and a result is typed rather than `any`.
 
-- [ ] **Task 1.2 — The ABAP result types.** `IAbapTraceHitList`, `IAbapTraceStatements` and
+- [x] **Task 1.2 — The ABAP result types.** `IAbapTraceHitList`, `IAbapTraceStatements` and
       `IAbapTraceDbAccesses` from the tables already in the spec — 473 `trc:entry`, 1801
       `trc:statement`, and `trc:dbAccess` with its `trc:accessTime`, all read from one real trace.
       **Verify:** every field traceable to a measurement; none invented.
 
-- [ ] **Task 1.2c — The cross-trace result types. ONLY if Task 0.1 was answered.**
+- [~] **Task 1.2c — The cross-trace result types. ONLY if Task 0.1 was answered.**
       `ICrossTraceDocument`, `ICrossTraceRecords`, `ICrossTraceRecordContent` from what it
       measured. **If 0.1 was not answered this task does not run**, and neither do 1.3c, 2.4 or the
       cross-trace lines of the CHANGELOG — see *Two shapes this release can take*.
 
-- [ ] **Task 1.3 — `IProfiler` becomes a composition**, keeping its name.
+- [x] **Task 1.3 — `IProfiler` becomes a composition**, keeping its name.
       **Verify:** `__typechecks__` shows a consumer's own implementation satisfying it.
 
-- [ ] **Task 1.3c — `ICrossTrace` becomes one too. ONLY if Task 0.1 was answered.** It keeps its
+- [~] **Task 1.3c — `ICrossTrace` becomes one too. ONLY if Task 0.1 was answered.** It keeps its
       name; `list()` keeps `IListCrossTracesOptions` — all three of `traceUser`, `actCreateUser`,
       `actChangeUser`; `getActivations()` stays declared, with the comment saying it is recording
       and moves when a recording contract exists.
@@ -169,13 +173,16 @@ One branch, `feat/one-contract-for-trace-results`. Every task ends with
       **If 0.1 was not answered, `ICrossTrace` is not touched at all** — not reshaped, not
       deprecated, not annotated.
 
-- [ ] **Task 1.4 — Delete the five.** `getParameters`, `getParametersForCallstack`,
-      `getParametersForAmdp`, `listRequests`, `getRequestsByUri`.
-      **Verify:** none appears anywhere in `src/`.
+- [x] **Task 1.4 — Delete the three.** `getParameters`, `getParametersForCallstack`,
+      `getParametersForAmdp` — three names for one byte-identical call, on a URL measured to refuse
+      `GET` on both platforms. `listRequests` and `getRequestsByUri` are NOT here: the measurement
+      corrected that, and they move in Task 1.5.
+      **Verify:** none of the three appears anywhere in `src/`, and both movers still do.
 
-- [ ] **Task 1.5 — `ITraceScheduling`.** `listObjectTypes()`, `listProcessTypes()` returning
-      `INamedItem[]`; `scheduleTrace()` unchanged, as 0.2 settled; **`requestTrace()`**, the
-      operation 0.2 added, taking the catalogue URIs; and `listRequests()` / `getRequestsByUri()`,
+- [x] **Task 1.5 — `ITraceScheduling`.** `listObjectTypes()`, `listProcessTypes()` returning
+      `INamedItem[]`; `scheduleTrace()` unchanged, as 0.2 settled; **no `requestTrace()`** — it was
+      written, reviewed and dropped, because 0.2 measured the *stored* entry and publishing a
+      submit method would have claimed its argument was the wire shape; and `listRequests()` / `getRequestsByUri()`,
       which move here rather than being deleted — that collection is the schedule, and it serves
       `application/atom+xml;type=feed` only, answering anything else `400 acceptHeaderMissing`. Composed into
       `IClassExecutor` and `IProgramExecutor` — **not** added to `IExecutor` or `IAdtRunnable`,
@@ -183,17 +190,17 @@ One branch, `feat/one-contract-for-trace-results`. Every task ends with
       **Verify:** a typecheck showing an ATC-shaped runnable still compiles without any scheduling
       member.
 
-- [ ] **Task 1.6 — The executor results tell the truth.** Remove `traceId` and
+- [x] **Task 1.6 — The executor results tell the truth.** Remove `traceId` and
       `traceRequestsResponse` from `IClassExecuteWithProfilingResult`, and `traceLookupUris`,
       `maxTraceAttempts`, `traceRetryDelayMs` from `IClassExecuteWithProfilingOptions`.
       **Verify:** the two profiling option types are now identical, and a typecheck asserts a run
       result offers no `traceId`.
 
-- [ ] **Task 1.7 — CHANGELOG and version.** **`22.0.0`, fixed by the spec** and already relied on
+- [x] **Task 1.7 — CHANGELOG and version.** **`22.0.0`, fixed by the spec** and already relied on
       by the phase heading, the npm wait and the consumer's dependency range — so it is not asked
       again here. Deviating means changing it in all four places, deliberately, not discovering the
       mismatch when the wait never ends.
-      The entry carries the accounting from the spec: five deleted, three moved, the executor
+      The entry carries the accounting from the spec: three deleted, five moved, the executor
       fields removed, `ISt05Trace` and every reading option type unchanged — **and whichever of the
       two shapes above this release took**, said plainly, so a consumer reading the CHANGELOG knows
       whether `ICrossTrace` changed. Phase 1b writes its own section under the same version. Run
@@ -224,7 +231,7 @@ document nobody has read is worse than no contract.
 Issue #47. Independent of everything above except the version it rides in — do it on the same
 branch so one major carries both.
 
-- [ ] **Task 1b.1 — The five types**, mirroring what `program` already has here:
+- [x] **Task 1b.1 — The five types**, mirroring what `program` already has here:
       `IIncludeConfig`, `IIncludeState`, `ICreateIncludeParams`, `IUpdateIncludeSourceParams`,
       `IDeleteIncludeParams`. Additive.
       **Verify:** a `__typechecks__` file where a consumer's own include handler satisfies them,
@@ -232,7 +239,7 @@ branch so one major carries both.
       element, namespace, `adtcore:type` and accepted content type, which is the whole reason this
       is not modelled as a program.
 
-- [ ] **Task 1b.2 — `IAdtContentTypes.includeCreate(): IAdtHeaders`.** The measured value is
+- [x] **Task 1b.2 — `IAdtContentTypes.includeCreate(): IAdtHeaders`.** The measured value is
       `application/vnd.sap.adt.programs.includes.v2+xml`. **Breaking for every implementer of that
       interface**, which is why it waits for a major rather than going out on its own.
       **Verify:** the two implementations in the consumer compile in Phase 2.
@@ -241,7 +248,7 @@ branch so one major carries both.
       `/programs/validation` require the same three (`objname`, `objtype`, `packagename`;
       `description` optional). No `IValidateIncludeParams`.
 
-- [ ] **Task 1b.4 — CHANGELOG.** Under the same `22.0.0` entry, as its own section: this is not
+- [x] **Task 1b.4 — CHANGELOG.** Under the same `22.0.0` entry, as its own section: this is not
       part of the profiler story and a reader should not have to infer that.
 
 **Where it can be exercised.** Discovery says the includes collection is a creation target on
@@ -262,13 +269,31 @@ Task 0.4.
 
 ---
 
-## Phase 2 — A real consumer implements it, against a tarball, before anything is published
+## Phase 2 — CANCELLED: no local tarball. Publish first, consume after.
 
-This is the phase the earlier version of this plan got wrong twice: it put the check after the
-tag, and it expected a green build from an adt-clients that had not been changed yet. Neither can
-work. A contract is proved by a real implementation satisfying it, so **the consumer
-implementation happens here**, against a package that exists only locally — before anything is
-merged, tagged or published.
+**This phase does not run.** It required installing an unpublished `npm pack` tarball into the
+adt-clients branch, and this project has a standing rule against exactly that: the dependency is
+merged and published to npm **first**, and consumer work is blocked until the version is on the
+registry. No local tarball, no `file:` bridge, no `link: true` in a committed lockfile.
+
+The reasoning that produced this phase was not wrong about *what* proves a contract — a real
+implementation satisfying it does. It was wrong about the *price*. A tarball bridge means a
+lockfile that cannot be committed, a consumer branch that is green only on one machine, and a
+window in which two packages disagree about what is installed. That has cost this project time
+before, which is why the rule exists.
+
+What replaces it: the contract is proved at compile time here, in `__typechecks__`, by
+implementations that are deliberately not ours — a consumer's own profiler, a consumer's own
+include handler, a consumer's own executors satisfying scheduling. If one of those cannot be
+written, the contract is wrong and this branch does not merge.
+
+**The residual risk is stated rather than hidden:** a compile-time proof does not run against SAP.
+If the consumer implementation then finds the contract wrong, it is fixed in `22.1.0` or `23.0.0`
+— a second release, which is cheaper than the bridge. Tasks 2.3–2.8 below are not deleted; they
+move to Phase 4 and run against the published version.
+
+<details>
+<summary>The cancelled tasks, kept for their content — they are Phase 4's work now</summary>
 
 - [ ] **Task 2.1 — Build the tarball.** `npm pack` on the interfaces branch. Nothing is merged,
       nothing is tagged, nothing is on npm.
@@ -332,9 +357,11 @@ merged, tagged or published.
 
 ---
 
+</details>
+
 ## Phase 3 — Publish the interfaces
 
-- [ ] **Task 3.1 — Interfaces PR: review, merge, tag.** With Phase 2's evidence in the PR — the
+- [ ] **Task 3.1 — Interfaces PR: review, merge, tag.** The PR carries the compile-time proof — the
       consumer compiles and its tests pass against this exact tarball.
 
 - [ ] **Task 3.2** — `npm publish` is the user's. State that it is ready; do not chase it.
@@ -343,7 +370,12 @@ merged, tagged or published.
 
 ---
 
-## Phase 4 — Land the consumer on the published version
+## Phase 4 — The consumer implements the contract, on the published version
+
+This is where Tasks 2.3–2.8 actually run: `Profiler` implements the new shape, the executors take
+scheduling, `src/core/include/` gets written, the tests stop reaching around the contract, and the
+docs follow. Against `@mcp-abap-adt/interfaces@22.0.0` from the registry, with a committable
+lockfile.
 
 - [ ] **Task 4.1 — Swap the tarball for the registry.** `@mcp-abap-adt/interfaces` to `^22.0.0`,
       `rm -rf node_modules/@mcp-abap-adt/interfaces && npm install`.

@@ -13,6 +13,28 @@ import type {
   IProgramExecutionTarget,
   IProgramExecutor,
 } from '../execution/IAdtExecutors';
+import type {
+  INamedItem,
+  ITraceRequestEntry,
+  ITraceScheduling,
+} from '../execution/ITraceScheduling';
+
+/**
+ * Scheduling, satisfied once and reused by both executors below.
+ *
+ * Spelled out rather than cast, because the point of the assertion is that a
+ * consumer's own runner can satisfy it.
+ */
+const scheduling: ITraceScheduling = {
+  listObjectTypes: async (): Promise<INamedItem[]> => [],
+  listProcessTypes: async (): Promise<INamedItem[]> => [],
+  listRequests: async (): Promise<ITraceRequestEntry[]> => [],
+  getRequestsByUri: async (uri: string): Promise<ITraceRequestEntry[]> => {
+    void uri;
+    return [];
+  },
+  scheduleTrace: async (): Promise<string> => 'r2',
+};
 
 const response: IAdtResponse = {
   data: '',
@@ -24,6 +46,7 @@ const response: IAdtResponse = {
 // Published so a consumer can substitute its own runner — a real implementation,
 // not our ClassExecutor, must satisfy this shape exactly.
 const _class: IClassExecutor = {
+  ...scheduling,
   run: async (target: IClassExecutionTarget): Promise<IAdtResponse> => {
     void target.className;
     return response;
@@ -41,20 +64,38 @@ const _class: IClassExecutor = {
     options?: IClassExecuteWithProfilingOptions,
   ): Promise<IClassExecuteWithProfilingResult> => {
     void target.className;
-    void options?.maxTraceAttempts;
-    return {
-      response,
-      profilerId: 'p1',
-      traceId: 't1',
-      traceRequestsResponse: response,
-    };
+    void options?.profilerParameters;
+    // No `traceId` here, and the assertion below proves it is refused rather
+    // than merely absent.
+    return { response, profilerId: 'p1' };
   },
 };
 void _class;
 
-// Same shape check for the program executor — no traceId in the profiling
-// result, which is the one structural difference from the class executor.
+// A run promises no trace. This is the whole point of the executor change: the
+// trace is written asynchronously, so a result that named one was lying about
+// timing that the caller then built retries around.
+const _classResult: IClassExecuteWithProfilingResult = {
+  response,
+  profilerId: 'p1',
+  // @ts-expect-error a run result does not carry a trace id
+  traceId: 't1',
+};
+void _classResult;
+
+// The class and program profiling options are now the same shape — the three
+// polling options were the only difference, and they described a search that no
+// longer happens. Assignable both ways, which is what "identical" means here.
+const _optionsAreTheSame: IProgramExecuteWithProfilingOptions =
+  {} as IClassExecuteWithProfilingOptions;
+const _andBack: IClassExecuteWithProfilingOptions =
+  {} as IProgramExecuteWithProfilingOptions;
+void _optionsAreTheSame;
+void _andBack;
+
+// The same shape check for the program executor, which also schedules.
 const _program: IProgramExecutor = {
+  ...scheduling,
   run: async (target: IProgramExecutionTarget): Promise<IAdtResponse> => {
     void target.programName;
     return response;

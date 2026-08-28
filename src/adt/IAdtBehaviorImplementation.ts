@@ -26,7 +26,7 @@ export interface IBehaviorImplementationConfig {
    * Custom code for implementations include (local handler class) - used in updateImplementations()
    * If provided, takes precedence over sourceCode and default generated code.
    * Should contain the complete local handler class definition and implementation.
-   * Example: "CLASS lhc_ZOK_I_CDS_TEST DEFINITION INHERITING FROM cl_abap_behavior_handler..."
+   * Example: "CLASS lhc_Z_I_SOME_ENTITY DEFINITION INHERITING FROM cl_abap_behavior_handler..."
    */
   implementationCode?: string;
   masterSystem?: string;

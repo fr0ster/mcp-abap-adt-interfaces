@@ -167,6 +167,13 @@ export type {
   IUpdateFunctionModuleParams,
 } from './adt/IAdtFunctionModule';
 export type {
+  ICreateIncludeParams,
+  IDeleteIncludeParams,
+  IIncludeConfig,
+  IIncludeState,
+  IUpdateIncludeSourceParams,
+} from './adt/IAdtInclude';
+export type {
   ICreateInterfaceParams,
   IDeleteInterfaceParams,
   IInterfaceConfig,
@@ -414,6 +421,11 @@ export type {
 } from './execution/IAdtExecutors';
 export type { IAdtRunnable } from './execution/IAdtRunnable';
 export type { IExecutor } from './execution/IExecutor';
+export type {
+  INamedItem,
+  ITraceRequestEntry,
+  ITraceScheduling,
+} from './execution/ITraceScheduling';
 // Feeds domain
 export type { IFeedRepository } from './feeds/IFeedRepository';
 export type {
@@ -434,6 +446,17 @@ export * from './Headers';
 // Logging domain
 export type { ILogger } from './logging/ILogger';
 export { LogLevel } from './logging/LogLevel';
+export type {
+  IAbapTraceAccessTime,
+  IAbapTraceDbAccess,
+  IAbapTraceDbAccesses,
+  IAbapTraceHitList,
+  IAbapTraceHitListEntry,
+  IAbapTraceStatement,
+  IAbapTraceStatements,
+  ITraceProgramRef,
+  ITraceTiming,
+} from './runtime/IAbapTrace';
 export type {
   DebuggerStepAction,
   IDebuggerAttachParams,
@@ -494,6 +517,7 @@ export type {
   ISnapshotReferencesOptions,
 } from './runtime/IMemorySnapshots';
 export type {
+  IAbapTraceViews,
   IProfiler,
   IProfilerListOptions,
   IProfilerTraceDbAccessesOptions,
@@ -509,6 +533,16 @@ export type {
 } from './runtime/IRuntimeDumps';
 export type { ISt05Trace } from './runtime/ISt05Trace';
 export type { ISystemMessages } from './runtime/ISystemMessages';
+export type {
+  ITraceEntry,
+  ITraceFamily,
+  ITraceListing,
+  ITraceReading,
+  ITraceView,
+  ViewArgs,
+  ViewOptions,
+  ViewResult,
+} from './runtime/ITrace';
 // Runtime domain
 export type {
   IListableRuntimeObject,
