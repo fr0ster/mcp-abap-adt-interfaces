@@ -227,6 +227,17 @@ query, exactly the published option type) and `dbAccesses`. Also present: `delet
 links for `title` and `expiration` — the trace is mutable in two narrow ways, which is out of scope
 here and worth knowing before someone assumes reading is all there is.
 
+### Confirmed on on-prem, on a bigger sample
+
+The entry shape above was taken from six entries on a cloud trial. Repeated against **E19**
+through the ABAP MCP server, **56 entries**, and the result is identical: every field this
+contract uses is present in **all 56** — `atom:id`, `atom:published`, `atom:author/name`,
+`trc:user`, `trc:objectName`, `trc:state`, `trc:expiration` — and no entry carries a key the
+others lack. Same `trc:extendedData` set, same `state` of `R`/Finished, and an expiration about
+four weeks out there too.
+
+So `ITraceEntry` is measured on both platforms rather than generalised from one.
+
 ### And the three views, from one real trace
 
 Read on the trial, trace `F8234F6C97EC11F1B02EB696EA3AB424`, all three `200`:
