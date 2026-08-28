@@ -156,7 +156,11 @@ Unrelated to the profiler, and in this release because it shares the major.
   build the wrong document and post it to the wrong collection.
 
   There is no `IValidateIncludeParams`: `/includes/validation` was measured to
-  require the same three parameters as `/programs/validation`.
+  require the same three parameters as `/programs/validation`. There is also no
+  main-program context field on create: a read include carries
+  `include:contextRefCount`, so the system tracks the contexts, but nothing
+  measured says the create call accepts one. It is additive when a capture shows
+  otherwise.
 
 - **BREAKING** — `IAdtContentTypes.includeCreate(): IAdtHeaders`, whose measured
   value is `application/vnd.sap.adt.programs.includes.v2+xml`. Breaking for

@@ -27,7 +27,6 @@ const _handler: IConsumerIncludeHandler = {
   create: async (params) => {
     void params.includeName;
     void params.packageName;
-    void params.contextProgram;
     return { errors: [] } as IIncludeState;
   },
   updateSource: async (params) => {

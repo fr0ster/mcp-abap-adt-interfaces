@@ -26,15 +26,14 @@ export interface ICreateIncludeParams {
   masterLanguage?: string;
   sourceCode?: string;
   activate?: boolean;
-  /**
-   * The main program this include is edited in the context of.
-   *
-   * An include is not independently syntax-checkable — it is a fragment, and
-   * what it compiles against is the program including it. `contextRefCount` on
-   * a read include is how many such contexts the system knows about.
-   */
-  contextProgram?: string;
 }
+
+// Deliberately NOT here: a main-program context. A read include carries
+// `include:contextRefCount`, so the system tracks how many programs include
+// this one — but nothing measured says the *create* call accepts a context, and
+// an optional field the server ignores is indistinguishable, to a consumer,
+// from one it honours. It is additive if a capture of Eclipse creating an
+// include shows one.
 
 export interface IUpdateIncludeSourceParams {
   includeName: string;
@@ -57,8 +56,6 @@ export interface IIncludeConfig {
   transportRequest?: string; // Only optional parameter
   description?: string; // Required for create/validate operations, optional for others
   sourceCode?: string;
-  /** See {@link ICreateIncludeParams.contextProgram}. */
-  contextProgram?: string;
   sessionId?: string;
   onLock?: (lockHandle: string) => void;
 }
