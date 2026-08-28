@@ -169,9 +169,11 @@ One branch, `feat/one-contract-for-trace-results`. Every task ends with
       **If 0.1 was not answered, `ICrossTrace` is not touched at all** — not reshaped, not
       deprecated, not annotated.
 
-- [ ] **Task 1.4 — Delete the five.** `getParameters`, `getParametersForCallstack`,
-      `getParametersForAmdp`, `listRequests`, `getRequestsByUri`.
-      **Verify:** none appears anywhere in `src/`.
+- [ ] **Task 1.4 — Delete the three.** `getParameters`, `getParametersForCallstack`,
+      `getParametersForAmdp` — three names for one byte-identical call, on a URL measured to refuse
+      `GET` on both platforms. `listRequests` and `getRequestsByUri` are NOT here: the measurement
+      corrected that, and they move in Task 1.5.
+      **Verify:** none of the three appears anywhere in `src/`, and both movers still do.
 
 - [ ] **Task 1.5 — `ITraceScheduling`.** `listObjectTypes()`, `listProcessTypes()` returning
       `INamedItem[]`; `scheduleTrace()` unchanged, as 0.2 settled; **`requestTrace()`**, the
@@ -193,7 +195,7 @@ One branch, `feat/one-contract-for-trace-results`. Every task ends with
       by the phase heading, the npm wait and the consumer's dependency range — so it is not asked
       again here. Deviating means changing it in all four places, deliberately, not discovering the
       mismatch when the wait never ends.
-      The entry carries the accounting from the spec: five deleted, three moved, the executor
+      The entry carries the accounting from the spec: three deleted, five moved, the executor
       fields removed, `ISt05Trace` and every reading option type unchanged — **and whichever of the
       two shapes above this release took**, said plainly, so a consumer reading the CHANGELOG knows
       whether `ICrossTrace` changed. Phase 1b writes its own section under the same version. Run

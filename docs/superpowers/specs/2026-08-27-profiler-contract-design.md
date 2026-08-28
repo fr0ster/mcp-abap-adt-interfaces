@@ -691,8 +691,9 @@ argument to a run, not to a read.
 
 ## What the executor gains
 
-This spec moves three members out of `IProfiler`, all of them about configuring a measurement
-rather than reading one: `createParameters`, `listObjectTypes` and `listProcessTypes`. `IExecutor` already carries `runWithProfiler` and
+This spec moves five members out of `IProfiler`, all of them about configuring a measurement
+rather than reading one: `createParameters`, `listObjectTypes`, `listProcessTypes`, `listRequests`
+and `getRequestsByUri`. `IExecutor` already carries `runWithProfiler` and
 `runWithProfiling`, both parameterised, so scheduling joins an existing surface rather than
 inventing one.
 
