@@ -167,6 +167,13 @@ export type {
   IUpdateFunctionModuleParams,
 } from './adt/IAdtFunctionModule';
 export type {
+  ICreateIncludeParams,
+  IDeleteIncludeParams,
+  IIncludeConfig,
+  IIncludeState,
+  IUpdateIncludeSourceParams,
+} from './adt/IAdtInclude';
+export type {
   ICreateInterfaceParams,
   IDeleteInterfaceParams,
   IInterfaceConfig,
@@ -212,13 +219,6 @@ export type {
   IProgramState,
   IUpdateProgramSourceParams,
 } from './adt/IAdtProgram';
-export type {
-  ICreateIncludeParams,
-  IDeleteIncludeParams,
-  IIncludeConfig,
-  IIncludeState,
-  IUpdateIncludeSourceParams,
-} from './adt/IAdtInclude';
 export type {
   ICreateScalarFunctionParams,
   IDeleteScalarFunctionParams,
@@ -423,7 +423,6 @@ export type { IAdtRunnable } from './execution/IAdtRunnable';
 export type { IExecutor } from './execution/IExecutor';
 export type {
   INamedItem,
-  ITraceRequest,
   ITraceRequestEntry,
   ITraceScheduling,
 } from './execution/ITraceScheduling';

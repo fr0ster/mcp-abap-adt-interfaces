@@ -110,7 +110,7 @@ endpoint refuses GET. **On-prem, by the user.**
 
 | | answer | consequence |
 |---|---|---|
-| **0.2** | **(b)** — a stored request carries `trc:processTypeId` and `trc:objectTypeId`, the catalogue URIs | `ITraceScheduling` gains `requestTrace()`; `IProfilerTraceParameters` and `scheduleTrace()` unchanged |
+| **0.2** | **(b)** — a stored request carries `trc:processTypeId` and `trc:objectTypeId`, the catalogue URIs | the catalogues are scheduling inputs; `IProfilerTraceParameters` and `scheduleTrace()` unchanged. A `requestTrace()` was written and then **not shipped** — see Task 1.5 |
 | **0.1** | E19 has **no cross traces either** | `ICrossTrace` ships unchanged — Tasks 1.2c, 1.3c and 2.4 do **not** run |
 | **0.4** | `/includes/validation` takes `objname`, `objtype`, `packagename`; `/programs/validation` takes the same three | **no** `IValidateIncludeParams` — Task 1b.3 does not run |
 
@@ -176,8 +176,9 @@ One branch, `feat/one-contract-for-trace-results`. Every task ends with
       **Verify:** none of the three appears anywhere in `src/`, and both movers still do.
 
 - [x] **Task 1.5 — `ITraceScheduling`.** `listObjectTypes()`, `listProcessTypes()` returning
-      `INamedItem[]`; `scheduleTrace()` unchanged, as 0.2 settled; **`requestTrace()`**, the
-      operation 0.2 added, taking the catalogue URIs; and `listRequests()` / `getRequestsByUri()`,
+      `INamedItem[]`; `scheduleTrace()` unchanged, as 0.2 settled; **no `requestTrace()`** — it was
+      written, reviewed and dropped, because 0.2 measured the *stored* entry and publishing a
+      submit method would have claimed its argument was the wire shape; and `listRequests()` / `getRequestsByUri()`,
       which move here rather than being deleted — that collection is the schedule, and it serves
       `application/atom+xml;type=feed` only, answering anything else `400 acceptHeaderMissing`. Composed into
       `IClassExecutor` and `IProgramExecutor` — **not** added to `IExecutor` or `IAdtRunnable`,

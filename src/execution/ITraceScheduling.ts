@@ -48,40 +48,21 @@ export interface ITraceRequestEntry {
   traceUri?: string;
 }
 
-/**
- * What to schedule.
- *
- * **The argument type is not settled by measurement.** What was measured is the
- * *stored* entry, not the *submitted* document, and no capture of the latter
- * exists. Whoever implements this reconstructs the body from the stored shape
- * and says so — the fields below are the stored choices, named as inputs.
- */
-export interface ITraceRequest {
-  /** A URI from {@link ITraceScheduling.listProcessTypes}. */
-  processTypeId?: string;
-  /** A URI from {@link ITraceScheduling.listObjectTypes}. */
-  objectTypeId?: string;
-  description?: string;
-  /** How many runs this request may measure. */
-  maximalExecutions?: number;
-  parameters?: IProfilerTraceParameters;
-}
+// Deliberately NOT here: an operation that submits a trace request.
+//
+// The stored entry above IS measured; the *submitted* document is not, and no
+// capture of one exists. A published `requestTrace(request)` would tell a
+// consumer that its argument's fields are the wire shape — that `{}` is a valid
+// body, that `description` is the element name the server reads — on the
+// strength of having read the response. A doc comment saying "not settled" does
+// not stop that; only not shipping the method does.
+//
+// It is additive in a minor release the moment a capture exists.
 
 export interface ITraceScheduling {
   /** What may be traced. The cloud flow reads these before choosing. */
   listObjectTypes(): Promise<INamedItem[]>;
   listProcessTypes(): Promise<INamedItem[]>;
-
-  /**
-   * Schedule a measurement.
-   *
-   * The catalogue URIs go here, not into the parameters document: a stored
-   * request carries `trc:processTypeId` and `trc:objectTypeId` as exactly the
-   * URIs the two readers above hand out.
-   *
-   * Resolves to the request id.
-   */
-  requestTrace(request: ITraceRequest): Promise<string>;
 
   /**
    * The schedule — what is queued, not what has been recorded.

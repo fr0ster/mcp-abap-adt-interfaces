@@ -15,7 +15,6 @@ import type {
 } from '../execution/IAdtExecutors';
 import type {
   INamedItem,
-  ITraceRequest,
   ITraceRequestEntry,
   ITraceScheduling,
 } from '../execution/ITraceScheduling';
@@ -29,10 +28,6 @@ import type {
 const scheduling: ITraceScheduling = {
   listObjectTypes: async (): Promise<INamedItem[]> => [],
   listProcessTypes: async (): Promise<INamedItem[]> => [],
-  requestTrace: async (request: ITraceRequest): Promise<string> => {
-    void request.processTypeId;
-    return 'r1';
-  },
   listRequests: async (): Promise<ITraceRequestEntry[]> => [],
   getRequestsByUri: async (uri: string): Promise<ITraceRequestEntry[]> => {
     void uri;

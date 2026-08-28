@@ -84,15 +84,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   from four measured ones.
 
 - `ITraceScheduling`, with `listObjectTypes()`, `listProcessTypes()`,
-  `requestTrace()`, `listRequests()`, `getRequestsByUri()` and
-  `scheduleTrace()`; plus `INamedItem`, `ITraceRequest` and
-  `ITraceRequestEntry`.
+  `listRequests()`, `getRequestsByUri()` and `scheduleTrace()`; plus
+  `INamedItem` and `ITraceRequestEntry`.
 
-  `requestTrace()` is new, and it is where the catalogue URIs go: a stored
-  request carries `trc:processTypeId` and `trc:objectTypeId` as exactly the
-  URIs the two catalogue readers hand out. Its *argument* type is not settled
-  by measurement — what was measured is the stored entry, not the submitted
-  document — and the interface says so where an implementer will read it.
+  `ITraceRequestEntry` is what a scheduled request looks like once stored,
+  including the two catalogue choices echoed back as exactly the URIs the
+  catalogue readers hand out — which is how a request is connected to the trace
+  it eventually yields.
+
+  There is deliberately **no** operation that submits one. The stored entry is
+  measured; the submitted document is not, and no capture of one exists. A
+  published `requestTrace(request)` would tell a consumer that its argument's
+  fields are the wire shape — that `{}` is a valid body, that `description` is
+  the element name the server reads — on the strength of having read the
+  *response*. It is additive in a minor release the moment a capture exists.
 
 ### Removed
 
