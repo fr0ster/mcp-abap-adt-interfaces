@@ -233,6 +233,16 @@ a collection with no `app:accept` is not a POST target. So Phase 2's include wor
 everywhere and can only be *run* on the same machine ATC and cross-trace are waiting on. The types
 do not depend on that; the integration test does.
 
+**Measured, and in the repository.** `mcp-abap-adt-clients@263f332`,
+`docs/evidence/2026-08-28-prog-include-write-path.md` — the two collections' accept types side by
+side, and both payloads verbatim from E19. An include answers with `include:abapInclude`,
+`include:contextRefCount`, `adtcore:type="PROG/I"` and its own namespace; a program with
+`program:abapProgram`, `program:programType`, `PROG/P`. That is the evidence Task 1b.1's typecheck
+exists to encode, so it is transcription rather than assertion.
+
+Still unmeasured, exactly as #47 said: the query parameters of `/sap/bc/adt/includes/validation`.
+Task 0.4.
+
 ---
 
 ## Phase 2 — A real consumer implements it, against a tarball, before anything is published
@@ -276,11 +286,24 @@ merged, tagged or published.
       producer of orphaned trace requests.
       **Verify:** no `as Profiler` in the test tree.
 
-- [ ] **Task 2.6b — The include handler.** `src/core/include/` against the new types, its
-      `types.ts` a bare re-export like every other object module, and `includeCreate()` implemented
-      on `AdtContentTypesBase` and `AdtContentTypesModern`.
-      **Verify:** unit tests for the payload it builds; the integration test runs on modern on-prem
-      only, and says so rather than being silently skipped elsewhere.
+- [ ] **Task 2.6a — `src/core/include/`, the module that does not exist.** Scoped into PR #118 by
+      consumer issue #116, which lists it: `create` at `POST /sap/bc/adt/programs/includes` (with
+      `?corrNr=` for a transport) under `application/vnd.sap.adt.programs.includes.v2+xml`,
+      building `<include:abapInclude … adtcore:type="PROG/I">` with an `<adtcore:packageRef>`;
+      plus `read`, `update`, `delete`, `lock`/`unlock`, `activate`, and `validate` at
+      `/sap/bc/adt/includes/validation` — its own endpoint, not `/programs/validation`. Then
+      `AdtClient.getInclude()`, beside `getProgram()`.
+      **Verify:** unit tests pin the payload and the collection; the integration test runs on
+      modern on-prem only and says so rather than skipping silently.
+
+- [ ] **Task 2.6b — Then remove the `'include'` branch from `src/core/program/create.ts`.**
+      It maps `programType: 'include'` to `'I'` and posts a payload hardcoding
+      `adtcore:type="PROG/P"` to `/programs/programs` under the program content type — a request
+      that contradicts itself, at the wrong collection, which nobody has ever run.
+      **Order matters, and it is the consumer's call, not a tidiness preference:** the branch goes
+      **after** the real path exists, so nothing silently changes shape under a caller in between.
+      **Verify:** no `'include'` branch remains in `program/create.ts`, and the include tests cover
+      what it used to claim to do.
 
 - [ ] **Task 2.7 — Docs.** `CLIENT_API_REFERENCE.md` and any usage page showing the old profiler
       calls. **Verify:** `npm run check:docs`, which is in `lint:check` on this branch.
