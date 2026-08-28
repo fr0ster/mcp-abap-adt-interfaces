@@ -264,13 +264,31 @@ Task 0.4.
 
 ---
 
-## Phase 2 — A real consumer implements it, against a tarball, before anything is published
+## Phase 2 — CANCELLED: no local tarball. Publish first, consume after.
 
-This is the phase the earlier version of this plan got wrong twice: it put the check after the
-tag, and it expected a green build from an adt-clients that had not been changed yet. Neither can
-work. A contract is proved by a real implementation satisfying it, so **the consumer
-implementation happens here**, against a package that exists only locally — before anything is
-merged, tagged or published.
+**This phase does not run.** It required installing an unpublished `npm pack` tarball into the
+adt-clients branch, and this project has a standing rule against exactly that: the dependency is
+merged and published to npm **first**, and consumer work is blocked until the version is on the
+registry. No local tarball, no `file:` bridge, no `link: true` in a committed lockfile.
+
+The reasoning that produced this phase was not wrong about *what* proves a contract — a real
+implementation satisfying it does. It was wrong about the *price*. A tarball bridge means a
+lockfile that cannot be committed, a consumer branch that is green only on one machine, and a
+window in which two packages disagree about what is installed. That has cost this project time
+before, which is why the rule exists.
+
+What replaces it: the contract is proved at compile time here, in `__typechecks__`, by
+implementations that are deliberately not ours — a consumer's own profiler, a consumer's own
+include handler, a consumer's own executors satisfying scheduling. If one of those cannot be
+written, the contract is wrong and this branch does not merge.
+
+**The residual risk is stated rather than hidden:** a compile-time proof does not run against SAP.
+If the consumer implementation then finds the contract wrong, it is fixed in `22.1.0` or `23.0.0`
+— a second release, which is cheaper than the bridge. Tasks 2.3–2.8 below are not deleted; they
+move to Phase 4 and run against the published version.
+
+<details>
+<summary>The cancelled tasks, kept for their content — they are Phase 4's work now</summary>
 
 - [ ] **Task 2.1 — Build the tarball.** `npm pack` on the interfaces branch. Nothing is merged,
       nothing is tagged, nothing is on npm.
@@ -334,9 +352,11 @@ merged, tagged or published.
 
 ---
 
+</details>
+
 ## Phase 3 — Publish the interfaces
 
-- [ ] **Task 3.1 — Interfaces PR: review, merge, tag.** With Phase 2's evidence in the PR — the
+- [ ] **Task 3.1 — Interfaces PR: review, merge, tag.** The PR carries the compile-time proof — the
       consumer compiles and its tests pass against this exact tarball.
 
 - [ ] **Task 3.2** — `npm publish` is the user's. State that it is ready; do not chase it.
@@ -345,7 +365,12 @@ merged, tagged or published.
 
 ---
 
-## Phase 4 — Land the consumer on the published version
+## Phase 4 — The consumer implements the contract, on the published version
+
+This is where Tasks 2.3–2.8 actually run: `Profiler` implements the new shape, the executors take
+scheduling, `src/core/include/` gets written, the tests stop reaching around the contract, and the
+docs follow. Against `@mcp-abap-adt/interfaces@22.0.0` from the registry, with a committable
+lockfile.
 
 - [ ] **Task 4.1 — Swap the tarball for the registry.** `@mcp-abap-adt/interfaces` to `^22.0.0`,
       `rm -rf node_modules/@mcp-abap-adt/interfaces && npm install`.
