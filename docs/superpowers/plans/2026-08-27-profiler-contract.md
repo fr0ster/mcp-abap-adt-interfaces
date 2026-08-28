@@ -16,6 +16,10 @@ it cannot honestly produce.
 
 **Tech Stack:** TypeScript (strict, CommonJS), Jest, Biome. Two npm packages.
 
+**Also in this release:** a contract for `PROG/I` includes — issue #47. It is unrelated to
+profiling, but it needs `IAdtContentTypes.includeCreate()`, which is breaking for every
+implementer, and a major that exists is cheaper than a second one. Phase 1b.
+
 **Spec:** `docs/superpowers/specs/2026-08-27-profiler-contract-design.md` in this repo, reviewed
 across seven rounds. **Read it before Task 1** — every count, every deletion and every measurement
 below comes from it.
@@ -76,6 +80,13 @@ endpoint refuses GET. **On-prem, by the user.**
       operation that consumes them.
       **Decides:** whether `scheduleTrace(options?: IProfilerTraceParameters)` keeps its signature,
       gains fields, or gains a sibling operation.
+
+- [ ] **Task 0.4 — What `/sap/bc/adt/includes/validation` takes.** An include validates at its own
+      collection, not at `/programs/validation`, and #47 says outright that its query parameters
+      have not been measured. Submit one validation and record the parameters it accepts.
+      **Decides:** whether Phase 1b needs `IValidateIncludeParams` or reuses the program's.
+      **If unanswered:** Phase 1b ships the other five types and no validation params — the same
+      treatment as cross-trace, for the same reason.
 
 - [ ] **Task 0.3 — Write the answers into the spec.** What is written depends on which of them
       came back, and the two are independent:
@@ -169,7 +180,7 @@ One branch, `feat/one-contract-for-trace-results`. Every task ends with
       The entry carries the accounting from the spec: five deleted, three moved, the executor
       fields removed, `ISt05Trace` and every reading option type unchanged — **and whichever of the
       two shapes above this release took**, said plainly, so a consumer reading the CHANGELOG knows
-      whether `ICrossTrace` changed. Run
+      whether `ICrossTrace` changed. Phase 1b writes its own section under the same version. Run
       `npm install --package-lock-only` in the same commit.
       **Verify:** `npm run build && npm run test:check`. There is no `check:docs` in this
       repository — that script is adt-clients'. The CHANGELOG link definitions are checked by eye
@@ -189,6 +200,38 @@ The second column is not a failure. It is the same judgement ST05 already got: a
 document nobody has read is worse than no contract.
 
 **The interfaces branch stops here — not merged, not tagged.** What proves it is Phase 2.
+
+---
+
+## Phase 1b — `PROG/I` includes (same major)
+
+Issue #47. Independent of everything above except the version it rides in — do it on the same
+branch so one major carries both.
+
+- [ ] **Task 1b.1 — The five types**, mirroring what `program` already has here:
+      `IIncludeConfig`, `IIncludeState`, `ICreateIncludeParams`, `IUpdateIncludeSourceParams`,
+      `IDeleteIncludeParams`. Additive.
+      **Verify:** a `__typechecks__` file where a consumer's own include handler satisfies them,
+      and where an `IProgramConfig` is **not** accepted in their place — the two differ in root
+      element, namespace, `adtcore:type` and accepted content type, which is the whole reason this
+      is not modelled as a program.
+
+- [ ] **Task 1b.2 — `IAdtContentTypes.includeCreate(): IAdtHeaders`.** The measured value is
+      `application/vnd.sap.adt.programs.includes.v2+xml`. **Breaking for every implementer of that
+      interface**, which is why it waits for a major rather than going out on its own.
+      **Verify:** the two implementations in the consumer compile in Phase 2.
+
+- [ ] **Task 1b.3 — Validation params, only if Task 0.4 answered.** Otherwise the five types ship
+      without them and #47 says which half remains.
+
+- [ ] **Task 1b.4 — CHANGELOG.** Under the same `22.0.0` entry, as its own section: this is not
+      part of the profiler story and a reader should not have to infer that.
+
+**Where it can be exercised.** Discovery says the includes collection is a creation target on
+**modern on-prem only** — E19 declares `app:accept` on it; E77, the trial and cloud declare none, and
+a collection with no `app:accept` is not a POST target. So Phase 2's include work compiles
+everywhere and can only be *run* on the same machine ATC and cross-trace are waiting on. The types
+do not depend on that; the integration test does.
 
 ---
 
@@ -232,6 +275,12 @@ merged, tagged or published.
       schedule-without-running test either goes or becomes an executor test — it is the only
       producer of orphaned trace requests.
       **Verify:** no `as Profiler` in the test tree.
+
+- [ ] **Task 2.6b — The include handler.** `src/core/include/` against the new types, its
+      `types.ts` a bare re-export like every other object module, and `includeCreate()` implemented
+      on `AdtContentTypesBase` and `AdtContentTypesModern`.
+      **Verify:** unit tests for the payload it builds; the integration test runs on modern on-prem
+      only, and says so rather than being silently skipped elsewhere.
 
 - [ ] **Task 2.7 — Docs.** `CLIENT_API_REFERENCE.md` and any usage page showing the old profiler
       calls. **Verify:** `npm run check:docs`, which is in `lint:check` on this branch.
