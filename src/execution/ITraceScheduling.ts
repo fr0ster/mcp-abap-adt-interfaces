@@ -22,6 +22,20 @@ export interface INamedItem {
 }
 
 /**
+ * `trc:executions` — a request's budget and how much of it is spent.
+ *
+ * Named for the same reason as {@link import('../runtime/ITrace').ITraceState}:
+ * a consumer implementing this has to return it, and an inline shape makes it
+ * re-declare the fields itself.
+ */
+export interface ITraceExecutions {
+  /** How many runs this request may measure. */
+  maximal?: number;
+  /** How many it has measured. */
+  completed?: number;
+}
+
+/**
  * A scheduled request, as the server stores it.
  *
  * Transcribed from a created entry: the identifier, the two catalogue choices
@@ -43,7 +57,7 @@ export interface ITraceRequestEntry {
   /** `trc:objectTypeId`, a URI from `listObjectTypes()`. */
   objectTypeId?: string;
   /** `trc:executions` — how many runs it may measure, and how many it has. */
-  executions?: { maximal?: number; completed?: number };
+  executions?: ITraceExecutions;
   /** The trace this request produced, when it has produced one. */
   traceUri?: string;
 }

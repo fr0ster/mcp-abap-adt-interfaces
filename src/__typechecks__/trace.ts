@@ -107,11 +107,39 @@ export { _listingOnly, _assertions };
 
 import type { IAdtRunnable } from '../execution/IAdtRunnable';
 import type {
+  IAbapTraceEntry,
+  IAbapTraceHitListEntry,
+} from '../runtime/IAbapTrace';
+import type {
   IAtcRunOptions,
   IAtcRunResult,
   IAtcRunTarget,
 } from '../runtime/IAtcRun';
 import type { IAbapTraceViews, IProfiler } from '../runtime/IProfiler';
+
+// The timings are a shape now, not `unknown` — a consumer reads them without
+// narrowing, and the compiler refuses a wrong member.
+function _timings(entry: IAbapTraceHitListEntry) {
+  const ms: number | undefined = entry.grossTime?.time;
+  const share: number | undefined = entry.grossTime?.percentage;
+  // @ts-expect-error the unit was never measured, so there is no such member
+  const micros = entry.grossTime?.timeMicros;
+  return { ms, share, micros };
+}
+void _timings;
+
+// The ABAP entry says what the feed actually carries, and says it is there.
+function _abapEntry(entry: IAbapTraceEntry) {
+  const user: string = entry.user;
+  const system: string = entry.system;
+  const client: string = entry.client;
+  const aggregated: boolean = entry.isAggregated;
+  const finished: string = entry.state.text;
+  // @ts-expect-error the feed carries no such field
+  const nothing = entry.tracedProgramLine;
+  return { user, system, client, aggregated, finished, nothing };
+}
+void _abapEntry;
 
 /**
  * A consumer's own profiler. Nothing from this package implements it here —
@@ -119,9 +147,30 @@ import type { IAbapTraceViews, IProfiler } from '../runtime/IProfiler';
  */
 const _profiler: IProfiler = {
   kind: 'profiler',
+  // One real entry rather than `[]`: an empty array satisfies any element type,
+  // so it proves nothing about whether the shape can actually be built.
   list: async (options?: { user?: string }) => {
     void options?.user;
-    return [];
+    return [
+      {
+        id: 'ABCDEF0123456789ABCD',
+        recordedAt: '2026-08-29T06:09:50Z',
+        user: 'SOMEONE',
+        objectName: 'ZCL_SOMETHING=========CP',
+        state: { value: 'R', text: 'Finished' },
+        expiresAt: '2026-09-24T06:09:50Z',
+        system: 'ABC',
+        client: '100',
+        host: 'somehost',
+        size: 8,
+        runtime: 554,
+        runtimeABAP: 553,
+        runtimeSystem: 1,
+        runtimeDatabase: 0,
+        isAggregated: false,
+        amdpFileSize: 0,
+      },
+    ];
   },
   // An implementer must write this generically — a union parameter does NOT
   // satisfy it, and the compiler says so. That is the contract working: the
