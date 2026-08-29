@@ -107,6 +107,46 @@ export interface ITraceReading<
 }
 
 /**
+ * Reading a trace with a parser the caller supplies.
+ *
+ * A separate atom, not a member of {@link ITraceReading}, because it is a
+ * separate capability: a family may offer the plain read and not this one, and
+ * a type that lists what IS supported says the rest by omission. Composed in
+ * where it is true — which is also the only honest way to say it, since an
+ * optional method would mean "perhaps".
+ *
+ * **What it is for.** A library that speaks ADT should not also be the place
+ * where somebody else's XML gets filtered and reshaped. {@link ITraceReading.read}
+ * stays deliberately plain: it maps the document onto the view's type and does
+ * nothing more. A consumer that needs it read differently — or that runs against
+ * a system answering in a shape the default does not fit — passes its own reader
+ * **and keeps a type**. Telling it to fall back on the raw response would be
+ * telling it to go untyped.
+ *
+ * Searching and filtering are not what this is for. Those belong to the server,
+ * which has endpoints for them.
+ *
+ * **Why a method and not an overload on `read`.** The transport tree's
+ * `listNodes()` uses an overload, but that sits on a concrete class nobody else
+ * implements. This is implemented by consumers — the whole point of this
+ * package — and an overloaded method cannot be satisfied by an object literal,
+ * which the `__typechecks__` file proved the moment it was tried.
+ */
+export interface ITraceReadingWithParser<
+  TViews extends { [K in keyof TViews]: ITraceView<unknown, unknown> },
+> {
+  /**
+   * @param parse receives the response body exactly as it arrived, unopened
+   */
+  readWith<K extends keyof TViews, T>(
+    parse: (data: unknown) => T,
+    traceId: string,
+    view: K,
+    ...args: ViewArgs<TViews, K>
+  ): Promise<T>;
+}
+
+/**
  * A trace family: what it is called, and what it lists.
  *
  * Reading is deliberately NOT extended in here — see {@link ITraceReading}.

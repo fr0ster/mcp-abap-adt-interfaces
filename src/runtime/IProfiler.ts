@@ -7,6 +7,7 @@ import type {
   ITraceEntry,
   ITraceFamily,
   ITraceReading,
+  ITraceReadingWithParser,
   ITraceView,
 } from './ITrace';
 
@@ -91,4 +92,5 @@ export type IProfiler = ITraceFamily<
   ITraceEntry,
   IProfilerListOptions
 > &
-  ITraceReading<IAbapTraceViews>;
+  ITraceReading<IAbapTraceViews> &
+  ITraceReadingWithParser<IAbapTraceViews>;
