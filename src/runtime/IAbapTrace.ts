@@ -25,6 +25,8 @@
  * compiled unit, which is why a row can point into a program rather than only
  * at it.
  */
+import type { ITraceEntry, ITraceState } from './ITrace';
+
 export interface ITraceProgramRef {
   name: string;
   type: string;
@@ -38,15 +40,24 @@ export interface ITraceProgramRef {
 /**
  * `trc:grossTime` and `trc:traceEventNetTime`.
  *
- * Declared because both elements were seen on every row, and typed `unknown`
- * because their attributes were NOT transcribed — unlike
- * {@link IAbapTraceAccessTime}, which was. Inventing four plausible attribute
- * names here would be indistinguishable, to a consumer, from four measured
- * ones, and this contract exists because that had already happened elsewhere.
+ * Typed from measurement at last. These were `unknown` in 22.0.0 and 23.0.0
+ * because the elements had been seen on every row while their attributes had
+ * never been captured — the earlier reads were summarised into a table and the
+ * bodies discarded. A raw capture settles it: both carry exactly these two, in
+ * both the hit list and the statements, with no variant anywhere in the
+ * documents read.
  *
- * A consumer that needs these narrows them and, better, sends the measurement.
+ * The **unit of `time` is not established.** The wire says `time="243"` and
+ * nothing about what 243 is; `percentage` is of the trace total, which is what
+ * makes a row comparable without knowing the unit. Naming it `timeMicros` would
+ * be inventing the one thing the measurement did not give.
  */
-export type ITraceTiming = unknown;
+export interface ITraceTiming {
+  /** `time` — the raw figure, in whatever unit the system reports. */
+  time: number;
+  /** `percentage` of the trace total. */
+  percentage: number;
+}
 
 /** One row of the hit list. */
 export interface IAbapTraceHitListEntry {
@@ -122,4 +133,52 @@ export interface IAbapTraceDbAccess {
 /** `trc:dbAccesses`. */
 export interface IAbapTraceDbAccesses {
   accesses: IAbapTraceDbAccess[];
+}
+
+/**
+ * A trace as the `abaptraces` feed describes it.
+ *
+ * {@link ITraceEntry} is what *every* family can say; this is what the ABAP
+ * profiler actually sends, and all of it is transcribed from one raw feed —
+ * sixty entries, every field present in every one of them, none of it outside
+ * `trc:extendedData`.
+ *
+ * The fields are required because the wire carried them without exception in
+ * the sample. That is a claim, and this is where it is recorded so a later
+ * system that omits one can be met by relaxing the type rather than by
+ * guessing what happened.
+ *
+ * Units are deliberately not asserted. `runtime` reads `554` and the document
+ * says nothing more; `size` reads `8`. Naming them `runtimeMicros` or
+ * `sizeBytes` would add precision the measurement does not contain.
+ */
+export interface IAbapTraceEntry extends ITraceEntry {
+  /** `trc:user`. Also available as `atom:author/atom:name`. */
+  user: string;
+  /** `trc:objectName` — the generated form, e.g. `ZCL_SOMETHING=========CP`. */
+  objectName: string;
+  /** `trc:state` — `R`/Finished on every entry read. */
+  state: ITraceState;
+  /** `trc:expiration`. The system deletes traces; this says when. */
+  expiresAt: string;
+
+  /** `trc:system` — the three-character system id. */
+  system: string;
+  /** `trc:client`. A string: a client is a code, and `010` is not `10`. */
+  client: string;
+  /** `trc:host` — the application server that recorded it. */
+  host: string;
+
+  /** `trc:size`. Unit unstated by the document. */
+  size: number;
+  /** `trc:runtime`, and the three figures it divides into. Unit unstated. */
+  runtime: number;
+  runtimeABAP: number;
+  runtimeSystem: number;
+  runtimeDatabase: number;
+
+  /** `trc:isAggregated` — whether the measurement was aggregated. */
+  isAggregated: boolean;
+  /** `trc:amdpFileSize`. Zero on every entry read; the field is still there. */
+  amdpFileSize: number;
 }

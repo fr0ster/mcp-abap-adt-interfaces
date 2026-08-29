@@ -7,6 +7,68 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [24.0.0] - 2026-08-29
+
+Everything here comes from one raw capture: `docs/evidence/2026-08-29-profiler-probe/`
+in `mcp-abap-adt-clients` — the trace feed and all three views, whole files
+rather than logged excerpts.
+
+### Changed
+
+- **BREAKING** — `ITraceTiming` is a type instead of `unknown`.
+
+  ```ts
+  interface ITraceTiming { time: number; percentage: number }
+  ```
+
+  `trc:grossTime` and `trc:traceEventNetTime` carry exactly those two, in both
+  the hit list and the statements, with no variant anywhere in the documents
+  read. They were `unknown` in 22.0.0 and 23.0.0 because the elements had been
+  seen while their attributes never had — the earlier reads were summarised into
+  a table and the bodies discarded.
+
+  The **unit of `time` is deliberately not asserted.** The wire says `time="243"`
+  and nothing about what 243 is. `percentage` is of the trace total, which is
+  what makes a row comparable without knowing the unit; calling the other one
+  `timeMicros` would add the single fact the measurement does not contain.
+
+  **Migration.** Readers stop narrowing: `entry.grossTime?.time` is a number.
+  Implementations must produce the shape, which is why this is major rather than
+  minor — additive for callers is not additive for implementers, and this
+  package exists to be implemented.
+
+- **BREAKING** — `IProfiler` lists `IAbapTraceEntry`, not `ITraceEntry`.
+
+  `ITraceEntry` is what *every* trace family can say. `IAbapTraceEntry` is what
+  the `abaptraces` feed actually sends, and all of it is transcribed: sixty
+  entries, every field present in every one, none of it outside
+  `trc:extendedData`.
+
+  It adds `system`, `client`, `host`, `size`, `runtime`, `runtimeABAP`,
+  `runtimeSystem`, `runtimeDatabase`, `isAggregated` and `amdpFileSize`, and
+  narrows `user`, `objectName`, `state` and `expiresAt` from optional to
+  required — optional on the atom because another family may not have them, and
+  present here because this one always did.
+
+  Units are again not asserted: `runtime` reads `554` and `size` reads `8`, and
+  the document says no more.
+
+  **Migration.** Readers gain fields and lose four optionality checks.
+  Implementations must supply them; the `__typechecks__` stub now builds a real
+  entry rather than returning `[]`, because an empty array satisfies any element
+  type and proves nothing about whether the shape can be built.
+
+### Added
+
+- `ITraceState` and `ITraceExecutions` — the two shapes that were written inline
+  as `{ value; text }` and `{ maximal; completed }`.
+
+  Structurally identical, so nothing breaks. The point is that a consumer
+  implementing the contract has to *return* these, and an anonymous type cannot
+  be named: it would re-declare the same fields in its own code, which is the
+  duplication this package exists to remove. There are now no anonymous object
+  types left in the trace contract.
+
 ## [23.0.0] - 2026-08-29
 
 ### Added
@@ -1699,6 +1761,7 @@ connection.setSessionState(state);
   - `validation/` - Validation interfaces
   - `utils/` - Utility types and interfaces
 
+[24.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v23.0.0...v24.0.0
 [23.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v22.0.0...v23.0.0
 [22.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v21.0.0...v22.0.0
 [21.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v20.0.0...v21.0.0

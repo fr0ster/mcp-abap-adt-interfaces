@@ -423,6 +423,7 @@ export type { IAdtRunnable } from './execution/IAdtRunnable';
 export type { IExecutor } from './execution/IExecutor';
 export type {
   INamedItem,
+  ITraceExecutions,
   ITraceRequestEntry,
   ITraceScheduling,
 } from './execution/ITraceScheduling';
@@ -450,6 +451,7 @@ export type {
   IAbapTraceAccessTime,
   IAbapTraceDbAccess,
   IAbapTraceDbAccesses,
+  IAbapTraceEntry,
   IAbapTraceHitList,
   IAbapTraceHitListEntry,
   IAbapTraceStatement,
@@ -539,6 +541,7 @@ export type {
   ITraceListing,
   ITraceReading,
   ITraceReadingWithParser,
+  ITraceState,
   ITraceView,
   ViewArgs,
   ViewOptions,

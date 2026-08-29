@@ -12,6 +12,21 @@
  */
 
 /**
+ * A trace's lifecycle state.
+ *
+ * A named type rather than an inline `{ value; text }`, because a consumer that
+ * implements the contract has to *return* this, and an anonymous shape leaves it
+ * re-declaring the same two fields in its own code — which is the duplication
+ * this package exists to remove. Naming it costs one export.
+ */
+export interface ITraceState {
+  /** `trc:state/@value` — `R` on every entry read. */
+  value: string;
+  /** `trc:state/@text` — `Finished` for `R`. */
+  text: string;
+}
+
+/**
  * One trace, as every family can describe it.
  *
  * The optional members are optional because a family other than `abaptraces`
@@ -39,7 +54,7 @@ export interface ITraceEntry {
    * A trace has a lifecycle, so "it exists" and "it is readable" are not the
    * same claim.
    */
-  state?: { value: string; text: string };
+  state?: ITraceState;
   /**
    * `trc:expiration`. The system deletes traces — about four weeks out on both
    * systems measured, though that is a system setting and not a contract.

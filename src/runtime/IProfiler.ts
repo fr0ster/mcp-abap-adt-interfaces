@@ -1,10 +1,10 @@
 import type {
   IAbapTraceDbAccesses,
+  IAbapTraceEntry,
   IAbapTraceHitList,
   IAbapTraceStatements,
 } from './IAbapTrace';
 import type {
-  ITraceEntry,
   ITraceFamily,
   ITraceReading,
   ITraceReadingWithParser,
@@ -89,7 +89,7 @@ export interface IAbapTraceViews {
  */
 export type IProfiler = ITraceFamily<
   'profiler',
-  ITraceEntry,
+  IAbapTraceEntry,
   IProfilerListOptions
 > &
   ITraceReading<IAbapTraceViews> &
