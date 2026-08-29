@@ -538,6 +538,7 @@ export type {
   ITraceFamily,
   ITraceListing,
   ITraceReading,
+  ITraceReadingWithParser,
   ITraceView,
   ViewArgs,
   ViewOptions,

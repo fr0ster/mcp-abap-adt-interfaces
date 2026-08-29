@@ -7,34 +7,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [22.1.0] - 2026-08-29
+## [23.0.0] - 2026-08-29
 
 ### Added
 
-- `ITraceReading.readWith(parse, traceId, view, …)` — the same read, parsed by
-  the caller.
+- `ITraceReadingWithParser` — reading a trace with a parser the caller supplies,
+  and `readWith(parse, traceId, view, …)` on it.
 
-  A library that speaks ADT should not also be where somebody else's XML gets
-  filtered and reshaped. `read()` stays deliberately plain: it maps the document
-  onto the view's type and does nothing more. A consumer that needs it read
-  differently — or that runs against a system answering in a shape the default
-  does not fit — passes its own reader **and keeps a type**. Falling back on a
-  raw response would mean going untyped, which is what this package exists to
-  prevent.
+  A library that speaks ADT should not also be the place where somebody else's
+  XML gets filtered and reshaped. `read()` stays deliberately plain: it maps the
+  document onto the view's type and does nothing more. A consumer that needs it
+  read differently — or that runs against a system answering in a shape the
+  default does not fit — passes its own reader **and keeps a type**. Falling back
+  on a raw response would mean going untyped, which is what this package exists
+  to prevent.
 
   Searching and filtering are not what this is for. Those belong to the server,
   which has endpoints for them.
 
-  This is the pattern the transport tree already uses, where `listNodes()` takes
-  an optional parser. The shape differs for one measured reason: `listNodes()`
-  is an overload on a **concrete class** that nobody else implements, while
-  `ITraceReading` is implemented by consumers, and an overloaded method cannot
-  be satisfied by an object literal. The `__typechecks__` file proved that the
-  moment it was tried, so this is a second method rather than an overload — a
-  contract awkward to implement is a contract that gets worked around.
+  It is a **separate atom** rather than a member of `ITraceReading`, because it
+  is a separate capability: a family may offer the plain read and not this one.
+  An optional method would have said "perhaps", which this contract does not do.
 
-  Additive: existing implementations of `IProfiler` gain a member to write, and
-  existing callers are untouched.
+  It is a **method** rather than an overload on `read`. The transport tree's
+  `listNodes()` is an overload, but that sits on a concrete class nobody else
+  implements; this is implemented by consumers, and an overloaded method cannot
+  be satisfied by an object literal — the `__typechecks__` file failed the moment
+  it was tried.
+
+### Changed
+
+- **BREAKING** — `IProfiler` now composes `ITraceReadingWithParser`, so an
+  implementation must provide `readWith`.
+
+  This was first proposed as `22.1.0` and called additive — caught in review
+  before it was merged or published, so no consumer ever saw the wrong version.
+  The claim was wrong, and the entry making it said so without noticing:
+  "implementations gain a member to write" is a description of a breaking
+  change. Additive for *callers* is not additive for *implementers*, and this
+  package exists to be implemented.
+
+  **Migration.** An implementation of `IProfiler` adds one method:
+
+  ```ts
+  async readWith<K extends keyof IAbapTraceViews, T>(
+    parse: (data: unknown) => T,
+    traceId: string,
+    view: K,
+    ...args: ViewArgs<IAbapTraceViews, K>
+  ): Promise<T> {
+    return parse(await this.rawResponseFor(traceId, view, ...args));
+  }
+  ```
+
+  Callers are untouched — `read()` is unchanged in name, signature and result.
 
 ## [22.0.0] - 2026-08-28
 
@@ -1673,7 +1699,7 @@ connection.setSessionState(state);
   - `validation/` - Validation interfaces
   - `utils/` - Utility types and interfaces
 
-[22.1.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v22.0.0...v22.1.0
+[23.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v22.0.0...v23.0.0
 [22.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v21.0.0...v22.0.0
 [21.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v20.0.0...v21.0.0
 [20.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v19.0.0...v20.0.0
