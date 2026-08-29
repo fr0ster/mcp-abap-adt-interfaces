@@ -9,9 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [24.0.0] - 2026-08-29
 
-Everything here comes from one raw capture: `docs/evidence/2026-08-29-profiler-probe/`
-in `mcp-abap-adt-clients` — the trace feed and all three views, whole files
-rather than logged excerpts.
+Everything here comes from one raw capture taken on an on-prem system — the
+trace feed and all three views, whole files rather than logged excerpts. The
+capture is not kept in a tree: what it established is stated below and pinned by
+the consumer's parser tests, which are transcribed from it.
 
 ### Changed
 
