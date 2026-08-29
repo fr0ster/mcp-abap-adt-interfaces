@@ -162,6 +162,26 @@ export interface ITraceReadingWithParser<
 }
 
 /**
+ * Removing a trace.
+ *
+ * Its own atom, beside {@link ITraceListing} and {@link ITraceReading}, because
+ * not every family need offer it and a composition should say which does.
+ *
+ * ADT advertises this itself: every entry in the ABAP trace feed carries
+ * `<atom:link rel="http://www.sap.com/adt/relations/delete">` next to the links
+ * for its three views, and the `DELETE` it points at answers `200` — measured
+ * on an on-prem system, 2026-08-30, on a trace produced by a profiled run.
+ *
+ * `void`, not a response: a caller has nothing to read from a deletion, and
+ * handing back a raw body is the thing this family stopped doing in 23.0.0.
+ * Whether the id existed is not reported either — a trace that is gone and one
+ * that never was leave the caller in the same place.
+ */
+export interface ITraceDeletion {
+  delete(traceId: string): Promise<void>;
+}
+
+/**
  * A trace family: what it is called, and what it lists.
  *
  * Reading is deliberately NOT extended in here — see {@link ITraceReading}.

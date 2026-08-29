@@ -7,6 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [25.0.0] - 2026-08-30
+
+### Added
+
+- **BREAKING** — `ITraceDeletion`, and `IProfiler` composes it.
+
+  ```ts
+  interface ITraceDeletion { delete(traceId: string): Promise<void> }
+  ```
+
+  A trace could be listed and read and never removed, so every profiled run was
+  permanent. Measured on an on-prem system on 2026-08-30: the ABAP trace feed
+  grew 58 → 61 across one afternoon of integration runs, and nothing in the
+  contract could take one back out.
+
+  The server had been offering it the whole time. Every entry in the feed
+  carries the link beside the ones for its three views:
+
+  ```xml
+  <atom:link href="/sap/bc/adt/runtime/traces/abaptraces/{id}"
+             rel="http://www.sap.com/adt/relations/delete" type="text/plain"/>
+  ```
+
+  and the `DELETE` it points at answers `200` — confirmed on a trace produced by
+  a profiled run, whose id then vanished from the feed.
+
+  Breaking because it is a member added to a published type: an existing
+  implementer of `IProfiler` no longer satisfies it. Consumers only calling the
+  interface are unaffected.
+
+  `void`, not a response — a caller has nothing to read from a deletion, and
+  raw bodies left this family in 23.0.0. Absence is not reported either: a trace
+  that is gone and one that never existed leave the caller in the same place.
+
+  Its own atom rather than a member of `ITraceListing`, because listing and
+  removing are separate capabilities and a family that only lists should be able
+  to say so. `ICrossTrace` does **not** compose it: whether cross traces can be
+  deleted has not been measured, and a contract that guesses is how
+  `ITraceTiming` spent two releases as `unknown`.
+
 ## [24.0.0] - 2026-08-29
 
 Everything here comes from one raw capture taken on an on-prem system — the

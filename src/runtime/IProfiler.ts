@@ -5,6 +5,7 @@ import type {
   IAbapTraceStatements,
 } from './IAbapTrace';
 import type {
+  ITraceDeletion,
   ITraceFamily,
   ITraceReading,
   ITraceReadingWithParser,
@@ -93,4 +94,5 @@ export type IProfiler = ITraceFamily<
   IProfilerListOptions
 > &
   ITraceReading<IAbapTraceViews> &
-  ITraceReadingWithParser<IAbapTraceViews>;
+  ITraceReadingWithParser<IAbapTraceViews> &
+  ITraceDeletion;

@@ -536,6 +536,7 @@ export type {
 export type { ISt05Trace } from './runtime/ISt05Trace';
 export type { ISystemMessages } from './runtime/ISystemMessages';
 export type {
+  ITraceDeletion,
   ITraceEntry,
   ITraceFamily,
   ITraceListing,
