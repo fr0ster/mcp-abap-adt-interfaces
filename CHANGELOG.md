@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [22.1.0] - 2026-08-29
+
+### Added
+
+- `ITraceReading.readWith(parse, traceId, view, …)` — the same read, parsed by
+  the caller.
+
+  A library that speaks ADT should not also be where somebody else's XML gets
+  filtered and reshaped. `read()` stays deliberately plain: it maps the document
+  onto the view's type and does nothing more. A consumer that needs it read
+  differently — or that runs against a system answering in a shape the default
+  does not fit — passes its own reader **and keeps a type**. Falling back on a
+  raw response would mean going untyped, which is what this package exists to
+  prevent.
+
+  Searching and filtering are not what this is for. Those belong to the server,
+  which has endpoints for them.
+
+  This is the pattern the transport tree already uses, where `listNodes()` takes
+  an optional parser. The shape differs for one measured reason: `listNodes()`
+  is an overload on a **concrete class** that nobody else implements, while
+  `ITraceReading` is implemented by consumers, and an overloaded method cannot
+  be satisfied by an object literal. The `__typechecks__` file proved that the
+  moment it was tried, so this is a second method rather than an overload — a
+  contract awkward to implement is a contract that gets worked around.
+
+  Additive: existing implementations of `IProfiler` gain a member to write, and
+  existing callers are untouched.
+
 ## [22.0.0] - 2026-08-28
 
 ### Changed
@@ -1644,6 +1673,7 @@ connection.setSessionState(state);
   - `validation/` - Validation interfaces
   - `utils/` - Utility types and interfaces
 
+[22.1.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v22.0.0...v22.1.0
 [22.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v21.0.0...v22.0.0
 [21.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v20.0.0...v21.0.0
 [20.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v19.0.0...v20.0.0

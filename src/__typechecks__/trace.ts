@@ -139,6 +139,19 @@ const _profiler: IProfiler = {
     // signature, so this is the narrowest thing that satisfies it.
     return undefined as never;
   },
+  // The consumer-supplied reader. Satisfiable by an object literal, which an
+  // overload on `read` was not — the reason this is a second method.
+  readWith: async <K extends keyof IAbapTraceViews, T>(
+    parse: (data: unknown) => T,
+    traceId: string,
+    view: K,
+    ...args: ViewArgs<IAbapTraceViews, K>
+  ): Promise<T> => {
+    void traceId;
+    void view;
+    void args;
+    return parse('<trc:hitlist/>');
+  },
 };
 void _profiler;
 
@@ -154,10 +167,18 @@ async function _profilerCalls(p: IProfiler) {
     ?.total;
   const kind: 'profiler' = p.kind;
 
+  // A consumer's own reader keeps its own type — no fallback to a raw
+  // response, and no obligation to accept ours.
+  const mine: { rows: number } = await p.readWith(
+    (data) => ({ rows: String(data).length }),
+    't1',
+    'hitlist',
+  );
+
   // @ts-expect-error a cross-trace option is not a profiler option
   await p.list({ traceUser: 'A' });
 
-  return { rows, total, kind };
+  return { rows, total, kind, mine };
 }
 void _profilerCalls;
 
