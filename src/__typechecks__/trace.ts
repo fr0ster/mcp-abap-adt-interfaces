@@ -203,6 +203,14 @@ const _profiler: IProfiler = {
   },
   // Deletion is part of the contract now, so an implementer owes it — a
   // profiler that only reads no longer satisfies `IProfiler`.
+  // The consumer's own reader for the LIST, mirroring `readWith` for a view.
+  listWith: async <T>(
+    parse: (data: unknown) => T,
+    options?: { user?: string },
+  ): Promise<T> => {
+    void options?.user;
+    return parse('<atom:feed/>');
+  },
   delete: async (traceId: string) => {
     void traceId;
   },
@@ -232,6 +240,15 @@ async function _profilerCalls(p: IProfiler) {
   // Deletion answers with nothing — a caller awaits it, and has no result to
   // read.
   const deleted: void = await p.delete('t1');
+
+  // A consumer's own reader for the listing keeps its own type too — the
+  // asymmetry this closes: `read` had `readWith`, `list` had nothing, and the
+  // implementation grew a `listTraceFilesResponse()` on the concrete class that
+  // nobody holding `IProfiler` could reach.
+  const myList: { count: number } = await p.listWith(
+    (data) => ({ count: String(data).length }),
+    { user: 'SOMEONE' },
+  );
 
   // @ts-expect-error a cross-trace option is not a profiler option
   await p.list({ traceUser: 'A' });
