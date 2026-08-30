@@ -14,6 +14,12 @@ reason.
 decided, what it was decided *against*, why, and what would change it. An entry
 that cannot name what would overturn it is a preference, not a decision.
 
+**Where the evidence lives.** Some of it is not in this repository. This package
+is the contract; `@mcp-abap-adt/adt-clients` is the implementation these decisions
+were forced by, and several entries cite its files. Those are marked
+**[adt-clients]** and linked, so a reader can check the claim rather than take it.
+Links are pinned to a commit — a moving link is not evidence.
+
 **Superseding.** Do not delete an entry. Mark it superseded and link to the one
 that replaces it: the history of a reversed decision is the most useful part of
 it.
@@ -59,6 +65,12 @@ types promised; removing them was a breaking release that made the types honest.
 read, update, delete, validate, activate, lock — and not versioning, checking or
 transports, because nothing measured says a `PROG/I` include has them.
 
+**What would change it.** A capability that genuinely varies *within* one type —
+present on one release and absent on the next, with callers needing to ask at
+runtime rather than at compile time. Nothing measured behaves that way yet:
+where support varies by system, the request simply fails, and the type stays
+true.
+
 ---
 
 ## 3. Capabilities are atoms, composed — not one wide interface
@@ -75,6 +87,11 @@ answer for trace parameters. Composed in, the capability is stated exactly where
 it is true — and a typecheck holds the line: an ATC-shaped runnable compiles with
 no scheduling member and stops compiling if scheduling ever migrates upward.
 
+**What would change it.** Enough atoms that a consumer cannot find the one it
+needs — composition has a cost, and it is paid in names. If a reader has to
+assemble five interfaces to state an ordinary handler, the split has gone too
+far and should be collapsed where the pieces are never used apart.
+
 ---
 
 ## 4. The library speaks ADT; it does not validate
@@ -86,16 +103,17 @@ entitled to send what it sent.
 values — so a malformed document is refused rather than mapped.
 
 **Why.** The server is the authority on its own responses, and where a check is
-genuinely needed ADT has an endpoint for it: `AdtInclude.validate()` posts to
-`/includes/validation`. A library that also judges the wire accumulates claims
-nobody measured, and each guard invites the next: one trace parser grew six
-levels of them across eleven review rounds, including a validator that rejected
+genuinely needed ADT has an endpoint for it: [`AdtInclude.validate()`](https://github.com/fr0ster/mcp-abap-adt-clients/blob/8b2b4b5/src/core/include/AdtInclude.ts) **[adt-clients]**
+posts to `/includes/validation`. A library that also judges the wire accumulates claims
+nobody measured, and each guard invites the next: one [trace parser](https://github.com/fr0ster/mcp-abap-adt-clients/blob/8b2b4b5/src/runtime/traces/traceParsing.ts)
+**[adt-clients]** grew six levels of them across eleven review rounds, including a validator that rejected
 timestamps RFC 3339 explicitly permits. All of it was removed; the file went from
 1020 lines to 343.
 
 **Where the line runs.** If code answers *"was SAP entitled to send this?"* it
 does not belong here. If it answers *"what do I do with what arrived?"* it does.
-That is why `compareRecordedAt` survived the removal: comparing ISO timestamps
+That is why [`compareRecordedAt`](https://github.com/fr0ster/mcp-abap-adt-clients/blob/8b2b4b5/src/runtime/traces/traceParsing.ts)
+**[adt-clients]** survived the removal: comparing ISO timestamps
 as strings is wrong across UTC offsets regardless of what SAP sends, and
 `latestTraceId()` exists precisely to avoid taking a stale trace.
 
@@ -104,6 +122,13 @@ error payloads; when it uses neither, relaying emptiness is accurate. The known
 hazard around empty reads belongs to the *update* path on editable objects,
 where an empty read becomes the basis of a write that erases what was there. It
 does not transfer to read-only views.
+
+**What would change it.** A case where a silently mismapped document caused
+damage the server could not have prevented — a wrong read becoming the basis of
+a write, which is the one shape where emptiness is dangerous. That is why the
+*update* path is excluded from this rule rather than covered by it. A second
+condition: if ADT were shown to return malformed documents routinely rather than
+exceptionally, mapping them faithfully would stop being the honest choice.
 
 **Superseded within itself.** Earlier releases of the trace parser did validate.
 This entry records why that was reversed rather than pretending it never
@@ -115,7 +140,8 @@ happened.
 
 **Decided.** A plain default mapping, plus a way for the consumer to supply its
 own reader and keep a type: `ITraceReadingWithParser.readWith()`,
-`AdtRequest.listNodes(parse)`.
+[`AdtRequest.listNodes(parse)`](https://github.com/fr0ster/mcp-abap-adt-clients/blob/8b2b4b5/src/core/transport/AdtRequest.ts)
+**[adt-clients]**.
 
 **Against.** Growing filtering and reshaping options on our side; or handing
 back a raw response and telling the consumer to go untyped.
@@ -125,10 +151,15 @@ them. A consumer whose system answers in a shape our default does not fit needs
 a type, not an escape hatch.
 
 **Shape note.** `readWith` is a **method** and not an overload on `read`, and
-that came from the compiler rather than from taste: `listNodes()` is an overload
-on a concrete class nobody else implements, while `ITraceReading` is implemented
+that came from the compiler rather than from taste: `listNodes()` **[adt-clients]** is an
+overload on a concrete class nobody else implements, while `ITraceReading` is implemented
 by consumers, and an overloaded method cannot be satisfied by an object literal.
 The typecheck failed the moment it was tried.
+
+**What would change it.** The default mapping failing on a second system. One
+consumer needing a different reading is what `readWith` is for; two systems
+disagreeing would mean our default encodes one landscape's quirk and should be
+replaced by something both fit — or removed, leaving only the caller's reader.
 
 ---
 
@@ -143,6 +174,10 @@ The typecheck failed the moment it was tried.
 `implements` there has to be something to write. An anonymous type forces the
 consumer to re-declare the same fields in its own code — the duplication this
 package exists to remove.
+
+**What would change it.** A shape that is genuinely internal — never returned,
+never accepted, never named by a consumer. There are none in this contract
+today, and a returned shape is by definition not one.
 
 ---
 
@@ -162,8 +197,14 @@ age, so it could return a trace from eight days earlier with nothing to say it
 had.
 
 **Consequence.** A caller that wants its own trace notes the ids before running
-and looks for one that is new. The waiting lives in the test helper, because
+and looks for one that is new. The waiting lives in the consumer's test helper **[adt-clients]**, because
 only the caller knows how long it is willing to wait.
+
+**What would change it.** ADT offering a synchronous mode that hands back the
+trace id with the run, the way the ATC run takes `clientWait`. Then the run
+*could* promise one, and refusing to would be the dishonest choice. Worth
+re-checking on each release: this is a property of the server, not of the
+design.
 
 **Supersedes** the proposal in `#45` to put `latestTraceId()` on the contract:
 "newest" is rarely the question, and the id now comes back from `list()` itself.
@@ -181,6 +222,10 @@ only the caller knows how long it is willing to wait.
 destroys the leading zero irreversibly. The test that pins `client` exists
 because a number is the obvious wrong choice.
 
+**What would change it.** A field measured to be a genuine count that this rule
+typed as a string out of caution. The test is per field, not blanket, precisely
+so a mistake in one direction is visible.
+
 ---
 
 ## 9. Green is not proof
@@ -196,16 +241,24 @@ what it asserts proves direction. Both are needed.
 
 **Consequence for parsers.** Compile-time proof does not reach a round trip. The
 fourteen fields of `IAbapTraceEntry` are required by the type and unchecked at
-runtime, so `scripts/print-trace-entry.ts` reads a live feed and names anything
-that came back `undefined` — because a field the wire omits arrives as
-`undefined` despite the type.
+runtime, so [`scripts/print-trace-entry.ts`](https://github.com/fr0ster/mcp-abap-adt-clients/blob/8b2b4b5/scripts/print-trace-entry.ts)
+**[adt-clients]** reads a live feed and names anything that came back `undefined` — because a field the wire omits arrives as `undefined`
+despite the type.
+
+**What would change it.** A harness that proves sensitivity on its own —
+mutation testing, or a gate that fails a test which passes against both the old
+and the new behaviour. Running each test red by hand is a stand-in for that, not
+a preference; automate it and this entry becomes redundant.
 
 ---
 
 ## 10. A guard that can be silenced is not a guard
 
-**Decided.** Tools live under the same compiler as the code. `scripts/**/*` is
-in both test tsconfigs.
+**Decided.** Tools live under the same compiler as the code. In
+`@mcp-abap-adt/adt-clients` **[adt-clients]** that means `scripts/**/*` in both
+test tsconfigs; this package has no scripts directory, and the rule is recorded
+here because it is the same one that puts `__typechecks__` under `tsc` rather
+than beside it.
 
 **Against.** Adding files to the config one at a time, and reaching for
 `as any` when a signature changes.
@@ -217,3 +270,10 @@ silence. A tool that fails is better than one that lies. And when the scripts
 were finally put under the compiler, four `(connection as any).reset()` calls
 survived it — the cast telling the compiler to stop looking at precisely the API
 that had been removed.
+
+**What would change it.** A genuinely untyped boundary — a third-party module
+with no declarations, or a deliberate runtime probe of a shape the compiler
+cannot know. Then the escape is legitimate, and the rule becomes: name it, scope
+it to one expression, and say in a comment what is being asserted and why the
+compiler cannot check it. A bare `as any` on a typed object of ours stays
+forbidden.
