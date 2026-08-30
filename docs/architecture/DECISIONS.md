@@ -10,9 +10,12 @@ bodies and code comments: findable only by someone who already knew what to look
 for. Several decisions below were re-litigated more than once for exactly that
 reason.
 
-**Adding an entry.** One per decision, in the shape used below. Say what was
-decided, what it was decided *against*, why, and what would change it. An entry
-that cannot name what would overturn it is a preference, not a decision.
+**Adding an entry.** One per decision, in the shape used below, and it starts
+from the **problem** — the thing that was actually hit, not the principle it
+illustrates. Then what was decided, what it was decided *against*, why, and what
+would change it. An entry that cannot name what would overturn it is a
+preference, not a decision; an entry that cannot name the problem is a rule
+somebody invented.
 
 **Where the evidence lives.** Some of it is not in this repository. This package
 is the contract; `@mcp-abap-adt/adt-clients` is the implementation these decisions
@@ -282,3 +285,41 @@ cannot know. Then the escape is legitimate, and the rule becomes: name it, scope
 it to one expression, and say in a comment what is being asserted and why the
 compiler cannot check it. A bare `as any` on a typed object of ours stays
 forbidden.
+
+---
+
+## 11. A member is added because someone needs it, not because a sibling has one
+
+**The problem.** `readWith` gives a consumer its own reader for a trace view.
+A proposal followed to add `listWith`, giving it its own reader for the listing
+— on the grounds that the contract was "lopsided" without it.
+
+**Decided.** No `listWith`. The proposal was reverted before it shipped.
+
+**Against.** Completing a pattern for its own sake.
+
+**Why.** The two cases are not alike, and one look at the sizes says so: a view
+is 473 rows of hit list, 1801 statements, 1.3MB, with nested program references
+— a system that structures that differently is imaginable. A listing is an id
+and a few identifying fields: fourteen of them, measured on two systems that
+agreed. There is nothing there to parse differently.
+
+Symmetry is not a requirement. It is pattern-matching that looks like design,
+and it costs every implementer of the contract a member to write.
+
+**The reasoning that made it look justified, which is the part worth keeping.**
+The evidence offered was
+[`listTraceFilesResponse()`](https://github.com/fr0ster/mcp-abap-adt-clients/blob/8b2b4b5/src/runtime/traces/ProfilerDomain.ts)
+**[adt-clients]** on the concrete `Profiler` — "the need is real, the
+implementation already has it". That
+method was added in `22.0.0` as a fallback when `list()` began returning parsed
+entries, by the same hand that then cited it, and it has no callers outside its
+own class. Inventing something and later quoting its existence as a requirement
+is circular, and it is hard to see from inside: the artefact is genuinely there.
+
+**How to catch it.** Ask who calls the thing. Zero callers outside the code that
+declares it is not evidence of demand — it is evidence of an unused method.
+
+**What would change it.** A consumer showing a system whose trace feed does not
+fit `IAbapTraceEntry`. Then the listing has the same problem the views have, and
+the same answer.
