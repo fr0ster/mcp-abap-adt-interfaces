@@ -201,6 +201,11 @@ const _profiler: IProfiler = {
     void args;
     return parse('<trc:hitlist/>');
   },
+  // Deletion is part of the contract now, so an implementer owes it — a
+  // profiler that only reads no longer satisfies `IProfiler`.
+  delete: async (traceId: string) => {
+    void traceId;
+  },
 };
 void _profiler;
 
@@ -224,10 +229,14 @@ async function _profilerCalls(p: IProfiler) {
     'hitlist',
   );
 
+  // Deletion answers with nothing — a caller awaits it, and has no result to
+  // read.
+  const deleted: void = await p.delete('t1');
+
   // @ts-expect-error a cross-trace option is not a profiler option
   await p.list({ traceUser: 'A' });
 
-  return { rows, total, kind, mine };
+  return { rows, total, kind, mine, deleted };
 }
 void _profilerCalls;
 

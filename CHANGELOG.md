@@ -1802,6 +1802,7 @@ connection.setSessionState(state);
   - `validation/` - Validation interfaces
   - `utils/` - Utility types and interfaces
 
+[25.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v24.0.0...v25.0.0
 [24.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v23.0.0...v24.0.0
 [23.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v22.0.0...v23.0.0
 [22.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v21.0.0...v22.0.0
