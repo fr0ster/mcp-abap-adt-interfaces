@@ -16,6 +16,18 @@ the implementation package to do it. Concrete implementations (parsers,
 request builders, the shipped `IAdtContentTypes` classes) stay in
 `adt-clients`; this package never depends on it.
 
+## Decisions, and why
+
+[`docs/architecture/DECISIONS.md`](docs/architecture/DECISIONS.md) records the
+choices in this contract that could reasonably have gone the other way — what
+was decided, what it was decided *against*, and what would change it.
+
+Read it before proposing a shape that looks obviously better: several of the
+entries exist because that shape was tried, and the reason it lost is written
+down. The contract is measured rather than inferred, states absence by omission
+rather than by negative types, and does not validate what SAP sends — each with
+the evidence that settled it.
+
 ## Installation
 
 ```bash
