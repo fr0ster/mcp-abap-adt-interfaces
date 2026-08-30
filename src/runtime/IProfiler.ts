@@ -7,7 +7,6 @@ import type {
 import type {
   ITraceDeletion,
   ITraceFamily,
-  ITraceListingWithParser,
   ITraceReading,
   ITraceReadingWithParser,
   ITraceView,
@@ -96,5 +95,4 @@ export type IProfiler = ITraceFamily<
 > &
   ITraceReading<IAbapTraceViews> &
   ITraceReadingWithParser<IAbapTraceViews> &
-  ITraceListingWithParser<IProfilerListOptions> &
   ITraceDeletion;

@@ -540,7 +540,6 @@ export type {
   ITraceEntry,
   ITraceFamily,
   ITraceListing,
-  ITraceListingWithParser,
   ITraceReading,
   ITraceReadingWithParser,
   ITraceState,

@@ -162,31 +162,6 @@ export interface ITraceReadingWithParser<
 }
 
 /**
- * Listing traces with a parser the caller supplies.
- *
- * The counterpart to {@link ITraceReadingWithParser}, and it exists because the
- * contract was lopsided without it: a consumer could bring its own reader for
- * what is *inside* a trace and had none for the list of traces itself. The
- * implementation carried a `listTraceFilesResponse()` for exactly that need —
- * on the concrete class, where nobody holding `IProfiler` could reach it, which
- * is the shape this package exists to prevent.
- *
- * Same reasoning as the reading counterpart: the default {@link ITraceListing}
- * maps the feed onto the family's entry type and does nothing more, and a
- * consumer whose system answers differently passes its own reader **and keeps a
- * type** rather than being sent back to a raw response.
- *
- * A separate atom rather than a member of `ITraceListing`, because a family may
- * offer the plain listing and not this — and because an optional method would
- * say "perhaps", which this contract does not do.
- *
- * @param parse receives the response body exactly as it arrived, unopened
- */
-export interface ITraceListingWithParser<TOptions = void> {
-  listWith<T>(parse: (data: unknown) => T, options?: TOptions): Promise<T>;
-}
-
-/**
  * Removing a trace.
  *
  * Its own atom, beside {@link ITraceListing} and {@link ITraceReading}, because

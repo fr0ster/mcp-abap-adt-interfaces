@@ -11,20 +11,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `ITraceListingWithParser` — listing traces with a parser the caller supplies,
-  and `listWith(parse, options?)` on it. `IProfiler` composes it.
-
-  The contract was lopsided: a consumer could bring its own reader for what is
-  *inside* a trace (`readWith`, 23.0.0) and had none for the list of traces
-  itself. The implementation had grown a `listTraceFilesResponse()` for exactly
-  that need — on the concrete class, where nobody holding `IProfiler` could
-  reach it, which is the shape this package exists to prevent.
-
-  This is what `#45` was really asking for. That PR proposed `listTraceIds()`
-  and `latestTraceId()` on the contract; those are derivable from `list()` and
-  an ordering comparator, and "newest" is rarely the question a caller has — but
-  the gap it named was real, and this closes it.
-
 - **BREAKING** — `ITraceDeletion`, and `IProfiler` composes it.
 
   ```ts
