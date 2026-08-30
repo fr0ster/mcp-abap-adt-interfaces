@@ -176,15 +176,20 @@ export interface ITraceReadingWithParser<
  * handing back a raw body is the thing this family stopped doing in 23.0.0.
  *
  * **What deleting an id that is not there does has NOT been measured.** Only the
- * `200` above was: one existing trace, once. An earlier draft of this comment
- * said a trace that is gone and one that never was leave the caller in the same
- * place — that was a guess about idempotence, and a caller writing cleanup would
- * have relied on it.
+ * `200` above was: one existing trace, once. An earlier draft said a trace that
+ * is gone and one that never was leave the caller in the same place, and a
+ * caller writing cleanup would have relied on that.
  *
- * `void` describes the resolved value and says nothing about failure: a `404`,
- * or any transport error, **rejects**. Until somebody measures a repeat delete,
- * a caller that must tolerate a missing id has to catch — and if the server
- * turns out to answer `200` there too, this becomes one sentence shorter.
+ * Note what the HTTP definition does and does not give here. `DELETE` is
+ * idempotent (RFC 9110 §9.2.2), but that is a statement about the **effect on
+ * the server** — the resource ends up absent either way. It promises nothing
+ * about the **status returned**, and the status is what decides whether this
+ * promise resolves or rejects. So idempotence is true and useless to a caller.
+ *
+ * What a caller needs to know is unmeasured: whether a second delete answers
+ * `200` or `404`. `void` describes the resolved value and says nothing about
+ * failure — a `404`, or any transport error, **rejects**. Until somebody
+ * measures a repeat, code that must tolerate a missing id has to catch.
  */
 export interface ITraceDeletion {
   delete(traceId: string): Promise<void>;

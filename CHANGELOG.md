@@ -41,10 +41,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   bodies left this family in 23.0.0.
 
   **Deleting an id that is not there has not been measured.** What was measured
-  is one `DELETE` of one existing trace answering `200`. `void` describes the
-  resolved value and says nothing about failure: a `404`, or any transport
-  error, rejects. A caller writing cleanup that must tolerate a missing id has
-  to catch until somebody measures a repeat delete.
+  is one `DELETE` of one existing trace answering `200`.
+
+  `DELETE` being idempotent per RFC 9110 does not help: idempotence is about the
+  effect on the server — the resource ends up absent either way — and says
+  nothing about the status returned. The status is what decides whether this
+  promise resolves or rejects, and `void` describes only the resolved value. So
+  a `404`, or any transport error, rejects. Code that must tolerate a missing id
+  has to catch until somebody measures a repeat delete.
 
   Its own atom rather than a member of `ITraceListing`, because listing and
   removing are separate capabilities and a family that only lists should be able
