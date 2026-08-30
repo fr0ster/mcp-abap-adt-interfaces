@@ -37,9 +37,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   implementer of `IProfiler` no longer satisfies it. Consumers only calling the
   interface are unaffected.
 
-  `void`, not a response — a caller has nothing to read from a deletion, and
-  raw bodies left this family in 23.0.0. Absence is not reported either: a trace
-  that is gone and one that never existed leave the caller in the same place.
+  `void`, not a response — a caller has nothing to read from a deletion, and raw
+  bodies left this family in 23.0.0.
+
+  **Deleting an id that is not there has not been measured.** What was measured
+  is one `DELETE` of one existing trace answering `200`. `void` describes the
+  resolved value and says nothing about failure: a `404`, or any transport
+  error, rejects. A caller writing cleanup that must tolerate a missing id has
+  to catch until somebody measures a repeat delete.
 
   Its own atom rather than a member of `ITraceListing`, because listing and
   removing are separate capabilities and a family that only lists should be able

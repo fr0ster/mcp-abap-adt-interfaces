@@ -174,8 +174,17 @@ export interface ITraceReadingWithParser<
  *
  * `void`, not a response: a caller has nothing to read from a deletion, and
  * handing back a raw body is the thing this family stopped doing in 23.0.0.
- * Whether the id existed is not reported either — a trace that is gone and one
- * that never was leave the caller in the same place.
+ *
+ * **What deleting an id that is not there does has NOT been measured.** Only the
+ * `200` above was: one existing trace, once. An earlier draft of this comment
+ * said a trace that is gone and one that never was leave the caller in the same
+ * place — that was a guess about idempotence, and a caller writing cleanup would
+ * have relied on it.
+ *
+ * `void` describes the resolved value and says nothing about failure: a `404`,
+ * or any transport error, **rejects**. Until somebody measures a repeat delete,
+ * a caller that must tolerate a missing id has to catch — and if the server
+ * turns out to answer `200` there too, this becomes one sentence shorter.
  */
 export interface ITraceDeletion {
   delete(traceId: string): Promise<void>;
