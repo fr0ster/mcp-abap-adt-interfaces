@@ -115,7 +115,8 @@ does not belong here. If it answers *"what do I do with what arrived?"* it does.
 That is why [`compareRecordedAt`](https://github.com/fr0ster/mcp-abap-adt-clients/blob/8b2b4b5/src/runtime/traces/traceParsing.ts)
 **[adt-clients]** survived the removal: comparing ISO timestamps
 as strings is wrong across UTC offsets regardless of what SAP sends, and
-`latestTraceId()` exists precisely to avoid taking a stale trace.
+[`latestTraceId()`](https://github.com/fr0ster/mcp-abap-adt-clients/blob/8b2b4b5/src/runtime/traces/ProfilerDomain.ts) **[adt-clients]**
+exists precisely to avoid taking a stale trace.
 
 **A 200 with an empty body is a faithful "nothing".** ADT has 404 and it has
 error payloads; when it uses neither, relaying emptiness is accurate. The known
@@ -151,8 +152,9 @@ them. A consumer whose system answers in a shape our default does not fit needs
 a type, not an escape hatch.
 
 **Shape note.** `readWith` is a **method** and not an overload on `read`, and
-that came from the compiler rather than from taste: `listNodes()` **[adt-clients]** is an
-overload on a concrete class nobody else implements, while `ITraceReading` is implemented
+that came from the compiler rather than from taste:
+[`listNodes()`](https://github.com/fr0ster/mcp-abap-adt-clients/blob/8b2b4b5/src/core/transport/AdtRequest.ts)
+**[adt-clients]** is an overload on a concrete class nobody else implements, while `ITraceReading` is implemented
 by consumers, and an overloaded method cannot be satisfied by an object literal.
 The typecheck failed the moment it was tried.
 
@@ -197,8 +199,9 @@ age, so it could return a trace from eight days earlier with nothing to say it
 had.
 
 **Consequence.** A caller that wants its own trace notes the ids before running
-and looks for one that is new. The waiting lives in the consumer's test helper **[adt-clients]**, because
-only the caller knows how long it is willing to wait.
+and looks for one that is new. The waiting lives in
+[`waitForNewTrace`](https://github.com/fr0ster/mcp-abap-adt-clients/blob/8b2b4b5/src/__tests__/helpers/traceHelpers.ts)
+**[adt-clients]**, because only the caller knows how long it is willing to wait.
 
 **What would change it.** ADT offering a synchronous mode that hands back the
 trace id with the run, the way the ATC run takes `clientWait`. Then the run
@@ -255,8 +258,10 @@ a preference; automate it and this entry becomes redundant.
 ## 10. A guard that can be silenced is not a guard
 
 **Decided.** Tools live under the same compiler as the code. In
-`@mcp-abap-adt/adt-clients` **[adt-clients]** that means `scripts/**/*` in both
-test tsconfigs; this package has no scripts directory, and the rule is recorded
+`@mcp-abap-adt/adt-clients` that means `scripts/**/*` in both
+[`tsconfig.test.json`](https://github.com/fr0ster/mcp-abap-adt-clients/blob/8b2b4b5/tsconfig.test.json) and
+[`tsconfig.test.integration.json`](https://github.com/fr0ster/mcp-abap-adt-clients/blob/8b2b4b5/tsconfig.test.integration.json)
+**[adt-clients]**; this package has no scripts directory, and the rule is recorded
 here because it is the same one that puts `__typechecks__` under `tsc` rather
 than beside it.
 
