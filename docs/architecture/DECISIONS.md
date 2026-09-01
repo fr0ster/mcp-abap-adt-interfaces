@@ -386,3 +386,35 @@ contradict decision 11 in the same stroke.
 contract is open: where a set of atoms is used by one handler it is spelled at
 the getter, and earns a name when a second handler wants the same set.
 
+---
+
+## 13. What a method hands back is named by a contract, never by an implementation
+
+Decision 12 for return types of factories; this is the same rule for the results
+of every other method.
+
+**Decided.** It does not matter what concrete type an implementation returns, as
+long as it satisfies the contract the caller was promised. `Promise<T>` is a
+promise about `T`, and `T` is what the consumer holds — so `T` is a contract.
+
+**Against.** `Promise<IAdtResponse>` as a result. It names the transport
+envelope, which every method could name, and tells the consumer only that a
+request happened.
+
+**The problem.** `IAdtUtilities` has 31 members. Eight resolve to a contract; 23
+resolve to the envelope.
+
+**Why.** A consumer decides what to do next from the type it was handed. If that
+type is the envelope, the decision is made by reading the implementation instead
+— which is the coupling a contract exists to remove, and the same coupling
+decision 12 removed at the factory.
+
+**Where `T` comes from** is the smaller question: measured, or supplied by the
+consumer through a parser the implementation must satisfy. Decision 5 decides
+which — small and stable, measure it; large or system-dependent, let the consumer
+read it — and decision 1 forbids inventing it.
+
+**How to catch it.** `Promise<IAdtResponse>` in a published contract. Correct only
+where the answer genuinely is the envelope, and that should be said at the member.
+
+**What would change it.** Nothing. The 23 close one at a time.
