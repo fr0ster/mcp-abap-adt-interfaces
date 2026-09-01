@@ -386,3 +386,135 @@ contradict decision 11 in the same stroke.
 contract is open: where a set of atoms is used by one handler it is spelled at
 the getter, and earns a name when a second handler wants the same set.
 
+---
+
+## 13. What a method hands back is named by a contract, never by an implementation
+
+Decision 12 for return types of factories; this is the same rule for the results
+of every other method.
+
+**Decided.** It does not matter what concrete type an implementation returns, as
+long as it satisfies the contract the caller was promised. `Promise<T>` is a
+promise about `T`, and `T` is what the consumer holds — so `T` is a contract.
+
+**Against.** `Promise<IAdtResponse>` as a result. It names the transport
+envelope, which every method could name, and tells the consumer only that a
+request happened.
+
+**The problem.** `IAdtUtilities` has 31 members. Eight resolve to a contract; 23
+resolve to the envelope.
+
+**Why.** A consumer decides what to do next from the type it was handed. If that
+type is the envelope, the decision is made by reading the implementation instead
+— which is the coupling a contract exists to remove, and the same coupling
+decision 12 removed at the factory.
+
+**Where `T` comes from.** Measured. Decision 1 forbids inventing it, and nothing
+else supplies it.
+
+**A strategy is not a result contract, and they are different planes.** Decision 5
+lets a consumer pass a parser where the implementation *deliberately delegates the
+choice* — a large XML whose shape is not ours to fix. That is strategy injection:
+the caller decides how the document is read.
+
+It does not answer this decision, and using it to try was the mistake that
+produced this paragraph. Handing the caller a parser makes the caller decide what
+comes back, which is the opposite of a contract: the point of returning one is
+that the consumer is **not** rewritten when the implementation changes. A
+consumer who wants different behaviour imports a different implementation; it
+does not describe the result at the call site.
+
+Concretely: an attempt to close 23 envelope-returning members by giving each a
+`<T>(parse, …)` overload compiled, and immediately cost every implementer two
+signatures per method — the cost decision 11 exists to refuse. The two planes
+compose (a method can return a contract *and* take a strategy) but neither
+substitutes for the other.
+
+**The envelope is a container for everything, which is the deeper fault.**
+`IAdtResponse<T = any>` defaults its body to `any`. Counted: **180** uses in this
+package name no type argument against **4** that do, and in
+`@mcp-abap-adt/adt-clients` it is **1121 against 5**. The generic exists and is
+not used, so every method sharing this return shares one type — apples and
+oranges in one container, and no consumer can tell them apart.
+
+And it is not the wire that does this. Of the 180 here, **one** is in
+`connection/`, where an envelope belongs. The other 179 are in contracts: 48 in
+`adt/`, 81 in `runtime/`, of which `IDebugger` alone accounts for 40. The
+envelope leaked into the contracts almost in its entirety.
+
+So this decision is not about `IAdtUtilities`' twelve. Counted with the parser
+rather than estimated: **94 method signatures** in this package return exactly
+`Promise<IAdtResponse>`, against **139** that name a result. The twelve are where
+the counting started, and they are an eighth of it.
+
+Where the 94 sit matters more than the total, because it says what closing them
+would take:
+
+| interface | members answering the envelope |
+|---|---|
+| `IAbapDebugger` | 25 |
+| `IAdtServiceBinding` | 15 |
+| `IAmdpDebugger` | 14 |
+| `IMemorySnapshots` | 9 |
+| `IAdtUtilities` atoms | 12 across seven |
+| everything else | 19, in ones and twos |
+
+Three interfaces hold half of it, and 48 of those 94 are the debugger — which is
+[deliberately out of scope](#idebugger-is-not-a-design-problem-yet) until its own
+shape is settled. The long tail is where this rule is cheap to apply; the
+concentrations are where it is a redesign wearing a return type.
+
+**How to catch it.** `Promise<IAdtResponse>` in a published contract, or
+`IAdtResponse` written without a type argument anywhere it is a *result* rather
+than a transport frame. Correct only where the answer genuinely is the envelope —
+a status with no body worth naming — and that should be said at the member.
+
+**A contract names an essence, not a method.** This is what stops the rule from
+meaning "94 new types". A contract differs from a concrete class by saying *how
+to work with the thing*, and two methods return the **same** contract when their
+results mean the same. `IAdtObjectHit` already works that way here: `search`,
+`getWhereUsedList`, `getPackageContentsList` and `getPackageHierarchy` all answer
+"an identified object in the repository", through types that extend it.
+
+So the question at each member is not "what shall I call this one" but "which
+essence is this". A heap of one-method result types would be the same mistake as
+the envelope with the sign reversed: instead of everything meaning one thing,
+nothing would mean the same as anything.
+
+**The test for whether two things are the same contract: substitution.**
+Implementations of one contract are interchangeable — a caller holding the
+contract can be handed either and carry on. If the logic forbids putting one
+where the other is expected, they implement **different contracts, even with
+identical methods**.
+
+TypeScript will not tell you this. Structural typing says two classes with the
+same members satisfy the same interface, and it is right about the shape and
+silent about the meaning. `AdtRequestLegacy` **[adt-clients]** has every method
+`AdtRequest` has — by inheritance — and refuses four of them; the compiler was
+content for years. They are not implementations of one contract, and decision 11
+is the consequence.
+
+The same test decides result grouping. Two methods return one contract when a
+caller could take either answer and do the same thing with it. Where that is not
+true, the shared name would be a lie that reads as economy — so the question
+"which essence is this" is answered by trying the substitution, not by the
+members lining up.
+
+**What would change it.** Nothing about the rule. The members close one at a
+time, each on evidence, and each closure is a member that stops meaning the same
+thing as every other.
+
+### IDebugger is not a design problem yet
+
+48 of the 94 envelope members are `IAbapDebugger` and `IAmdpDebugger`, which
+makes them look like the obvious place to start. They are excluded on purpose.
+
+The debugger has architectural problems below the level a return type can reach,
+and an interface is a statement about a design that has settled. Naming results
+for it now would fix the current shape in a contract and make the redesign a
+breaking change — paying the price of a decision before making it. The envelope
+here is a symptom, and the counts above keep it visible without treating it as
+the next task.
+
+**What would change it.** The debugger's own design being settled. Until then it
+is counted and left alone.
