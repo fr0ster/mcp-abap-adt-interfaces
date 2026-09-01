@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
 ## [26.0.0] - 2026-09-01
 
 ### Changed
@@ -31,8 +34,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Closes #54, reported from `@mcp-abap-adt/adt-clients`, where the implementation
   currently declares the parameter **optional** to satisfy this interface and
   throws when it is missing. That cast goes when this is consumed.
-
-## [Unreleased]
 
 ## [25.0.0] - 2026-08-30
 
@@ -1838,6 +1839,7 @@ connection.setSessionState(state);
   - `validation/` - Validation interfaces
   - `utils/` - Utility types and interfaces
 
+[26.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v25.0.0...v26.0.0
 [25.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v24.0.0...v25.0.0
 [24.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v23.0.0...v24.0.0
 [23.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v22.0.0...v23.0.0
