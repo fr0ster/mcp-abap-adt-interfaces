@@ -351,6 +351,15 @@ export type {
   IUnitTestScope,
   IUnitTestState,
 } from './adt/IAdtUnitTest';
+export type {
+  IAdtDataPreview,
+  IAdtDiscovery,
+  IAdtGroupLifecycle,
+  IAdtInformationSystem,
+  IAdtObjectAccess,
+  IAdtPackageBrowsing,
+  IAdtRepositoryStructure,
+} from './adt/IAdtUtilities';
 export type { AuthType as AuthTypeEnum } from './auth/AuthType';
 // Auth domain
 export type { IAuthorizationConfig } from './auth/IAuthorizationConfig';
