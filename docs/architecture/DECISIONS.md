@@ -349,15 +349,28 @@ class, and the third is the one that decided it:
   not hold.
 - **Compose.** They cannot intersect the return with their own types, because
   there is no interface to intersect with.
-- **Be checked.** `src/__tests__/unit/capabilities/` **[adt-clients]** compares
-  every factory's *declared* return against the capabilities its manifest claims.
-  Where the declared type is the implementation, the comparison is between a
-  thing and itself. The guard reported 36 of 38 factories verified and was silent
-  about the two it could not see — and silence there reads exactly like a pass.
+- **Be enforced by the compiler.** With a contract as the return type, the class
+  must satisfy it *at the factory*, or the package does not build. Removing
+  `list()` from `AdtRequest` gives
+  `AdtClient.ts: Property 'list' is missing in type 'AdtRequest' but required in
+  type 'IAdtRequest'` **[adt-clients]**. With the class as the return type the
+  same removal is caught only by whatever happens to call the method — two errors
+  inside the transport module itself, none at the factory. Had no internal caller
+  existed, the method could have disappeared and the build stayed green while
+  consumers silently lost it.
 
-That last point is why this is not cosmetic. Decision 10 says a guard that can be
-silenced is not a guard; this is a guard that was silent by construction, for the
-two returns most likely to grow a method nobody weighed against a contract.
+That last point is why this is not cosmetic: the contract is the only thing that
+makes "this handler still offers what it offered" a question the compiler asks.
+
+**A correction, kept because the wrong reason is instructive.** The first version
+of this entry claimed the capability guard in `src/__tests__/unit/capabilities/`
+**[adt-clients]** was blind to the two concrete returns — "a comparison between a
+thing and itself". That is false, and one experiment settles it: planting a
+capability the handler does not have makes the guard fail *identically* whether
+the factory returns the class or the contract, because its check is structural
+and a class satisfies an atom the same way an interface does. The guard was
+never silent. The argument for this decision is compiler enforcement at the
+factory, which the guard does not do and was never meant to.
 
 **What the interface is not.** Not "every public member of the class". It is
 `IAdtCrud` with the transport's own config and state, plus the two methods
