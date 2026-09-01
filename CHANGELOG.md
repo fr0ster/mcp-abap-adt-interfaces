@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [26.1.0] - 2026-09-01
+
+### Added
+
+- **`IAdtRequest`** — the transport request handler, as a contract.
+
+  `AdtClient.getRequest()` in `@mcp-abap-adt/adt-clients` returns the concrete
+  `AdtRequest` class. That is the one return a consumer cannot work around:
+  nothing to implement, nothing to compose their own types into, and — in that
+  package — a capability guard with nothing to check, because the declared type
+  *is* the implementation.
+
+  Composed rather than invented: `IAdtCrud<ITransportConfig, ITransportState>`
+  plus the two methods the transport alone has. `list()` resolves the
+  saved-configuration search into state; `listNodes()` yields the parsed tree,
+  and its overload takes the consumer's own parser and returns the consumer's
+  own type — for a system whose answer the default parsing does not fit.
+
+  Additive: nothing existing changes shape, and the implementation already
+  satisfies it method for method.
+
+  `src/__typechecks__/transportRequest.ts` pins what the interface is *for* — a
+  class written entirely outside the package implements it, and a parser
+  returning the wrong shape is refused. Red-proofed under `test:check`, which is
+  where typechecks are verified; `tsconfig.build.json` excludes them.
+
+  Part of fr0ster/mcp-abap-adt-clients#109. `getUtils(): AdtUtils` is the other
+  concrete return and is not covered here: 35 methods that want decomposing into
+  atoms rather than one interface with 35 members.
+
 ## [26.0.0] - 2026-09-01
 
 ### Changed
@@ -1839,6 +1869,7 @@ connection.setSessionState(state);
   - `validation/` - Validation interfaces
   - `utils/` - Utility types and interfaces
 
+[26.1.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v26.0.0...v26.1.0
 [26.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v25.0.0...v26.0.0
 [25.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v24.0.0...v25.0.0
 [24.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v23.0.0...v24.0.0
