@@ -3,6 +3,7 @@
  */
 
 import type { IAdtResponse } from '../connection/IAbapConnection';
+import type { IAdtCrud } from './IAdtCapabilities';
 import type { IAdtObjectState } from './IAdtObjectState';
 
 export interface ICreateTransportParams {
@@ -166,4 +167,45 @@ export interface ITransportTreeRequest {
 export interface ITransportTree {
   attributes: Record<string, string | undefined>;
   requests: ITransportTreeRequest[];
+}
+
+/**
+ * The transport request handler, as a contract rather than a class.
+ *
+ * `AdtClient.getRequest()` handed back a concrete `AdtRequest`, which is the one
+ * thing a consumer cannot replace: no declared type to implement, nothing to
+ * compose their own reader into, and — in `@mcp-abap-adt/adt-clients` — a
+ * capability guard with nothing to compare the manifest against, because the
+ * declared type *was* the implementation.
+ *
+ * The CRUD half is `IAdtCrud` with the transport's own config and state; the two
+ * methods below are the transport's alone, and neither has an atom because
+ * nothing else lists a collection this way.
+ */
+export interface IAdtRequest
+  extends IAdtCrud<ITransportConfig, ITransportState> {
+  /**
+   * The saved-configuration search, as state.
+   *
+   * `configUri` is required by the layer beneath — see `IListTransportsParams`,
+   * where the measurement is. This resolves it; that one does not.
+   */
+  list(options?: IListTransportsOptions): Promise<ITransportState>;
+
+  /** The tree the server sends, parsed by this package. */
+  listNodes(options?: IListTransportsOptions): Promise<ITransportTree>;
+
+  /**
+   * The tree, parsed by the consumer.
+   *
+   * An overload rather than a second name, because that is the shape the
+   * implementation already ships and this contract describes what exists. A
+   * system whose answer the default parser does not fit is the reason it is
+   * here: the document is handed over untouched, and nothing in this package
+   * forms a second opinion about it.
+   */
+  listNodes<T>(
+    parse: (data: unknown) => T,
+    options?: IListTransportsOptions,
+  ): Promise<T>;
 }

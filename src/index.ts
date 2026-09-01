@@ -318,6 +318,7 @@ export type {
   TransformationType,
 } from './adt/IAdtTransformation';
 export type {
+  IAdtRequest,
   ICreateTransportParams,
   IListTransportsOptions,
   IListTransportsParams,
