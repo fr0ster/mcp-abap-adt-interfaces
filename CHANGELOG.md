@@ -80,6 +80,49 @@ which are deliberately out of scope until that design settles.
 - `IDebugger` recorded as out of scope, with the reason: an interface states that
   a design has settled, and naming results for a shape still in question would
   make its redesign a breaking change.
+- **Decision 14 — the envelope's type parameter is transport pass-through, not a
+  strategy receiver.** `IAdtResponse<T, D>`'s generic is used only on
+  `makeAdtRequest<T, D>`, where both are that method's own parameters, and no
+  call site anywhere supplies `T`. Three planes are distinguished: the transport
+  frame, where nothing varies; the result contract, where the *result* varies and
+  the implementation decides within what the contract promises; and the strategy,
+  where the *behaviour* varies and the consumer chooses among behaviours we
+  implement. Parameterising the frame is rejected as a way to close the gap —
+  it would let a caller declare an expected type without changing any behaviour.
+- **Decision 15 — the response contract is an answer from ADT, not an HTTP
+  response.** RFC is already the non-HTTP case and does not break, because
+  `SADT_REST_RFC_ENDPOINT` genuinely carries a status line, header fields and a
+  body. But `IAdtResponse` fixes HTTP header keys and carries `axios`'s `config`
+  and `request` — read once and zero times across three packages — while the
+  connector's own seam already says `headers: unknown`, because the container is
+  the transport's to name. Recorded with the hole it exposes: on BASIS < 7.50 the
+  status line is empty and the transport falls back to `200`, which means "no
+  evidence of failure was found" and not "the server said 200", with nowhere in
+  the contract to say so. Legacy behaviour beyond that is **unmeasured**, and a
+  separate transport implementation is recorded as a live option rather than a
+  decision. No code changes: this is written down before it is scheduled, because
+  changing that shape breaks the most used type in the package.
+
+### Fixed
+
+- Counts in the file header and in decision 13 said what `IAdtUtilities` held
+  while it was being written rather than what it ships with — 31/8/23 against the
+  actual 25/13/12, and "the twenty" for twelve. `IGetWhereUsedParams` was left
+  imported after `getWhereUsed` was dropped as an envelope leak.
+
+  A sweep for the same defect found one more, and it changed an argument. The
+  header justified the split by noting that the legacy implementation refuses
+  `getSqlQuery`, `getTableContents` and `getTransaction`, so a split along
+  refusals would have given three atoms and a bag of twenty-eight. With
+  `getTransaction` removed the legacy implementation refuses two — **and both are
+  `IAdtDataPreview`**. A whole family, refused whole. The case for splitting along
+  ADT's resources rather than along observed refusals now rests on evidence
+  instead of reasoning: an atom drawn from the observation would have evaporated
+  when its member did.
+
+  Every number in the header is now checked against the parser: 7 atoms, 25
+  members, 12 answering the envelope, 13 stating a result — 10 a shape, 3 a
+  primitive.
 
 
 ## [26.1.0] - 2026-09-01
