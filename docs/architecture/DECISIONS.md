@@ -442,9 +442,27 @@ And it is not the wire that does this. Of the 180 here, **one** is in
 `adt/`, 81 in `runtime/`, of which `IDebugger` alone accounts for 40. The
 envelope leaked into the contracts almost in its entirety.
 
-So this decision is not about `IAdtUtilities`' eighteen. It is about roughly 129
-members across the contract package that answer "an HTTP response happened", and
-the eighteen are where the counting started.
+So this decision is not about `IAdtUtilities`' twelve. Counted with the parser
+rather than estimated: **94 method signatures** in this package return exactly
+`Promise<IAdtResponse>`, against **139** that name a result. The twelve are where
+the counting started, and they are an eighth of it.
+
+Where the 94 sit matters more than the total, because it says what closing them
+would take:
+
+| interface | members answering the envelope |
+|---|---|
+| `IAbapDebugger` | 25 |
+| `IAdtServiceBinding` | 15 |
+| `IAmdpDebugger` | 14 |
+| `IMemorySnapshots` | 9 |
+| `IAdtUtilities` atoms | 12 across seven |
+| everything else | 19, in ones and twos |
+
+Three interfaces hold half of it, and 48 of those 94 are the debugger — which is
+[deliberately out of scope](#idebugger-is-not-a-design-problem-yet) until its own
+shape is settled. The long tail is where this rule is cheap to apply; the
+concentrations are where it is a redesign wearing a return type.
 
 **How to catch it.** `Promise<IAdtResponse>` in a published contract, or
 `IAdtResponse` written without a type argument anywhere it is a *result* rather
@@ -452,7 +470,7 @@ than a transport frame. Correct only where the answer genuinely is the envelope 
 a status with no body worth naming — and that should be said at the member.
 
 **A contract names an essence, not a method.** This is what stops the rule from
-meaning "129 new types". A contract differs from a concrete class by saying *how
+meaning "94 new types". A contract differs from a concrete class by saying *how
 to work with the thing*, and two methods return the **same** contract when their
 results mean the same. `IAdtObjectHit` already works that way here: `search`,
 `getWhereUsedList`, `getPackageContentsList` and `getPackageHierarchy` all answer
@@ -485,3 +503,18 @@ members lining up.
 **What would change it.** Nothing about the rule. The members close one at a
 time, each on evidence, and each closure is a member that stops meaning the same
 thing as every other.
+
+### IDebugger is not a design problem yet
+
+48 of the 94 envelope members are `IAbapDebugger` and `IAmdpDebugger`, which
+makes them look like the obvious place to start. They are excluded on purpose.
+
+The debugger has architectural problems below the level a return type can reach,
+and an interface is a statement about a design that has settled. Naming results
+for it now would fix the current shape in a contract and make the redesign a
+breaking change — paying the price of a decision before making it. The envelope
+here is a symptom, and the counts above keep it visible without treating it as
+the next task.
+
+**What would change it.** The debugger's own design being settled. Until then it
+is counted and left alone.
