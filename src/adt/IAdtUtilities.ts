@@ -33,44 +33,42 @@
  * requests they prepare, because a consumer replacing that family needs them to
  * build the same call.
  *
- * ## What these atoms do not yet promise
+ * ## The gap, named rather than papered over
  *
- * **A result is part of a contract, and 23 of the 31 members here do not state
- * one.** They answer `Promise<IAdtResponse>` — the transport envelope, which
- * every method could say and none of them says anything by saying. Eight state a
- * shape: `search`, `getWhereUsedList`, `getPackageContentsList`,
- * `getPackageHierarchy`, `getInactiveObjects`, and the three list readers.
+ * **A result is part of the contract — decision 13 — and 18 of the 31
+ * members here do not state one.** They answer `Promise<IAdtResponse>`: the transport
+ * envelope, which every method could name and which tells a consumer only that
+ * a request happened. The other 13 state what the caller gets — ten a
+ * shape, three a string or a boolean.
  *
- * That is a gap, not a design. It is left open rather than filled because
- * decision 1 forbids the alternative: a plausible result type is
- * indistinguishable, to a consumer, from a measured one, and only two parsers
- * exist for the twenty-three — so twenty-one shapes would be invented.
+ * Three more were removed rather than shipped: `searchObjects`, `getWhereUsed`
+ * and `getPackageContents` each had their contract sitting beside them —
+ * `search`, `getWhereUsedList`, `getPackageContentsList` — so the raw member was
+ * the envelope leaking into an atom, not a capability anyone needed.
  *
- * The rule this has to satisfy: **an implementation returns whatever it likes,
- * as long as it conforms to the contract, and the consumer knows from the
- * contract what to expect.** `Promise<IAdtResponse>` fails the second half —
- * every method could say it, so it tells a consumer nothing.
+ * Two were closed from evidence rather than measurement: `getAllTypes` answers
+ * the named-item list {@link INamedItem} already describes, and
+ * `fetchNodeStructure` answers objects plus the ids to walk next. Both shapes
+ * were lifted from parsers that have been reading those documents in
+ * `mcp-abap-adt` against real systems — code that works is evidence; a shape
+ * nobody has read is not.
  *
- * There are two honest ways to state a result, and only two:
+ * The twenty are left as they are, deliberately. Closing them means naming what
+ * each endpoint sends, and 18 shapes would have to be named,
+ * and nothing but a capture can name them, which decision 1 forbids. **A strategy does not close them
+ * either** — handing the caller a parser makes the caller decide what comes
+ * back, and the point of a contract is that the consumer is not rewritten when
+ * the implementation changes. Strategy and result contract are different planes;
+ * an attempt to use one for the other cost every implementer two signatures per
+ * method before it was reverted.
  *
- * 1. **A measured type.** What the endpoint was observed to send, named. This is
- *    what the eight already have, and it costs a capture per endpoint.
- * 2. **A type the consumer supplies.** `method<T>(…, parse: (data: unknown) => T):
- *    Promise<T>` — the consumer states the shape it expects and the
- *    implementation must return exactly that. This costs no measurement at all,
- *    because the shape is not ours to know: it is the caller's.
- *
- * The second is not a fallback for every member either. Decision 11 rejected
- * `listWith` because a listing is an id and a few fields, measured on two systems
- * that agreed — there was nothing to parse differently, and the member would have
- * cost every implementer a method for nothing. The choice per endpoint is
- * therefore: small and stable, so measure it; large or system-dependent, so let
- * the consumer read it.
- *
- * Neither is `IAdtResponse`, and that is the only thing decided here.
+ * So they close one at a time, on captures. Until then this file states what a
+ * consumer gets for 13 members and admits the gap for 18, which is the honest
+ * shape of the thing rather than a finished one.
  */
 
 import type { IAdtResponse } from '../connection/IAbapConnection';
+import type { INamedItem } from '../execution/ITraceScheduling';
 import type { IReadOptions } from '../shared/IReadOptions';
 import type {
   AdtObjectType,
@@ -94,6 +92,32 @@ import type {
 } from './IAdtShared';
 
 /**
+ * One object in a repository node, as `SEU_ADT_REPOSITORY_OBJ_NODE` carries it.
+ *
+ * The four fields are the ones a caller needs to identify and fetch the object;
+ * a node the server sends without all four is not one, which is what the
+ * traversal this was lifted from already assumed.
+ */
+export interface IRepositoryObjectNode {
+  objectType: string;
+  objectName: string;
+  techName: string;
+  objectUri: string;
+}
+
+/**
+ * What one level of the repository tree answers with.
+ *
+ * `childNodeIds` is what makes the walk possible: the ids to ask for next. A
+ * result without them would force the caller back to the raw document, which is
+ * the coupling this contract removes.
+ */
+export interface IRepositoryNodeContents {
+  objects: IRepositoryObjectNode[];
+  childNodeIds: string[];
+}
+
+/**
  * `/sap/bc/adt/repository/informationsystem/*` — everything ADT answers about
  * *where* something is: what exists, what uses it, and what the repository will
  * show under a filter.
@@ -101,12 +125,6 @@ import type {
 export interface IAdtInformationSystem {
   /** Objects matching a query, parsed. */
   search(criteria: ISearchObjectsParams): Promise<ISearchResult[]>;
-
-  /** The same query, unparsed, for a consumer that reads it its own way. */
-  searchObjects(params: ISearchObjectsParams): Promise<IAdtResponse>;
-
-  /** Where an object is used — the raw answer. */
-  getWhereUsed(params: IGetWhereUsedParams): Promise<IAdtResponse>;
 
   /** Where an object is used, parsed into references. */
   getWhereUsedList(
@@ -135,12 +153,19 @@ export interface IAdtInformationSystem {
     params: IGetVirtualFoldersContentsParams,
   ): Promise<IAdtResponse>;
 
-  /** The object types this system knows. */
+  /**
+   * The object types this system knows.
+   *
+   * `nameditem:namedItemList`, which is the shape {@link INamedItem} already
+   * names for trace catalogues — the same document served from a different
+   * resource. Lifted from a parser that has been reading it in
+   * `mcp-abap-adt` against real systems, rather than invented here.
+   */
   getAllTypes(
     maxItemCount?: number,
     name?: string,
     data?: string,
-  ): Promise<IAdtResponse>;
+  ): Promise<INamedItem[]>;
 
   /** What one type is. */
   getTypeInfo(typeName: string): Promise<IAdtResponse>;
@@ -154,13 +179,20 @@ export interface IAdtInformationSystem {
  * one object's place in it.
  */
 export interface IAdtRepositoryStructure {
-  /** Children of a node. */
+  /**
+   * Children of a node: the objects it holds, and the nodes below it.
+   *
+   * Both halves come from one document — `SEU_ADT_REPOSITORY_OBJ_NODE` entries
+   * and the `NODE_ID`s a caller walks next — and a consumer needs both to
+   * traverse, which is why the result names them rather than handing back the
+   * envelope. Lifted from a traversal running in `mcp-abap-adt`.
+   */
   fetchNodeStructure(
     parentType: string,
     parentName: string,
     nodeId?: string,
     withShortDescriptions?: boolean,
-  ): Promise<IAdtResponse>;
+  ): Promise<IRepositoryNodeContents>;
 
   /** The parts one object is made of. */
   getObjectStructure(
@@ -178,9 +210,6 @@ export interface IAdtRepositoryStructure {
  * with.
  */
 export interface IAdtPackageBrowsing {
-  /** What a package holds — the raw answer. */
-  getPackageContents(packageName: string): Promise<IAdtResponse>;
-
   /** What a package holds, parsed. */
   getPackageContentsList(
     packageName: string,

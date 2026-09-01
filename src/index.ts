@@ -359,6 +359,8 @@ export type {
   IAdtObjectAccess,
   IAdtPackageBrowsing,
   IAdtRepositoryStructure,
+  IRepositoryNodeContents,
+  IRepositoryObjectNode,
 } from './adt/IAdtUtilities';
 export type { AuthType as AuthTypeEnum } from './auth/AuthType';
 // Auth domain
