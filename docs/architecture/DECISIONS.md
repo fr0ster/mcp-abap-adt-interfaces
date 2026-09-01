@@ -463,6 +463,25 @@ essence is this". A heap of one-method result types would be the same mistake as
 the envelope with the sign reversed: instead of everything meaning one thing,
 nothing would mean the same as anything.
 
+**The test for whether two things are the same contract: substitution.**
+Implementations of one contract are interchangeable — a caller holding the
+contract can be handed either and carry on. If the logic forbids putting one
+where the other is expected, they implement **different contracts, even with
+identical methods**.
+
+TypeScript will not tell you this. Structural typing says two classes with the
+same members satisfy the same interface, and it is right about the shape and
+silent about the meaning. `AdtRequestLegacy` **[adt-clients]** has every method
+`AdtRequest` has — by inheritance — and refuses four of them; the compiler was
+content for years. They are not implementations of one contract, and decision 11
+is the consequence.
+
+The same test decides result grouping. Two methods return one contract when a
+caller could take either answer and do the same thing with it. Where that is not
+true, the shared name would be a lie that reads as economy — so the question
+"which essence is this" is answered by trying the substitution, not by the
+members lining up.
+
 **What would change it.** Nothing about the rule. The members close one at a
 time, each on evidence, and each closure is a member that stops meaning the same
 thing as every other.
