@@ -2,7 +2,7 @@
  * The cross-cutting ADT operations, split by the resource families ADT itself
  * has — not by which of them a particular system refuses.
  *
- * `AdtUtils` in `@mcp-abap-adt/adt-clients` is one class with 31 public methods,
+ * `AdtUtils` in `@mcp-abap-adt/adt-clients` is one class with 28 public methods,
  * handed out by `AdtClient.getUtils()` as itself. A concrete return is the one a
  * consumer cannot substitute, cannot compose with their own types, and cannot
  * have checked at the factory — see decision 12 here and decision 10 there.
@@ -35,7 +35,7 @@
  *
  * ## The gap, named rather than papered over
  *
- * **A result is part of the contract — decision 13 — and 18 of the 31
+ * **A result is part of the contract — decision 13 — and 12 of the 25
  * members here do not state one.** They answer `Promise<IAdtResponse>`: the transport
  * envelope, which every method could name and which tells a consumer only that
  * a request happened. The other 13 state what the caller gets — ten a
@@ -46,6 +46,17 @@
  * `search`, `getWhereUsedList`, `getPackageContentsList` — so the raw member was
  * the envelope leaking into an atom, not a capability anyone needed.
  *
+ * Six were removed because nobody calls them — `getTypeInfo`, `getTransaction`,
+ * `getBdef`, `getEnhancements`, `getEnhancementSpot`, `getEnhancementImpl`. Every
+ * mention of them across the sibling repositories was their own doc comment.
+ * The question was never which result they promise, but why they were in a
+ * contract; three of them were a second door to a handler that was already
+ * there — `getBdef` to `getBehaviorDefinition().read()`, `getEnhancementImpl`
+ * and `getEnhancementSpot` to `getEnhancement()` — and the other three named
+ * resources nothing else reaches. Deleted in `@mcp-abap-adt/adt-clients` with
+ * those three endpoints recorded, so a typed handler can be built where one is
+ * wanted rather than a generic member kept in case one is.
+ *
  * Two were closed from evidence rather than measurement: `getAllTypes` answers
  * the named-item list {@link INamedItem} already describes, and
  * `fetchNodeStructure` answers objects plus the ids to walk next. Both shapes
@@ -54,7 +65,7 @@
  * nobody has read is not.
  *
  * The twenty are left as they are, deliberately. Closing them means naming what
- * each endpoint sends, and 18 shapes would have to be named,
+ * each endpoint sends, and 12 shapes would have to be named,
  * and nothing but a capture can name them, which decision 1 forbids. **A strategy does not close them
  * either** — handing the caller a parser makes the caller decide what comes
  * back, and the point of a contract is that the consumer is not rewritten when
@@ -63,7 +74,7 @@
  * method before it was reverted.
  *
  * So they close one at a time, on captures. Until then this file states what a
- * consumer gets for 13 members and admits the gap for 18, which is the honest
+ * consumer gets for 13 members and admits the gap for 12, which is the honest
  * shape of the thing rather than a finished one.
  */
 
@@ -166,12 +177,6 @@ export interface IAdtInformationSystem {
     name?: string,
     data?: string,
   ): Promise<INamedItem[]>;
-
-  /** What one type is. */
-  getTypeInfo(typeName: string): Promise<IAdtResponse>;
-
-  /** A transaction, which the information system serves rather than a type resource. */
-  getTransaction(transactionName: string): Promise<IAdtResponse>;
 }
 
 /**
@@ -314,26 +319,4 @@ export interface IAdtObjectAccess {
 
   /** The includes of a function group. */
   listFunctionGroupIncludes(functionGroupName: string): Promise<string[]>;
-
-  /** A behaviour definition. */
-  getBdef(
-    bdefName: string,
-    version?: 'active' | 'inactive',
-  ): Promise<IAdtResponse>;
-
-  /** Enhancements of an object. */
-  getEnhancements(
-    objectName: string,
-    objectType: 'program' | 'include' | 'class',
-    context?: string,
-  ): Promise<IAdtResponse>;
-
-  /** An enhancement spot. */
-  getEnhancementSpot(enhancementSpot: string): Promise<IAdtResponse>;
-
-  /** One implementation within a spot. */
-  getEnhancementImpl(
-    enhancementSpot: string,
-    enhancementName: string,
-  ): Promise<IAdtResponse>;
 }
