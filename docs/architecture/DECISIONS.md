@@ -334,8 +334,8 @@ Thirty-six return interfaces; two return the implementation itself —
 was an accident of when it was written.
 
 **Decided.** A factory's declared return is a contract. `IAdtRequest` lands in
-26.1.0; `getUtils()` follows once `AdtUtils`' 35 methods are decomposed into
-atoms.
+26.1.0; the atoms `getUtils()` will return land in 26.2.0 as `IAdtUtilities`,
+and the factory itself changes when `@mcp-abap-adt/adt-clients` consumes them.
 
 **Against.** Leaving the two as they are on the grounds that the class *is* the
 contract in practice, and a consumer can read it.
@@ -376,9 +376,14 @@ factory, which the guard does not do and was never meant to.
 `IAdtCrud` with the transport's own config and state, plus the two methods
 nothing else has. No atom was invented for a set of one — see decision 11.
 
-**Not covered, and stated rather than quietly skipped.** `getUtils()`. One
-interface with 35 members would satisfy the letter of this decision and
-contradict decision 11 in the same stroke.
+**Not covered by 26.1.0, and stated rather than quietly skipped.**
+`getUtils()`. One interface with 35 members would satisfy the letter of this
+decision and contradict decision 11 in the same stroke. Answered in 26.2.0 by
+seven atoms split along ADT's own resource families — and the decomposition
+removed nine of the 34 members on the way, six of them because nothing
+anywhere called them. The factory stays concrete until adt-clients consumes
+the atoms: this decision is satisfied for `getRequest()` and pending for
+`getUtils()`.
 
 **How to catch it.** A factory whose return type is not an `I`-prefixed name.
 

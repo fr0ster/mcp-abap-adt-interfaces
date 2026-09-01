@@ -7,6 +7,81 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [26.2.0] - 2026-09-01
+
+Additive. No existing type changes, so nothing on 26.1.x breaks.
+
+### Added
+
+- **`IAdtUtilities` — seven contracts for the cross-cutting ADT operations**,
+  split by the resource families ADT itself has rather than by which of them a
+  particular system refuses:
+
+  | family | atom | members |
+  |---|---|---|
+  | `/repository/informationsystem/*` | `IAdtInformationSystem` | 6 |
+  | the per-type resources (`oo`, `programs`, `ddic`, `functions`, `enhancements`) | `IAdtObjectAccess` | 8 |
+  | `/activation`, `/deletion` | `IAdtGroupLifecycle` | 4 |
+  | `/repository/nodestructure`, `/objectstructure` | `IAdtRepositoryStructure` | 2 |
+  | `/packages/*` | `IAdtPackageBrowsing` | 2 |
+  | `/datapreview/*` | `IAdtDataPreview` | 2 |
+  | `/discovery` | `IAdtDiscovery` | 1 |
+
+  A measurement suggested a different split — the one legacy implementation
+  refuses exactly `getSqlQuery`, `getTableContents` and `getTransaction`, which
+  would have produced three atoms and a bag of twenty-eight. Those refusals fall
+  *inside* these families rather than defining them, so architecture and
+  observation agree and observation is simply narrower. A contract split by who
+  refuses what changes shape with the next system.
+
+  Packages are their own atom rather than part of the tree: a package is a
+  container ADT gives its own resource, and asking what is in one is a question
+  about that container, not about the tree it happens to be walked with.
+
+- **`IRepositoryObjectNode` and `IRepositoryNodeContents`** — the two result
+  shapes closed in this release, both lifted from parsers already reading those
+  documents against real systems in `mcp-abap-adt`. `getAllTypes` answers
+  `INamedItem[]`, the shape this package already names for trace catalogues —
+  the same document served from a different resource.
+
+- **`src/__typechecks__/utilities.ts`** — a consumer's own implementation
+  compiled against the atoms. The case worth proving is not that the shipped
+  class fits, but that something written entirely outside this package does.
+
+### Known gap, stated rather than papered over
+
+13 of the 25 members state what the caller gets; the other **12 answer
+`Promise<IAdtResponse>`**, the transport envelope, which tells a consumer only
+that a request happened. Closing one means naming what its endpoint sends, and
+nothing but a capture can name it — decision 1 forbids inventing the shape. They
+close one at a time, on evidence.
+
+Package-wide the same count is 94 signatures returning the bare envelope against
+139 that name a result, with 48 of the 94 in `IAbapDebugger`/`IAmdpDebugger`,
+which are deliberately out of scope until that design settles.
+
+### Documentation
+
+- **Decision 13 — what a method hands back is named by a contract, never by an
+  implementation** — with the two criteria that make it work rather than merely
+  describe it:
+  - *A contract names an essence, not a method.* Two methods return the same
+    contract when their results mean the same. Without this the rule degenerates
+    into "one type per method" — the envelope's mistake with the sign reversed.
+  - *Substitution decides whether two things are one contract.* Where the logic
+    forbids putting one implementation where the other is expected, they are
+    different contracts however identical their members. TypeScript is silent
+    about this: `AdtRequestLegacy` in `@mcp-abap-adt/adt-clients` has every
+    method `AdtRequest` has and refuses four, and the compiler was content for
+    years.
+- Strategy injection and result contracts recorded as different planes — a
+  consumer-supplied parser for big XML is deliberate delegation, not a way to
+  close a result.
+- `IDebugger` recorded as out of scope, with the reason: an interface states that
+  a design has settled, and naming results for a shape still in question would
+  make its redesign a breaking change.
+
+
 ## [26.1.0] - 2026-09-01
 
 ### Added
