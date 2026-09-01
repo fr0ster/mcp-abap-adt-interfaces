@@ -668,6 +668,21 @@ broken — but the contract gives it nowhere to say so, because a bare `number`
 cannot carry "this was not reported". Naming the outcome instead of the HTTP
 status is what would let it.
 
+**Open, and deliberately not settled here.** Legacy systems answer differently —
+the empty `STATUS_LINE` is the one instance already in the code, and it is not
+assumed to be the only one. What legacy actually sends has not been captured, and
+capturing it needs an on-prem system this machine cannot reach. Until then the
+shape of that difference is unknown, and a contract is not written against an
+unknown (decision 1).
+
+One live option is that legacy gets its **own implementation** rather than a
+fallback inside the shared one. That would put the invented 200 where it belongs
+— in a transport that says it is speaking to a system that does not report status
+— and leave the general contract free of a value that means "nobody told us". It
+would also fit what already exists: `LegacyOnPremHttpTransport` and
+`AdtUtilsLegacy` are the same answer to the same kind of problem. Which way it
+goes is decided after the capture, not before.
+
 **Against.** Leaving it, on the grounds that RFC already works and the shape has
 not hurt anyone. Rejected on what the shape *obliges*: every contract returning
 `Promise<IAdtResponse>` requires each implementation to produce an HTTP-shaped
