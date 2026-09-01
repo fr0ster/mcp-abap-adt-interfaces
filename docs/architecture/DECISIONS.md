@@ -323,3 +323,53 @@ declares it is not evidence of demand — it is evidence of an unused method.
 **What would change it.** A consumer showing a system whose trace feed does not
 fit `IAbapTraceEntry`. Then the listing has the same problem the views have, and
 the same answer.
+
+---
+
+## 12. A factory returns a contract, never the class that satisfies it
+
+**The problem.** `AdtClient` in `@mcp-abap-adt/adt-clients` has 38 factories.
+Thirty-six return interfaces; two return the implementation itself —
+`getRequest(): AdtRequest` and `getUtils(): AdtUtils`. Which kind a factory got
+was an accident of when it was written.
+
+**Decided.** A factory's declared return is a contract. `IAdtRequest` lands in
+26.1.0; `getUtils()` follows once `AdtUtils`' 35 methods are decomposed into
+atoms.
+
+**Against.** Leaving the two as they are on the grounds that the class *is* the
+contract in practice, and a consumer can read it.
+
+**Why.** Three things a consumer can do with a contract and cannot do with a
+class, and the third is the one that decided it:
+
+- **Substitute.** Their own transport handler cannot stand in where the type
+  names a class. This package exists so any part of the implementation can be
+  replaced with their own; a concrete return is the one place that promise does
+  not hold.
+- **Compose.** They cannot intersect the return with their own types, because
+  there is no interface to intersect with.
+- **Be checked.** `src/__tests__/unit/capabilities/` **[adt-clients]** compares
+  every factory's *declared* return against the capabilities its manifest claims.
+  Where the declared type is the implementation, the comparison is between a
+  thing and itself. The guard reported 36 of 38 factories verified and was silent
+  about the two it could not see — and silence there reads exactly like a pass.
+
+That last point is why this is not cosmetic. Decision 10 says a guard that can be
+silenced is not a guard; this is a guard that was silent by construction, for the
+two returns most likely to grow a method nobody weighed against a contract.
+
+**What the interface is not.** Not "every public member of the class". It is
+`IAdtCrud` with the transport's own config and state, plus the two methods
+nothing else has. No atom was invented for a set of one — see decision 11.
+
+**Not covered, and stated rather than quietly skipped.** `getUtils()`. One
+interface with 35 members would satisfy the letter of this decision and
+contradict decision 11 in the same stroke.
+
+**How to catch it.** A factory whose return type is not an `I`-prefixed name.
+
+**What would change it.** Nothing for the returns themselves. The *shape* of a
+contract is open: where a set of atoms is used by one handler it is spelled at
+the getter, and earns a name when a second handler wants the same set.
+
