@@ -46,11 +46,28 @@
  * indistinguishable, to a consumer, from a measured one, and only two parsers
  * exist for the twenty-three — so twenty-one shapes would be invented.
  *
- * The way out is the one this package already uses for trace views: a measured
- * default result, and a `…With(parse)` overload handing the document to the
- * consumer untouched where the shape is not ours to fix. That is per-endpoint
- * work gated on captures, and it is what turns each of these members from a
- * capability into a contract.
+ * The rule this has to satisfy: **an implementation returns whatever it likes,
+ * as long as it conforms to the contract, and the consumer knows from the
+ * contract what to expect.** `Promise<IAdtResponse>` fails the second half —
+ * every method could say it, so it tells a consumer nothing.
+ *
+ * There are two honest ways to state a result, and only two:
+ *
+ * 1. **A measured type.** What the endpoint was observed to send, named. This is
+ *    what the eight already have, and it costs a capture per endpoint.
+ * 2. **A type the consumer supplies.** `method<T>(…, parse: (data: unknown) => T):
+ *    Promise<T>` — the consumer states the shape it expects and the
+ *    implementation must return exactly that. This costs no measurement at all,
+ *    because the shape is not ours to know: it is the caller's.
+ *
+ * The second is not a fallback for every member either. Decision 11 rejected
+ * `listWith` because a listing is an id and a few fields, measured on two systems
+ * that agreed — there was nothing to parse differently, and the member would have
+ * cost every implementer a method for nothing. The choice per endpoint is
+ * therefore: small and stable, so measure it; large or system-dependent, so let
+ * the consumer read it.
+ *
+ * Neither is `IAdtResponse`, and that is the only thing decided here.
  */
 
 import type { IAdtResponse } from '../connection/IAbapConnection';
