@@ -608,3 +608,78 @@ point, or a shape inherited from an HTTP client and never questioned — whoever
 added it knew, and nobody wrote it down. Measurement recovers what the code
 does. Only a record recovers what it was meant to do, and the gap between those
 two is exactly the work of guessing that this file exists to make unnecessary.
+
+## 15. The response contract is an answer from ADT, not an HTTP response
+
+**The question.** `IAdtResponse` carries `status`, `statusText`, `headers`,
+`config` and `request`. Those are HTTP words, and two of them are `axios`'s own.
+What happens when the transport is not HTTP?
+
+**Measured.** RFC already is that case, and it does not break — but not for the
+reason the shape suggests. `SADT_REST_RFC_ENDPOINT`, the FM Eclipse uses for
+on-prem ADT through JCo, carries `STATUS_LINE`, `HEADER_FIELDS` and
+`MESSAGE_BODY`: a request line, headers and a body, an HTTP exchange in all but
+the wire. `RfcTransport` translates rather than fabricates, and translating is
+the whole of its job.
+
+The connector's own seam already states this correctly:
+
+```ts
+export interface IAdtTransportResponse {
+  status: number;
+  statusText?: string;
+  /** a transport names its own header container; HTTP has axios's,
+      RFC builds one out of HEADER_FIELDS. */
+  headers: unknown;
+  data: unknown;
+}
+```
+
+`headers: unknown` — because the container is the transport's business. The
+contract one layer up did not follow: it fixes `Record<string, IAdtHeaderValue>`
+with `location`, `content-location` and `sap-adt-location` named in it, plus
+`config?: D` and `request?: unknown`, which exist because `axios` has them.
+Counted across the three packages: `request` is read **0** times, `config`
+**once**, `statusText` 16 times, and `sap-adt-location` twice — the ADT-specific
+key earns its place; the HTTP-client ones do not.
+
+**Decided.** What the contract names is *an answer from the ADT server*: an
+outcome, whatever the transport calls its metadata, and a body. A transport that
+is not HTTP satisfies it by saying what it has, not by inventing an HTTP frame to
+put it in. What an implementation actually returns is its own affair as long as
+the contract is met — that is the whole point of naming one.
+
+`status` stays, because ADT genuinely answers with one over both transports. The
+axios fields do not belong in a contract, and the header container is the
+transport's to name.
+
+**The hole this exposes, and it is real.** On BASIS < 7.50 the RFC endpoint
+answers without populating `STATUS_LINE`. `RfcTransport` reads a code out of the
+exception XML when the body has one, and otherwise:
+
+```ts
+if (!status) { status = 200; statusText = statusText || 'OK'; }
+```
+
+That 200 means "no evidence of failure was found", not "the server said 200", and
+**a consumer holding the response cannot tell those apart**. The fallback is
+right to exist — the alternative is a legacy system where every call looks
+broken — but the contract gives it nowhere to say so, because a bare `number`
+cannot carry "this was not reported". Naming the outcome instead of the HTTP
+status is what would let it.
+
+**Against.** Leaving it, on the grounds that RFC already works and the shape has
+not hurt anyone. Rejected on what the shape *obliges*: every contract returning
+`Promise<IAdtResponse>` requires each implementation to produce an HTTP-shaped
+answer, so a genuinely non-HTTP transport must fake fields to compile. That is
+the same fault as decision 13's envelope, one layer down — a contract stating the
+mechanism instead of the meaning.
+
+**How to catch it.** An `axios` concept in a published contract. A header key
+named in a type that is not ADT's own. Any field whose honest value for some
+transport would have to be invented.
+
+**What would change it.** Nothing about the rule. The shape changes when the
+consumers of `config` (one) and the header keys are given contract-shaped
+replacements — this is a breaking change to the most widely used type in the
+package, and it is written down here before it is scheduled rather than after.
