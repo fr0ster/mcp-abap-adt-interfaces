@@ -406,8 +406,11 @@ promise about `T`, and `T` is what the consumer holds — so `T` is a contract.
 envelope, which every method could name, and tells the consumer only that a
 request happened.
 
-**The problem.** `IAdtUtilities` has 31 members. Eight resolve to a contract; 23
-resolve to the envelope.
+**The problem.** `IAdtUtilities` had 31 members when this was written — eight
+resolving to a contract, 23 to the envelope. It ships with **25**, of which
+**13** state a result and **12** answer the envelope: two were closed from
+evidence, three were envelope leaks whose contract-shaped sibling already
+existed, and six were removed outright because nothing anywhere called them.
 
 **Why.** A consumer decides what to do next from the type it was handed. If that
 type is the envelope, the decision is made by reading the implementation instead
@@ -429,8 +432,8 @@ that the consumer is **not** rewritten when the implementation changes. A
 consumer who wants different behaviour imports a different implementation; it
 does not describe the result at the call site.
 
-Concretely: an attempt to close 23 envelope-returning members by giving each a
-`<T>(parse, …)` overload compiled, and immediately cost every implementer two
+Concretely: an attempt to close the 23 envelope-returning members the file then
+had, by giving each a `<T>(parse, …)` overload, compiled, and immediately cost every implementer two
 signatures per method — the cost decision 11 exists to refuse. The two planes
 compose (a method can return a contract *and* take a strategy) but neither
 substitutes for the other.
@@ -581,8 +584,9 @@ Three planes, and the generic is only on the first:
 | strategy — decision 5 | the behaviour | the consumer, choosing; we implement it |
 
 The envelope is not a weak result contract, and a strategy is not a way to
-supply one. Confusing the last two cost 23 methods a second signature each
-before it was reverted.
+supply one. Confusing the last two cost 23 methods — every envelope-returning
+member `IAdtUtilities` had at the time — a second signature each, before it was
+reverted.
 
 **Against.** Making the generic the result mechanism —
 `getPackageHierarchy(): Promise<IAdtResponse<IPackageHierarchyNode>>` — would

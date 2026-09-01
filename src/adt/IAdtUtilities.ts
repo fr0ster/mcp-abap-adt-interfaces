@@ -20,13 +20,20 @@
  * | `/discovery` | {@link IAdtDiscovery} |
  * | the per-type resources — `oo`, `programs`, `ddic`, `functions`, `enhancements` | {@link IAdtObjectAccess} |
  *
- * Deliberately *not* the grain a measurement suggested. The one legacy
- * implementation refuses exactly `getSqlQuery`, `getTableContents` and
- * `getTransaction` — which would have given three atoms and a bag of 28. Those
- * refusals fall **inside** these families rather than defining them, so
- * architecture and observation agree; observation is simply narrower, and a
- * contract split by who refuses what is a contract that changes shape with the
- * next system.
+ * Deliberately *not* the grain a measurement suggested. When this split was
+ * chosen, the one legacy implementation refused exactly `getSqlQuery`,
+ * `getTableContents` and `getTransaction` — which would have given three atoms
+ * and a bag of 28. Those refusals fall **inside** these families rather than
+ * defining them, so architecture and observation agree; observation is simply
+ * narrower, and a contract split by who refuses what is a contract that changes
+ * shape with the next system.
+ *
+ * Removing `getTransaction` made that concrete rather than theoretical. The
+ * legacy implementation now refuses two members, and **both are
+ * {@link IAdtDataPreview}** — a whole family, refused whole, which is what a
+ * split along ADT's resources predicts and a split along refusals could not have
+ * known in advance. Had the atoms been drawn from the observation, one of the
+ * three would have evaporated when its member did.
  *
  * A few members compute a string and issue no request — `supportsSourceCode`,
  * `getObjectSourceUri`, `modifyWhereUsedScope`. They stay with the family whose
@@ -64,7 +71,7 @@
  * `mcp-abap-adt` against real systems — code that works is evidence; a shape
  * nobody has read is not.
  *
- * The twenty are left as they are, deliberately. Closing them means naming what
+ * The twelve are left as they are, deliberately. Closing them means naming what
  * each endpoint sends, and 12 shapes would have to be named,
  * and nothing but a capture can name them, which decision 1 forbids. **A strategy does not close them
  * either** — handing the caller a parser makes the caller decide what comes
@@ -91,7 +98,6 @@ import type {
   IGetTableContentsParams,
   IGetVirtualFoldersContentsParams,
   IGetWhereUsedListParams,
-  IGetWhereUsedParams,
   IGetWhereUsedScopeParams,
   IInactiveObjectsResponse,
   IObjectReference,
