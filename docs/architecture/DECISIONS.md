@@ -523,3 +523,88 @@ the next task.
 
 **What would change it.** The debugger's own design being settled. Until then it
 is counted and left alone.
+
+## 14. The envelope's type parameter is transport pass-through, not a strategy receiver
+
+**The question.** `IAdtResponse<T = any, D = any>` has a generic. Decision 13
+says the envelope loses the caller's type; decision 5 says a consumer supplies
+the parser for big XML. Is the generic the seam where those meet — the place a
+consumer's parsed type lands — or is it something else?
+
+**Measured, because nothing recorded it.** Every use of `IAdtResponse` *with* a
+type argument, in both packages, is on the transport call:
+
+```ts
+makeAdtRequest<T = unknown, D = unknown>(req): Promise<IAdtResponse<T, D>>;
+```
+
+`T` and `D` there are the method's own parameters, passed straight through.
+Outside those signatures nobody writes a concrete argument, and **no call site
+supplies `T`** — so it resolves to its default at every one. The generic exists
+and has never carried a type.
+
+The strategy plane looks nothing like it:
+
+```ts
+listNodes<T>(parse: (data: unknown) => T, options?): Promise<T>;
+readWith<K extends keyof TViews, T>(view: K, parse: (data: unknown) => T): Promise<T>;
+```
+
+`Promise<T>`, bare. But the returned type is the *consequence*, not the point,
+and stating the difference in terms of types is what kept this confusing:
+
+> **The envelope is variation in the result. A strategy is the consumer's choice
+> about behaviour that we implement.**
+
+A strategy parameter does not ask the consumer for a type — it asks which of the
+behaviours we provide should run. `listNodes(parse)` still fetches, still handles
+the session, still decides the request; the one thing it delegates is what to do
+with a document too large for us to name a shape for. `T` falls out of that
+choice. The consumer supplies a decision, we supply the work.
+
+That is why `IAdtResponse<T>` cannot be the seam. The envelope varies what comes
+*back*; a strategy varies what we *do*. Parameterising the frame would let a
+caller declare an expected type without changing any behaviour — a claim about
+the result with nothing behind it, which is worse than the untyped envelope,
+because the untyped one at least does not pretend.
+
+**Decided.** The generic is transport pass-through. `IAdtResponse` is the HTTP
+frame — status, headers, body — and belongs at the connection boundary, which is
+where exactly one of this package's 180 uses sits.
+
+Three planes, and the generic is only on the first:
+
+| plane | what varies | who decides |
+|---|---|---|
+| transport frame — `IAdtResponse` | nothing; it is the same frame every time | neither; it is what HTTP is |
+| result contract — decision 13 | the result | the implementation, within what the contract promises |
+| strategy — decision 5 | the behaviour | the consumer, choosing; we implement it |
+
+The envelope is not a weak result contract, and a strategy is not a way to
+supply one. Confusing the last two cost 23 methods a second signature each
+before it was reverted.
+
+**Against.** Making the generic the result mechanism —
+`getPackageHierarchy(): Promise<IAdtResponse<IPackageHierarchyNode>>` — would
+close decision 13's gap without new types. Rejected: the caller then unwraps
+`.data` on every call to reach a thing the method already knows, and inherits
+`status`, `headers`, `config` and `request` in a signature about a package tree.
+A result contract states the result; the transport frame is the connection's
+business, and a consumer of a handler should not have to know a request was HTTP.
+
+**How to catch it.** `IAdtResponse<Something>` in a handler contract, where
+`Something` is a concrete type rather than the surrounding method's parameter.
+That is the envelope being used as a result type through the back door.
+
+**What would change it.** A capability where the caller genuinely needs the
+status or headers *and* the body typed together — a conditional GET exposing an
+ETag, say. That is a result contract with those fields named, not the transport
+frame promoted.
+
+**The cost of finding this out by measurement.** This decision is reconstructed
+from silence: the generic's absence of use tells us it is not load-bearing, and
+tells us nothing about what it was *for*. Strategy seam, consumer extension
+point, or a shape inherited from an HTTP client and never questioned — whoever
+added it knew, and nobody wrote it down. Measurement recovers what the code
+does. Only a record recovers what it was meant to do, and the gap between those
+two is exactly the work of guessing that this file exists to make unnecessary.
