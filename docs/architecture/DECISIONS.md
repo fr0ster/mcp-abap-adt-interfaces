@@ -409,10 +409,26 @@ type is the envelope, the decision is made by reading the implementation instead
 — which is the coupling a contract exists to remove, and the same coupling
 decision 12 removed at the factory.
 
-**Where `T` comes from** is the smaller question: measured, or supplied by the
-consumer through a parser the implementation must satisfy. Decision 5 decides
-which — small and stable, measure it; large or system-dependent, let the consumer
-read it — and decision 1 forbids inventing it.
+**Where `T` comes from.** Measured. Decision 1 forbids inventing it, and nothing
+else supplies it.
+
+**A strategy is not a result contract, and they are different planes.** Decision 5
+lets a consumer pass a parser where the implementation *deliberately delegates the
+choice* — a large XML whose shape is not ours to fix. That is strategy injection:
+the caller decides how the document is read.
+
+It does not answer this decision, and using it to try was the mistake that
+produced this paragraph. Handing the caller a parser makes the caller decide what
+comes back, which is the opposite of a contract: the point of returning one is
+that the consumer is **not** rewritten when the implementation changes. A
+consumer who wants different behaviour imports a different implementation; it
+does not describe the result at the call site.
+
+Concretely: an attempt to close 23 envelope-returning members by giving each a
+`<T>(parse, …)` overload compiled, and immediately cost every implementer two
+signatures per method — the cost decision 11 exists to refuse. The two planes
+compose (a method can return a contract *and* take a strategy) but neither
+substitutes for the other.
 
 **How to catch it.** `Promise<IAdtResponse>` in a published contract. Correct only
 where the answer genuinely is the envelope, and that should be said at the member.
