@@ -451,6 +451,18 @@ the eighteen are where the counting started.
 than a transport frame. Correct only where the answer genuinely is the envelope —
 a status with no body worth naming — and that should be said at the member.
 
+**A contract names an essence, not a method.** This is what stops the rule from
+meaning "129 new types". A contract differs from a concrete class by saying *how
+to work with the thing*, and two methods return the **same** contract when their
+results mean the same. `IAdtObjectHit` already works that way here: `search`,
+`getWhereUsedList`, `getPackageContentsList` and `getPackageHierarchy` all answer
+"an identified object in the repository", through types that extend it.
+
+So the question at each member is not "what shall I call this one" but "which
+essence is this". A heap of one-method result types would be the same mistake as
+the envelope with the sign reversed: instead of everything meaning one thing,
+nothing would mean the same as anything.
+
 **What would change it.** Nothing about the rule. The members close one at a
 time, each on evidence, and each closure is a member that stops meaning the same
 thing as every other.
