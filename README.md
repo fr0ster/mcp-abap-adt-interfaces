@@ -410,7 +410,8 @@ This package is responsible for:
 ### Feeds Domain (`feeds/`)
 - `IAbapTimestamp` - ABAP timestamp string type alias (format `YYYYMMDDHHMMSS`)
 - `IFeedRepository` - Domain-facing interface for feed access
-  - Methods: `list()`, `variants()`, `dumps()`, `systemMessages()`, `gatewayErrors()`, `gatewayErrorDetail()`
+  - Methods: `list()`, `variants(category)`, `dumps()`, `systemMessages()`, `gatewayErrors()`, `gatewayErrorDetail()`
+  - `variants` takes a **required** `category` since 26.0.0 — the endpoint answers `400 "Parameter category could not be found."` without one, so the parameterless call the previous signature allowed could not work
   - All methods return domain types (no raw transport responses)
 - `IFeedQueryOptions` - Query parameters for feed methods (`user`, `maxResults`, `from`, `to`)
 - `IFeedEntry` - Generic feed entry (`id`, `title`, `updated`, `link`, `content`)

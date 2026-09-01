@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [26.0.0] - 2026-09-01
+
+### Changed
+
+- **BREAKING** — `IFeedRepository.variants()` takes a `category`.
+
+  ```ts
+  variants(category: string): Promise<IFeedVariant[]>;   // was: variants()
+  ```
+
+  The endpoint requires it. Measured on an on-prem system:
+  `GET /sap/bc/adt/feeds/variants` answers **400** `ExceptionParameterNotFound`
+  — "Parameter category could not be found." — and the same request with any
+  category answers `200`.
+
+  So the method could not work: called the only way the old contract allowed,
+  it failed every time. Breaking, and safely so — no call that satisfied the old
+  signature did anything but produce a 400.
+
+  **Not a union.** Every category tried on that system — feed ids read from the
+  feeds collection, and invented ones — answered `200` with an empty body, so
+  there was nothing to enumerate. `string` says what is known; a union would be
+  a guess dressed as a contract, which decision 1 exists to prevent.
+
+  Closes #54, reported from `@mcp-abap-adt/adt-clients`, where the implementation
+  currently declares the parameter **optional** to satisfy this interface and
+  throws when it is missing. That cast goes when this is consumed.
+
 ## [25.0.0] - 2026-08-30
 
 ### Added
@@ -1811,6 +1839,7 @@ connection.setSessionState(state);
   - `validation/` - Validation interfaces
   - `utils/` - Utility types and interfaces
 
+[26.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v25.0.0...v26.0.0
 [25.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v24.0.0...v25.0.0
 [24.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v23.0.0...v24.0.0
 [23.0.0]: https://github.com/fr0ster/mcp-abap-adt-interfaces/compare/v22.0.0...v23.0.0
