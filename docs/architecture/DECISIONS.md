@@ -430,7 +430,27 @@ signatures per method — the cost decision 11 exists to refuse. The two planes
 compose (a method can return a contract *and* take a strategy) but neither
 substitutes for the other.
 
-**How to catch it.** `Promise<IAdtResponse>` in a published contract. Correct only
-where the answer genuinely is the envelope, and that should be said at the member.
+**The envelope is a container for everything, which is the deeper fault.**
+`IAdtResponse<T = any>` defaults its body to `any`. Counted: **180** uses in this
+package name no type argument against **4** that do, and in
+`@mcp-abap-adt/adt-clients` it is **1121 against 5**. The generic exists and is
+not used, so every method sharing this return shares one type — apples and
+oranges in one container, and no consumer can tell them apart.
 
-**What would change it.** Nothing. The 23 close one at a time.
+And it is not the wire that does this. Of the 180 here, **one** is in
+`connection/`, where an envelope belongs. The other 179 are in contracts: 48 in
+`adt/`, 81 in `runtime/`, of which `IDebugger` alone accounts for 40. The
+envelope leaked into the contracts almost in its entirety.
+
+So this decision is not about `IAdtUtilities`' eighteen. It is about roughly 129
+members across the contract package that answer "an HTTP response happened", and
+the eighteen are where the counting started.
+
+**How to catch it.** `Promise<IAdtResponse>` in a published contract, or
+`IAdtResponse` written without a type argument anywhere it is a *result* rather
+than a transport frame. Correct only where the answer genuinely is the envelope —
+a status with no body worth naming — and that should be said at the member.
+
+**What would change it.** Nothing about the rule. The members close one at a
+time, each on evidence, and each closure is a member that stops meaning the same
+thing as every other.
