@@ -755,3 +755,76 @@ and possibly a strategy.
 **What would change it.** An endpoint whose responses genuinely mean different
 things by parameter rather than by parsing — the same URL serving two resources.
 Then the split is by essence and decision 13 applies to each half separately.
+
+## 17. A contract takes what the endpoint takes; what builds that is the implementation's
+
+**The problem.** `IAdtUtilities` carried `getWhereUsedList(IGetWhereUsedListParams)`
+— `object_name`, `object_type`, `enableAllTypes`, `enableOnlyTypes`,
+`disableTypes`, `includeRawXml`. Beside it on the class sat
+`getWhereUsed(IGetWhereUsedParams)` — `object_name`, `object_type`, `scopeXml`.
+Two members, one endpoint, and I recorded the difference as a **gap in the
+contract**: a caller running the two-step flow had nowhere to hand back the scope
+document they had fetched and edited.
+
+That diagnosis was wrong, and measuring the request says why.
+
+**Measured.** `/repository/informationsystem/usageReferences` receives exactly
+two things: `?uri=`, built from the object's name and type, and a request body
+carrying an optional `<scope>` element taken from a scope document. That is all.
+
+`enableAllTypes`, `enableOnlyTypes` and `disableTypes` **never reach the wire**.
+They are instructions to the client: fetch the scope sub-resource, edit the
+selections, and put the result in that same `<scope>` element. They are a way of
+*producing* the one parameter the endpoint takes.
+
+**Decided.** A contract's parameters are what the endpoint needs, in the form it
+needs them. Parameters that exist to *derive* those belong to an implementation,
+which is free to offer them, and free not to.
+
+So the contract takes `scopeXml`. An implementation that also accepts
+"enable all types" and builds the scope itself is a good implementation; one that
+requires the caller to build it is a lesser one; **both satisfy the contract**,
+which is the test. How a scope was arrived at is not the caller's guarantee — the
+guarantee is that a scope, however obtained, produces that search.
+
+**And this is what collapses two members into one.** The remaining difference
+between them was the *result*: one handed back the document, the other a parsed
+list. That is a strategy — the consumer choosing among behaviours the
+implementation performs (decision 14) — not a second capability. So:
+
+```typescript
+getWhereUsed(params: IGetWhereUsedParams): Promise<IAdtResponse>;
+getWhereUsed<T>(params: IGetWhereUsedParams, parse: (data: unknown) => T): Promise<T>;
+```
+
+with the default handing over the document as it came, and
+`@mcp-abap-adt/adt-clients` shipping a parser that yields
+`IWhereUsedListResult`. The list is one argument away and is not a member.
+`includeRawXml` disappears: a boolean asking for a different result shape is a
+strategy written as a flag, and it can only offer the shapes somebody thought of.
+
+**Why this is not a licence to strip every parameter.** The test is whether the
+parameter names something the *endpoint* needs, not whether it is convenient.
+`maxItemCount` on `getAllTypes` is a query parameter and stays. A parameter that
+never appears in the request, and exists to compute one that does, is the
+implementation's.
+
+**Against.** Union both parameter sets on the one member — `scopeXml` *and* the
+three flags — so no caller loses a convenience. Rejected: it puts three fields in
+the contract that no request carries, and every implementation of the contract
+must then provide a scope-building convenience it may have no reason to have. A
+contract that describes a convenience has made it mandatory.
+
+**How to catch it.** A field of a contract's parameter type that you cannot point
+to in the request the member issues. If it is computed into another field, it
+belongs to the implementation that computes it.
+
+**Open, and named rather than assumed.** Nine members still answer a parsed shape
+with no strategy — `search`, `getAllTypes`, `fetchNodeStructure`,
+`getPackageContentsList`, `getPackageHierarchy`, `getInactiveObjects`,
+`getIncludesList`, `listFunctionModules`, `listFunctionGroupIncludes`. If
+"document by default, parsed by strategy" is the general rule rather than the
+answer where two members contended for one endpoint, all nine reverse — and
+`IRepositoryNodeContents`, shipped in 27.0.0, becomes a strategy's return type
+rather than a contract's. That is a decision about the whole surface, not a
+detail of this one, and it is not taken here.
