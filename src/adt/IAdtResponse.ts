@@ -147,17 +147,17 @@ export interface IAdtError {
  * **The type parameter has no default.** A member answering `IAdtResponse` and
  * promising nothing is the free type this design refuses, reached by omission.
  */
-export interface IAdtSuccess<T> {
+export interface IAdtSuccess<TResult extends IAdtResult<unknown>> {
   readonly ok: true;
-  getResult(): IAdtResult<T>;
+  getResult(): TResult;
   getError(): undefined;
 }
 
 /** The other half of {@link IAdtResponse}: a failure, and no result. */
-export interface IAdtFailure {
+export interface IAdtFailure<TError extends IAdtError = IAdtError> {
   readonly ok: false;
   getResult(): undefined;
-  getError(): IAdtError;
+  getError(): TError;
 }
 
 /**
@@ -206,9 +206,23 @@ export interface IAdtResult<T> {
  * of `IAdtUtilities` have; 169 elsewhere have not, and still answer their result
  * or a frame directly. Each converges when it is next touched.
  *
- * `T` is that member's own result contract — `ISearchResult[]` here,
- * `IPackageHierarchyNode` there. A result strategy chooses how much of it to
- * fill in; it may not hand back something else, or two implementations of one
- * member stop being interchangeable.
+ * **Both halves are parameters, and both are constrained to their contract.**
+ * That is the difference between a type parameter and a free one: an
+ * implementation may hand back `IAdtError & { retryAfter: number }` and say so in
+ * the type, and a caller written against `IAdtError` still reads it. Fixing the
+ * error half at `IAdtError` — which the first version did — left an
+ * implementation with no way to describe what it actually returns, which is the
+ * opposite of "swap in your own".
+ *
+ * `TError` defaults to `IAdtError`, so a member that adds nothing writes
+ * `IAdtResponse<IAdtResult<ISearchResult[]>>` and no more.
+ *
+ * Neither parameter is free. `extends IAdtResult<unknown>` and
+ * `extends IAdtError` are what keep two implementations of one member
+ * interchangeable: a caller may read more than the contract if their
+ * implementation offers more, and never less.
  */
-export type IAdtResponse<T> = IAdtSuccess<T> | IAdtFailure;
+export type IAdtResponse<
+  TResult extends IAdtResult<unknown>,
+  TError extends IAdtError = IAdtError,
+> = IAdtSuccess<TResult> | IAdtFailure<TError>;

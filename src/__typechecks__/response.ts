@@ -17,7 +17,7 @@ import type {
   ISearchResult,
 } from '../index';
 
-declare const answer: IAdtResponse<ISearchResult[]>;
+declare const answer: IAdtResponse<IAdtResult<ISearchResult[]>>;
 
 /** Narrowing works, and the result is not `| undefined` on the happy side. */
 export function readHits(): ISearchResult[] {
@@ -58,7 +58,7 @@ export declare const promisesNothing: IAdtResponse;
  * be one — including the error, which is why `IAdtError` is a shape and not a
  * class shipped from here.
  */
-export class TheirSuccess implements IAdtSuccess<ISearchResult[]> {
+export class TheirSuccess implements IAdtSuccess<IAdtResult<ISearchResult[]>> {
   readonly ok = true as const;
   getResult(): IAdtResult<ISearchResult[]> {
     // The value is the member's own result contract. A `brief` strategy does not
@@ -85,8 +85,10 @@ export class TheirFailure implements IAdtFailure {
 }
 
 /** Both halves satisfy the union they belong to. */
-export const asResponse: IAdtResponse<ISearchResult[]> = new TheirSuccess();
-export const asFailure: IAdtResponse<ISearchResult[]> = new TheirFailure();
+export const asResponse: IAdtResponse<IAdtResult<ISearchResult[]>> =
+  new TheirSuccess();
+export const asFailure: IAdtResponse<IAdtResult<ISearchResult[]>> =
+  new TheirFailure();
 
 /** An origin outside the three is refused — they are the ones with remedies. */
 // @ts-expect-error 'timeout' is not an AdtFailureOrigin
@@ -99,3 +101,35 @@ export const silent: IAdtError = { origin: 'connection' };
 /** A result without its value is not one, for the same reason a failure needs a message. */
 // @ts-expect-error value is required
 export const emptyResult: IAdtResult<ISearchResult[]> = {};
+
+/**
+ * An implementation may enrich either half and say so in the type.
+ *
+ * This is what fixing the error half at `IAdtError` cost, and why both are
+ * parameters: a caller of *this* implementation reads `retryAfter`, and a caller
+ * written against the base contract still reads the same failure.
+ */
+interface ThrottledError extends IAdtError {
+  readonly retryAfter: number;
+}
+
+declare const throttled: IAdtResponse<
+  IAdtResult<ISearchResult[]>,
+  ThrottledError
+>;
+
+export function backOff(): number {
+  return throttled.ok ? 0 : throttled.getError().retryAfter;
+}
+
+/** And it is still the base contract, so shared code reads it unchanged. */
+export function anyFailure(
+  a: IAdtResponse<IAdtResult<ISearchResult[]>>,
+): string {
+  return a.ok ? '' : a.getError().message;
+}
+export const throttledIsOne: typeof anyFailure = anyFailure;
+
+/** A parameter outside its contract is refused — this is not a free type. */
+// @ts-expect-error string does not satisfy `extends IAdtError`
+export declare const freeError: IAdtResponse<IAdtResult<string>, string>;

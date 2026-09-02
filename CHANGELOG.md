@@ -25,11 +25,37 @@ consequence of one type serving two purposes; this is the correction.
   discriminated union.**
 
   ```typescript
-  interface IAdtSuccess<T> { readonly ok: true;  getResult(): IAdtResult<T>; getError(): undefined; }
-  interface IAdtFailure    { readonly ok: false; getResult(): undefined;     getError(): IAdtError; }
+  interface IAdtSuccess<TResult extends IAdtResult<unknown>> {
+    readonly ok: true;  getResult(): TResult;    getError(): undefined;
+  }
+  interface IAdtFailure<TError extends IAdtError = IAdtError> {
+    readonly ok: false; getResult(): undefined;  getError(): TError;
+  }
 
-  type IAdtResponse<T> = IAdtSuccess<T> | IAdtFailure;
+  type IAdtResponse<
+    TResult extends IAdtResult<unknown>,
+    TError extends IAdtError = IAdtError,
+  > = IAdtSuccess<TResult> | IAdtFailure<TError>;
   ```
+
+  **Both halves are parameters, and both are constrained to their contract.**
+  That is what separates a type parameter from a free one. An implementation may
+  answer `IAdtError & { retryAfter: number }` and *say so in the type*, while a
+  caller written against `IAdtError` reads the same failure unchanged:
+
+  ```typescript
+  declare const throttled: IAdtResponse<IAdtResult<ISearchResult[]>, ThrottledError>;
+
+  throttled.getError().retryAfter;   // this implementation offers more
+  anyFailure(throttled);             // and the base contract still reads it
+  ```
+
+  Fixing the error half at `IAdtError` — which the first version of this release
+  did — left an implementation no way to describe what it actually returns, which
+  is the opposite of "swap in your own". `TError` defaults to `IAdtError`, so a
+  member adding nothing writes `IAdtResponse<IAdtResult<ISearchResult[]>>` and no
+  more. Neither parameter is free: `IAdtResponse<IAdtResult<string>, string>`
+  does not compile.
 
   ```typescript
   if (answer.ok) {
