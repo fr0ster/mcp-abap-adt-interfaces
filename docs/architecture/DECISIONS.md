@@ -1200,16 +1200,33 @@ failure and carry on writes `try`/`catch`, which is control flow by exception.
 That is the price, and it is paid by the rarer case: the common ones are "give me
 the answer" and "this is not a failure for me", and neither needs a catch.
 
-**Still open.**
+**The rest, decided.**
 
-- **Where an implementation is chosen.** Per call, per handler, or at client
-  construction. Per call is the most flexible and the noisiest; at construction is
-  the quietest and cannot vary between two calls that want different amounts.
-- **Whether `AdtSAPError` and `AdtParseError` become contracts.** They are
-  `adt-clients` classes thrown by default implementations today. If a consumer is
-  to recognise a failure across implementations, what they recognise has to be
-  named here.
-- **Migration.** Member by member. Nothing forces the atoms to move together.
+**Where an implementation is chosen: at client construction.** Not per call. A
+call site says what it wants done, not how answers are shaped — that is a
+property of the client a consumer built, and putting it in every call would put
+the same argument in every call.
+
+The cost is real and accepted: two calls through one client cannot want different
+amounts. The way out is a **second client**, and it is cheap because a client is
+not a connection — both are constructed over the same `IAbapConnection`, so
+wanting brief answers in one place and full ones in another costs an object, not
+a session. That distinction matters: multiplying sessions is not acceptable,
+multiplying clients is nothing.
+
+**`AdtSAPError` and `AdtParseError` move here, as classes.** A consumer
+recognising a failure across implementations has to recognise something this
+package names, or every implementation invents its own and `instanceof` is a lie
+between them.
+
+They can be classes rather than shapes with a discriminant, because this package
+already ships two — `AdtOperationError` and `TransportSearchConfigurationMissing`.
+It is not types-only and never claimed to be, so `instanceof` works across
+implementations without inventing a `kind` field to stand in for it.
+
+**Migration: member by member.** Nothing forces the atoms to move together, and
+nothing should — each member converges when it is next touched, which is how the
+where-used correction in decision 17 is already scheduled.
 
 **What would change it.** Building it. Until then this section exists so the
 questions above are answered once rather than re-litigated per member.
