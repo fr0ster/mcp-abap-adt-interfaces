@@ -7,6 +7,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [27.0.0] - 2026-09-02
+
+### Changed
+
+- **BREAKING: `IRepositoryNodeContents.childNodeIds: string[]` becomes
+  `childNodes: IRepositoryNodeChild[]`.**
+
+  ```typescript
+  export interface IRepositoryNodeChild {
+    objectType: string;
+    nodeId: string;
+  }
+  ```
+
+  The document pairs `OBJECT_TYPE` with `NODE_ID` in each
+  `SEU_ADT_OBJECT_TYPE_INFO` entry, and 26.2.0 kept only the ids. An id on its
+  own answers "there is more below" and nothing else: a caller cannot ask which
+  node holds the includes of a program, because the type it would match on was
+  dropped. That is the coupling this contract exists to remove — the caller is
+  sent back to the raw document — and it was shipped doing so quietly.
+
+  Found by consuming it. `@mcp-abap-adt/adt-clients` declared `AdtUtils`
+  `implements` the atoms, which forced `fetchNodeStructure` to answer
+  `IRepositoryNodeContents`; checking the eight call sites in `mcp-abap-adt`
+  before narrowing `getUtils()` showed one of them matching
+  `<OBJECT_TYPE>PROG/I</OBJECT_TYPE>` to find its `NODE_ID` — a question the
+  shipped shape cannot express.
+
+  Breaking rather than additive on purpose. A second field beside `childNodeIds`
+  would be two fields meaning one thing, which is the fault decision 16 had just
+  removed elsewhere. Nothing consumes these atoms yet — `adt-clients` has not
+  shipped them — so the break costs nothing today and more with every release
+  that carries the old shape.
+
+  Migration: `contents.childNodeIds` → `contents.childNodes.map((c) => c.nodeId)`,
+  and the question that was previously impossible is
+  `contents.childNodes.find((c) => c.objectType === 'PROG/I')?.nodeId`.
+
+### Added
+
+- **`IRepositoryNodeChild`** — one child level, exported.
+
+### Documentation
+
+- Why `OBJECT_TYPE_LABEL` is **not** in the shape, with the count: parsed twice
+  in `mcp-abap-adt`, read zero times. Recorded at the interface rather than left
+  implicit, because the field this shape originally lost was lost by measuring
+  which fields a parser *reads* instead of which a caller *uses* — the same
+  method, applied twice, gives opposite answers here.
+- `src/__typechecks__/utilities.ts` asserts the walk that 26.2.0's shape could
+  not express, so the regression is caught by the compiler rather than by the
+  next consumer.
+
+
 ## [26.3.0] - 2026-09-02
 
 Additive. `search` gains an overload; no existing signature changes, so nothing
