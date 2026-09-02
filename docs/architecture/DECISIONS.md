@@ -1241,5 +1241,36 @@ its own timetable — but they are not precedent, and nothing new joins them.
 nothing should — each member converges when it is next touched, which is how the
 where-used correction in decision 17 is already scheduled.
 
+### What this removes, which is the measure of whether it was worth it
+
+`AdtOperationError` does not move to `adt-clients` with the others. **It stops
+existing.** Measured across the packages: 20 throws, **zero** `instanceof`
+anywhere, and of its five fields only `code` is ever read — by a consumer, off an
+`unknown`, which the compiler does not check. Two of the five are
+`originalError?: unknown` and `checkResult?: unknown`: the envelope again, in the
+error plane, a container for everything from which a caller can type nothing out.
+
+Its 20 throws are three unrelated things wearing one name, and each has a home
+that says more:
+
+| what it actually was | example | where it goes |
+|---|---|---|
+| SAP refused | a 404/406 caught around a versions read | `AdtSAPError` — with the document and the request |
+| the answer lacked a field we need | "the run resource carried no `runs:status`" | `AdtParseError` |
+| the caller's argument is wrong | "`maximumVerdicts` must be a positive integer" | not an ADT failure at all |
+
+`throwUnsupportedOperation` goes the same way and for a better reason: "this
+operation is not supported for this object type" is what the **capability atoms**
+say at compile time. A handler that cannot do versions does not declare
+`IAdtVersionable`. Saying it again at run time is a leftover from before those
+existed, and a fact the type system already carries does not need an exception.
+
+**And the consumer pays for this once, not per change.** Moving to outcomes and
+strategies is a rewrite of every call site regardless; the `.code` reads go with
+that same pass. What is bought is uniformity — one way to obtain a result, two
+named kinds of failure, and no per-member error taxonomy to learn. That is the
+argument for removing it rather than relocating it: relocating keeps a third
+vocabulary alive in a design whose point is that there are only two.
+
 **What would change it.** Building it. Until then this section exists so the
 questions above are answered once rather than re-litigated per member.
