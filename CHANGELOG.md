@@ -7,6 +7,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [26.3.0] - 2026-09-02
+
+Additive. `search` gains an overload; no existing signature changes, so nothing
+on 26.2.x breaks.
+
+### Added
+
+- **`IAdtInformationSystem.search` takes an optional parser.**
+
+  ```typescript
+  search(criteria: ISearchObjectsParams): Promise<ISearchResult[]>;
+  search<T>(criteria: ISearchObjectsParams, parse: (data: unknown) => T): Promise<T>;
+  ```
+
+  26.2.0 dropped `searchObjects` from the atoms as an envelope leak, on the
+  grounds that `search` sits beside it over the same endpoint. Checking the
+  consumer before narrowing `AdtClient.getUtils()` showed what that missed:
+  `mcp-abap-adt` calls `searchObjects` in three places, reads `status`, takes
+  `data` and hands the ADT document to a language model. `search`'s array is no
+  substitute — the document is the point.
+
+  The fix is not to restore the raw member. **One endpoint is one member**
+  (decision 16), and wanting the document rather than the hits is a choice about
+  *behaviour* the implementation still performs: the same request, the same
+  session handling, only the reading is the caller's. That is what a strategy is
+  for, and it is the shape this package already uses for `listNodes` and
+  `readWith`.
+
+  Deliberately not a licence to give every member a parse overload — that was
+  tried across 23 members and reverted, because it moves a result's meaning from
+  the contract to the call site. It is added here for the reason decision 5
+  names: a recorded hit list runs to 473 rows and 1.3MB, with nested references
+  `ISearchResult` does not carry.
+
+  `src/__typechecks__/utilities.ts` asserts all three directions — no parser
+  yields `ISearchResult[]`, a parser yields the consumer's own type rather than
+  `unknown`, and a parser whose shape contradicts the annotation is refused.
+
+### Documentation
+
+- **Decision 16 — one endpoint is one contract member.** Decision 13's
+  substitution test appears to argue for keeping both members: a caller holding
+  the array cannot do what that consumer does. Recorded why that reading is
+  wrong — substitution decides whether two *results* mean the same thing, and
+  does not license two members for one request. A second member over one endpoint
+  is the same essence at two levels of doneness, and the second is always the
+  envelope, which is how "the raw variant" becomes the standing excuse for a
+  result never being named.
+- The member counts in `IAdtUtilities` are stated as **members, not signatures**.
+  `search` has two, and a parser that counts signatures reports 26 without being
+  wrong about anything except the word.
+
+
 ## [26.2.0] - 2026-09-01
 
 Additive. No existing type changes, so nothing on 26.1.x breaks.
