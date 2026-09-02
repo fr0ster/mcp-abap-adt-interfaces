@@ -702,3 +702,56 @@ transport would have to be invented.
 consumers of `config` (one) and the header keys are given contract-shaped
 replacements — this is a breaking change to the most widely used type in the
 package, and it is written down here before it is scheduled rather than after.
+
+## 16. One endpoint is one contract member
+
+**The problem.** `AdtUtils` had two members over
+`/repository/informationsystem/search`: `searchObjects`, answering the envelope,
+and `search`, answering `ISearchResult[]`. The same request, twice, distinguished
+only by how much of the answer the caller was given.
+
+Decision 13's substitution test appears to say they are different contracts — a
+caller holding `search`'s array cannot do what `mcp-abap-adt` does with
+`searchObjects`' response, which is read `status`, take `data` and hand the ADT
+document on. By that reading the pair should stay.
+
+**Decided.** It should not. **One endpoint is one contract member**, at least at
+the level this package describes. Substitution decides whether two *results*
+mean the same thing; it does not license two members for one request. A second
+member over one endpoint is not a second essence — it is the same essence at two
+levels of doneness, and which level a caller gets stops being a property of the
+contract and becomes a property of which method they happened to call.
+
+The cost of the alternative is what settles it. Two members per endpoint doubles
+the surface every implementation must provide (decision 11), and the second one
+is always the envelope — so "the raw variant" becomes the standing excuse for
+decision 13's gap never closing: every member could have one, and any member that
+does need never name its result.
+
+**How the raw document is still reached.** By a strategy, not a second member.
+Wanting the document rather than the parsed hits is a choice about *behaviour*,
+and behaviour the implementation still performs — it issues the same request,
+handles the same session, and hands the caller the answer to read. That is
+decision 5's shape exactly (`listNodes(parse)`, `readWith`), and decision 14's
+line: the consumer chooses among behaviours we implement.
+
+What this is not: a licence to give every member a parse overload. That was tried
+across 23 members and reverted — it cost every implementer a second signature and
+moved the result's meaning from the contract to the call site. A strategy is
+added where a document is genuinely too large or too variable to name (decision
+5), on that member, for that reason.
+
+**Against.** Keeping both, on the grounds that a consumer already depends on the
+raw one. Real — `mcp-abap-adt` calls `searchObjects` in three places and passes
+the XML to a language model. But that is an argument about migration order, not
+about the contract; the consumer's need is served by a strategy on the one
+member, and it is served better, because today it reads `response.data` and
+guesses at the shape with no contract at all.
+
+**How to catch it.** Two members whose implementations issue the same request. If
+the difference between them is how far the answer was parsed, it is one member
+and possibly a strategy.
+
+**What would change it.** An endpoint whose responses genuinely mean different
+things by parameter rather than by parsing — the same URL serving two resources.
+Then the split is by essence and decision 13 applies to each half separately.
