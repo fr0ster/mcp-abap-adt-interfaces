@@ -16,6 +16,7 @@ import type {
   IAdtResponse,
   IGetSqlQueryParams,
   IGetTableContentsParams,
+  IRepositoryNodeContents,
 } from '../index';
 
 /** One family alone, implemented by something that knows nothing of the others. */
@@ -50,5 +51,33 @@ declare const preview: IAdtDataPreview;
 // @ts-expect-error search belongs to the information system, not data preview
 preview.search({ query: 'ZCL_X' });
 
-export { MyDataPreview, found, tree, rows, inactive };
+/**
+ * An implementation may take arguments the contract does not name.
+ *
+ * `fetchNodeStructure` drops `withShortDescriptions`: nothing has ever read a
+ * description out of that document, so the contract cannot express the flag's
+ * effect and does not ask for it. The shipped implementation still accepts one,
+ * and that has to keep satisfying the contract — an extra *optional* parameter
+ * is assignable, an extra required one is not. Both directions are asserted,
+ * because "it compiled when I tried it" is not a thing anyone can re-run.
+ */
+class NodeReaderWithExtras implements IAdtRepositoryStructure {
+  async fetchNodeStructure(
+    _parentType: string,
+    _parentName: string,
+    _nodeId?: string,
+    _withShortDescriptions?: boolean,
+  ): Promise<IRepositoryNodeContents> {
+    return { objects: [], childNodeIds: [] };
+  }
+  async getObjectStructure(_t: string, _n: string): Promise<IAdtResponse> {
+    return { status: 200, statusText: 'OK', data: '', headers: {} };
+  }
+}
+
+declare const nodes: IAdtRepositoryStructure;
+// @ts-expect-error the contract takes three arguments; the flag is not one of them
+nodes.fetchNodeStructure('DEVC/K', 'ZPKG', '000000', true);
+
+export { MyDataPreview, NodeReaderWithExtras, found, tree, rows, inactive };
 export type { AllUtilities };

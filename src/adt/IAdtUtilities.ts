@@ -197,12 +197,25 @@ export interface IAdtRepositoryStructure {
    * and the `NODE_ID`s a caller walks next — and a consumer needs both to
    * traverse, which is why the result names them rather than handing back the
    * envelope. Lifted from a traversal running in `mcp-abap-adt`.
+   *
+   * **No `withShortDescriptions`.** The implementation takes one and sends it,
+   * but every parser that has read this document reads exactly the four identity
+   * fields {@link IRepositoryObjectNode} names — nothing has ever read a
+   * description out of it. A parameter that asks for something the result cannot
+   * express is a parameter with no observable effect for anyone holding the
+   * contract, and adding `description?: string` to make it observable would be
+   * inventing a field nobody has seen, which decision 1 forbids. An
+   * implementation may still accept it as an extra optional argument.
+   *
+   * **What would change this.** A capture of the response with the flag set. If
+   * a description is in there, the field is named from the capture and the
+   * parameter comes back with it — both together, because neither is any use
+   * alone.
    */
   fetchNodeStructure(
     parentType: string,
     parentName: string,
     nodeId?: string,
-    withShortDescriptions?: boolean,
   ): Promise<IRepositoryNodeContents>;
 
   /** The parts one object is made of. */

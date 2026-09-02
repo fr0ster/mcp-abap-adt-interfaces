@@ -27,12 +27,15 @@ Additive. No existing type changes, so nothing on 26.1.x breaks.
   | `/datapreview/*` | `IAdtDataPreview` | 2 |
   | `/discovery` | `IAdtDiscovery` | 1 |
 
-  A measurement suggested a different split — the one legacy implementation
-  refuses exactly `getSqlQuery`, `getTableContents` and `getTransaction`, which
-  would have produced three atoms and a bag of twenty-eight. Those refusals fall
-  *inside* these families rather than defining them, so architecture and
-  observation agree and observation is simply narrower. A contract split by who
-  refuses what changes shape with the next system.
+  A measurement suggested a different split. When these atoms were drawn the one
+  legacy implementation refused three members — `getSqlQuery`, `getTableContents`
+  and `getTransaction` — which would have produced three atoms and a bag of
+  twenty-eight. With `getTransaction` removed as uncalled it refuses two, and
+  **both are `IAdtDataPreview`**: a whole family, refused whole. One of those
+  three observational atoms would have evaporated along with its member, while
+  the resource families did not move. Refusals fall *inside* these families
+  rather than defining them; a contract split by who refuses what changes shape
+  with the next system.
 
   Packages are their own atom rather than part of the tree: a package is a
   container ADT gives its own resource, and asking what is in one is a question
@@ -123,6 +126,29 @@ which are deliberately out of scope until that design settles.
   Every number in the header is now checked against the parser: 7 atoms, 25
   members, 12 answering the envelope, 13 stating a result — 10 a shape, 3 a
   primitive.
+
+  A second review pass caught the same staleness in two more places — the README
+  bullet and this entry's own description of the split — both of which still
+  listed `getTransaction` among the legacy refusals. Both now state the two that
+  remain and what their falling into one family proves.
+
+- **`fetchNodeStructure` no longer declares `withShortDescriptions`.** The
+  parameter asked the server for descriptions the result had no way to return:
+  `IRepositoryObjectNode` names the four identity fields and nothing else,
+  because those are what every parser reading this document has ever read. A
+  parameter whose effect the contract cannot express has no observable effect for
+  anyone holding the contract, and adding `description?: string` to give it one
+  would be naming a field nobody has captured — which decision 1 forbids.
+
+  An implementation may still accept the flag: an extra *optional* parameter
+  stays assignable to the contract. That is asserted in
+  `src/__typechecks__/utilities.ts` in both directions — an implementation
+  carrying the extra argument satisfies `IAdtRepositoryStructure`, and a caller
+  holding the contract cannot pass a fourth argument — rather than left as
+  something that happened to compile once.
+
+  A capture of the response with the flag set brings back the field and the
+  parameter together, because neither is any use without the other.
 
 
 ## [26.1.0] - 2026-09-01
