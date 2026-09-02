@@ -1044,6 +1044,29 @@ has nothing left to do.
    the same as the envelope** — it is the complete result *stated as a contract*,
    which is what decision 13 has been about all along.
 
+**Which package carries what.** This lands mostly here, because the contracts are
+here — and the split follows the rule this package already lives by: a name a
+consumer depends on is a contract, an implementation of it is behaviour.
+
+| | `@mcp-abap-adt/interfaces` | `@mcp-abap-adt/adt-clients` |
+|---|---|---|
+| the outcome type (`result()` / `error()`) | the contract | — |
+| the strategy names — full · medium · brief | the contracts, so every implementation honours the same names | — |
+| the error-detection strategy | the contract | the default rules |
+| the shipped strategies themselves | — | the behaviour |
+| what a member returns without one | stated at the member | the default |
+
+The middle row is the reason the names cannot live in `adt-clients`: a consumer
+who asks for "brief" and swaps in their own implementation must get brief, and
+that only holds if the name is a contract both sides read. A name shipped only by
+one implementation is a convention, and conventions drift.
+
+`AdtSAPError` and `AdtParseError` are the same question and are **not** answered
+here. They are classes in `adt-clients` today, thrown by default strategies. If a
+consumer is to catch them across implementations, what they catch has to be a
+contract — and if only the default strategies throw them, they can stay where
+they are. That depends on the outcome type's shape, which is still open.
+
 **Still open.**
 
 - **How the default throw and the outcome type meet.** Answer 1 says a refusal
