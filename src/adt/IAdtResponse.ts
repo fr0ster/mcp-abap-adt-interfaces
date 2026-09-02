@@ -11,7 +11,7 @@
  * const answer = await utils.search({ query: 'ZCL_*' });
  *
  * if (answer.ok) {
- *   answer.getResult();          // ISearchResult[]
+ *   answer.getResult().value;    // ISearchResult[]
  * } else {
  *   answer.getError().origin;    // connection, refusal, parse
  *   answer.getError().message;   // what SAP said, when SAP said anything
@@ -130,7 +130,7 @@ export interface IAdtError {
  * const answer = await utils.search({ query: 'ZCL_*' });
  *
  * if (answer.ok) {
- *   answer.getResult();          // ISearchResult[] — not `| undefined`
+ *   answer.getResult().value;    // ISearchResult[] — not `| undefined`
  * } else {
  *   answer.getError().origin;    // IAdtError — not `| undefined`
  * }
@@ -144,20 +144,59 @@ export interface IAdtError {
  * `full` are three amounts of one contract, so a caller writes against
  * `IAdtError` once and reads whatever their strategy provided.
  *
- * **`TResult` has no default.** A member answering `IAdtResponse` and promising
- * nothing is the free type this design refuses, reached by omission.
+ * **The type parameter has no default.** A member answering `IAdtResponse` and
+ * promising nothing is the free type this design refuses, reached by omission.
  */
-export interface IAdtSuccess<TResult> {
+export interface IAdtSuccess<TResult extends IAdtResult<unknown>> {
   readonly ok: true;
   getResult(): TResult;
   getError(): undefined;
 }
 
 /** The other half of {@link IAdtResponse}: a failure, and no result. */
-export interface IAdtFailure {
+export interface IAdtFailure<TError extends IAdtError = IAdtError> {
   readonly ok: false;
   getResult(): undefined;
-  getError(): IAdtError;
+  getError(): TError;
+}
+
+/**
+ * A result, as the contract it is — the other half of the pair with
+ * {@link IAdtError}.
+ *
+ * **The two halves are not symmetric in how they vary, and saying otherwise was
+ * wrong.** An error strategy varies the *fullness of one contract*: `IAdtError`
+ * has two required fields and five optional ones, so `brief` and `full` are
+ * genuinely two amounts of it. A result cannot work that way — `ISearchResult`
+ * requires `description`, so no strategy can return "fewer fields" of it without
+ * the compiler refusing.
+ *
+ * A result strategy varies **`T` itself**. That is what the strategy overload
+ * already does: `search(criteria)` answers
+ * `IAdtResponse<IAdtResult<ISearchResult[]>>`, and `search(criteria, parse)`
+ * answers `IAdtResponse<IAdtResult<whatever the parser returns>>`.
+ * A shipped `brief` is a shipped parser with a narrower result contract, not the
+ * same contract half-filled.
+ *
+ * So what does this interface buy, if it holds one field? It is the **named half
+ * of an answer**, the counterpart to `IAdtError`, and it is where anything a
+ * result needs to say *about itself* goes when a case for one appears — stated
+ * as a contract, which is decision 19's rule for what a result may carry. What it must never hold is the
+ * transport frame: a `response` field was in the first draft and put `status`,
+ * `headers` and `data` back inside every result under one more layer of nesting.
+ *
+ * A caller who wants the document asks for it the way decision 19 says: a result
+ * strategy of their own that answers the document, in a member whose contract
+ * says that is what it gives.
+ *
+ * A bare `T` was tried here and is wrong for the reason a bare `TError` was
+ * wrong: a member that hands back an unwrapped value has no room to say anything
+ * about it, so "how much" becomes a question only the error side can ask. Both
+ * sides of an answer are contracts, or neither is.
+ */
+export interface IAdtResult<T> {
+  /** What the member promised — `ISearchResult[]`, `IPackageHierarchyNode`. */
+  readonly value: T;
 }
 
 /**
@@ -168,9 +207,23 @@ export interface IAdtFailure {
  * of `IAdtUtilities` have; 169 elsewhere have not, and still answer their result
  * or a frame directly. Each converges when it is next touched.
  *
- * `TResult` is that member's own result contract — `ISearchResult[]` here,
- * `IPackageHierarchyNode` there. A result strategy chooses how much of it to
- * fill in; it may not hand back something else, or two implementations of one
- * member stop being interchangeable.
+ * **Both halves are parameters, and both are constrained to their contract.**
+ * That is the difference between a type parameter and a free one: an
+ * implementation may hand back `IAdtError & { retryAfter: number }` and say so in
+ * the type, and a caller written against `IAdtError` still reads it. Fixing the
+ * error half at `IAdtError` — which the first version did — left an
+ * implementation with no way to describe what it actually returns, which is the
+ * opposite of "swap in your own".
+ *
+ * `TError` defaults to `IAdtError`, so a member that adds nothing writes
+ * `IAdtResponse<IAdtResult<ISearchResult[]>>` and no more.
+ *
+ * Neither parameter is free. `extends IAdtResult<unknown>` and
+ * `extends IAdtError` are what keep two implementations of one member
+ * interchangeable: a caller may read more than the contract if their
+ * implementation offers more, and never less.
  */
-export type IAdtResponse<TResult> = IAdtSuccess<TResult> | IAdtFailure;
+export type IAdtResponse<
+  TResult extends IAdtResult<unknown>,
+  TError extends IAdtError = IAdtError,
+> = IAdtSuccess<TResult> | IAdtFailure<TError>;

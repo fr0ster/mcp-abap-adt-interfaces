@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [28.0.0] - 2026-09-02
 
+> Corrected after tagging and before publication. The tag was re-cut; the
+> registry never had the earlier form, so no consumer saw
+> `getResult(): T` — it was `IAdtResult<T>` in every published version, which is
+> to say in the only one. What changed between the tag and the publish is
+> recorded here rather than hidden, because a re-cut tag is a rewritten public
+> ref and that should be visible to anyone who fetched it.
+
 **The response stops being an envelope.** Everything since 26.2.0 has been a
 consequence of one type serving two purposes; this is the correction.
 
@@ -18,15 +25,41 @@ consequence of one type serving two purposes; this is the correction.
   discriminated union.**
 
   ```typescript
-  interface IAdtSuccess<TResult> { readonly ok: true;  getResult(): TResult;   getError(): undefined; }
-  interface IAdtFailure          { readonly ok: false; getResult(): undefined; getError(): IAdtError; }
+  interface IAdtSuccess<TResult extends IAdtResult<unknown>> {
+    readonly ok: true;  getResult(): TResult;    getError(): undefined;
+  }
+  interface IAdtFailure<TError extends IAdtError = IAdtError> {
+    readonly ok: false; getResult(): undefined;  getError(): TError;
+  }
 
-  type IAdtResponse<TResult> = IAdtSuccess<TResult> | IAdtFailure;
+  type IAdtResponse<
+    TResult extends IAdtResult<unknown>,
+    TError extends IAdtError = IAdtError,
+  > = IAdtSuccess<TResult> | IAdtFailure<TError>;
   ```
+
+  **Both halves are parameters, and both are constrained to their contract.**
+  That is what separates a type parameter from a free one. An implementation may
+  answer `IAdtError & { retryAfter: number }` and *say so in the type*, while a
+  caller written against `IAdtError` reads the same failure unchanged:
+
+  ```typescript
+  declare const throttled: IAdtResponse<IAdtResult<ISearchResult[]>, ThrottledError>;
+
+  throttled.getError().retryAfter;   // this implementation offers more
+  anyFailure(throttled);             // and the base contract still reads it
+  ```
+
+  Fixing the error half at `IAdtError` — which the first version of this release
+  did — left an implementation no way to describe what it actually returns, which
+  is the opposite of "swap in your own". `TError` defaults to `IAdtError`, so a
+  member adding nothing writes `IAdtResponse<IAdtResult<ISearchResult[]>>` and no
+  more. Neither parameter is free: `IAdtResponse<IAdtResult<string>, string>`
+  does not compile.
 
   ```typescript
   if (answer.ok) {
-    answer.getResult();          // ISearchResult[] — not `| undefined`
+    answer.getResult().value;    // ISearchResult[] — not `| undefined`
   } else {
     answer.getError().origin;    // IAdtError — not `| undefined`
   }
@@ -45,9 +78,10 @@ consequence of one type serving two purposes; this is the correction.
 
 - **BREAKING: every asynchronous member of `IAdtUtilities` returns it.** All 22
   of them — 23 signatures, because `search` has the strategy overload — each
-  naming its own result: `IAdtResponse<ISearchResult[]>`,
-  `IAdtResponse<IPackageHierarchyNode>`, and so on. The 12 that have no named
-  result yet say `IAdtResponse<IAdtWireResponse>` — honest about handing back a
+  naming its own result: `IAdtResponse<IAdtResult<ISearchResult[]>>`,
+  `IAdtResponse<IAdtResult<IPackageHierarchyNode>>`, and so on. The 12 that have
+  no named result yet say `IAdtResponse<IAdtResult<IAdtWireResponse>>` — honest
+  about handing back a
   frame, and visible as work remaining rather than hidden in a shared alias. The
   three synchronous members compute a string and issue no request; they are
   unchanged.
@@ -73,6 +107,42 @@ consequence of one type serving two purposes; this is the correction.
 
 ### Added
 
+- **`IAdtResult<T>` and `IAdtError`** — both halves of an answer are contracts.
+
+  ```typescript
+  interface IAdtResult<T> {
+    readonly value: T;    // what the member promised
+  }
+  ```
+
+  Symmetric on purpose, and the symmetry is the design rather than tidiness: a
+  **result** strategy chooses how much to fill in exactly as an error strategy
+  does, so `brief` and `full` are two amounts of one contract on both sides.
+
+  **The two halves vary differently, and that is not a slip.** An error strategy
+  varies the fullness of `IAdtError` — two required fields, five optional, so
+  `brief` and `full` are genuinely two amounts of one contract. A result cannot
+  work that way: `ISearchResult` requires `description`, so no strategy returns
+  "fewer fields" of it without the compiler refusing. A result strategy varies
+  **`T` itself**, which is what the strategy overload already does — a shipped
+  `brief` is a shipped parser with a narrower result contract.
+
+  What `IAdtResult` must never hold is the transport frame. A `response` field
+  was in the first draft and put `status`, `headers` and `data` back inside every
+  result under one more layer of nesting — a domain answer re-bound to a
+  transport shape, which is what this release undoes. Decision 19 is explicit:
+  `full` is the complete result **stated as a contract**, not the envelope
+  returning.
+
+  `IAdtError` keeps its `response`, and the asymmetry is deliberate. Diagnosing a
+  failure needs the status and headers it arrived with; reading a result does
+  not.
+
+  A bare `T` was tried on the result side and is wrong for the reason a bare
+  error type was wrong: a member handing back an unwrapped value has no room to
+  say anything about it, so "how much" becomes a question only the error half can
+  ask. Both halves are contracts, or neither is.
+
 - **`IAdtError`** — the contract every error strategy returns.
 
   A strategy chooses **how much** to fill in, never what it is. `brief`, `medium`
@@ -92,8 +162,6 @@ consequence of one type serving two purposes; this is the correction.
 
 ### Rejected on the way here, recorded because both were shipped in draft
 
-- **`IAdtResult<T>`**, a wrapper around the value. It put a shape of ours around
-  the result after the consumer had said what shape they wanted.
 - **`TError` as a free type parameter.** It offered a choice and took the contract
   away with it: an implementation returning `number` and one returning
   `IAdtError` are not interchangeable, so "swap in your own" would have meant

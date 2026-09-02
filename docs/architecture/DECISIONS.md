@@ -439,6 +439,15 @@ compose (a method can return a contract *and* take a strategy) but neither
 substitutes for the other.
 
 **The envelope is a container for everything, which is the deeper fault.**
+
+> Throughout decisions 13 to 16 below, `IAdtResponse` means the **transport
+> frame** — `data`, `status`, `headers`. That is what the name meant when they
+> were written. Since 28.0.0 the frame is `IAdtWireResponse` and `IAdtResponse`
+> is the answer a member gives, which is the correction these decisions argued
+> for. Read the older text with the old meaning; renaming it here would make the
+> arguments unreadable, since the whole point of several is that one name was
+> doing two jobs.
+
 `IAdtResponse<T = any>` defaults its body to `any`. Counted: **180** uses in this
 package name no type argument against **4** that do, and in
 `@mcp-abap-adt/adt-clients` it is **1121 against 5**. The generic exists and is
@@ -1074,11 +1083,17 @@ has nothing left to do.
    them does not happen: it exposes both, one accessor each.
 
    ```typescript
-   interface IAdtOutcome<TResult, TError> {
-     result(): TResult;
-     error(): TError;
+   interface IAdtResponse<T> {
+     getResult(): IAdtResult<T>;
+     getError(): IAdtError;
    }
    ```
+
+   > Written first as `IAdtOutcome<TResult, TError>` with bare type parameters —
+   > my sketch, not the design. **Both halves are contracts**, `IAdtResult` and
+   > `IAdtError`, which is the whole point: a free type parameter offers a choice
+   > and takes the contract away with it, since an implementation returning
+   > `number` and one returning a named shape are not interchangeable.
 
    The alternative — one strategy over the answer, leaving the branch implicit —
    was the cheaper way in and is not what this takes. A type that admits only the
@@ -1252,11 +1267,67 @@ The outcome is not a new type beside `IAdtResponse` — it is what `IAdtResponse
 becomes. Two methods, and a concrete implementation supplies each:
 
 ```typescript
-interface IAdtResponse<TResult> {
-  getResult(): TResult;
-  getError(): /* the failure, or empty */;
+interface IAdtSuccess<TResult extends IAdtResult<unknown>> {
+  readonly ok: true;  getResult(): TResult;    getError(): undefined;
 }
+interface IAdtFailure<TError extends IAdtError = IAdtError> {
+  readonly ok: false; getResult(): undefined;  getError(): TError;
+}
+
+type IAdtResponse<
+  TResult extends IAdtResult<unknown>,
+  TError extends IAdtError = IAdtError,
+> = IAdtSuccess<TResult> | IAdtFailure<TError>;
 ```
+
+**Both halves are parameters, and both are constrained to their contract.** This
+is the newest of these decisions and the one least likely to be guessed from the
+others, so it is stated rather than implied.
+
+An earlier form fixed the error half at `IAdtError`, and that left an
+implementation with no way to describe what it actually returns — the opposite of
+"swap in your own". A `retryAfter` an implementation genuinely provides was
+invisible to every caller, including the ones using that implementation on
+purpose:
+
+```typescript
+interface ThrottledError extends IAdtError { readonly retryAfter: number }
+
+declare const throttled: IAdtResponse<IAdtResult<ISearchResult[]>, ThrottledError>;
+
+throttled.getError().retryAfter;   // this implementation offers more
+anyFailure(throttled);             // and the base contract reads it unchanged
+```
+
+**This is not the free `TError` rejected above, and the constraint is the whole
+difference.** A free parameter lets an implementation answer `number` and two
+implementations of one member stop being interchangeable. `extends IAdtError`
+lets a caller read **more** than the contract where their implementation offers
+more, and never less — which is what substitution means (decision 13).
+
+`TError` defaults to `IAdtError`, so a member adding nothing writes
+`IAdtResponse<IAdtResult<ISearchResult[]>>` and no more.
+
+Shipped in 28.0.0, and two things about it were settled by building it rather
+than by writing it down here first.
+
+**A union, not one shape with two optional halves.** Two independently-optional
+methods let an implementation answer both or neither, and checking one narrows
+nothing — so "a caller cannot reach a result without being told an error exists"
+was a sentence in a comment rather than a thing the compiler did. `ok` exists
+because TypeScript cannot narrow an object from what a method returns.
+
+**Both halves are named contracts**, `IAdtResult<T>` and `IAdtError`. They do not
+vary the same way, and that difference is real rather than an inconsistency: an
+error strategy varies the *fullness of `IAdtError`*, which has two required fields
+and five optional; a result strategy varies **`T` itself**, through the strategy
+overload, because a result contract like `ISearchResult` has required fields and
+cannot be returned half-filled.
+
+What `IAdtResult` must not hold is the transport frame. A `response` field was in
+its first draft and put `status`, `headers` and `data` back inside every result
+under one more layer of nesting — this decision's own words are that `full` is
+the complete result *stated as a contract*, not the envelope returning.
 
 An implementation is then built from two strategies, one behind each method. In
 `adt-clients` that is where full · medium · brief live, and where a consumer's own
@@ -1273,15 +1344,22 @@ it raises when an error is present, so a caller who ignores failures still fails
 loudly, and a caller who wants to branch asks `getError()` first. Throwing was
 never a property of the member — that was the confusion.
 
-**No member signature changes.** A member still returns one thing. What changes
-is what that thing is, and the migration is a type acquiring meaning rather than
-94 signatures being rewritten. Members already returning `Promise<IAdtResponse>`
-are not each a separate correction; they are the same correction once.
+**Every member signature changes, and I predicted otherwise.** The thought was
+that a member still returns one thing, so the migration would be a type acquiring
+meaning rather than signatures being rewritten. That was wrong once the halves
+became contracts: `Promise<ISearchResult[]>` became
+`Promise<IAdtResponse<IAdtResult<ISearchResult[]>>>`, and 28.0.0 rewrote all 22
+asynchronous members of `IAdtUtilities` plus 784 call sites in `adt-clients`.
+
+Kept rather than corrected away, because the mistake is instructive: "the type
+acquires meaning" is what a rename does, and this was never a rename. The moment
+both halves of an answer are named contracts, every signature that returns an
+answer says so.
 
 **The generic stops being decoration.** Decision 14 measured `IAdtResponse<T>`'s
 type parameter as never supplied — the generic exists and has never carried a
-type. Here it is the point: `IAdtResponse<ISearchResult[]>` is an outcome whose
-result is the hits. What decision 14 recorded as an unused pass-through was the
+type. Here it is the point: `IAdtResponse<IAdtResult<ISearchResult[]>>` is an
+answer whose result is the hits. What decision 14 recorded as an unused pass-through was the
 right idea with nothing behind it yet.
 
 **Two shapes, and they are mutually exclusive.**
@@ -1346,7 +1424,7 @@ Four reasons, in the order they weigh:
    are thrown today. B makes the strategies an explanation of behaviour that
    exists; A would make the current behaviour a special case of a shape nothing
    implements yet.
-4. **One method keeps the outcome a result.** `IAdtResponse<ISearchResult[]>`
+4. **One method keeps the outcome a result.** `IAdtResponse<IAdtResult<ISearchResult[]>>`
    reads as "an answer carrying hits". With two it reads as a container to be
    interrogated, which is what this whole line of decisions has been getting away
    from.
