@@ -164,11 +164,22 @@ export interface IAdtFailure {
  * A result, as the contract it is — the other half of the pair with
  * {@link IAdtError}.
  *
- * Symmetric on purpose, and the symmetry is the design rather than tidiness. A
+ * Symmetric on purpose, and the symmetry is the design rather than tidiness: a
  * **result strategy** chooses how much to fill in exactly as an error strategy
- * does: `value` is what the member promised and is always there, and `response`
- * is what a fuller strategy adds for a caller who wants the answer it was read
- * out of. `brief` and `full` are two amounts of this one contract.
+ * does.
+ *
+ * **But "how much" here means how much of `T`, not how much of the wire.** A
+ * `brief` search fills fewer fields of `ISearchResult`; a `full` one fills more.
+ * It does not attach the response the hits were read out of. A `response` field
+ * was in the first draft of this interface and is the reason to say so: it put
+ * `status`, `headers` and `data` back inside every result under one more layer
+ * of nesting, and re-bound a domain answer to a transport shape — the thing this
+ * whole design exists to undo. Decision 19 is explicit that `full` is the
+ * complete result **stated as a contract**, not the envelope returning.
+ *
+ * A caller who wants the document asks for it the way decision 19 says: a result
+ * strategy of their own that answers the document, in a member whose contract
+ * says that is what it gives.
  *
  * A bare `T` was tried here and is wrong for the reason a bare `TError` was
  * wrong: a member that hands back an unwrapped value has no room to say anything
@@ -178,15 +189,6 @@ export interface IAdtFailure {
 export interface IAdtResult<T> {
   /** What the member promised — `ISearchResult[]`, `IPackageHierarchyNode`. */
   readonly value: T;
-
-  /**
-   * The answer it was read out of, when the strategy was asked for that much.
-   *
-   * Not a duplicate of `value`: one is what the member means, the other is what
-   * arrived. A caller passing the document on, or logging it, needs the second
-   * without giving up the first.
-   */
-  readonly response?: IAdtWireResponse;
 }
 
 /**

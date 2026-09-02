@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [28.0.0] - 2026-09-02
 
+> Corrected after tagging and before publication. The tag was re-cut; the
+> registry never had the earlier form, so no consumer saw
+> `getResult(): T` — it was `IAdtResult<T>` in every published version, which is
+> to say in the only one. What changed between the tag and the publish is
+> recorded here rather than hidden, because a re-cut tag is a rewritten public
+> ref and that should be visible to anyone who fetched it.
+
 **The response stops being an envelope.** Everything since 26.2.0 has been a
 consequence of one type serving two purposes; this is the correction.
 
@@ -77,14 +84,26 @@ consequence of one type serving two purposes; this is the correction.
 
   ```typescript
   interface IAdtResult<T> {
-    readonly value: T;                       // what the member promised
-    readonly response?: IAdtWireResponse;    // what a fuller strategy adds
+    readonly value: T;    // what the member promised
   }
   ```
 
   Symmetric on purpose, and the symmetry is the design rather than tidiness: a
   **result** strategy chooses how much to fill in exactly as an error strategy
   does, so `brief` and `full` are two amounts of one contract on both sides.
+
+  **"How much" means how much of `T`, not how much of the wire.** A `brief`
+  search fills fewer fields of `ISearchResult`; a `full` one fills more. It does
+  not attach the response the hits were read out of. A `response` field was in
+  the first draft of this interface, and it put `status`, `headers` and `data`
+  back inside every result under one more layer of nesting — a domain answer
+  re-bound to a transport shape, which is the thing this release exists to undo.
+  Decision 19 is explicit: `full` is the complete result **stated as a
+  contract**, not the envelope returning.
+
+  `IAdtError` keeps its `response`, and the asymmetry is deliberate. Diagnosing a
+  failure needs the status and headers it arrived with; reading a result does
+  not.
 
   A bare `T` was tried on the result side and is wrong for the reason a bare
   error type was wrong: a member handing back an unwrapped value has no room to
