@@ -943,6 +943,32 @@ mean an undefined outcome: without a stated rule, which failure surfaces would
 depend on which strategy the implementation happened to call first, which is the
 ordering this decision claims not to have.
 
+**Every failure goes to the error strategy, whatever its origin.** Not only a
+refusal about the object: a host that cannot be reached, an expired session, no
+authority to make the call at all. One delegation point, because the consumer
+decides what a failure means, and a library that handles some failures itself and
+delegates the rest has decided for them about the ones it kept.
+
+But *where a failure came from* is information the strategy needs, and it must be
+told rather than left to infer:
+
+| origin | what it means to a caller |
+|---|---|
+| connection · session · authorisation | there is no answer — reauthenticate, or fix reachability |
+| the call was refused | SAP answered, about this object, and said no |
+| the answer could not be read | an answer arrived and did not parse |
+
+The three have different remedies, and a strategy that cannot tell them apart
+cannot choose one. That is why the origin travels with the failure instead of
+being flattened into a message.
+
+**This exposes a defect here, and it is the case the distinction exists for.** An
+expired session can answer **200 with a logon page**. The transport admits it, so
+it looks like an answer; a parser finds no nodes and reports "could not read".
+`adt-clients` raises `AdtParseError` for it today — a session failure wearing a
+parse failure's name, sending a caller to debug a document when the fix is to
+authenticate.
+
 **Both are invoked, and neither is skipped because the other failed.** That means
 the implementation captures what each strategy does — a value or an exception —
 rather than letting the first throw end the call. Otherwise "both always run"
