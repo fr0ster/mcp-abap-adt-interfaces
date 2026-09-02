@@ -998,9 +998,29 @@ has nothing left to do.
    Here the caller cannot reach a result without the contract having told them an
    error is a thing that exists.
 
-   The strategy injected into an implementation then says what to do with each:
-   what to do with a result, what to do with an error. The contract states that
-   both are possible; the strategy states how each is handled.
+   The strategy injected into an implementation then says what to do with each,
+   and **"what to do" includes deciding what an error is**:
+
+   - the **error strategy** decides *how a failure is recognised* and *what the
+     consumer is handed when one is*;
+   - the **result strategy** decides *how the result is returned*.
+
+   The first half is the part easy to miss, and it is the more important one. A
+   library that decides what counts as an error has decided for every consumer at
+   once, and it will be wrong for some of them: an empty answer is not always a
+   failure, a document this library cannot read may be one the consumer can, and
+   a refusal may be exactly the answer a caller was probing for.
+
+   What the library still owes, and cannot delegate, is **completeness**: the
+   strategy is handed everything that came back, so a consumer deciding
+   "this is not an error for me" is making a decision rather than being kept in
+   the dark. Decision 18 stands unchanged — what comes back is the caller's
+   choice, what comes back *whole* is not.
+
+   Where the library ships defaults today — a refusal throws, an unreadable
+   answer throws — those are the **default strategies**, not the law. They exist
+   because failing loudly is the safe behaviour for a caller who has not said
+   otherwise, and they are replaceable once the strategies land.
 
 **Still open.**
 
