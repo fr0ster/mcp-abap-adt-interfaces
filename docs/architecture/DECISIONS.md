@@ -1231,6 +1231,20 @@ shipping classes, and it is the right way round — `instanceof` is a convenienc
 for the common case of using the shipped implementation, not the mechanism the
 contract rests on.
 
+**Constants are not classes, and they stay.** The package ships 17 runtime
+values that are not classes — `AUTH_TYPE_PASSWORD`, `TOKEN_PROVIDER_ERROR_CODES`,
+`TRANSPORT_SEARCH_CONFIGURATIONS_URL` and the rest. The no-classes rule does not
+reach them, and reading it that widely would be reading it wrong.
+
+The line is what the thing *is*. A constant is a value the contract **names**:
+`'password'` is the authorisation type, and a consumer writing their own
+implementation needs the same string or they are speaking a different protocol.
+A class is a **way of doing** something, and shipping one hands a consumer an
+implementation through the door meant for contracts.
+
+So: after the classes leave, this package ships zero classes and 17 constants,
+and that is the intended state rather than a step toward none.
+
 **Pre-existing debt, named because this decision makes it visible.**
 `AdtOperationError` and `TransportSearchConfigurationMissing` are classes in this
 package today. They predate this rule and contradict it. Not corrected here —
