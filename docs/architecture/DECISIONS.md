@@ -943,24 +943,41 @@ mean an undefined outcome: without a stated rule, which failure surfaces would
 depend on which strategy the implementation happened to call first, which is the
 ordering this decision claims not to have.
 
-1. **The error strategy's verdict wins.** If it produces a failure, that is what
-   is thrown — even when the result strategy also failed. A result strategy
-   throwing `AdtParseError` on a document that is an ADT exception is a *symptom*:
-   it could not find hits because the answer is a refusal. Surfacing "we could not
-   read it" over "SAP said the object is locked" would report our confusion in
-   place of the server's reason, which is the whole of decision 18 inverted.
-2. **A result strategy that throws does not stop the error strategy.** The
-   implementation catches it, runs the error analysis anyway, and only if that
-   produces nothing does the result strategy's exception surface — where it is a
-   genuine "the answer was fine and I could not read it".
-3. **An error strategy that throws is a bug in that strategy, and surfaces as
-   itself.** It is not caught, not translated, not folded into anything: a
-   consumer's own code failing must not be dressed up as a failure of the system
-   it was inspecting.
+**Both are invoked, and neither is skipped because the other failed.** That means
+the implementation captures what each strategy does — a value or an exception —
+rather than letting the first throw end the call. Otherwise "both always run"
+would be true only if the implementation happened to call the result strategy
+first, which is an order in everything but name.
 
-The independence is about what each strategy *sees* — the whole answer, neither
-filtered by the other. It was never about whether the library knows what to do
-with two verdicts.
+What surfaces, in this order:
+
+| | condition | what the caller gets |
+|---|---|---|
+| 1 | the **error** strategy threw | that exception, as itself |
+| 2 | the error strategy produced a failure | that failure, thrown |
+| 3 | the **result** strategy threw | that exception, as itself |
+| 4 | otherwise | the result |
+
+**Why 1 is first.** An error strategy that throws is a bug in the consumer's own
+error handling, and it is the most urgent thing that happened: everything below
+depends on that code working. It surfaces untranslated and unwrapped — a
+consumer's failing code must not be dressed up as a failure of the system it was
+inspecting.
+
+**Why 2 beats 3.** A result strategy throwing `AdtParseError` on a document that
+is an ADT exception is a *symptom*: it found no hits because the answer is a
+refusal. Surfacing "we could not read it" over "SAP said the object is locked"
+reports our confusion in place of the server's reason, which is decision 18
+inverted.
+
+**Why 3 exists at all.** Reaching it means the error strategy found nothing wrong
+and the result strategy still could not read the answer — a genuine "the answer
+was fine and I could not read it", which is `AdtParseError`'s real case.
+
+The independence is about what each strategy *sees*: the whole answer, neither
+filtered by the other, neither skipped because of the other. It was never about
+whether the library knows what to do with two verdicts — a rule that leaves that
+to invocation order is the ordering this decision claims not to have.
 
 **Flexibility is the reason, and it is a standing principle here rather than a
 preference of this decision.** Two strategies that both see the answer can be
@@ -1133,9 +1150,11 @@ has nothing left to do.
    been given less than everything cannot be a consumer's decision, because they
    were not shown what they were deciding about.
 
-   The third has no "amount" axis because it answers a different question, and it
-   is the one a library cannot ship a single answer for — hence it being a
-   strategy rather than a rule.
+   Detecting a failure has no "amount" axis, which is why it is not a third row:
+   it is not a quantity of an answer but a judgement about one, and it belongs to
+   the error strategy that makes it. What the library ships as full · medium ·
+   brief are shapes; what it ships as *default detection rules* is one
+   implementation's judgement, replaceable by supplying a different `onError`.
 
    **Writing your own is not a fallback.** Picking a shipped strategy is the
    ordinary case, but there are two reasons to write one and both are first-class:
@@ -1152,14 +1171,16 @@ has nothing left to do.
      consumer may want an empty result treated as a failure, because in their
      workflow an empty answer means something went wrong upstream.
 
-   That second reason is why error detection is a strategy at all rather than a
-   rule with options. The library's shipped rules are a sensible default, not a
-   definition.
+   That second reason is why detection lives inside a replaceable strategy rather
+   than in a rule with options. The library's shipped detection is one sensible
+   judgement, not a definition, and a consumer who disagrees supplies an `onError`
+   that judges differently.
 
-   Where detection *runs* is decision 18's answer, and it is not a stage in front
-   of the others: every strategy is handed the same whole answer and does its own
-   analysis. Recognising a failure is the error strategy's analysis, not a gate
-   the result strategy waits behind — which is what lets one consumer read a
+   Where that judgement *happens* is decision 18's answer, and it is not a stage
+   in front of anything: both strategies are handed the same whole answer and each
+   does its own analysis. Recognising a failure is the error strategy's own
+   analysis, not a gate the result strategy waits behind — which is what lets one
+   consumer read a
    result and a diagnostic out of the same document, and another ignore failures
    altogether.
 
@@ -1205,7 +1226,7 @@ consumer depends on is a contract, an implementation of it is behaviour.
 |---|---|---|
 | the outcome type (`result()` / `error()`) | the contract | — |
 | the strategy names — full · medium · brief | the contracts, so every implementation honours the same names | — |
-| the error-detection strategy | the contract | the default rules |
+| the error strategy, detection included | the contract | the default judgement |
 | the shipped strategies themselves | — | the behaviour |
 | what a member returns without one | stated at the member | the default |
 
@@ -1270,8 +1291,8 @@ method would exist to say "no" on every successful call. It comes out, and the
 contract is one method.
 
 B is not the poorer option, and it is worth saying why, because the two methods
-looked like the more careful design. **The error-detection strategy still does
-its whole job under B.** A consumer for whom "not found" is the answer they came
+looked like the more careful design. **The error strategy's own detection still
+does that whole job under B.** A consumer for whom "not found" is the answer they came
 for configures detection to not recognise it, and then `getResult()` simply
 returns it — they never write a `catch`. Detection is what serves that case, not
 the branch, and A gets the same result by a longer road.
@@ -1282,8 +1303,8 @@ exception. What A costs is a check at every call site for the common case where
 there is no error, and a second method every implementation must supply whether
 or not it has anything to put there.
 
-**Decided: B.** One method, failures as exceptions, and the detection strategy
-carrying the "not an error for me" case.
+**Decided: B.** One method, failures as exceptions, and the error strategy's own
+detection carrying the "not an error for me" case.
 
 Four reasons, in the order they weigh:
 
