@@ -69,7 +69,7 @@ class NodeReaderWithExtras implements IAdtRepositoryStructure {
     _nodeId?: string,
     _withShortDescriptions?: boolean,
   ): Promise<IRepositoryNodeContents> {
-    return { objects: [], childNodeIds: [] };
+    return { objects: [], childNodes: [] };
   }
   async getObjectStructure(_t: string, _n: string): Promise<IAdtResponse> {
     return { status: 200, statusText: 'OK', data: '', headers: {} };
@@ -79,6 +79,22 @@ class NodeReaderWithExtras implements IAdtRepositoryStructure {
 declare const nodes: IAdtRepositoryStructure;
 // @ts-expect-error the contract takes three arguments; the flag is not one of them
 nodes.fetchNodeStructure('DEVC/K', 'ZPKG', '000000', true);
+
+/**
+ * The question 26.2.0's shape could not answer.
+ *
+ * A walk asks "which node holds the includes" and follows that id. With bare
+ * `childNodeIds` the type is gone and the caller is back at the raw document —
+ * which is what this contract exists to prevent, so it is asserted rather than
+ * left to be discovered by the next consumer.
+ */
+async function idOfType(
+  structure: IAdtRepositoryStructure,
+  wanted: string,
+): Promise<string | undefined> {
+  const level = await structure.fetchNodeStructure('PROG/P', 'ZMY_PROGRAM');
+  return level.childNodes.find((c) => c.objectType === wanted)?.nodeId;
+}
 
 /**
  * The search strategy: one endpoint, one member, the behaviour chosen by the
@@ -106,6 +122,7 @@ const wrong: Promise<ISearchResult[]> = info.search(
 );
 
 export {
+  idOfType,
   MyDataPreview,
   NodeReaderWithExtras,
   found,

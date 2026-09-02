@@ -71,10 +71,14 @@
  *
  * Two were closed from evidence rather than measurement: `getAllTypes` answers
  * the named-item list {@link INamedItem} already describes, and
- * `fetchNodeStructure` answers objects plus the ids to walk next. Both shapes
- * were lifted from parsers that have been reading those documents in
+ * `fetchNodeStructure` answers objects plus the typed child nodes to walk next.
+ * Both shapes were lifted from parsers that have been reading those documents in
  * `mcp-abap-adt` against real systems — code that works is evidence; a shape
  * nobody has read is not.
+ *
+ * Evidence is not the same as being finished. `fetchNodeStructure` first shipped
+ * carrying the ids alone, which cannot say *which* node holds a given type, and
+ * 27.0.0 is that correction — found by a consumer trying to walk with it.
  *
  * The twelve are left as they are, deliberately. Closing them means naming what
  * each endpoint sends, and 12 shapes would have to be named,
@@ -128,15 +132,36 @@ export interface IRepositoryObjectNode {
 }
 
 /**
+ * One child level: an object type, and the node id holding objects of it.
+ *
+ * `SEU_ADT_OBJECT_TYPE_INFO` pairs the two, and the pair is the unit. An id on
+ * its own answers "there is more below" and nothing else — the caller cannot ask
+ * for the includes of a program, because which id holds `PROG/I` is exactly what
+ * was dropped.
+ *
+ * `OBJECT_TYPE_LABEL` is in the document and deliberately not here: it is parsed
+ * twice in `mcp-abap-adt` and read **zero** times, so it is a display string
+ * nobody displays. Counted rather than assumed, because the field this interface
+ * originally lost was lost by measuring which fields a parser *reads* instead of
+ * which a caller *uses*. If a caller needs the label, it is added then — from a
+ * capture, with the parse.
+ */
+export interface IRepositoryNodeChild {
+  objectType: string;
+  nodeId: string;
+}
+
+/**
  * What one level of the repository tree answers with.
  *
- * `childNodeIds` is what makes the walk possible: the ids to ask for next. A
- * result without them would force the caller back to the raw document, which is
- * the coupling this contract removes.
+ * `childNodes` is what makes the walk possible: what is below, and how to ask
+ * for it. A result without it would force the caller back to the raw document,
+ * which is the coupling this contract removes — and a result carrying only the
+ * ids does the same thing more quietly, which is what 26.2.0 shipped.
  */
 export interface IRepositoryNodeContents {
   objects: IRepositoryObjectNode[];
-  childNodeIds: string[];
+  childNodes: IRepositoryNodeChild[];
 }
 
 /**
@@ -218,9 +243,13 @@ export interface IAdtRepositoryStructure {
    * Children of a node: the objects it holds, and the nodes below it.
    *
    * Both halves come from one document — `SEU_ADT_REPOSITORY_OBJ_NODE` entries
-   * and the `NODE_ID`s a caller walks next — and a consumer needs both to
-   * traverse, which is why the result names them rather than handing back the
-   * envelope. Lifted from a traversal running in `mcp-abap-adt`.
+   * and the `SEU_ADT_OBJECT_TYPE_INFO` pairs a caller walks next — and a
+   * consumer needs both to traverse, which is why the result names them rather
+   * than handing back the envelope. Lifted from a traversal running in
+   * `mcp-abap-adt`.
+   *
+   * The child half is pairs, not ids: see {@link IRepositoryNodeChild} for why
+   * an id on its own cannot answer the question a walk asks.
    *
    * **No `withShortDescriptions`.** The implementation takes one and sends it,
    * but every parser that has read this document reads exactly the four identity

@@ -359,6 +359,7 @@ export type {
   IAdtObjectAccess,
   IAdtPackageBrowsing,
   IAdtRepositoryStructure,
+  IRepositoryNodeChild,
   IRepositoryNodeContents,
   IRepositoryObjectNode,
 } from './adt/IAdtUtilities';
