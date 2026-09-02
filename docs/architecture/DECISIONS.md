@@ -927,9 +927,32 @@ Two halves, and they are the same principle:
 are exactly that, and good evidence. It is not evidence about what the contract
 should promise, because the next consumer has not been written.
 
-**And a strategy is still not a place a refusal can hide.** The two halves meet
-here: the consumer chooses the shape of an *answer*, and whether the request was
-refused is not theirs to shape. The refusal is raised before any strategy runs.
+**And a *result* strategy is still not a place a refusal can hide.** The two
+halves meet here, and the guarantee is an **ordering**, not an early throw:
+
+```
+the whole answer
+      ↓
+error detection      ← the consumer's, and it decides: failure, or not
+      ↓
+   failure? ── yes ──→ error strategy   → thrown
+      │
+      no
+      ↓
+              result strategy → the result
+```
+
+What must never happen is a refusal reaching the **result** strategy, because a
+parser looking for hits finds none in an exception document and answers "nothing
+found" — a failure reported as a fact. Detection running first is what prevents
+that, and it prevents it whichever way detection decides: if this consumer says a
+"not found" is the answer they came for, the result strategy is handed it
+deliberately, by them, and that is a decision rather than an accident.
+
+An earlier wording here said the refusal is raised "before any strategy runs".
+That was written before detection was a strategy, and taken literally it would
+mean detection never sees the thing it exists to judge. What it was protecting is
+above: the result strategy is never the first to look.
 
 **How to catch it.** A decision justified by what one consumer does with a
 result. A field left out because nobody currently reads it — that is decision 11
@@ -1086,7 +1109,9 @@ has nothing left to do.
 
    That second reason is why error detection is a strategy at all rather than a
    rule with options. The library's shipped rules are a sensible default, not a
-   definition.
+   definition — and they sit at a fixed point in the order decision 18 sets out:
+   the whole answer reaches detection, detection decides, and only then does one
+   of the other two strategies run.
 
    **And this is where the envelope finally has nothing left to do.** The one
    case it exists for is a caller who wants everything, raw, and will judge it
