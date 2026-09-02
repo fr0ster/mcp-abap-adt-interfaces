@@ -11,7 +11,7 @@
  * makes it pass again.
  */
 
-import type { IAdtResponse } from '../connection/IAbapConnection';
+import type { IAdtWireResponse } from '../connection/IAbapConnection';
 import type { IAdtRunnable } from '../execution/IAdtRunnable';
 import type { IExecutor } from '../execution/IExecutor';
 
@@ -39,14 +39,14 @@ interface ExecutorBefore<
 
 type Executor = IExecutor<
   { name: string },
-  IAdtResponse,
+  IAdtWireResponse,
   { id: string },
   { x: 1 },
   { y: 2 }
 >;
 type Before = ExecutorBefore<
   { name: string },
-  IAdtResponse,
+  IAdtWireResponse,
   { id: string },
   { x: 1 },
   { y: 2 }
@@ -84,7 +84,7 @@ export type _ExecutorRunTakesExactlyTarget = Assert<
 export type _RunnableKeepsItsOptions = Assert<
   Equal<
     Parameters<
-      IAdtRunnable<{ name: string }, IAdtResponse, { deep: true }>['run']
+      IAdtRunnable<{ name: string }, IAdtWireResponse, { deep: true }>['run']
     >,
     [target: { name: string }, options?: { deep: true }]
   >
@@ -92,10 +92,12 @@ export type _RunnableKeepsItsOptions = Assert<
 
 /** A type with only `run` satisfies the atom and not the executor. */
 interface OnlyRuns {
-  run(target: { name: string }): Promise<IAdtResponse>;
+  run(target: { name: string }): Promise<IAdtWireResponse>;
 }
 export type _RunOnlyIsRunnable = Assert<
-  OnlyRuns extends IAdtRunnable<{ name: string }, IAdtResponse> ? true : false
+  OnlyRuns extends IAdtRunnable<{ name: string }, IAdtWireResponse>
+    ? true
+    : false
 >;
 export type _RunOnlyIsNotExecutor = Assert<
   OnlyRuns extends Executor ? false : true

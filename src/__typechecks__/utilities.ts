@@ -14,19 +14,31 @@ import type {
   IAdtPackageBrowsing,
   IAdtRepositoryStructure,
   IAdtResponse,
+  IAdtWireResponse,
   IGetSqlQueryParams,
   IGetTableContentsParams,
   IRepositoryNodeContents,
   ISearchResult,
 } from '../index';
 
+/** What a consumer's implementation returns when it succeeded. */
+const succeeded = <T>(value: T): IAdtResponse<T> => ({
+  ok: true,
+  getResult: () => value,
+  getError: () => undefined,
+});
+
 /** One family alone, implemented by something that knows nothing of the others. */
 class MyDataPreview implements IAdtDataPreview {
-  async getSqlQuery(_p: IGetSqlQueryParams): Promise<IAdtResponse> {
-    return { status: 200, statusText: 'OK', data: '', headers: {} };
+  async getSqlQuery(
+    _p: IGetSqlQueryParams,
+  ): Promise<IAdtResponse<IAdtWireResponse>> {
+    return succeeded({ status: 200, statusText: 'OK', data: '', headers: {} });
   }
-  async getTableContents(_p: IGetTableContentsParams): Promise<IAdtResponse> {
-    return { status: 200, statusText: 'OK', data: '', headers: {} };
+  async getTableContents(
+    _p: IGetTableContentsParams,
+  ): Promise<IAdtResponse<IAdtWireResponse>> {
+    return succeeded({ status: 200, statusText: 'OK', data: '', headers: {} });
   }
 }
 
@@ -68,11 +80,14 @@ class NodeReaderWithExtras implements IAdtRepositoryStructure {
     _parentName: string,
     _nodeId?: string,
     _withShortDescriptions?: boolean,
-  ): Promise<IRepositoryNodeContents> {
-    return { objects: [], childNodes: [] };
+  ): Promise<IAdtResponse<IRepositoryNodeContents>> {
+    return succeeded({ objects: [], childNodes: [] });
   }
-  async getObjectStructure(_t: string, _n: string): Promise<IAdtResponse> {
-    return { status: 200, statusText: 'OK', data: '', headers: {} };
+  async getObjectStructure(
+    _t: string,
+    _n: string,
+  ): Promise<IAdtResponse<IAdtWireResponse>> {
+    return succeeded({ status: 200, statusText: 'OK', data: '', headers: {} });
   }
 }
 
@@ -92,8 +107,14 @@ async function idOfType(
   structure: IAdtRepositoryStructure,
   wanted: string,
 ): Promise<string | undefined> {
-  const level = await structure.fetchNodeStructure('PROG/P', 'ZMY_PROGRAM');
-  return level.childNodes.find((c) => c.objectType === wanted)?.nodeId;
+  const answer = await structure.fetchNodeStructure('PROG/P', 'ZMY_PROGRAM');
+  if (!answer.ok) {
+    // The contract makes this branch unavoidable, which is the point: a walk
+    // cannot silently treat a refusal as a level with nothing under it.
+    return undefined;
+  }
+  return answer.getResult().childNodes.find((c) => c.objectType === wanted)
+    ?.nodeId;
 }
 
 /**
@@ -104,15 +125,18 @@ async function idOfType(
 declare const info: IAdtInformationSystem;
 
 /** No parser: the parsed hits, as before. */
-const hits: Promise<ISearchResult[]> = info.search({ query: 'ZCL_*' });
+const hits: Promise<IAdtResponse<ISearchResult[]>> = info.search({
+  query: 'ZCL_*',
+});
 
 /** A parser: the consumer's own type, not `unknown` and not an envelope. */
 interface RawHits {
   xml: string;
 }
-const raw: Promise<RawHits> = info.search({ query: 'ZCL_*' }, (data) => ({
-  xml: String(data),
-}));
+const raw: Promise<IAdtResponse<RawHits>> = info.search(
+  { query: 'ZCL_*' },
+  (data) => ({ xml: String(data) }),
+);
 
 /** A parser yielding the wrong shape is refused. */
 // @ts-expect-error the parser yields RawHits, not ISearchResult[]

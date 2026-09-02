@@ -1,4 +1,4 @@
-import type { IAdtResponse } from '../connection/IAbapConnection';
+import type { IAdtWireResponse } from '../connection/IAbapConnection';
 import type { IListableRuntimeObject } from './types';
 
 export interface IMemorySnapshotsListOptions {
@@ -26,42 +26,42 @@ export interface ISnapshotReferencesOptions {
 
 export interface IMemorySnapshots
   extends IListableRuntimeObject<
-    IAdtResponse,
+    IAdtWireResponse,
     IMemorySnapshotsListOptions,
     'memorySnapshots'
   > {
-  getById(snapshotId: string): Promise<IAdtResponse>;
-  getOverview(snapshotId: string): Promise<IAdtResponse>;
+  getById(snapshotId: string): Promise<IAdtWireResponse>;
+  getOverview(snapshotId: string): Promise<IAdtWireResponse>;
   getRankingList(
     snapshotId: string,
     options?: ISnapshotRankingListOptions,
-  ): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
   getChildren(
     snapshotId: string,
     parentKey: string,
     options?: ISnapshotChildrenOptions,
-  ): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
   getReferences(
     snapshotId: string,
     objectKey: string,
     options?: ISnapshotReferencesOptions,
-  ): Promise<IAdtResponse>;
-  getDeltaOverview(uri1: string, uri2: string): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
+  getDeltaOverview(uri1: string, uri2: string): Promise<IAdtWireResponse>;
   getDeltaRankingList(
     uri1: string,
     uri2: string,
     options?: ISnapshotRankingListOptions,
-  ): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
   getDeltaChildren(
     uri1: string,
     uri2: string,
     parentKey: string,
     options?: ISnapshotChildrenOptions,
-  ): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
   getDeltaReferences(
     uri1: string,
     uri2: string,
     objectKey: string,
     options?: ISnapshotReferencesOptions,
-  ): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
 }

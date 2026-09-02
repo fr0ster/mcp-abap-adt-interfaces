@@ -2,7 +2,7 @@
  * Service Definition ADT operation parameter interfaces (snake_case, low-level)
  */
 
-import type { IAdtResponse } from '../connection/IAbapConnection';
+import type { IAdtWireResponse } from '../connection/IAbapConnection';
 import type { IAdtObjectState } from './IAdtObjectState';
 
 export interface ICreateServiceDefinitionParams {
@@ -37,7 +37,7 @@ export interface IServiceDefinitionConfig {
 }
 
 export interface IServiceDefinitionState extends IAdtObjectState {
-  readSourceResult?: IAdtResponse;
+  readSourceResult?: IAdtWireResponse;
   // All operation results are in IAdtObjectState:
   // validationResponse, createResult, lockHandle, updateResult, checkResult,
   // unlockResult, activateResult, deleteResult, readResult, transportResult, errors

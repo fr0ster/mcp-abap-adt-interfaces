@@ -43,7 +43,7 @@
  * ## The gap, named rather than papered over
  *
  * **A result is part of the contract — decision 13 — and 12 of the 25
- * members here do not state one.** They answer `Promise<IAdtResponse>`: the transport
+ * members here do not state one.** They answer `Promise<IAdtWireResponse>`: the transport
  * envelope, which every method could name and which tells a consumer only that
  * a request happened. The other 13 state what the caller gets — ten a
  * shape, three a string or a boolean.
@@ -94,9 +94,10 @@
  * shape of the thing rather than a finished one.
  */
 
-import type { IAdtResponse } from '../connection/IAbapConnection';
+import type { IAdtWireResponse } from '../connection/IAbapConnection';
 import type { INamedItem } from '../execution/ITraceScheduling';
 import type { IReadOptions } from '../shared/IReadOptions';
+import type { IAdtResponse } from './IAdtResponse';
 import type {
   AdtObjectType,
   AdtSourceObjectType,
@@ -171,7 +172,9 @@ export interface IRepositoryNodeContents {
  */
 export interface IAdtInformationSystem {
   /** Objects matching a query, parsed. */
-  search(criteria: ISearchObjectsParams): Promise<ISearchResult[]>;
+  search(
+    criteria: ISearchObjectsParams,
+  ): Promise<IAdtResponse<ISearchResult[]>>;
 
   /**
    * The same search, read by the caller instead.
@@ -190,15 +193,17 @@ export interface IAdtInformationSystem {
   search<T>(
     criteria: ISearchObjectsParams,
     parse: (data: unknown) => T,
-  ): Promise<T>;
+  ): Promise<IAdtResponse<T>>;
 
   /** Where an object is used, parsed into references. */
   getWhereUsedList(
     params: IGetWhereUsedListParams,
-  ): Promise<IWhereUsedListResult>;
+  ): Promise<IAdtResponse<IWhereUsedListResult>>;
 
   /** The scope document a where-used run is filtered by. */
-  getWhereUsedScope(params: IGetWhereUsedScopeParams): Promise<IAdtResponse>;
+  getWhereUsedScope(
+    params: IGetWhereUsedScopeParams,
+  ): Promise<IAdtResponse<IAdtWireResponse>>;
 
   /**
    * That scope document, edited. Issues no request — it rewrites the XML the
@@ -217,7 +222,7 @@ export interface IAdtInformationSystem {
   /** The repository as folders, under a preselection. */
   getVirtualFoldersContents(
     params: IGetVirtualFoldersContentsParams,
-  ): Promise<IAdtResponse>;
+  ): Promise<IAdtResponse<IAdtWireResponse>>;
 
   /**
    * The object types this system knows.
@@ -231,7 +236,7 @@ export interface IAdtInformationSystem {
     maxItemCount?: number,
     name?: string,
     data?: string,
-  ): Promise<INamedItem[]>;
+  ): Promise<IAdtResponse<INamedItem[]>>;
 }
 
 /**
@@ -269,13 +274,13 @@ export interface IAdtRepositoryStructure {
     parentType: string,
     parentName: string,
     nodeId?: string,
-  ): Promise<IRepositoryNodeContents>;
+  ): Promise<IAdtResponse<IRepositoryNodeContents>>;
 
   /** The parts one object is made of. */
   getObjectStructure(
     objectType: string,
     objectName: string,
-  ): Promise<IAdtResponse>;
+  ): Promise<IAdtResponse<IAdtWireResponse>>;
 }
 
 /**
@@ -291,13 +296,13 @@ export interface IAdtPackageBrowsing {
   getPackageContentsList(
     packageName: string,
     options?: IGetPackageContentsListOptions,
-  ): Promise<IPackageContentItem[]>;
+  ): Promise<IAdtResponse<IPackageContentItem[]>>;
 
   /** A package and the packages under it. */
   getPackageHierarchy(
     packageName: string,
     options?: IGetPackageHierarchyOptions,
-  ): Promise<IPackageHierarchyNode>;
+  ): Promise<IAdtResponse<IPackageHierarchyNode>>;
 }
 
 /**
@@ -309,35 +314,43 @@ export interface IAdtGroupLifecycle {
   activateObjectsGroup(
     objects: IObjectReference[],
     preauditRequested?: boolean,
-  ): Promise<IAdtResponse>;
+  ): Promise<IAdtResponse<IAdtWireResponse>>;
 
   /** What is inactive right now. */
   getInactiveObjects(options?: {
     includeRawXml?: boolean;
-  }): Promise<IInactiveObjectsResponse>;
+  }): Promise<IAdtResponse<IInactiveObjectsResponse>>;
 
   /** Whether a set can be deleted, asked before deleting it. */
-  checkDeletionGroup(objects: IObjectReference[]): Promise<IAdtResponse>;
+  checkDeletionGroup(
+    objects: IObjectReference[],
+  ): Promise<IAdtResponse<IAdtWireResponse>>;
 
   /** Delete several objects in one request. */
   deleteObjectsGroup(
     objects: IObjectReference[],
     transportRequest?: string,
-  ): Promise<IAdtResponse>;
+  ): Promise<IAdtResponse<IAdtWireResponse>>;
 }
 
 /** `/sap/bc/adt/datapreview/*` — reading data rather than definitions. */
 export interface IAdtDataPreview {
   /** A freestyle SQL query. */
-  getSqlQuery(params: IGetSqlQueryParams): Promise<IAdtResponse>;
+  getSqlQuery(
+    params: IGetSqlQueryParams,
+  ): Promise<IAdtResponse<IAdtWireResponse>>;
 
   /** The rows of one table. */
-  getTableContents(params: IGetTableContentsParams): Promise<IAdtResponse>;
+  getTableContents(
+    params: IGetTableContentsParams,
+  ): Promise<IAdtResponse<IAdtWireResponse>>;
 }
 
 /** `/sap/bc/adt/discovery` — what this system says it serves. */
 export interface IAdtDiscovery {
-  discovery(params?: IGetDiscoveryParams): Promise<IAdtResponse>;
+  discovery(
+    params?: IGetDiscoveryParams,
+  ): Promise<IAdtResponse<IAdtWireResponse>>;
 }
 
 /**
@@ -355,7 +368,7 @@ export interface IAdtObjectAccess {
     functionGroup?: string,
     version?: 'active' | 'inactive',
     options?: IReadOptions,
-  ): Promise<IAdtResponse>;
+  ): Promise<IAdtResponse<IAdtWireResponse>>;
 
   /** Metadata of any object. */
   readObjectMetadata(
@@ -363,7 +376,7 @@ export interface IAdtObjectAccess {
     objectName: string,
     functionGroup?: string,
     options?: IReadOptions,
-  ): Promise<IAdtResponse>;
+  ): Promise<IAdtResponse<IAdtWireResponse>>;
 
   /** Whether that type has source at all. Issues no request. */
   supportsSourceCode(objectType: AdtObjectType): boolean;
@@ -377,18 +390,22 @@ export interface IAdtObjectAccess {
   ): string;
 
   /** A standalone include. */
-  getInclude(includeName: string): Promise<IAdtResponse>;
+  getInclude(includeName: string): Promise<IAdtResponse<IAdtWireResponse>>;
 
   /** The includes an object is built from. */
   getIncludesList(
     objectName: string,
     objectType: 'PROG/P' | 'PROG/I' | 'FUGR' | 'CLAS/OC',
     timeout?: number,
-  ): Promise<string[]>;
+  ): Promise<IAdtResponse<string[]>>;
 
   /** The function modules of a group. */
-  listFunctionModules(functionGroupName: string): Promise<string[]>;
+  listFunctionModules(
+    functionGroupName: string,
+  ): Promise<IAdtResponse<string[]>>;
 
   /** The includes of a function group. */
-  listFunctionGroupIncludes(functionGroupName: string): Promise<string[]>;
+  listFunctionGroupIncludes(
+    functionGroupName: string,
+  ): Promise<IAdtResponse<string[]>>;
 }

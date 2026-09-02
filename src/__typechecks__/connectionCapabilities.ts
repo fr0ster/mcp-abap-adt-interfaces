@@ -2,7 +2,7 @@
 
 import type {
   IAbapConnection,
-  IAdtResponse,
+  IAdtWireResponse,
 } from '../connection/IAbapConnection';
 import {
   ADT_SESSION_ERROR,
@@ -27,7 +27,7 @@ const _sessionless: IAbapConnection = {
       status: 200,
       statusText: 'OK',
       headers: {},
-    }) as unknown as IAdtResponse<T, D>,
+    }) as unknown as IAdtWireResponse<T, D>,
 };
 void _sessionless;
 

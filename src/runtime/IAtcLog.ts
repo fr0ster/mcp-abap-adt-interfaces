@@ -1,4 +1,4 @@
-import type { IAdtResponse } from '../connection/IAbapConnection';
+import type { IAdtWireResponse } from '../connection/IAbapConnection';
 import type { IRuntimeAnalysisObject } from './types';
 
 export interface IGetCheckFailureLogsOptions {
@@ -12,6 +12,6 @@ export interface IGetCheckFailureLogsOptions {
 export interface IAtcLog extends IRuntimeAnalysisObject<'atcLog'> {
   getCheckFailureLogs(
     options?: IGetCheckFailureLogsOptions,
-  ): Promise<IAdtResponse>;
-  getExecutionLog(executionId: string): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
+  getExecutionLog(executionId: string): Promise<IAdtWireResponse>;
 }

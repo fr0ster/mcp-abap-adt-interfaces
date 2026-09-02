@@ -1,4 +1,4 @@
-import type { IAdtResponse } from '../connection/IAbapConnection';
+import type { IAdtWireResponse } from '../connection/IAbapConnection';
 import type { IListableRuntimeObject } from './types';
 
 export interface IListCrossTracesOptions {
@@ -9,18 +9,18 @@ export interface IListCrossTracesOptions {
 
 export interface ICrossTrace
   extends IListableRuntimeObject<
-    IAdtResponse,
+    IAdtWireResponse,
     IListCrossTracesOptions,
     'crossTrace'
   > {
   getById(
     traceId: string,
     includeSensitiveData?: boolean,
-  ): Promise<IAdtResponse>;
-  getRecords(traceId: string): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
+  getRecords(traceId: string): Promise<IAdtWireResponse>;
   getRecordContent(
     traceId: string,
     recordNumber: number,
-  ): Promise<IAdtResponse>;
-  getActivations(): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
+  getActivations(): Promise<IAdtWireResponse>;
 }

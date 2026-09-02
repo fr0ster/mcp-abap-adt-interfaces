@@ -2,7 +2,7 @@
  * Access Control (DCL) ADT operation parameter interfaces (snake_case, low-level)
  */
 
-import type { IAdtResponse } from '../connection/IAbapConnection';
+import type { IAdtWireResponse } from '../connection/IAbapConnection';
 import type { IAdtObjectState } from './IAdtObjectState';
 
 export interface ICreateAccessControlParams {
@@ -37,5 +37,5 @@ export interface IAccessControlConfig {
 }
 
 export interface IAccessControlState extends IAdtObjectState {
-  readSourceResult?: IAdtResponse;
+  readSourceResult?: IAdtWireResponse;
 }

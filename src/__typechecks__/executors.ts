@@ -1,6 +1,6 @@
 // Compile-only assertions. If these stop compiling, the types regressed.
 
-import type { IAdtResponse } from '../connection/IAbapConnection';
+import type { IAdtWireResponse } from '../connection/IAbapConnection';
 import type {
   IClassExecuteWithProfilerOptions,
   IClassExecuteWithProfilingOptions,
@@ -36,7 +36,7 @@ const scheduling: ITraceScheduling = {
   scheduleTrace: async (): Promise<string> => 'r2',
 };
 
-const response: IAdtResponse = {
+const response: IAdtWireResponse = {
   data: '',
   status: 200,
   statusText: 'OK',
@@ -47,14 +47,14 @@ const response: IAdtResponse = {
 // not our ClassExecutor, must satisfy this shape exactly.
 const _class: IClassExecutor = {
   ...scheduling,
-  run: async (target: IClassExecutionTarget): Promise<IAdtResponse> => {
+  run: async (target: IClassExecutionTarget): Promise<IAdtWireResponse> => {
     void target.className;
     return response;
   },
   runWithProfiler: async (
     target: IClassExecutionTarget,
     options: IClassExecuteWithProfilerOptions,
-  ): Promise<IAdtResponse> => {
+  ): Promise<IAdtWireResponse> => {
     void target.className;
     void options.profilerId;
     return response;
@@ -96,14 +96,14 @@ void _andBack;
 // The same shape check for the program executor, which also schedules.
 const _program: IProgramExecutor = {
   ...scheduling,
-  run: async (target: IProgramExecutionTarget): Promise<IAdtResponse> => {
+  run: async (target: IProgramExecutionTarget): Promise<IAdtWireResponse> => {
     void target.programName;
     return response;
   },
   runWithProfiler: async (
     target: IProgramExecutionTarget,
     options: IProgramExecuteWithProfilerOptions,
-  ): Promise<IAdtResponse> => {
+  ): Promise<IAdtWireResponse> => {
     void target.programName;
     void options.profilerId;
     return response;

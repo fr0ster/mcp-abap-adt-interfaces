@@ -1,4 +1,4 @@
-import type { IAdtResponse } from '../connection/IAbapConnection';
+import type { IAdtWireResponse } from '../connection/IAbapConnection';
 import type { IListableRuntimeObject } from './types';
 
 export type IRuntimeDumpReadView = 'default' | 'summary' | 'formatted';
@@ -19,16 +19,16 @@ export interface IRuntimeDumpReadOptions {
 
 export interface IRuntimeDumps
   extends IListableRuntimeObject<
-    IAdtResponse,
+    IAdtWireResponse,
     IRuntimeDumpsListOptions,
     'runtimeDumps'
   > {
   listByUser(
     user?: string,
     options?: Omit<IRuntimeDumpsListOptions, 'query'>,
-  ): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
   getById(
     dumpId: string,
     options?: IRuntimeDumpReadOptions,
-  ): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
 }

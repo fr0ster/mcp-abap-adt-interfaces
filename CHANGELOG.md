@@ -7,6 +7,128 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [28.0.0] - 2026-09-02
+
+**The response stops being an envelope.** Everything since 26.2.0 has been a
+consequence of one type serving two purposes; this is the correction.
+
+### Changed
+
+- **BREAKING: `IAdtResponse` is now a contract with two methods, and it is a
+  discriminated union.**
+
+  ```typescript
+  interface IAdtSuccess<TResult> { readonly ok: true;  getResult(): TResult;   getError(): undefined; }
+  interface IAdtFailure          { readonly ok: false; getResult(): undefined; getError(): IAdtError; }
+
+  type IAdtResponse<TResult> = IAdtSuccess<TResult> | IAdtFailure;
+  ```
+
+  ```typescript
+  if (answer.ok) {
+    answer.getResult();          // ISearchResult[] — not `| undefined`
+  } else {
+    answer.getError().origin;    // IAdtError — not `| undefined`
+  }
+  ```
+
+  A result can be a normal answer or a failure, and the contract says so instead
+  of naming only the first and pushing the second where the compiler cannot see
+  it.
+
+  **A union rather than one shape with two optional halves**, because the first
+  draft was the latter and the guarantee it claimed was not real: two
+  independently-optional methods let an implementation answer both or neither,
+  and checking one narrowed nothing. `ok` exists because TypeScript cannot narrow
+  an object from what a method returns — one field, and both methods stop being
+  maybes.
+
+- **BREAKING: every asynchronous member of `IAdtUtilities` returns it.** All 22
+  of them — 23 signatures, because `search` has the strategy overload — each
+  naming its own result: `IAdtResponse<ISearchResult[]>`,
+  `IAdtResponse<IPackageHierarchyNode>`, and so on. The 12 that have no named
+  result yet say `IAdtResponse<IAdtWireResponse>` — honest about handing back a
+  frame, and visible as work remaining rather than hidden in a shared alias. The
+  three synchronous members compute a string and issue no request; they are
+  unchanged.
+
+  The first draft of this release shipped the contract and had **nothing return
+  it**. A type nobody answers with is documentation, not an API.
+
+  `TResult` has **no default**. A member answering `IAdtResponse` and promising
+  nothing is the free type this design refuses, reached by omission —
+  `declare const x: IAdtResponse` no longer compiles.
+
+- **BREAKING: the transport frame is `IAdtWireResponse`.** Same shape as the old
+  `IAdtResponse` — `data`, `status`, `statusText`, `headers` — and the same job,
+  at the connection boundary where decision 14 says an envelope belongs. The old
+  name was the whole problem in miniature: one type meant "what came off the
+  wire" and "what a caller gets", so 94 members answered a frame and none could
+  name its result.
+
+  Migration is mechanical and the compiler lists every site. Measured against
+  `@mcp-abap-adt/adt-clients`: **784 errors in 321 files, 780 of them the same
+  one** — `IAdtResponse` used without naming a result. Each is a place a member
+  was returning a frame.
+
+### Added
+
+- **`IAdtError`** — the contract every error strategy returns.
+
+  A strategy chooses **how much** to fill in, never what it is. `brief`, `medium`
+  and `full` are three amounts of one contract, so a caller writes against it
+  once and reads whatever their strategy provided. `origin` and `message` are
+  required as the least a failure can say and stay actionable; `adtType`,
+  `namespace`, `response`, `request` and `cause` are what a fuller strategy adds.
+
+  An implementation may fill it in however it likes — parse differently,
+  classify `origin` by its own rules, decide what brief means for the systems it
+  talks to — and a consumer's code does not change, **because the methods are the
+  same**. That is the difference between a contract and a shape agreed by luck.
+
+- **`AdtFailureOrigin`** — `'connection' | 'refusal' | 'parse'`. Three failures
+  with three different remedies: reauthenticate, ask the server something else,
+  fix a parser. Flattening them into one message makes a caller guess which.
+
+### Rejected on the way here, recorded because both were shipped in draft
+
+- **`IAdtResult<T>`**, a wrapper around the value. It put a shape of ours around
+  the result after the consumer had said what shape they wanted.
+- **`TError` as a free type parameter.** It offered a choice and took the contract
+  away with it: an implementation returning `number` and one returning
+  `IAdtError` are not interchangeable, so "swap in your own" would have meant
+  "rewrite everything that catches".
+- **`document` as a field on the error.** It is `response.data`. Two fields for
+  one thing is the fault this design exists to remove.
+
+### Documentation
+
+- Decisions 17-19 in `docs/architecture/DECISIONS.md` are what this implements:
+  what a contract takes, what it gives back, and where strategies go.
+- **Decision 19's "Decided: B" is superseded, and says so.** B was one method
+  with failures as exceptions — my conclusion after being asked to choose, not
+  the design that was being described. The design has two methods, and that is
+  what ships.
+
+  Recorded with the reason it is also the better of the two, which B could not
+  answer: **an exception is invisible to the type system.** Nothing makes a
+  caller catch it, nothing tells them it exists, and the failure path is found at
+  run time by whoever is unlucky. The union makes handling compulsory at compile
+  time — `answer.getResult()` does not type-check until the caller has asked
+  which half they hold. A type that admits only the happy answer pushes the other
+  where the compiler cannot see it, and B was that shape wearing an exception.
+
+  What B got right is untouched: the error strategy's own detection carries the
+  "not an error for me" case, and a consumer who says a "not found" is their answer
+  receives it as a result. That never depended on how a failure is delivered.
+- `src/__typechecks__/response.ts` asserts the guarantee in both directions:
+  narrowing gives a result that is not `| undefined`, reaching either half
+  without asking is refused, a member cannot answer without naming what it gives
+  back, and a consumer's own implementation of each half satisfies the union.
+  Each assertion was proved by removing its directive and confirming the
+  compiler complains — five for five.
+
+
 ## [27.0.0] - 2026-09-02
 
 ### Changed

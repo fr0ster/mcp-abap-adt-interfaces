@@ -12,7 +12,7 @@ import type {
   IServiceBindingState,
   ServiceBindingVariant,
 } from '../adt/IAdtServiceBinding';
-import type { IAdtResponse } from '../connection/IAbapConnection';
+import type { IAdtWireResponse } from '../connection/IAbapConnection';
 
 export type ServiceBindingType = 'ODATA' | 'INA' | 'SQL';
 export type ServiceBindingVersion = 'V2' | 'V4' | '0001' | '0000' | string;
@@ -130,53 +130,55 @@ export interface IAdtServiceBinding
     IAdtCheckable<IServiceBindingConfig, IServiceBindingState>,
     IAdtActivatable<IServiceBindingConfig, IServiceBindingState>,
     IAdtTransportAware<IServiceBindingConfig, IServiceBindingState> {
-  getServiceBindingTypes(): Promise<IAdtResponse>;
+  getServiceBindingTypes(): Promise<IAdtWireResponse>;
   validateServiceBinding(
     params: IValidateServiceBindingParams,
-  ): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
   transportCheckServiceBinding(
     params: ITransportCheckServiceBindingParams,
-  ): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
   createServiceBinding(
     params: ICreateServiceBindingParams,
-  ): Promise<IAdtResponse>;
-  readServiceBinding(params: IReadServiceBindingParams): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
+  readServiceBinding(
+    params: IReadServiceBindingParams,
+  ): Promise<IAdtWireResponse>;
   updateServiceBinding(
     params: IUpdateServiceBindingParams,
-  ): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
   checkServiceBinding(
     params: ICheckServiceBindingParams,
-  ): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
   activateServiceBinding(
     params: IActivateServiceBindingParams,
-  ): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
   deleteServiceBinding(
     params: IDeleteServiceBindingParams,
-  ): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
   generateServiceBinding(
     params: IGenerateServiceBindingParams,
-  ): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
   createAndGenerateServiceBinding(
     params: ICreateAndGenerateServiceBindingParams,
   ): Promise<{
-    createResult: IAdtResponse;
-    inactiveCheckResult: IAdtResponse;
-    activationResult?: IAdtResponse;
-    readResult: IAdtResponse;
-    generatedInfoResult: IAdtResponse;
-    activeCheckResult?: IAdtResponse;
+    createResult: IAdtWireResponse;
+    inactiveCheckResult: IAdtWireResponse;
+    activationResult?: IAdtWireResponse;
+    readResult: IAdtWireResponse;
+    generatedInfoResult: IAdtWireResponse;
+    activeCheckResult?: IAdtWireResponse;
   }>;
   getODataV2ServiceBinding(
     params: IGetServiceBindingODataParams,
-  ): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
   getODataV4ServiceBinding(
     params: IGetServiceBindingODataParams,
-  ): Promise<IAdtResponse>;
-  publishODataV2(params: IPublishODataV2Params): Promise<IAdtResponse>;
-  unpublishODataV2(params: IUnpublishODataV2Params): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
+  publishODataV2(params: IPublishODataV2Params): Promise<IAdtWireResponse>;
+  unpublishODataV2(params: IUnpublishODataV2Params): Promise<IAdtWireResponse>;
   classifyServiceBinding(
     params: IClassifyServiceBindingParams,
-  ): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
 }
 
 /**

@@ -1308,6 +1308,28 @@ exception. What A costs is a check at every call site for the common case where
 there is no error, and a second method every implementation must supply whether
 or not it has anything to put there.
 
+> **Superseded. A is what is built** — `getResult()` and `getError()` on a
+> discriminated union, shipped in 28.0.0. B below was my conclusion after being
+> asked to pick one, not the design being described to me; the design has two
+> methods, and it is the one that governs.
+>
+> Reading them side by side afterwards, A is also the stronger of the two on its
+> own terms, and the reason is one B cannot answer. **An exception is invisible to
+> the type system.** Nothing makes a caller catch it, nothing tells them it exists,
+> and the failure path is discovered at run time by whoever is unlucky. The union
+> makes handling compulsory at compile time: `answer.getResult()` does not
+> type-check until the caller has asked which half they hold. That is the same
+> argument this whole line of decisions rests on — a type that admits only the
+> happy answer pushes the other where the compiler cannot see it — and B was that
+> shape wearing an exception.
+>
+> What B got right survives untouched: the error strategy's own detection carries
+> the "not an error for me" case, and a consumer who says a "not found" is their
+> answer receives it as a result. That never depended on how a failure is
+> delivered.
+>
+> The argument for B, kept because it was not silly:
+
 **Decided: B.** One method, failures as exceptions, and the error strategy's own
 detection carrying the "not an error for me" case.
 

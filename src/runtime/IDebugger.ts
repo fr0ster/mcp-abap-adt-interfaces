@@ -1,4 +1,4 @@
-import type { IAdtResponse } from '../connection/IAbapConnection';
+import type { IAdtWireResponse } from '../connection/IAbapConnection';
 import type { IMemorySnapshots } from './IMemorySnapshots';
 import type { IRuntimeAnalysisObject } from './types';
 
@@ -117,100 +117,104 @@ export interface IDebugger extends IRuntimeAnalysisObject<'debugger'> {
 
 export interface IAbapDebugger extends IRuntimeAnalysisObject<'abapDebugger'> {
   // Session management
-  launch(options?: ILaunchDebuggerOptions): Promise<IAdtResponse>;
-  stop(options?: IStopDebuggerOptions): Promise<IAdtResponse>;
-  get(options?: IGetDebuggerOptions): Promise<IAdtResponse>;
-  getMemorySizes(includeAbap?: boolean): Promise<IAdtResponse>;
+  launch(options?: ILaunchDebuggerOptions): Promise<IAdtWireResponse>;
+  stop(options?: IStopDebuggerOptions): Promise<IAdtWireResponse>;
+  get(options?: IGetDebuggerOptions): Promise<IAdtWireResponse>;
+  getMemorySizes(includeAbap?: boolean): Promise<IAdtWireResponse>;
   getSystemArea(
     systemarea: string,
     options?: IGetSystemAreaOptions,
-  ): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
 
   // Breakpoints
-  synchronizeBreakpoints(checkConflict?: boolean): Promise<IAdtResponse>;
-  getBreakpointStatements(): Promise<IAdtResponse>;
-  getBreakpointMessageTypes(): Promise<IAdtResponse>;
-  getBreakpointConditions(): Promise<IAdtResponse>;
-  validateBreakpoints(): Promise<IAdtResponse>;
-  getVitBreakpoints(): Promise<IAdtResponse>;
+  synchronizeBreakpoints(checkConflict?: boolean): Promise<IAdtWireResponse>;
+  getBreakpointStatements(): Promise<IAdtWireResponse>;
+  getBreakpointMessageTypes(): Promise<IAdtWireResponse>;
+  getBreakpointConditions(): Promise<IAdtWireResponse>;
+  validateBreakpoints(): Promise<IAdtWireResponse>;
+  getVitBreakpoints(): Promise<IAdtWireResponse>;
 
   // Variables
   getVariableMaxLength(
     variableName: string,
     part: string,
     maxLength?: number,
-  ): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
   getVariableSubcomponents(
     variableName: string,
     part: string,
     component?: string,
     line?: number,
-  ): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
   getVariableAsCsv(
     variableName: string,
     part: string,
     options?: IGetVariableAsCsvOptions,
-  ): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
   getVariableAsJson(
     variableName: string,
     part: string,
     options?: IGetVariableAsJsonOptions,
-  ): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
   getVariableValueStatement(
     variableName: string,
     part: string,
     options?: IGetVariableValueStatementOptions,
-  ): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
 
   // Actions & stack
-  executeAction(action: string, value?: string): Promise<IAdtResponse>;
-  getCallStack(): Promise<IAdtResponse>;
+  executeAction(action: string, value?: string): Promise<IAdtWireResponse>;
+  getCallStack(): Promise<IAdtWireResponse>;
 
   // Watchpoints
   insertWatchpoint(
     variableName: string,
     condition?: string,
-  ): Promise<IAdtResponse>;
-  getWatchpoints(): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
+  getWatchpoints(): Promise<IAdtWireResponse>;
 
   // Batch operations
-  executeBatchRequest(requests: string): Promise<IAdtResponse>;
-  executeStepBatch(stepMethod: IAbapDebuggerStepMethod): Promise<IAdtResponse>;
-  stepIntoBatch(): Promise<IAdtResponse>;
-  stepOutBatch(): Promise<IAdtResponse>;
-  stepContinueBatch(): Promise<IAdtResponse>;
+  executeBatchRequest(requests: string): Promise<IAdtWireResponse>;
+  executeStepBatch(
+    stepMethod: IAbapDebuggerStepMethod,
+  ): Promise<IAdtWireResponse>;
+  stepIntoBatch(): Promise<IAdtWireResponse>;
+  stepOutBatch(): Promise<IAdtWireResponse>;
+  stepContinueBatch(): Promise<IAdtWireResponse>;
 }
 
 export interface IAmdpDebugger extends IRuntimeAnalysisObject<'amdpDebugger'> {
-  start(options?: IStartAmdpDebuggerOptions): Promise<IAdtResponse>;
-  resume(mainId: string): Promise<IAdtResponse>;
-  terminate(mainId: string, hardStop?: boolean): Promise<IAdtResponse>;
-  getDebuggee(mainId: string, debuggeeId: string): Promise<IAdtResponse>;
+  start(options?: IStartAmdpDebuggerOptions): Promise<IAdtWireResponse>;
+  resume(mainId: string): Promise<IAdtWireResponse>;
+  terminate(mainId: string, hardStop?: boolean): Promise<IAdtWireResponse>;
+  getDebuggee(mainId: string, debuggeeId: string): Promise<IAdtWireResponse>;
   getVariable(
     mainId: string,
     debuggeeId: string,
     varname: string,
     offset?: number,
     length?: number,
-  ): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
   setVariable(
     mainId: string,
     debuggeeId: string,
     varname: string,
     setNull?: boolean,
-  ): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
   lookup(
     mainId: string,
     debuggeeId: string,
     name?: string,
-  ): Promise<IAdtResponse>;
-  stepOver(mainId: string, debuggeeId: string): Promise<IAdtResponse>;
-  stepContinue(mainId: string, debuggeeId: string): Promise<IAdtResponse>;
-  getBreakpoints(mainId: string): Promise<IAdtResponse>;
-  getBreakpointsLlang(mainId: string): Promise<IAdtResponse>;
-  getBreakpointsTableFunctions(mainId: string): Promise<IAdtResponse>;
-  getDataPreview(options?: IGetAmdpDataPreviewOptions): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
+  stepOver(mainId: string, debuggeeId: string): Promise<IAdtWireResponse>;
+  stepContinue(mainId: string, debuggeeId: string): Promise<IAdtWireResponse>;
+  getBreakpoints(mainId: string): Promise<IAdtWireResponse>;
+  getBreakpointsLlang(mainId: string): Promise<IAdtWireResponse>;
+  getBreakpointsTableFunctions(mainId: string): Promise<IAdtWireResponse>;
+  getDataPreview(
+    options?: IGetAmdpDataPreviewOptions,
+  ): Promise<IAdtWireResponse>;
   getCellSubstring(
     options?: IGetAmdpCellSubstringOptions,
-  ): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
 }
