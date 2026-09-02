@@ -14,18 +14,45 @@ consequence of one type serving two purposes; this is the correction.
 
 ### Changed
 
-- **BREAKING: `IAdtResponse` is now a contract with two methods.**
+- **BREAKING: `IAdtResponse` is now a contract with two methods, and it is a
+  discriminated union.**
 
   ```typescript
-  interface IAdtResponse<TResult> {
-    getResult(): TResult | undefined;
-    getError(): IAdtError | undefined;
+  interface IAdtSuccess<TResult> { readonly ok: true;  getResult(): TResult;   getError(): undefined; }
+  interface IAdtFailure          { readonly ok: false; getResult(): undefined; getError(): IAdtError; }
+
+  type IAdtResponse<TResult> = IAdtSuccess<TResult> | IAdtFailure;
+  ```
+
+  ```typescript
+  if (answer.ok) {
+    answer.getResult();          // ISearchResult[] — not `| undefined`
+  } else {
+    answer.getError().origin;    // IAdtError — not `| undefined`
   }
   ```
 
   A result can be a normal answer or a failure, and the contract says so instead
   of naming only the first and pushing the second where the compiler cannot see
-  it. A caller cannot reach a result without having been told an error exists.
+  it.
+
+  **A union rather than one shape with two optional halves**, because the first
+  draft was the latter and the guarantee it claimed was not real: two
+  independently-optional methods let an implementation answer both or neither,
+  and checking one narrowed nothing. `ok` exists because TypeScript cannot narrow
+  an object from what a method returns — one field, and both methods stop being
+  maybes.
+
+- **BREAKING: every asynchronous member of `IAdtUtilities` returns it.** All 23,
+  each naming its own result: `IAdtResponse<ISearchResult[]>`,
+  `IAdtResponse<IPackageHierarchyNode>`, and so on. The 12 that have no named
+  result yet say `IAdtResponse<IAdtWireResponse>` — honest about handing back a
+  frame, and visible as work remaining rather than hidden in a shared alias. The
+  three synchronous members compute a string and issue no request; they are
+  unchanged.
+
+  The first draft of this release shipped the contract and had **nothing return
+  it**. A type nobody answers with is documentation, not an API.
 
   `TResult` has **no default**. A member answering `IAdtResponse` and promising
   nothing is the free type this design refuses, reached by omission —
@@ -78,6 +105,12 @@ consequence of one type serving two purposes; this is the correction.
 - Decisions 17-19 in `docs/architecture/DECISIONS.md` (merged in #59) are what
   this implements: what a contract takes, what it gives back, and where
   strategies go.
+- `src/__typechecks__/response.ts` asserts the guarantee in both directions:
+  narrowing gives a result that is not `| undefined`, reaching either half
+  without asking is refused, a member cannot answer without naming what it gives
+  back, and a consumer's own implementation of each half satisfies the union.
+  Each assertion was proved by removing its directive and confirming the
+  compiler complains — five for five.
 
 
 ## [27.0.0] - 2026-09-02

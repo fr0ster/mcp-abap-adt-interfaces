@@ -222,7 +222,9 @@ export type {
 export type {
   AdtFailureOrigin,
   IAdtError,
+  IAdtFailure,
   IAdtResponse,
+  IAdtSuccess,
 } from './adt/IAdtResponse';
 export type {
   ICreateScalarFunctionParams,

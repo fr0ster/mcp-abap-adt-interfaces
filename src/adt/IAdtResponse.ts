@@ -9,12 +9,12 @@
  *
  * ```typescript
  * const answer = await utils.search({ query: 'ZCL_*' });
- * const error = answer.getError();
- * if (error) {
- *   error.origin;   // connection, refusal, parse — different remedies
- *   error.message;  // what SAP said, when SAP said anything
+ *
+ * if (answer.ok) {
+ *   answer.getResult();          // ISearchResult[]
  * } else {
- *   answer.getResult().value;  // ISearchResult[]
+ *   answer.getError().origin;    // connection, refusal, parse
+ *   answer.getError().message;   // what SAP said, when SAP said anything
  * }
  * ```
  *
@@ -118,48 +118,54 @@ export interface IAdtError {
 }
 
 /**
- * The answer to a call: a result, or a failure, and both are contracts.
+ * The answer to a call: a result **or** a failure, never both and never neither.
  *
- * **A strategy chooses how much, never what it is.** That distinction is the
- * whole of it. `brief`, `medium` and `full` are not three types — they are three
- * amounts of one contract, and a caller written against `IAdtError` works with
- * all of them. A strategy free to return *any* type would leave a caller with
- * nothing to write against, and "swap in your own implementation" would mean
- * "rewrite everything that catches".
- *
- * So `origin` and `message` are always there — the least any failure can say —
- * and the rest is what a fuller strategy fills in.
+ * A union rather than one shape with two optional halves, and that is not a
+ * detail. Two independently-optional methods let an implementation answer both
+ * or answer nothing, and — worse — checking one does not narrow the other, so
+ * the claim "a caller cannot reach a result without being told an error exists"
+ * was a sentence in a comment rather than a thing the compiler did.
  *
  * ```typescript
  * const answer = await utils.search({ query: 'ZCL_*' });
- * const failure = answer.getError();
- * if (failure) {
- *   failure.origin;    // always
- *   failure.message;   // always
- *   failure.document;  // if the strategy was asked for that much
+ *
+ * if (answer.ok) {
+ *   answer.getResult();          // ISearchResult[] — not `| undefined`
+ * } else {
+ *   answer.getError().origin;    // IAdtError — not `| undefined`
  * }
  * ```
  *
- * **`TResult` has no default, deliberately.** It is the member's own result
- * contract — `ISearchResult[]` here, `IPackageHierarchyNode` there — and a
- * default of `unknown` would let a member answer `IAdtResponse` and promise
- * nothing, which is the free type this design refuses, reached by the back door.
- * Every use names what it gives back.
+ * `ok` exists because TypeScript cannot narrow an object from what a method
+ * returns. It is the smallest thing that makes the guarantee real: one field,
+ * and both methods stop being maybes.
  *
- * The symmetry with `IAdtError` is exact, and it is the point. A result strategy
- * chooses **how much** of the member's contract to fill in, not what that
- * contract is: `brief` returns fewer fields of `ISearchResult`, `full` more, and
- * a caller written against `ISearchResult[]` reads both. Neither strategy may
- * hand back something else entirely, or two implementations of one member stop
- * being interchangeable and "swap in your own" costs a rewrite.
+ * **A strategy chooses how much, never what it is.** `brief`, `medium` and
+ * `full` are three amounts of one contract, so a caller writes against
+ * `IAdtError` once and reads whatever their strategy provided.
  *
- * `undefined` on each side is what "there is none" looks like: after a refusal
- * there is no result, and on a clean answer there is no failure.
+ * **`TResult` has no default.** A member answering `IAdtResponse` and promising
+ * nothing is the free type this design refuses, reached by omission.
  */
-export interface IAdtResponse<TResult> {
-  /** The member's own result contract. Absent when the answer was a failure. */
-  getResult(): TResult | undefined;
-
-  /** The failure, as much of it as the strategy was asked for. */
-  getError(): IAdtError | undefined;
+export interface IAdtSuccess<TResult> {
+  readonly ok: true;
+  getResult(): TResult;
+  getError(): undefined;
 }
+
+/** The other half of {@link IAdtResponse}: a failure, and no result. */
+export interface IAdtFailure {
+  readonly ok: false;
+  getResult(): undefined;
+  getError(): IAdtError;
+}
+
+/**
+ * What every member answers with.
+ *
+ * `TResult` is that member's own result contract — `ISearchResult[]` here,
+ * `IPackageHierarchyNode` there. A result strategy chooses how much of it to
+ * fill in; it may not hand back something else, or two implementations of one
+ * member stop being interchangeable.
+ */
+export type IAdtResponse<TResult> = IAdtSuccess<TResult> | IAdtFailure;
