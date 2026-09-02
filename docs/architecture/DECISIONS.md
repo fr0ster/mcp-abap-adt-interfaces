@@ -1258,11 +1258,46 @@ The outcome is not a new type beside `IAdtResponse` — it is what `IAdtResponse
 becomes. Two methods, and a concrete implementation supplies each:
 
 ```typescript
-interface IAdtSuccess<T> { readonly ok: true;  getResult(): IAdtResult<T>; getError(): undefined; }
-interface IAdtFailure    { readonly ok: false; getResult(): undefined;     getError(): IAdtError; }
+interface IAdtSuccess<TResult extends IAdtResult<unknown>> {
+  readonly ok: true;  getResult(): TResult;    getError(): undefined;
+}
+interface IAdtFailure<TError extends IAdtError = IAdtError> {
+  readonly ok: false; getResult(): undefined;  getError(): TError;
+}
 
-type IAdtResponse<T> = IAdtSuccess<T> | IAdtFailure;
+type IAdtResponse<
+  TResult extends IAdtResult<unknown>,
+  TError extends IAdtError = IAdtError,
+> = IAdtSuccess<TResult> | IAdtFailure<TError>;
 ```
+
+**Both halves are parameters, and both are constrained to their contract.** This
+is the newest of these decisions and the one least likely to be guessed from the
+others, so it is stated rather than implied.
+
+An earlier form fixed the error half at `IAdtError`, and that left an
+implementation with no way to describe what it actually returns — the opposite of
+"swap in your own". A `retryAfter` an implementation genuinely provides was
+invisible to every caller, including the ones using that implementation on
+purpose:
+
+```typescript
+interface ThrottledError extends IAdtError { readonly retryAfter: number }
+
+declare const throttled: IAdtResponse<IAdtResult<ISearchResult[]>, ThrottledError>;
+
+throttled.getError().retryAfter;   // this implementation offers more
+anyFailure(throttled);             // and the base contract reads it unchanged
+```
+
+**This is not the free `TError` rejected above, and the constraint is the whole
+difference.** A free parameter lets an implementation answer `number` and two
+implementations of one member stop being interchangeable. `extends IAdtError`
+lets a caller read **more** than the contract where their implementation offers
+more, and never less — which is what substitution means (decision 13).
+
+`TError` defaults to `IAdtError`, so a member adding nothing writes
+`IAdtResponse<IAdtResult<ISearchResult[]>>` and no more.
 
 Shipped in 28.0.0, and two things about it were settled by building it rather
 than by writing it down here first.
