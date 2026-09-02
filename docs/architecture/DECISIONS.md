@@ -790,7 +790,30 @@ guarantee is that a scope, however obtained, produces that search.
 **And this is what collapses two members into one.** The remaining difference
 between them was the *result*: one handed back the document, the other a parsed
 list. That is a strategy — the consumer choosing among behaviours the
-implementation performs (decision 14) — not a second capability. So:
+implementation performs (decision 14) — not a second capability.
+
+**What a strategy is for, stated plainly, because it decides where one belongs.**
+It solves the *volume* of the answer. A where-used run on a common object, a
+search across a namespace, a package tree — these documents are large, their size
+is not knowable in advance, and how much of one a caller needs is a question only
+the caller can answer. A strategy lets them take what they need instead of the
+library guessing on their behalf, or handing over megabytes so they can discard
+most of it. That is the test for adding one: an answer whose size the caller must
+be able to control. Not "someone might want it differently".
+
+**And a strategy must never mask an error from the SAP system.** This one is
+easy to get wrong while looking right. Handing the parser an `<exc:exception>`
+document seems faithful — nothing was withheld — but a parser looking for hits
+finds none in a refusal and answers "nothing found". The caller is then told a
+fact where the server said no, and the strategy is where it happened.
+
+So a refusal is raised **before** the strategy runs, and a parser only ever sees
+an answer. `@mcp-abap-adt/adt-clients` does this in `search`, and a unit test
+asserts the parser is not called at all — the assertion is on the *absence of the
+call*, because a test that only checked the throw would pass while the parser ran
+first and produced whatever it produced.
+
+So:
 
 ```typescript
 getWhereUsed(params: IGetWhereUsedParams): Promise<IAdtResponse>;
