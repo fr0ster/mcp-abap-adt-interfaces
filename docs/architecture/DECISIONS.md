@@ -927,32 +927,40 @@ Two halves, and they are the same principle:
 are exactly that, and good evidence. It is not evidence about what the contract
 should promise, because the next consumer has not been written.
 
-**And a *result* strategy is still not a place a refusal can hide.** The two
-halves meet here, and the guarantee is an **ordering**, not an early throw:
+**Both strategies are handed the SAP answer, and neither gates the other.**
 
 ```
-the whole answer
-      ↓
-error detection      ← the consumer's, and it decides: failure, or not
-      ↓
-   failure? ── yes ──→ error strategy   → thrown
-      │
-      no
-      ↓
-              result strategy → the result
+                    ┌──→ error strategy   ── its own analysis ──→ a failure, or nothing
+the whole answer ───┤
+                    └──→ result strategy  ── its own analysis ──→ the result
+
+           a failure was produced?  →  it is thrown
+                          otherwise  →  the result is returned
 ```
 
-What must never happen is a refusal reaching the **result** strategy, because a
-parser looking for hits finds none in an exception document and answers "nothing
-found" — a failure reported as a fact. Detection running first is what prevents
-that, and it prevents it whichever way detection decides: if this consumer says a
-"not found" is the answer they came for, the result strategy is handed it
-deliberately, by them, and that is a decision rather than an accident.
+**Flexibility is the reason, and it is a standing principle here rather than a
+preference of this decision.** Two strategies that both see the answer can be
+combined by a consumer in ways nobody anticipated: one that treats a "not found"
+as data while still reporting a lock as a failure; one that extracts a result
+*and* a diagnostic from the same document; one that ignores failures entirely
+because the caller is probing. A pipeline where one decides what the other is
+allowed to see can do none of that — it fixes at design time a combination that
+belongs to the caller.
 
-An earlier wording here said the refusal is raised "before any strategy runs".
-That was written before detection was a strategy, and taken literally it would
-mean detection never sees the thing it exists to judge. What it was protecting is
-above: the result strategy is never the first to look.
+The library composes the two outcomes; it does not order the two analyses.
+
+**Two earlier wordings here are superseded, and both said less than they meant.**
+The first said a refusal is raised "before any strategy runs" — written before
+detection was a strategy at all, and taken literally it means detection never sees
+what it exists to judge. The second replaced it with a pipeline, detection gating
+the result strategy, which fixed the contradiction by removing the flexibility
+that motivated strategies in the first place.
+
+What both were protecting is narrower than either said, and survives: **a result
+strategy must not be the only thing that looks.** A parser hunting for hits finds
+none in an exception document and answers "nothing found" — a failure reported as
+a fact. That is prevented by the error strategy seeing the same answer
+independently, not by it going first.
 
 **How to catch it.** A decision justified by what one consumer does with a
 result. A field left out because nobody currently reads it — that is decision 11
@@ -1109,9 +1117,14 @@ has nothing left to do.
 
    That second reason is why error detection is a strategy at all rather than a
    rule with options. The library's shipped rules are a sensible default, not a
-   definition — and they sit at a fixed point in the order decision 18 sets out:
-   the whole answer reaches detection, detection decides, and only then does one
-   of the other two strategies run.
+   definition.
+
+   Where detection *runs* is decision 18's answer, and it is not a stage in front
+   of the others: every strategy is handed the same whole answer and does its own
+   analysis. Recognising a failure is the error strategy's analysis, not a gate
+   the result strategy waits behind — which is what lets one consumer read a
+   result and a diagnostic out of the same document, and another ignore failures
+   altogether.
 
    **And this is where the envelope finally has nothing left to do.** The one
    case it exists for is a caller who wants everything, raw, and will judge it
