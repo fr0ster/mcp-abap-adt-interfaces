@@ -938,6 +938,30 @@ the whole answer ───┤
                           otherwise  →  the result is returned
 ```
 
+**Both always run, and the composition is fixed.** Independent analyses do not
+mean an undefined outcome: without a stated rule, which failure surfaces would
+depend on which strategy the implementation happened to call first, which is the
+ordering this decision claims not to have.
+
+1. **The error strategy's verdict wins.** If it produces a failure, that is what
+   is thrown — even when the result strategy also failed. A result strategy
+   throwing `AdtParseError` on a document that is an ADT exception is a *symptom*:
+   it could not find hits because the answer is a refusal. Surfacing "we could not
+   read it" over "SAP said the object is locked" would report our confusion in
+   place of the server's reason, which is the whole of decision 18 inverted.
+2. **A result strategy that throws does not stop the error strategy.** The
+   implementation catches it, runs the error analysis anyway, and only if that
+   produces nothing does the result strategy's exception surface — where it is a
+   genuine "the answer was fine and I could not read it".
+3. **An error strategy that throws is a bug in that strategy, and surfaces as
+   itself.** It is not caught, not translated, not folded into anything: a
+   consumer's own code failing must not be dressed up as a failure of the system
+   it was inspecting.
+
+The independence is about what each strategy *sees* — the whole answer, neither
+filtered by the other. It was never about whether the library knows what to do
+with two verdicts.
+
 **Flexibility is the reason, and it is a standing principle here rather than a
 preference of this decision.** Two strategies that both see the answer can be
 combined by a consumer in ways nobody anticipated: one that treats a "not found"
@@ -1032,7 +1056,7 @@ has nothing left to do.
    > **Superseded below.** This answered "how are they passed *to a member*", and
    > the later decision is that they are not passed to a member at all — they are
    > chosen **at client construction**. What survives is the object form: the
-   > client takes `{ onResult?, onError?, detectError? }` rather than a positional
+   > client takes `{ onResult?, onError? }` rather than a positional
    > list. Every `member(params, options)` example in this section is the
    > superseded shape, kept because the reasoning that led away from it is worth
    > reading, and marked so nothing is implemented from it.
@@ -1081,13 +1105,26 @@ has nothing left to do.
 
    **The library ships a set of them, and that is what makes this usable.** A
    consumer who wants a different amount of the answer should not have to write a
-   parser to get it. Three families:
+   parser to get it. Two families:
 
    | family | what it decides | shipped |
    |---|---|---|
-   | result | how much of the result comes back | full · medium · brief |
-   | error | how much of a failure comes back | full · medium · brief |
-   | error detection | what counts as a failure at all | the default rules, replaceable |
+   | result | whether there is a result, and how much of it comes back | full · medium · brief |
+   | error | whether there is a failure, and how much of it comes back | full · medium · brief |
+
+   **Two strategies, not three.** An earlier draft listed error *detection* as a
+   third family and the configuration sketch above carried a separate
+   `detectError`. Both are superseded: recognising a failure is the error
+   strategy's own analysis, not a stage in front of it.
+
+   That follows from decision 18's shape rather than being a separate choice. If
+   both strategies are handed the same whole answer and each analyses it, then
+   "is this a failure" is a question the error strategy answers by looking — and a
+   third strategy answering it first would be the gate that decision 18 rejects.
+   Symmetrically, "is there a result here" is the result strategy's to answer.
+
+   So the client takes `{ onResult?, onError? }`. Three names would have implied
+   three injection points and an order between them.
 
    The middle row is not in tension with decision 18, and the distinction is the
    one that decision draws in its own table: what the **strategy is handed** is
