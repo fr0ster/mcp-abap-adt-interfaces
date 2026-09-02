@@ -1174,17 +1174,34 @@ exception. What A costs is a check at every call site for the common case where
 there is no error, and a second method every implementation must supply whether
 or not it has anything to put there.
 
-The recommendation, not yet a decision: **B**. One method, exceptions, and the
-detection strategy carrying the "not an error for me" case — because that case is
-the one that motivated `getError()`, and detection serves it without a branch.
+**Decided: B.** One method, failures as exceptions, and the detection strategy
+carrying the "not an error for me" case.
+
+Four reasons, in the order they weigh:
+
+1. **The case that motivated `getError()` is served without it.** Detection
+   decides whether there is a failure at all; a consumer who says "not found is
+   my answer" gets it back from `getResult()` and writes no `catch`. A branch
+   would be a second way to reach the same place.
+2. **`getError()` answers "no" on almost every call.** A member that is empty for
+   the overwhelming majority of uses, and that every implementation must supply
+   regardless, is what decision 11 refuses.
+3. **The library already behaves this way.** `AdtSAPError` and `AdtParseError`
+   are thrown today. B makes the strategies an explanation of behaviour that
+   exists; A would make the current behaviour a special case of a shape nothing
+   implements yet.
+4. **One method keeps the outcome a result.** `IAdtResponse<ISearchResult[]>`
+   reads as "an answer carrying hits". With two it reads as a container to be
+   interrogated, which is what this whole line of decisions has been getting away
+   from.
+
+**The cost, accepted rather than argued away.** A caller who wants to inspect a
+failure and carry on writes `try`/`catch`, which is control flow by exception.
+That is the price, and it is paid by the rarer case: the common ones are "give me
+the answer" and "this is not a failure for me", and neither needs a catch.
 
 **Still open.**
 
-- **A or B.** The above is a recommendation. Under A only:
-  **what `getError()` answers when there is no error**, and what its type is.
-  "Empty" would have to be decided — `undefined`, or a contract with its own
-  "nothing happened" state. The first is smaller; the second lets a consumer ask
-  a failure questions without a null check at every call site. Moot under B.
 - **Where an implementation is chosen.** Per call, per handler, or at client
   construction. Per call is the most flexible and the noisiest; at construction is
   the quietest and cannot vary between two calls that want different amounts.
