@@ -140,14 +140,23 @@ export interface IAdtError {
  * }
  * ```
  *
- * `TResult` stays a parameter because each member names its own result contract —
- * `ISearchResult[]` here, `IPackageHierarchyNode` there. It is not a free type
- * either: it is whatever that member promises.
+ * **`TResult` has no default, deliberately.** It is the member's own result
+ * contract — `ISearchResult[]` here, `IPackageHierarchyNode` there — and a
+ * default of `unknown` would let a member answer `IAdtResponse` and promise
+ * nothing, which is the free type this design refuses, reached by the back door.
+ * Every use names what it gives back.
+ *
+ * The symmetry with `IAdtError` is exact, and it is the point. A result strategy
+ * chooses **how much** of the member's contract to fill in, not what that
+ * contract is: `brief` returns fewer fields of `ISearchResult`, `full` more, and
+ * a caller written against `ISearchResult[]` reads both. Neither strategy may
+ * hand back something else entirely, or two implementations of one member stop
+ * being interchangeable and "swap in your own" costs a rewrite.
  *
  * `undefined` on each side is what "there is none" looks like: after a refusal
  * there is no result, and on a clean answer there is no failure.
  */
-export interface IAdtResponse<TResult = unknown> {
+export interface IAdtResponse<TResult> {
   /** The member's own result contract. Absent when the answer was a failure. */
   getResult(): TResult | undefined;
 
