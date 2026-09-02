@@ -960,22 +960,37 @@ contracts because a member sometimes has to hand over "everything, I cannot say
 what you need". A strategy is the caller saying what they need, so the envelope
 has nothing left to do.
 
-**What is not settled, and must be before this is built.**
+**Settled, so the next member is built this way rather than guessed at.**
 
-1. **Does an error strategy let a consumer mask a refusal?** A handler that
-   ignores what it is given hides it — but it hides it *by an explicit choice at
-   the call site*, which is not what decision 18 was written against: silent
-   masking by a library nobody asked. Probably acceptable; not yet decided.
-2. **Two methods or one?** "Return the result, return the error" reads as a
-   result type carrying both, which makes the branch checkable by the compiler
-   and forces every call site to acknowledge it. One strategy over the answer is
-   smaller and leaves the branch to the caller. These are different contracts,
-   and the substitution test (decision 13) says pick one.
-3. **What is the default when no strategy is given?** It has to be a contract
-   (decision 17's correction), so a member still names its result and a strategy
-   replaces it. Whether errors still throw by default is the same question as 1.
-4. **Migration.** Every member of every atom is affected. This is not a release,
-   it is a direction several releases move toward.
+1. **Without a strategy, a refusal still throws.** An error strategy makes
+   masking possible again, and it should be — but not free. With the throw as the
+   default, a silent failure takes a deliberately written handler, where today it
+   took a forgotten one. The whole class of defect this decision descends from
+   was masking nobody chose; keeping the safe path as the path of least effort is
+   what stops it returning.
+2. **Completeness is not the strategy's to decide.** A strategy receives the
+   refusal **whole** — the server's message, the document untouched, the ADT
+   classification, the response, and the request that produced it. What it does
+   with that is the consumer's business. The line is exact: the library answers
+   for having handed over everything, the consumer for what they did with it.
+3. **Strategies arrive as one options object, never as positional parameters.**
+   `{ onResult?, onError? }`. Hanging a second signature on each member was tried
+   across 23 of them and reverted: it cost every implementer two signatures per
+   method and moved the result's meaning to the call site. An object adds one
+   parameter however many strategies there turn out to be, and leaves room for a
+   third without touching anything.
+
+**Still open.**
+
+- **Two methods or one.** "Return the result, return the error" reads as a result
+  type carrying both, which makes the branch checkable by the compiler and forces
+  every call site to acknowledge it — strong, and it means rewriting every call
+  at once. One strategy over the answer is smaller, leaves the branch to the
+  caller, and can be adopted a member at a time. The second is the way in; the
+  first stays available afterwards. These are different contracts and the
+  substitution test (decision 13) says pick one — that choice is not made here.
+- **Migration.** Member by member, not a release. Every atom is eventually
+  affected, and nothing forces them to move together.
 
 **What would change it.** Building it. Until then this section exists so the
 questions above are answered once rather than re-litigated per member.
