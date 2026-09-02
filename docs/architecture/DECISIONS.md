@@ -1112,16 +1112,58 @@ consumer is to catch them across implementations, what they catch has to be a
 contract — and if only the default strategies throw them, they can stay where
 they are. That depends on the outcome type's shape, which is still open.
 
+**The shape this takes, and it resolves the question above.**
+
+The outcome is not a new type beside `IAdtResponse` — it is what `IAdtResponse`
+becomes. Two methods, and a concrete implementation supplies each:
+
+```typescript
+interface IAdtResponse<TResult> {
+  getResult(): TResult;
+  getError(): /* the failure, or empty */;
+}
+```
+
+An implementation is then built from two strategies, one behind each method. In
+`adt-clients` that is where full · medium · brief live, and where a consumer's own
+goes: the strategy *is* the implementation of that method, not an argument the
+method consults.
+
+Three things fall out of this, and they are why it is better than passing
+strategies to the member.
+
+**The open question dissolves.** Nothing throws at the member. A member returns
+its outcome, always, and `getError()` is empty when there is no error. The safe
+default survives as a property of the *default implementation* of `getResult()`:
+it raises when an error is present, so a caller who ignores failures still fails
+loudly, and a caller who wants to branch asks `getError()` first. Throwing was
+never a property of the member — that was the confusion.
+
+**No member signature changes.** A member still returns one thing. What changes
+is what that thing is, and the migration is a type acquiring meaning rather than
+94 signatures being rewritten. Members already returning `Promise<IAdtResponse>`
+are not each a separate correction; they are the same correction once.
+
+**The generic stops being decoration.** Decision 14 measured `IAdtResponse<T>`'s
+type parameter as never supplied — the generic exists and has never carried a
+type. Here it is the point: `IAdtResponse<ISearchResult[]>` is an outcome whose
+result is the hits. What decision 14 recorded as an unused pass-through was the
+right idea with nothing behind it yet.
+
 **Still open.**
 
-- **How the default throw and the outcome type meet.** Answer 1 says a refusal
-  throws when no strategy is given; this answer says the returned contract always
-  exposes an error. Those are consistent if the throw is the *default error
-  strategy* rather than a property of the member — a caller who supplies one gets
-  the outcome, a caller who supplies none gets the exception. Stated here as the
-  reading to confirm, not as a decision.
-- **Migration.** Member by member, not a release. Every atom is eventually
-  affected, and nothing forces them to move together.
+- **What `getError()` answers when there is no error**, and what its type is.
+  "Empty" has to be a decision — `undefined`, or a contract with its own
+  "nothing happened" state. The first is smaller; the second lets a consumer ask
+  a failure questions without a null check at every call site.
+- **Where an implementation is chosen.** Per call, per handler, or at client
+  construction. Per call is the most flexible and the noisiest; at construction is
+  the quietest and cannot vary between two calls that want different amounts.
+- **Whether `AdtSAPError` and `AdtParseError` become contracts.** They are
+  `adt-clients` classes thrown by default implementations today. If a consumer is
+  to recognise a failure across implementations, what they recognise has to be
+  named here.
+- **Migration.** Member by member. Nothing forces the atoms to move together.
 
 **What would change it.** Building it. Until then this section exists so the
 questions above are answered once rather than re-litigated per member.
