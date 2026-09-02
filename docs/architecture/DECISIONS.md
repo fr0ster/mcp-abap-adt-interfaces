@@ -755,3 +755,670 @@ and possibly a strategy.
 **What would change it.** An endpoint whose responses genuinely mean different
 things by parameter rather than by parsing — the same URL serving two resources.
 Then the split is by essence and decision 13 applies to each half separately.
+
+## 17. A contract takes what the endpoint takes; what builds that is the implementation's
+
+**The problem.** `IAdtUtilities` carried `getWhereUsedList(IGetWhereUsedListParams)`
+— `object_name`, `object_type`, `enableAllTypes`, `enableOnlyTypes`,
+`disableTypes`, `includeRawXml`. Beside it on the class sat
+`getWhereUsed(IGetWhereUsedParams)` — `object_name`, `object_type`, `scopeXml`.
+Two members, one endpoint, and I recorded the difference as a **gap in the
+contract**: a caller running the two-step flow had nowhere to hand back the scope
+document they had fetched and edited.
+
+That diagnosis was wrong, and measuring the request says why.
+
+**Measured.** `/repository/informationsystem/usageReferences` receives exactly
+two things: `?uri=`, built from the object's name and type, and a request body
+carrying an optional `<scope>` element taken from a scope document. That is all.
+
+`enableAllTypes`, `enableOnlyTypes` and `disableTypes` **never reach the wire**.
+They are instructions to the client: fetch the scope sub-resource, edit the
+selections, and put the result in that same `<scope>` element. They are a way of
+*producing* the one parameter the endpoint takes.
+
+**Decided.** A contract's parameters are what the endpoint needs, in the form it
+needs them. Parameters that exist to *derive* those belong to an implementation,
+which is free to offer them, and free not to.
+
+So the contract takes `scopeXml`. An implementation that also accepts
+"enable all types" and builds the scope itself is a good implementation; one that
+requires the caller to build it is a lesser one; **both satisfy the contract**,
+which is the test. How a scope was arrived at is not the caller's guarantee — the
+guarantee is that a scope, however obtained, produces that search.
+
+**And this is what collapses two members into one.** The remaining difference
+between them was the *result*: one handed back the document, the other a parsed
+list. That is a strategy — the consumer choosing among behaviours the
+implementation performs (decision 14) — not a second capability.
+
+**Which way round, and this took a wrong turn first.** A member returns **the
+contract**; a strategy is how a choice is delegated. So the default is
+`IWhereUsedListResult`, and a caller wanting the document passes a parser —
+exactly the shape `search` already shipped in 26.3.0. The first attempt at this
+decision inverted it, making the envelope the default and the contract something
+you had to ask for, which is the envelope reinstated under a new name.
+
+**What a strategy is for, stated plainly, because it decides where one belongs.**
+It solves the *volume* of the answer. A where-used run on a common object, a
+search across a namespace, a package tree — these documents are large, their size
+is not knowable in advance, and how much of one a caller needs is a question only
+the caller can answer. A strategy lets them take what they need instead of the
+library guessing on their behalf, or handing over megabytes so they can discard
+most of it. That is the test for adding one: an answer whose size the caller must
+be able to control. Not "someone might want it differently".
+
+**And a strategy must never mask an error from the SAP system.** This one is
+easy to get wrong while looking right. Handing the parser an `<exc:exception>`
+document seems faithful — nothing was withheld — but a parser looking for hits
+finds none in a refusal and answers "nothing found". The caller is then told a
+fact where the server said no, and the strategy is where it happened.
+
+So a refusal is raised **before** the strategy runs, and a parser only ever sees
+an answer. `@mcp-abap-adt/adt-clients` does this in `search`, and a unit test
+asserts the parser is not called at all — the assertion is on the *absence of the
+call*, because a test that only checked the throw would pass while the parser ran
+first and produced whatever it produced.
+
+So:
+
+```typescript
+getWhereUsed(params: IGetWhereUsedParams): Promise<IWhereUsedListResult>;
+getWhereUsed<T>(params: IGetWhereUsedParams, parse: (data: unknown) => T): Promise<T>;
+```
+
+`includeRawXml` disappears with it: a boolean asking for a different result shape
+is a strategy written as a flag, and it can only offer the shapes somebody
+thought of.
+
+**Not changed now, deliberately.** `IAdtUtilities` ships `getWhereUsedList`
+returning `IWhereUsedListResult`, which already returns a contract — the part
+that matters. What is left is a parameter set carrying three fields no request
+carries, and a flag doing a strategy's job. That is worth correcting when
+somebody needs it, not worth a third breaking release in two days to rename a
+member whose result is already right. This decision is recorded so the next
+member is built this way and this one converges when it is touched.
+
+**Why this is not a licence to strip every parameter.** The test is whether the
+parameter names something the *endpoint* needs, not whether it is convenient.
+`maxItemCount` on `getAllTypes` is a query parameter and stays. A parameter that
+never appears in the request, and exists to compute one that does, is the
+implementation's.
+
+**Against.** Union both parameter sets on the one member — `scopeXml` *and* the
+three flags — so no caller loses a convenience. Rejected: it puts three fields in
+the contract that no request carries, and every implementation of the contract
+must then provide a scope-building convenience it may have no reason to have. A
+contract that describes a convenience has made it mandatory.
+
+**How to catch it.** A field of a contract's parameter type that you cannot point
+to in the request the member issues. If it is computed into another field, it
+belongs to the implementation that computes it.
+
+**Open, and named rather than assumed.** Nine members still answer a parsed shape
+with no strategy — `search`, `getAllTypes`, `fetchNodeStructure`,
+`getPackageContentsList`, `getPackageHierarchy`, `getInactiveObjects`,
+`getIncludesList`, `listFunctionModules`, `listFunctionGroupIncludes`. If
+"document by default, parsed by strategy" is the general rule rather than the
+answer where two members contended for one endpoint, all nine reverse — and
+`IRepositoryNodeContents`, shipped in 27.0.0, becomes a strategy's return type
+rather than a contract's. That is a decision about the whole surface, not a
+detail of this one, and it is not taken here.
+
+## 18. The answer goes back whole; the consumer decides its shape
+
+**The problem.** Two questions kept being answered by looking at one consumer.
+What should a member return? What counts as informative enough when SAP refuses?
+Both were being settled by opening `mcp-abap-adt` and seeing what it does with
+the result.
+
+That is not design, and it is measurably not even a check. Verifying decision 17
+that way meant compiling that consumer's source against a build seven majors
+ahead of the version it is on — a run whose "zero errors" says nothing about the
+change, because its code was written for a different library.
+
+**Decided.** The library's duty is the same in every situation: give back what
+SAP said, completely and in a form somebody can analyse. It does not decide what
+any caller will do with it, and it is not tuned to what one caller happens to
+need.
+
+Two halves, and they are the same principle:
+
+- **Errors are never shaped away.** A refusal carries the server's own message,
+  the document untouched, the classification the server gave it, the response it
+  arrived on, and **the request that produced it**. That last one is not
+  decoration: `delete()` issues two calls and `create()` six, and "object is
+  locked" means a different thing depending on which of them asked. A caller
+  cannot analyse what they cannot locate.
+- **Volume and form are the consumer's, through a strategy.** This is what makes
+  the first half affordable. The library does not have to guess how much of a
+  large answer anyone wants, or in what shape — a strategy is where the caller
+  says so (decisions 5, 14, 17). Without it the library would be choosing on
+  their behalf and calling the choice a contract.
+
+  Concretely, where a member answers with XML there is no single right amount to
+  keep: one caller wants a compact projection, another the fuller structure,
+  another the document untouched to pass on. All three are legitimate and none is
+  the library's to pick, so the member returns its contract by default and takes
+  a parser from anyone who wants otherwise.
+
+  The two halves are asymmetric on purpose, and the asymmetry is about **where**
+  the completeness is owed, not about whether a caller may shape a failure.
+
+  | | what the strategy is handed | what the consumer ends up with |
+  |---|---|---|
+  | result | the answer | their choice |
+  | error | **the refusal, whole — always** | their choice |
+
+  The library's obligation is on the left column and is absolute: a strategy is
+  never handed a summarised, filtered or partly-read failure, because a consumer
+  cannot decide about what they were not shown. The right column is theirs, for
+  errors as much as for results — a caller who asks for a one-line failure is
+  making a decision, not being deprived of one.
+
+  What this forbids is the library deciding the right column *for* them. That is
+  what "there is one right amount of a refusal" was reaching for and said too
+  broadly: it is one right amount **into the strategy**. Out of it, brief is as
+  legitimate as full.
+
+**What this rules out.** "Consumer X does not use that field, so leave it out."
+"Consumer X parses it this way, so return that." A consumer is evidence about
+*what a document contains* — the parsers this package's shapes were lifted from
+are exactly that, and good evidence. It is not evidence about what the contract
+should promise, because the next consumer has not been written.
+
+**What each strategy is given, and when.** Two things can be true when a member
+finishes: an answer arrived, or it did not. They are different inputs and the
+protocol has to say so, or "the strategies are handed the answer" is a promise
+that cannot be kept the first time a host is unreachable.
+
+```
+no answer                                answer
+   │                                        │
+   │                          result strategy ── may throw
+   │                                        │
+   └──→ error strategy ←────────────────────┘
+        (given: what there is —
+         the transport failure, or
+         the answer plus any exception
+         the result strategy raised)
+```
+
+- **No answer** — unreachable host, refused connection, a transport error. The
+  result strategy is not run: it reads answers, and there is nothing to read. The
+  error strategy is run, and given the transport failure.
+- **An answer** — the result strategy is run on it. Then the error strategy is
+  run, and given **the answer and whatever the result strategy raised**.
+
+That second half is what makes "every failure is delegated" true rather than
+slogan. A parse failure happens inside the result strategy, so an error strategy
+shown only the original answer could never classify it — and classifying it is
+exactly the case that matters: a logon page is a session failure, and only
+something looking at both the document and the parser's complaint can say so.
+
+**The order of invocation is real, and it is not the thing that was rejected.**
+The result strategy runs first when there is an answer. What was rejected is one
+strategy *gating another's view* — deciding what the other is allowed to see.
+Neither does that here: the result strategy sees the whole answer, the error
+strategy sees the whole answer and more.
+
+**What surfaces:**
+
+| | condition | what the caller gets |
+|---|---|---|
+| 1 | the **error** strategy threw | that exception, as itself |
+| 2 | the error strategy produced a failure | that failure, thrown |
+| 3 | the **result** strategy threw and the error strategy produced nothing | that exception, as itself |
+| 4 | there was no answer and the error strategy produced nothing | the transport failure |
+| 5 | otherwise | the result |
+
+**Why 1 is first.** An error strategy that throws is a bug in the consumer's own
+error handling, and everything below depends on that code working. It surfaces
+untranslated — a consumer's failing code must not be dressed up as a failure of
+the system it was inspecting.
+
+**Why 2 beats 3.** A result strategy throwing `AdtParseError` on a document that
+is an ADT exception is a *symptom*: it found no hits because the answer is a
+refusal. Surfacing "we could not read it" over "SAP said the object is locked"
+reports our confusion in place of the server's reason, which is decision 18
+inverted. And by then the error strategy has seen that exception too, so a
+consumer who *wants* the parse failure to win says so by returning it.
+
+**Why 3 exists.** The error strategy saw the answer and the exception and judged
+neither a failure, and the result strategy still could not read the answer. That
+is the honest "the answer was fine and I could not read it".
+
+**Row 4 is the one place the library cannot delegate**, and it is worth being
+plain about why. If nothing arrived and the consumer's strategy declines to call
+that a failure, there is no result to return either — not because the library
+overruled them, but because a result is made from an answer and there was none.
+It is an absence, not a judgement.
+
+**How to catch it.** A decision justified by what one consumer does with a
+result. A field left out because nobody currently reads it — that is decision 11
+about *members*, and it does not extend to withholding what the server said.
+
+**What would change it.** Nothing here. Which members take a strategy is still
+decided one at a time, on whether the caller must control the volume.
+
+## 19. The default implementation answers, and strategies say how
+
+**Decided.** Written incrementally while it was being settled, which is why the
+reasoning below reaches some conclusions and then supersedes them — each
+supersession is marked. Recorded this way on purpose: the last three decisions
+were each re-derived from scratch when the case came round again, and a record
+that shows only the answer teaches nobody why the near-misses were near.
+
+**Where this comes from.** Decisions 13 to 18 each fixed one consequence of the
+same thing: `IAdtResponse` used as a result. Name the result (13), stop the
+envelope leaking into atoms (16), stop it being the default (17), stop a refusal
+being reported as an answer (18). Six decisions, one cause. **Once the envelopes
+are gone the rest gets simpler**, and this is what the shape looks like without
+them.
+
+**The proposal.** A contract member's default implementation returns SAP's
+answer, applying whatever strategies the consumer supplied. There are two things
+that can come back and they are not the same thing, so the contract says both:
+
+- what to do with a **result**;
+- what to do with an **error**;
+
+or one strategy over the answer as a whole, where a caller wants to handle both
+in one place. The member's job is to obtain the answer; the strategies say what
+form it takes on the way out.
+
+**What it settles that today's shape does not.**
+
+Today the library decides how a failure is delivered: `AdtExceptionDocumentError`
+is thrown, and a caller who would rather branch than catch has no say. That is
+the library choosing on the caller's behalf — the thing decision 18 forbids for
+*results* while still doing it for *errors*. An error strategy makes the two
+symmetric: what comes back is the caller's choice, what comes back **is
+complete** is not.
+
+It also removes the last reason for an envelope. `IAdtResponse` survives in
+contracts because a member sometimes has to hand over "everything, I cannot say
+what you need". A strategy is the caller saying what they need, so the envelope
+has nothing left to do.
+
+**Settled, so the next member is built this way rather than guessed at.**
+
+1. **Without a strategy, a refusal still throws.** An error strategy makes
+   masking possible again, and it should be — but not free. With the throw as the
+   default, a silent failure takes a deliberately written handler, where today it
+   took a forgotten one. The whole class of defect this decision descends from
+   was masking nobody chose; keeping the safe path as the path of least effort is
+   what stops it returning.
+2. **Completeness is not the strategy's to decide.** A strategy receives the
+   refusal **whole** — the server's message, the document untouched, the ADT
+   classification, the response, and the request that produced it. What it does
+   with that is the consumer's business. The line is exact: the library answers
+   for having handed over everything, the consumer for what they did with it.
+3. **Strategies arrive as one options object, never as positional parameters.**
+   `{ onResult?, onError? }`. Hanging a second signature on each member was tried
+   across 23 of them and reverted: it cost every implementer two signatures per
+   method and moved the result's meaning to the call site. An object adds one
+   parameter however many strategies there turn out to be, and leaves room for a
+   third without touching anything.
+
+   > **Superseded below.** This answered "how are they passed *to a member*", and
+   > the later decision is that they are not passed to a member at all — they are
+   > chosen **at client construction**. What survives is the object form: the
+   > client takes `{ onResult?, onError? }` rather than a positional
+   > list. Every `member(params, options)` example in this section is the
+   > superseded shape, kept because the reasoning that led away from it is worth
+   > reading, and marked so nothing is implemented from it.
+
+4. **Two methods, on the result contract itself.** A result can be a normal
+   answer or an error, and the contract says so rather than pretending one of
+   them does not happen: it exposes both, one accessor each.
+
+   ```typescript
+   interface IAdtOutcome<TResult, TError> {
+     result(): TResult;
+     error(): TError;
+   }
+   ```
+
+   The alternative — one strategy over the answer, leaving the branch implicit —
+   was the cheaper way in and is not what this takes. A type that admits only the
+   happy answer pushes the other one somewhere the compiler cannot see, which is
+   the whole family of defects decisions 13 to 18 came from, restated as a type.
+   Here the caller cannot reach a result without the contract having told them an
+   error is a thing that exists.
+
+   The strategy injected into an implementation then says what to do with each,
+   and **"what to do" includes deciding what an error is**:
+
+   - the **error strategy** decides *how a failure is recognised* and *what the
+     consumer is handed when one is*;
+   - the **result strategy** decides *how the result is returned*.
+
+   The first half is the part easy to miss, and it is the more important one. A
+   library that decides what counts as an error has decided for every consumer at
+   once, and it will be wrong for some of them: an empty answer is not always a
+   failure, a document this library cannot read may be one the consumer can, and
+   a refusal may be exactly the answer a caller was probing for.
+
+   What the library still owes, and cannot delegate, is **completeness**: the
+   strategy is handed everything that came back, so a consumer deciding
+   "this is not an error for me" is making a decision rather than being kept in
+   the dark. Decision 18 stands unchanged — what comes back is the caller's
+   choice, what comes back *whole* is not.
+
+   Where the library fails loudly today — a refusal, an unreadable answer — that
+   is the **default strategies' judgement**, not the law. Failing loudly is the
+   safe behaviour for a caller who has not said otherwise, and both are replaced
+   by supplying a strategy that judges differently.
+
+   How each *arrives* matters, and the composition above is exact about it. The
+   default error strategy **returns** an `AdtSAPError` — a verdict, which the
+   composer then throws. It does not throw one itself: a strategy throwing is row
+   1 of that table, a bug in the strategy, and a routine SAP refusal is not a bug.
+   `AdtParseError` is the other kind: a result strategy that genuinely could not
+   read the answer throws, and that is row 3.
+
+   **The library ships a set of them, and that is what makes this usable.** A
+   consumer who wants a different amount of the answer should not have to write a
+   parser to get it. Two families:
+
+   | family | what it decides | shipped |
+   |---|---|---|
+   | result | whether there is a result, and how much of it comes back | full · medium · brief |
+   | error | whether there is a failure, and how much of it comes back | full · medium · brief |
+
+   **Two strategies, not three.** An earlier draft listed error *detection* as a
+   third family and the configuration sketch above carried a separate
+   `detectError`. Both are superseded: recognising a failure is the error
+   strategy's own analysis, not a stage in front of it.
+
+   That follows from decision 18's shape rather than being a separate choice. If
+   both strategies see the whole answer — the error strategy plus whatever the
+   result strategy raised — and each analyses it, then "is this a failure" is a
+   question the error strategy answers by looking — and a
+   third strategy answering it first would be the gate that decision 18 rejects.
+   Symmetrically, "is there a result here" is the result strategy's to answer.
+
+   So the client takes `{ onResult?, onError? }`. Three names would have implied
+   three injection points and an order between them.
+
+   The middle row is not in tension with decision 18, and the distinction is the
+   one that decision draws in its own table: what the **strategy is handed** is
+   always the whole refusal; what the **consumer ends up with** is what they
+   asked for. "brief" shortens the second, never the first. A strategy that has
+   been given less than everything cannot be a consumer's decision, because they
+   were not shown what they were deciding about.
+
+   Detecting a failure has no "amount" axis, which is why it is not a third row:
+   it is not a quantity of an answer but a judgement about one, and it belongs to
+   the error strategy that makes it. What the library ships as full · medium ·
+   brief are shapes; what it ships as *default detection rules* is one
+   implementation's judgement, replaceable by supplying a different `onError`.
+
+   **Writing your own is not a fallback.** Picking a shipped strategy is the
+   ordinary case, but there are two reasons to write one and both are first-class:
+
+   - **a representation none of the shipped ones give.** Full, medium and brief
+     are three points on one axis, and a consumer may want a different shape
+     altogether — a projection, a flattening, the document passed through
+     untouched to something else.
+   - **a different judgement about what is a failure.** This is the one that
+     cannot be anticipated. A caller probing whether an object exists is *asking*
+     the question "does this exist" — a "not found" from SAP is the answer they
+     came for, and treating it as an error would be the library overruling the
+     only party who knows what the call was for. The same applies in reverse: a
+     consumer may want an empty result treated as a failure, because in their
+     workflow an empty answer means something went wrong upstream.
+
+   That second reason is why detection lives inside a replaceable strategy rather
+   than in a rule with options. The library's shipped detection is one sensible
+   judgement, not a definition, and a consumer who disagrees supplies an `onError`
+   that judges differently.
+
+   Where that judgement *happens* is decision 18's answer, and it is not a stage
+   in front of anything: both see the whole answer, neither filtered by the other,
+   and each does its own analysis — decision 18 sets out exactly what each is
+   given, including the case where no answer arrived at all. Recognising a failure is the error strategy's own
+   analysis, not a gate the result strategy waits behind — which is what lets one
+   consumer read a
+   result and a diagnostic out of the same document, and another ignore failures
+   altogether.
+
+   **And this is where the envelope finally has nothing left to do.** The one
+   case it exists for is a caller who wants everything, raw, and will judge it
+   themselves. Under strategies that caller is served without the contract
+   naming an envelope at all: a result strategy that hands back the full answer
+   as it came, and an error strategy that recognises nothing — so the analysis
+   and the handling are entirely theirs.
+
+   ```typescript
+   const raw = await utils.getWhereUsed(params, {
+     onResult: (answer) => answer,   // everything, as SAP sent it
+     onError: () => undefined,       // nothing is a failure here; I will judge
+   });
+   ```
+
+   That is the same behaviour `Promise<IAdtResponse>` gave, arrived at by the
+   caller asking for it rather than by every caller being given it. The
+   difference is not cosmetic: with the envelope in the contract, every consumer
+   pays for one consumer's need and no member can name its result. With a
+   strategy, the member states a contract and the caller who wants the raw answer
+   says so at the call site — visibly, and only for themselves.
+
+   The responsibility moves with it. An error strategy that recognises nothing is
+   a consumer deciding to do their own analysis; that is a decision at the call
+   site, in their code, not silence from a library that never told them. That is
+   the line decision 18 draws, and it is what makes this safe: masking stays
+   possible, and stays theirs.
+
+   Two consequences worth stating now, before any of it is built. The shipped
+   strategies are **named contracts**, not loose functions: a consumer selects one
+   and a different implementation of the same member must honour the same names,
+   or "brief" means whatever each implementation felt like. And **"full" is not
+   the same as the envelope** — it is the complete result *stated as a contract*,
+   which is what decision 13 has been about all along.
+
+**Which package carries what.** This lands mostly here, because the contracts are
+here — and the split follows the rule this package already lives by: a name a
+consumer depends on is a contract, an implementation of it is behaviour.
+
+| | `@mcp-abap-adt/interfaces` | `@mcp-abap-adt/adt-clients` |
+|---|---|---|
+| the outcome type (`result()` / `error()`) | the contract | — |
+| the strategy names — full · medium · brief | the contracts, so every implementation honours the same names | — |
+| the error strategy, detection included | the contract | the default judgement |
+| the shipped strategies themselves | — | the behaviour |
+| what a member returns without one | stated at the member | the default |
+
+The middle row is the reason the names cannot live in `adt-clients`: a consumer
+who asks for "brief" and swaps in their own implementation must get brief, and
+that only holds if the name is a contract both sides read. A name shipped only by
+one implementation is a convention, and conventions drift.
+
+`AdtSAPError` and `AdtParseError` are the same question and are **not** answered
+here. They are classes in `adt-clients` today: the default error strategy
+*returns* an `AdtSAPError` for the composer to throw, and a result strategy that
+cannot read the answer *throws* an `AdtParseError`. Both reach a caller as
+exceptions; only the second is thrown by the strategy itself.
+
+If a consumer is to recognise them across implementations, what they recognise
+has to be a contract — and if only the shipped strategies produce them, they can
+stay where they are. That depends on the outcome type's shape, which is still
+open.
+
+**The shape this takes, and it resolves the question above.**
+
+The outcome is not a new type beside `IAdtResponse` — it is what `IAdtResponse`
+becomes. Two methods, and a concrete implementation supplies each:
+
+```typescript
+interface IAdtResponse<TResult> {
+  getResult(): TResult;
+  getError(): /* the failure, or empty */;
+}
+```
+
+An implementation is then built from two strategies, one behind each method. In
+`adt-clients` that is where full · medium · brief live, and where a consumer's own
+goes: the strategy *is* the implementation of that method, not an argument the
+method consults.
+
+Three things fall out of this, and they are why it is better than passing
+strategies to the member.
+
+**The open question dissolves.** Nothing throws at the member. A member returns
+its outcome, always, and `getError()` is empty when there is no error. The safe
+default survives as a property of the *default implementation* of `getResult()`:
+it raises when an error is present, so a caller who ignores failures still fails
+loudly, and a caller who wants to branch asks `getError()` first. Throwing was
+never a property of the member — that was the confusion.
+
+**No member signature changes.** A member still returns one thing. What changes
+is what that thing is, and the migration is a type acquiring meaning rather than
+94 signatures being rewritten. Members already returning `Promise<IAdtResponse>`
+are not each a separate correction; they are the same correction once.
+
+**The generic stops being decoration.** Decision 14 measured `IAdtResponse<T>`'s
+type parameter as never supplied — the generic exists and has never carried a
+type. Here it is the point: `IAdtResponse<ISearchResult[]>` is an outcome whose
+result is the hits. What decision 14 recorded as an unused pass-through was the
+right idea with nothing behind it yet.
+
+**Two shapes, and they are mutually exclusive.**
+
+**A — two methods.** `getResult()` and `getError()`. Nothing throws; a caller
+branches. The "this is not an error for me" case is natural: `getError()` answers
+something the caller ignores.
+
+**B — one method, and errors are thrown.** If a failure is delivered as an
+exception, `getError()` has nothing to answer — a failure never returns, so the
+method would exist to say "no" on every successful call. It comes out, and the
+contract is one method.
+
+B is not the poorer option, and it is worth saying why, because the two methods
+looked like the more careful design. **The error strategy's own detection still
+does that whole job under B.** A consumer for whom "not found" is the answer they came
+for configures detection to not recognise it, and then `getResult()` simply
+returns it — they never write a `catch`. Detection is what serves that case, not
+the branch, and A gets the same result by a longer road.
+
+What B costs is a caller who wants to inspect a failure *and* carry on: under A
+that is a method call, under B it is a `try`/`catch`, which is control flow by
+exception. What A costs is a check at every call site for the common case where
+there is no error, and a second method every implementation must supply whether
+or not it has anything to put there.
+
+**Decided: B.** One method, failures as exceptions, and the error strategy's own
+detection carrying the "not an error for me" case.
+
+Four reasons, in the order they weigh:
+
+1. **The case that motivated `getError()` is served without it.** Detection
+   decides whether there is a failure at all; a consumer who says "not found is
+   my answer" gets it back from `getResult()` and writes no `catch`. A branch
+   would be a second way to reach the same place.
+2. **`getError()` answers "no" on almost every call.** A member that is empty for
+   the overwhelming majority of uses, and that every implementation must supply
+   regardless, is what decision 11 refuses.
+3. **The library already behaves this way.** `AdtSAPError` and `AdtParseError`
+   are thrown today. B makes the strategies an explanation of behaviour that
+   exists; A would make the current behaviour a special case of a shape nothing
+   implements yet.
+4. **One method keeps the outcome a result.** `IAdtResponse<ISearchResult[]>`
+   reads as "an answer carrying hits". With two it reads as a container to be
+   interrogated, which is what this whole line of decisions has been getting away
+   from.
+
+**The cost, accepted rather than argued away.** A caller who wants to inspect a
+failure and carry on writes `try`/`catch`, which is control flow by exception.
+That is the price, and it is paid by the rarer case: the common ones are "give me
+the answer" and "this is not a failure for me", and neither needs a catch.
+
+**The rest, decided.**
+
+**Where an implementation is chosen: at client construction.** Not per call. A
+call site says what it wants done, not how answers are shaped — that is a
+property of the client a consumer built, and putting it in every call would put
+the same argument in every call.
+
+The cost is real and accepted: two calls through one client cannot want different
+amounts. The way out is a **second client**, and it is cheap because a client is
+not a connection — both are constructed over the same `IAbapConnection`, so
+wanting brief answers in one place and full ones in another costs an object, not
+a session. That distinction matters: multiplying sessions is not acceptable,
+multiplying clients is nothing.
+
+**`AdtSAPError` and `AdtParseError` stay in `adt-clients`. This package gets no
+classes.** A contract says what a thing is and how to work with it; a class is
+one way of being that thing. The moment this package ships a class, a consumer
+depends on an implementation through the door meant for contracts, and "swap in
+your own" stops being true for that piece.
+
+So the split is the same as everywhere else here: the **shape** of a failure is
+named here, and the classes that are it live in `adt-clients` — which is where a
+consumer takes them from, `instanceof` and all.
+
+The consequence, stated rather than left to be discovered: a consumer who swaps
+in a different implementation of a member recognises a failure **structurally**,
+by the shape this package names, not with `instanceof`. That is the cost of not
+shipping classes, and it is the right way round — `instanceof` is a convenience
+for the common case of using the shipped implementation, not the mechanism the
+contract rests on.
+
+**Constants are not classes, and they stay.** The package ships 17 runtime
+values that are not classes — `AUTH_TYPE_PASSWORD`, `TOKEN_PROVIDER_ERROR_CODES`,
+`TRANSPORT_SEARCH_CONFIGURATIONS_URL` and the rest. The no-classes rule does not
+reach them, and reading it that widely would be reading it wrong.
+
+The line is what the thing *is*. A constant is a value the contract **names**:
+`'password'` is the authorisation type, and a consumer writing their own
+implementation needs the same string or they are speaking a different protocol.
+A class is a **way of doing** something, and shipping one hands a consumer an
+implementation through the door meant for contracts.
+
+So: after the classes leave, this package ships zero classes and 17 constants,
+and that is the intended state rather than a step toward none.
+
+**Pre-existing debt, named because this decision makes it visible.**
+`AdtOperationError` and `TransportSearchConfigurationMissing` are classes in this
+package today. They predate this rule and contradict it. Not corrected here —
+both are thrown across package boundaries and moving them is a breaking change on
+its own timetable — but they are not precedent, and nothing new joins them.
+
+**Migration: member by member.** Nothing forces the atoms to move together, and
+nothing should — each member converges when it is next touched, which is how the
+where-used correction in decision 17 is already scheduled.
+
+### What this removes, which is the measure of whether it was worth it
+
+`AdtOperationError` does not move to `adt-clients` with the others. **It stops
+existing.** Measured across the packages: 20 throws, **zero** `instanceof`
+anywhere, and of its five fields only `code` is ever read — by a consumer, off an
+`unknown`, which the compiler does not check. Two of the five are
+`originalError?: unknown` and `checkResult?: unknown`: the envelope again, in the
+error plane, a container for everything from which a caller can type nothing out.
+
+Its 20 throws are three unrelated things wearing one name, and each has a home
+that says more:
+
+| what it actually was | example | where it goes |
+|---|---|---|
+| SAP refused | a 404/406 caught around a versions read | `AdtSAPError` — with the document and the request |
+| the answer lacked a field we need | "the run resource carried no `runs:status`" | `AdtParseError` |
+| the caller's argument is wrong | "`maximumVerdicts` must be a positive integer" | not an ADT failure at all |
+
+`throwUnsupportedOperation` goes the same way and for a better reason: "this
+operation is not supported for this object type" is what the **capability atoms**
+say at compile time. A handler that cannot do versions does not declare
+`IAdtVersionable`. Saying it again at run time is a leftover from before those
+existed, and a fact the type system already carries does not need an exception.
+
+**And the consumer pays for this once, not per change.** Moving to outcomes and
+strategies is a rewrite of every call site regardless; the `.code` reads go with
+that same pass. What is bought is uniformity — one way to obtain a result, two
+named kinds of failure, and no per-member error taxonomy to learn. That is the
+argument for removing it rather than relocating it: relocating keeps a third
+vocabulary alive in a design whose point is that there are only two.
+
+**What would change it.** Building it. Until then this section exists so the
+questions above are answered once rather than re-litigated per member.
