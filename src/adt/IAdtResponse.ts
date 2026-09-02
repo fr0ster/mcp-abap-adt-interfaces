@@ -180,7 +180,7 @@ export interface IAdtFailure {
  * So what does this interface buy, if it holds one field? It is the **named half
  * of an answer**, the counterpart to `IAdtError`, and it is where anything a
  * result needs to say *about itself* goes when a case for one appears — stated
- * as a contract, the way decision 19 requires. What it must never hold is the
+ * as a contract, which is decision 19's rule for what a result may carry. What it must never hold is the
  * transport frame: a `response` field was in the first draft and put `status`,
  * `headers` and `data` back inside every result under one more layer of nesting.
  *

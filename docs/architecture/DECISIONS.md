@@ -1074,11 +1074,17 @@ has nothing left to do.
    them does not happen: it exposes both, one accessor each.
 
    ```typescript
-   interface IAdtOutcome<TResult, TError> {
-     result(): TResult;
-     error(): TError;
+   interface IAdtResponse<T> {
+     getResult(): IAdtResult<T>;
+     getError(): IAdtError;
    }
    ```
+
+   > Written first as `IAdtOutcome<TResult, TError>` with bare type parameters —
+   > my sketch, not the design. **Both halves are contracts**, `IAdtResult` and
+   > `IAdtError`, which is the whole point: a free type parameter offers a choice
+   > and takes the contract away with it, since an implementation returning
+   > `number` and one returning a named shape are not interchangeable.
 
    The alternative — one strategy over the answer, leaving the branch implicit —
    was the cheaper way in and is not what this takes. A type that admits only the
@@ -1252,11 +1258,32 @@ The outcome is not a new type beside `IAdtResponse` — it is what `IAdtResponse
 becomes. Two methods, and a concrete implementation supplies each:
 
 ```typescript
-interface IAdtResponse<TResult> {
-  getResult(): TResult;
-  getError(): /* the failure, or empty */;
-}
+interface IAdtSuccess<T> { readonly ok: true;  getResult(): IAdtResult<T>; getError(): undefined; }
+interface IAdtFailure    { readonly ok: false; getResult(): undefined;     getError(): IAdtError; }
+
+type IAdtResponse<T> = IAdtSuccess<T> | IAdtFailure;
 ```
+
+Shipped in 28.0.0, and two things about it were settled by building it rather
+than by writing it down here first.
+
+**A union, not one shape with two optional halves.** Two independently-optional
+methods let an implementation answer both or neither, and checking one narrows
+nothing — so "a caller cannot reach a result without being told an error exists"
+was a sentence in a comment rather than a thing the compiler did. `ok` exists
+because TypeScript cannot narrow an object from what a method returns.
+
+**Both halves are named contracts**, `IAdtResult<T>` and `IAdtError`. They do not
+vary the same way, and that difference is real rather than an inconsistency: an
+error strategy varies the *fullness of `IAdtError`*, which has two required fields
+and five optional; a result strategy varies **`T` itself**, through the strategy
+overload, because a result contract like `ISearchResult` has required fields and
+cannot be returned half-filled.
+
+What `IAdtResult` must not hold is the transport frame. A `response` field was in
+its first draft and put `status`, `headers` and `data` back inside every result
+under one more layer of nesting — this decision's own words are that `full` is
+the complete result *stated as a contract*, not the envelope returning.
 
 An implementation is then built from two strategies, one behind each method. In
 `adt-clients` that is where full · medium · brief live, and where a consumer's own
