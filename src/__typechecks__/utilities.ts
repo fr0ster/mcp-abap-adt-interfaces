@@ -17,6 +17,7 @@ import type {
   IGetSqlQueryParams,
   IGetTableContentsParams,
   IRepositoryNodeContents,
+  ISearchResult,
 } from '../index';
 
 /** One family alone, implemented by something that knows nothing of the others. */
@@ -79,5 +80,40 @@ declare const nodes: IAdtRepositoryStructure;
 // @ts-expect-error the contract takes three arguments; the flag is not one of them
 nodes.fetchNodeStructure('DEVC/K', 'ZPKG', '000000', true);
 
-export { MyDataPreview, NodeReaderWithExtras, found, tree, rows, inactive };
+/**
+ * The search strategy: one endpoint, one member, the behaviour chosen by the
+ * caller. `mcp-abap-adt` reads `status` and hands the ADT document to a model —
+ * that need is served here, with a contract, instead of by a second raw member.
+ */
+declare const info: IAdtInformationSystem;
+
+/** No parser: the parsed hits, as before. */
+const hits: Promise<ISearchResult[]> = info.search({ query: 'ZCL_*' });
+
+/** A parser: the consumer's own type, not `unknown` and not an envelope. */
+interface RawHits {
+  xml: string;
+}
+const raw: Promise<RawHits> = info.search({ query: 'ZCL_*' }, (data) => ({
+  xml: String(data),
+}));
+
+/** A parser yielding the wrong shape is refused. */
+// @ts-expect-error the parser yields RawHits, not ISearchResult[]
+const wrong: Promise<ISearchResult[]> = info.search(
+  { query: 'ZCL_*' },
+  (data): RawHits => ({ xml: String(data) }),
+);
+
+export {
+  MyDataPreview,
+  NodeReaderWithExtras,
+  found,
+  tree,
+  rows,
+  inactive,
+  hits,
+  raw,
+  wrong,
+};
 export type { AllUtilities };

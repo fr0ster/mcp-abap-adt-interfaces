@@ -48,6 +48,11 @@
  * a request happened. The other 13 state what the caller gets — ten a
  * shape, three a string or a boolean.
  *
+ * Counted as **members**, not signatures: `search` has two, because one endpoint
+ * is one member (decision 16) and the second signature is the strategy, not a
+ * second capability. A parser that counts signatures reports 26 and is not
+ * wrong about anything except the word.
+ *
  * Three more were removed rather than shipped: `searchObjects`, `getWhereUsed`
  * and `getPackageContents` each had their contract sitting beside them —
  * `search`, `getWhereUsedList`, `getPackageContentsList` — so the raw member was
@@ -142,6 +147,25 @@ export interface IRepositoryNodeContents {
 export interface IAdtInformationSystem {
   /** Objects matching a query, parsed. */
   search(criteria: ISearchObjectsParams): Promise<ISearchResult[]>;
+
+  /**
+   * The same search, read by the caller instead.
+   *
+   * One endpoint is one member (decision 16), so this is an overload and not a
+   * second method returning the envelope. What varies is behaviour, and the
+   * consumer chooses it: the implementation issues the same request and hands
+   * the answer over untouched rather than forming an opinion about it.
+   *
+   * It exists because the hit list is one of the documents decision 5 is about —
+   * a recorded one runs to 473 rows and 1.3MB, with nested references a caller
+   * may need and `ISearchResult` deliberately does not carry. A consumer wanting
+   * that document, or feeding it somewhere unparsed, takes it here with a
+   * contract, rather than reaching for a raw member and guessing at the shape.
+   */
+  search<T>(
+    criteria: ISearchObjectsParams,
+    parse: (data: unknown) => T,
+  ): Promise<T>;
 
   /** Where an object is used, parsed into references. */
   getWhereUsedList(
