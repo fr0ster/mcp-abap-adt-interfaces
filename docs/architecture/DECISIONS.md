@@ -902,9 +902,24 @@ Two halves, and they are the same principle:
   the library's to pick, so the member returns its contract by default and takes
   a parser from anyone who wants otherwise.
 
-  The two halves are asymmetric on purpose. The **result** has a form the caller
-  may choose. The **error** does not: there is one right amount of a refusal, and
-  it is all of it.
+  The two halves are asymmetric on purpose, and the asymmetry is about **where**
+  the completeness is owed, not about whether a caller may shape a failure.
+
+  | | what the strategy is handed | what the consumer ends up with |
+  |---|---|---|
+  | result | the answer | their choice |
+  | error | **the refusal, whole — always** | their choice |
+
+  The library's obligation is on the left column and is absolute: a strategy is
+  never handed a summarised, filtered or partly-read failure, because a consumer
+  cannot decide about what they were not shown. The right column is theirs, for
+  errors as much as for results — a caller who asks for a one-line failure is
+  making a decision, not being deprived of one.
+
+  What this forbids is the library deciding the right column *for* them. That is
+  what "there is one right amount of a refusal" was reaching for and said too
+  broadly: it is one right amount **into the strategy**. Out of it, brief is as
+  legitimate as full.
 
 **What this rules out.** "Consumer X does not use that field, so leave it out."
 "Consumer X parses it this way, so return that." A consumer is evidence about
@@ -923,10 +938,13 @@ about *members*, and it does not extend to withholding what the server said.
 **What would change it.** Nothing here. Which members take a strategy is still
 decided one at a time, on whether the caller must control the volume.
 
-## 19. Direction: the default implementation answers, and strategies say how
+## 19. The default implementation answers, and strategies say how
 
-**Not yet decided — recorded while it is being designed**, because the last three
-decisions were each re-derived from scratch when the case came up again.
+**Decided.** Written incrementally while it was being settled, which is why the
+reasoning below reaches some conclusions and then supersedes them — each
+supersession is marked. Recorded this way on purpose: the last three decisions
+were each re-derived from scratch when the case came round again, and a record
+that shows only the answer teaches nobody why the near-misses were near.
 
 **Where this comes from.** Decisions 13 to 18 each fixed one consequence of the
 same thing: `IAdtResponse` used as a result. Name the result (13), stop the
@@ -980,6 +998,14 @@ has nothing left to do.
    parameter however many strategies there turn out to be, and leaves room for a
    third without touching anything.
 
+   > **Superseded below.** This answered "how are they passed *to a member*", and
+   > the later decision is that they are not passed to a member at all — they are
+   > chosen **at client construction**. What survives is the object form: the
+   > client takes `{ onResult?, onError?, detectError? }` rather than a positional
+   > list. Every `member(params, options)` example in this section is the
+   > superseded shape, kept because the reasoning that led away from it is worth
+   > reading, and marked so nothing is implemented from it.
+
 4. **Two methods, on the result contract itself.** A result can be a normal
    answer or an error, and the contract says so rather than pretending one of
    them does not happen: it exposes both, one accessor each.
@@ -1031,6 +1057,13 @@ has nothing left to do.
    | result | how much of the result comes back | full · medium · brief |
    | error | how much of a failure comes back | full · medium · brief |
    | error detection | what counts as a failure at all | the default rules, replaceable |
+
+   The middle row is not in tension with decision 18, and the distinction is the
+   one that decision draws in its own table: what the **strategy is handed** is
+   always the whole refusal; what the **consumer ends up with** is what they
+   asked for. "brief" shortens the second, never the first. A strategy that has
+   been given less than everything cannot be a consumer's decision, because they
+   were not shown what they were deciding about.
 
    The third has no "amount" axis because it answers a different question, and it
    is the one a library cannot ship a single answer for — hence it being a
