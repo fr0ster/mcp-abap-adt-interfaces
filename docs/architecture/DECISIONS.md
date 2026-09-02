@@ -1024,8 +1024,7 @@ has nothing left to do.
 
    **The library ships a set of them, and that is what makes this usable.** A
    consumer who wants a different amount of the answer should not have to write a
-   parser to get it — writing one is the escape hatch, picking one is the normal
-   case. Three families:
+   parser to get it. Three families:
 
    | family | what it decides | shipped |
    |---|---|---|
@@ -1036,6 +1035,25 @@ has nothing left to do.
    The third has no "amount" axis because it answers a different question, and it
    is the one a library cannot ship a single answer for — hence it being a
    strategy rather than a rule.
+
+   **Writing your own is not a fallback.** Picking a shipped strategy is the
+   ordinary case, but there are two reasons to write one and both are first-class:
+
+   - **a representation none of the shipped ones give.** Full, medium and brief
+     are three points on one axis, and a consumer may want a different shape
+     altogether — a projection, a flattening, the document passed through
+     untouched to something else.
+   - **a different judgement about what is a failure.** This is the one that
+     cannot be anticipated. A caller probing whether an object exists is *asking*
+     the question "does this exist" — a "not found" from SAP is the answer they
+     came for, and treating it as an error would be the library overruling the
+     only party who knows what the call was for. The same applies in reverse: a
+     consumer may want an empty result treated as a failure, because in their
+     workflow an empty answer means something went wrong upstream.
+
+   That second reason is why error detection is a strategy at all rather than a
+   rule with options. The library's shipped rules are a sensible default, not a
+   definition.
 
    Two consequences worth stating now, before any of it is built. The shipped
    strategies are **named contracts**, not loose functions: a consumer selects one
