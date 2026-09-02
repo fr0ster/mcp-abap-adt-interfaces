@@ -851,3 +851,51 @@ answer where two members contended for one endpoint, all nine reverse — and
 `IRepositoryNodeContents`, shipped in 27.0.0, becomes a strategy's return type
 rather than a contract's. That is a decision about the whole surface, not a
 detail of this one, and it is not taken here.
+
+## 18. The answer goes back whole; the consumer decides its shape
+
+**The problem.** Two questions kept being answered by looking at one consumer.
+What should a member return? What counts as informative enough when SAP refuses?
+Both were being settled by opening `mcp-abap-adt` and seeing what it does with
+the result.
+
+That is not design, and it is measurably not even a check. Verifying decision 17
+that way meant compiling that consumer's source against a build seven majors
+ahead of the version it is on — a run whose "zero errors" says nothing about the
+change, because its code was written for a different library.
+
+**Decided.** The library's duty is the same in every situation: give back what
+SAP said, completely and in a form somebody can analyse. It does not decide what
+any caller will do with it, and it is not tuned to what one caller happens to
+need.
+
+Two halves, and they are the same principle:
+
+- **Errors are never shaped away.** A refusal carries the server's own message,
+  the document untouched, the classification the server gave it, the response it
+  arrived on, and **the request that produced it**. That last one is not
+  decoration: `delete()` issues two calls and `create()` six, and "object is
+  locked" means a different thing depending on which of them asked. A caller
+  cannot analyse what they cannot locate.
+- **Volume and form are the consumer's, through a strategy.** This is what makes
+  the first half affordable. The library does not have to guess how much of a
+  large answer anyone wants, or in what shape — a strategy is where the caller
+  says so (decisions 5, 14, 17). Without it the library would be choosing on
+  their behalf and calling the choice a contract.
+
+**What this rules out.** "Consumer X does not use that field, so leave it out."
+"Consumer X parses it this way, so return that." A consumer is evidence about
+*what a document contains* — the parsers this package's shapes were lifted from
+are exactly that, and good evidence. It is not evidence about what the contract
+should promise, because the next consumer has not been written.
+
+**And a strategy is still not a place a refusal can hide.** The two halves meet
+here: the consumer chooses the shape of an *answer*, and whether the request was
+refused is not theirs to shape. The refusal is raised before any strategy runs.
+
+**How to catch it.** A decision justified by what one consumer does with a
+result. A field left out because nobody currently reads it — that is decision 11
+about *members*, and it does not extend to withholding what the server said.
+
+**What would change it.** Nothing here. Which members take a strategy is still
+decided one at a time, on whether the caller must control the volume.
