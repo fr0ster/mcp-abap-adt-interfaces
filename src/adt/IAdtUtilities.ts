@@ -106,7 +106,7 @@ import type {
   IGetSqlQueryParams,
   IGetTableContentsParams,
   IGetVirtualFoldersContentsParams,
-  IGetWhereUsedParams,
+  IGetWhereUsedListParams,
   IGetWhereUsedScopeParams,
   IInactiveObjectsResponse,
   IObjectReference,
@@ -114,6 +114,7 @@ import type {
   IPackageHierarchyNode,
   ISearchObjectsParams,
   ISearchResult,
+  IWhereUsedListResult,
 } from './IAdtShared';
 
 /**
@@ -191,32 +192,10 @@ export interface IAdtInformationSystem {
     parse: (data: unknown) => T,
   ): Promise<T>;
 
-  /**
-   * Where an object is used.
-   *
-   * One member, because there is one endpoint. `IGetWhereUsedParams` is what
-   * that endpoint takes and nothing else: an object to ask about, and
-   * optionally a scope document to narrow the search. The flags an
-   * implementation may offer for *building* that scope —  "all types", "only
-   * these" — are not here, because they never reach the wire. How a scope was
-   * arrived at is the implementation's business; the contract states what the
-   * request needs.
-   *
-   * Without a parser the document arrives as it came. With one, the caller reads
-   * it — `@mcp-abap-adt/adt-clients` ships a parser producing
-   * {@link IWhereUsedListResult}, so the list is one argument away and is not a
-   * second member:
-   *
-   * ```typescript
-   * const raw  = await utils.getWhereUsed({ object_name, object_type });
-   * const list = await utils.getWhereUsed({ object_name, object_type }, whereUsedList);
-   * ```
-   */
-  getWhereUsed(params: IGetWhereUsedParams): Promise<IAdtResponse>;
-  getWhereUsed<T>(
-    params: IGetWhereUsedParams,
-    parse: (data: unknown) => T,
-  ): Promise<T>;
+  /** Where an object is used, parsed into references. */
+  getWhereUsedList(
+    params: IGetWhereUsedListParams,
+  ): Promise<IWhereUsedListResult>;
 
   /** The scope document a where-used run is filtered by. */
   getWhereUsedScope(params: IGetWhereUsedScopeParams): Promise<IAdtResponse>;

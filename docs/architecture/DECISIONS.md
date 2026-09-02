@@ -792,6 +792,13 @@ between them was the *result*: one handed back the document, the other a parsed
 list. That is a strategy — the consumer choosing among behaviours the
 implementation performs (decision 14) — not a second capability.
 
+**Which way round, and this took a wrong turn first.** A member returns **the
+contract**; a strategy is how a choice is delegated. So the default is
+`IWhereUsedListResult`, and a caller wanting the document passes a parser —
+exactly the shape `search` already shipped in 26.3.0. The first attempt at this
+decision inverted it, making the envelope the default and the contract something
+you had to ask for, which is the envelope reinstated under a new name.
+
 **What a strategy is for, stated plainly, because it decides where one belongs.**
 It solves the *volume* of the answer. A where-used run on a common object, a
 search across a namespace, a package tree — these documents are large, their size
@@ -816,15 +823,21 @@ first and produced whatever it produced.
 So:
 
 ```typescript
-getWhereUsed(params: IGetWhereUsedParams): Promise<IAdtResponse>;
+getWhereUsed(params: IGetWhereUsedParams): Promise<IWhereUsedListResult>;
 getWhereUsed<T>(params: IGetWhereUsedParams, parse: (data: unknown) => T): Promise<T>;
 ```
 
-with the default handing over the document as it came, and
-`@mcp-abap-adt/adt-clients` shipping a parser that yields
-`IWhereUsedListResult`. The list is one argument away and is not a member.
-`includeRawXml` disappears: a boolean asking for a different result shape is a
-strategy written as a flag, and it can only offer the shapes somebody thought of.
+`includeRawXml` disappears with it: a boolean asking for a different result shape
+is a strategy written as a flag, and it can only offer the shapes somebody
+thought of.
+
+**Not changed now, deliberately.** `IAdtUtilities` ships `getWhereUsedList`
+returning `IWhereUsedListResult`, which already returns a contract — the part
+that matters. What is left is a parameter set carrying three fields no request
+carries, and a flag doing a strategy's job. That is worth correcting when
+somebody needs it, not worth a third breaking release in two days to rename a
+member whose result is already right. This decision is recorded so the next
+member is built this way and this one converges when it is touched.
 
 **Why this is not a licence to strip every parameter.** The test is whether the
 parameter names something the *endpoint* needs, not whether it is convenient.
@@ -882,6 +895,16 @@ Two halves, and they are the same principle:
   large answer anyone wants, or in what shape — a strategy is where the caller
   says so (decisions 5, 14, 17). Without it the library would be choosing on
   their behalf and calling the choice a contract.
+
+  Concretely, where a member answers with XML there is no single right amount to
+  keep: one caller wants a compact projection, another the fuller structure,
+  another the document untouched to pass on. All three are legitimate and none is
+  the library's to pick, so the member returns its contract by default and takes
+  a parser from anyone who wants otherwise.
+
+  The two halves are asymmetric on purpose. The **result** has a form the caller
+  may choose. The **error** does not: there is one right amount of a refusal, and
+  it is all of it.
 
 **What this rules out.** "Consumer X does not use that field, so leave it out."
 "Consumer X parses it this way, so return that." A consumer is evidence about
