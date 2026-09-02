@@ -980,15 +980,36 @@ has nothing left to do.
    parameter however many strategies there turn out to be, and leaves room for a
    third without touching anything.
 
+4. **Two methods, on the result contract itself.** A result can be a normal
+   answer or an error, and the contract says so rather than pretending one of
+   them does not happen: it exposes both, one accessor each.
+
+   ```typescript
+   interface IAdtOutcome<TResult, TError> {
+     result(): TResult;
+     error(): TError;
+   }
+   ```
+
+   The alternative — one strategy over the answer, leaving the branch implicit —
+   was the cheaper way in and is not what this takes. A type that admits only the
+   happy answer pushes the other one somewhere the compiler cannot see, which is
+   the whole family of defects decisions 13 to 18 came from, restated as a type.
+   Here the caller cannot reach a result without the contract having told them an
+   error is a thing that exists.
+
+   The strategy injected into an implementation then says what to do with each:
+   what to do with a result, what to do with an error. The contract states that
+   both are possible; the strategy states how each is handled.
+
 **Still open.**
 
-- **Two methods or one.** "Return the result, return the error" reads as a result
-  type carrying both, which makes the branch checkable by the compiler and forces
-  every call site to acknowledge it — strong, and it means rewriting every call
-  at once. One strategy over the answer is smaller, leaves the branch to the
-  caller, and can be adopted a member at a time. The second is the way in; the
-  first stays available afterwards. These are different contracts and the
-  substitution test (decision 13) says pick one — that choice is not made here.
+- **How the default throw and the outcome type meet.** Answer 1 says a refusal
+  throws when no strategy is given; this answer says the returned contract always
+  exposes an error. Those are consistent if the throw is the *default error
+  strategy* rather than a property of the member — a caller who supplies one gets
+  the outcome, a caller who supplies none gets the exception. Stated here as the
+  reading to confirm, not as a decision.
 - **Migration.** Member by member, not a release. Every atom is eventually
   affected, and nothing forces them to move together.
 
