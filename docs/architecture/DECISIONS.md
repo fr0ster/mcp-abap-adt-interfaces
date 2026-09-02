@@ -927,107 +927,72 @@ Two halves, and they are the same principle:
 are exactly that, and good evidence. It is not evidence about what the contract
 should promise, because the next consumer has not been written.
 
-**Both strategies are handed the SAP answer, and neither gates the other.**
+**What each strategy is given, and when.** Two things can be true when a member
+finishes: an answer arrived, or it did not. They are different inputs and the
+protocol has to say so, or "the strategies are handed the answer" is a promise
+that cannot be kept the first time a host is unreachable.
 
 ```
-                    ┌──→ error strategy   ── its own analysis ──→ a failure, or nothing
-the whole answer ───┤
-                    └──→ result strategy  ── its own analysis ──→ the result
-
-           a failure was produced?  →  it is thrown
-                          otherwise  →  the result is returned
+no answer                                answer
+   │                                        │
+   │                          result strategy ── may throw
+   │                                        │
+   └──→ error strategy ←────────────────────┘
+        (given: what there is —
+         the transport failure, or
+         the answer plus any exception
+         the result strategy raised)
 ```
 
-**Both always run, and the composition is fixed.** Independent analyses do not
-mean an undefined outcome: without a stated rule, which failure surfaces would
-depend on which strategy the implementation happened to call first, which is the
-ordering this decision claims not to have.
+- **No answer** — unreachable host, refused connection, a transport error. The
+  result strategy is not run: it reads answers, and there is nothing to read. The
+  error strategy is run, and given the transport failure.
+- **An answer** — the result strategy is run on it. Then the error strategy is
+  run, and given **the answer and whatever the result strategy raised**.
 
-**Every failure goes to the error strategy, whatever its origin.** Not only a
-refusal about the object: a host that cannot be reached, an expired session, no
-authority to make the call at all. One delegation point, because the consumer
-decides what a failure means, and a library that handles some failures itself and
-delegates the rest has decided for them about the ones it kept.
+That second half is what makes "every failure is delegated" true rather than
+slogan. A parse failure happens inside the result strategy, so an error strategy
+shown only the original answer could never classify it — and classifying it is
+exactly the case that matters: a logon page is a session failure, and only
+something looking at both the document and the parser's complaint can say so.
 
-But *where a failure came from* is information the strategy needs, and it must be
-told rather than left to infer:
+**The order of invocation is real, and it is not the thing that was rejected.**
+The result strategy runs first when there is an answer. What was rejected is one
+strategy *gating another's view* — deciding what the other is allowed to see.
+Neither does that here: the result strategy sees the whole answer, the error
+strategy sees the whole answer and more.
 
-| origin | what it means to a caller |
-|---|---|
-| connection · session · authorisation | there is no answer — reauthenticate, or fix reachability |
-| the call was refused | SAP answered, about this object, and said no |
-| the answer could not be read | an answer arrived and did not parse |
-
-The three have different remedies, and a strategy that cannot tell them apart
-cannot choose one. That is why the origin travels with the failure instead of
-being flattened into a message.
-
-**This exposes a defect here, and it is the case the distinction exists for.** An
-expired session can answer **200 with a logon page**. The transport admits it, so
-it looks like an answer; a parser finds no nodes and reports "could not read".
-`adt-clients` raises `AdtParseError` for it today — a session failure wearing a
-parse failure's name, sending a caller to debug a document when the fix is to
-authenticate.
-
-**Both are invoked, and neither is skipped because the other failed.** That means
-the implementation captures what each strategy does — a value or an exception —
-rather than letting the first throw end the call. Otherwise "both always run"
-would be true only if the implementation happened to call the result strategy
-first, which is an order in everything but name.
-
-What surfaces, in this order:
+**What surfaces:**
 
 | | condition | what the caller gets |
 |---|---|---|
 | 1 | the **error** strategy threw | that exception, as itself |
 | 2 | the error strategy produced a failure | that failure, thrown |
-| 3 | the **result** strategy threw | that exception, as itself |
-| 4 | otherwise | the result |
+| 3 | the **result** strategy threw and the error strategy produced nothing | that exception, as itself |
+| 4 | there was no answer and the error strategy produced nothing | the transport failure |
+| 5 | otherwise | the result |
 
 **Why 1 is first.** An error strategy that throws is a bug in the consumer's own
-error handling, and it is the most urgent thing that happened: everything below
-depends on that code working. It surfaces untranslated and unwrapped — a
-consumer's failing code must not be dressed up as a failure of the system it was
-inspecting.
+error handling, and everything below depends on that code working. It surfaces
+untranslated — a consumer's failing code must not be dressed up as a failure of
+the system it was inspecting.
 
 **Why 2 beats 3.** A result strategy throwing `AdtParseError` on a document that
 is an ADT exception is a *symptom*: it found no hits because the answer is a
 refusal. Surfacing "we could not read it" over "SAP said the object is locked"
 reports our confusion in place of the server's reason, which is decision 18
-inverted.
+inverted. And by then the error strategy has seen that exception too, so a
+consumer who *wants* the parse failure to win says so by returning it.
 
-**Why 3 exists at all.** Reaching it means the error strategy found nothing wrong
-and the result strategy still could not read the answer — a genuine "the answer
-was fine and I could not read it", which is `AdtParseError`'s real case.
+**Why 3 exists.** The error strategy saw the answer and the exception and judged
+neither a failure, and the result strategy still could not read the answer. That
+is the honest "the answer was fine and I could not read it".
 
-The independence is about what each strategy *sees*: the whole answer, neither
-filtered by the other, neither skipped because of the other. It was never about
-whether the library knows what to do with two verdicts — a rule that leaves that
-to invocation order is the ordering this decision claims not to have.
-
-**Flexibility is the reason, and it is a standing principle here rather than a
-preference of this decision.** Two strategies that both see the answer can be
-combined by a consumer in ways nobody anticipated: one that treats a "not found"
-as data while still reporting a lock as a failure; one that extracts a result
-*and* a diagnostic from the same document; one that ignores failures entirely
-because the caller is probing. A pipeline where one decides what the other is
-allowed to see can do none of that — it fixes at design time a combination that
-belongs to the caller.
-
-The library composes the two outcomes; it does not order the two analyses.
-
-**Two earlier wordings here are superseded, and both said less than they meant.**
-The first said a refusal is raised "before any strategy runs" — written before
-detection was a strategy at all, and taken literally it means detection never sees
-what it exists to judge. The second replaced it with a pipeline, detection gating
-the result strategy, which fixed the contradiction by removing the flexibility
-that motivated strategies in the first place.
-
-What both were protecting is narrower than either said, and survives: **a result
-strategy must not be the only thing that looks.** A parser hunting for hits finds
-none in an exception document and answers "nothing found" — a failure reported as
-a fact. That is prevented by the error strategy seeing the same answer
-independently, not by it going first.
+**Row 4 is the one place the library cannot delegate**, and it is worth being
+plain about why. If nothing arrived and the consumer's strategy declines to call
+that a failure, there is no result to return either — not because the library
+overruled them, but because a result is made from an answer and there was none.
+It is an absence, not a judgement.
 
 **How to catch it.** A decision justified by what one consumer does with a
 result. A field left out because nobody currently reads it — that is decision 11
@@ -1168,8 +1133,9 @@ has nothing left to do.
    strategy's own analysis, not a stage in front of it.
 
    That follows from decision 18's shape rather than being a separate choice. If
-   both strategies are handed the same whole answer and each analyses it, then
-   "is this a failure" is a question the error strategy answers by looking — and a
+   both strategies see the whole answer — the error strategy plus whatever the
+   result strategy raised — and each analyses it, then "is this a failure" is a
+   question the error strategy answers by looking — and a
    third strategy answering it first would be the gate that decision 18 rejects.
    Symmetrically, "is there a result here" is the result strategy's to answer.
 
@@ -1210,8 +1176,9 @@ has nothing left to do.
    that judges differently.
 
    Where that judgement *happens* is decision 18's answer, and it is not a stage
-   in front of anything: both strategies are handed the same whole answer and each
-   does its own analysis. Recognising a failure is the error strategy's own
+   in front of anything: both see the whole answer, neither filtered by the other,
+   and each does its own analysis — decision 18 sets out exactly what each is
+   given, including the case where no answer arrived at all. Recognising a failure is the error strategy's own
    analysis, not a gate the result strategy waits behind — which is what lets one
    consumer read a
    result and a diagnostic out of the same document, and another ignore failures
