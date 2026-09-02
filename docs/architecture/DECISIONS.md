@@ -1323,8 +1323,8 @@ or not it has anything to put there.
 > happy answer pushes the other where the compiler cannot see it — and B was that
 > shape wearing an exception.
 >
-> What B got right survives untouched: the error-detection strategy carries the
-> "not an error for me" case, and a consumer who says a "not found" is their
+> What B got right survives untouched: the error strategy's own detection carries
+> the "not an error for me" case, and a consumer who says a "not found" is their
 > answer receives it as a result. That never depended on how a failure is
 > delivered.
 >

@@ -161,7 +161,12 @@ export interface IAdtFailure {
 }
 
 /**
- * What every member answers with.
+ * What a member answers with.
+ *
+ * The direction for all of them, and reached member by member — decision 19 says
+ * nothing forces them to move together. As of 28.0.0 the 22 asynchronous members
+ * of `IAdtUtilities` have; 169 elsewhere have not, and still answer their result
+ * or a frame directly. Each converges when it is next touched.
  *
  * `TResult` is that member's own result contract — `ISearchResult[]` here,
  * `IPackageHierarchyNode` there. A result strategy chooses how much of it to

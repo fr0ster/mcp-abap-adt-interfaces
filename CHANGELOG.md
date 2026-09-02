@@ -118,8 +118,8 @@ consequence of one type serving two purposes; this is the correction.
   which half they hold. A type that admits only the happy answer pushes the other
   where the compiler cannot see it, and B was that shape wearing an exception.
 
-  What B got right is untouched: the error-detection strategy carries the "not an
-  error for me" case, and a consumer who says a "not found" is their answer
+  What B got right is untouched: the error strategy's own detection carries the
+  "not an error for me" case, and a consumer who says a "not found" is their answer
   receives it as a result. That never depended on how a failure is delivered.
 - `src/__typechecks__/response.ts` asserts the guarantee in both directions:
   narrowing gives a result that is not `| undefined`, reaching either half
