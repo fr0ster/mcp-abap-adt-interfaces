@@ -7,6 +7,79 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [28.0.0] - 2026-09-02
+
+**The response stops being an envelope.** Everything since 26.2.0 has been a
+consequence of one type serving two purposes; this is the correction.
+
+### Changed
+
+- **BREAKING: `IAdtResponse` is now a contract with two methods.**
+
+  ```typescript
+  interface IAdtResponse<TResult> {
+    getResult(): TResult | undefined;
+    getError(): IAdtError | undefined;
+  }
+  ```
+
+  A result can be a normal answer or a failure, and the contract says so instead
+  of naming only the first and pushing the second where the compiler cannot see
+  it. A caller cannot reach a result without having been told an error exists.
+
+  `TResult` has **no default**. A member answering `IAdtResponse` and promising
+  nothing is the free type this design refuses, reached by omission —
+  `declare const x: IAdtResponse` no longer compiles.
+
+- **BREAKING: the transport frame is `IAdtWireResponse`.** Same shape as the old
+  `IAdtResponse` — `data`, `status`, `statusText`, `headers` — and the same job,
+  at the connection boundary where decision 14 says an envelope belongs. The old
+  name was the whole problem in miniature: one type meant "what came off the
+  wire" and "what a caller gets", so 94 members answered a frame and none could
+  name its result.
+
+  Migration is mechanical and the compiler lists every site. Measured against
+  `@mcp-abap-adt/adt-clients`: **784 errors in 321 files, 780 of them the same
+  one** — `IAdtResponse` used without naming a result. Each is a place a member
+  was returning a frame.
+
+### Added
+
+- **`IAdtError`** — the contract every error strategy returns.
+
+  A strategy chooses **how much** to fill in, never what it is. `brief`, `medium`
+  and `full` are three amounts of one contract, so a caller writes against it
+  once and reads whatever their strategy provided. `origin` and `message` are
+  required as the least a failure can say and stay actionable; `adtType`,
+  `namespace`, `response`, `request` and `cause` are what a fuller strategy adds.
+
+  An implementation may fill it in however it likes — parse differently,
+  classify `origin` by its own rules, decide what brief means for the systems it
+  talks to — and a consumer's code does not change, **because the methods are the
+  same**. That is the difference between a contract and a shape agreed by luck.
+
+- **`AdtFailureOrigin`** — `'connection' | 'refusal' | 'parse'`. Three failures
+  with three different remedies: reauthenticate, ask the server something else,
+  fix a parser. Flattening them into one message makes a caller guess which.
+
+### Rejected on the way here, recorded because both were shipped in draft
+
+- **`IAdtResult<T>`**, a wrapper around the value. It put a shape of ours around
+  the result after the consumer had said what shape they wanted.
+- **`TError` as a free type parameter.** It offered a choice and took the contract
+  away with it: an implementation returning `number` and one returning
+  `IAdtError` are not interchangeable, so "swap in your own" would have meant
+  "rewrite everything that catches".
+- **`document` as a field on the error.** It is `response.data`. Two fields for
+  one thing is the fault this design exists to remove.
+
+### Documentation
+
+- Decisions 17-19 in `docs/architecture/DECISIONS.md` (merged in #59) are what
+  this implements: what a contract takes, what it gives back, and where
+  strategies go.
+
+
 ## [27.0.0] - 2026-09-02
 
 ### Changed
