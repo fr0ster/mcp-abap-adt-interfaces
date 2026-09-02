@@ -18,15 +18,15 @@ consequence of one type serving two purposes; this is the correction.
   discriminated union.**
 
   ```typescript
-  interface IAdtSuccess<TResult> { readonly ok: true;  getResult(): TResult;   getError(): undefined; }
-  interface IAdtFailure          { readonly ok: false; getResult(): undefined; getError(): IAdtError; }
+  interface IAdtSuccess<T> { readonly ok: true;  getResult(): IAdtResult<T>; getError(): undefined; }
+  interface IAdtFailure    { readonly ok: false; getResult(): undefined;     getError(): IAdtError; }
 
-  type IAdtResponse<TResult> = IAdtSuccess<TResult> | IAdtFailure;
+  type IAdtResponse<T> = IAdtSuccess<T> | IAdtFailure;
   ```
 
   ```typescript
   if (answer.ok) {
-    answer.getResult();          // ISearchResult[] — not `| undefined`
+    answer.getResult().value;    // ISearchResult[] — not `| undefined`
   } else {
     answer.getError().origin;    // IAdtError — not `| undefined`
   }
@@ -73,6 +73,24 @@ consequence of one type serving two purposes; this is the correction.
 
 ### Added
 
+- **`IAdtResult<T>` and `IAdtError`** — both halves of an answer are contracts.
+
+  ```typescript
+  interface IAdtResult<T> {
+    readonly value: T;                       // what the member promised
+    readonly response?: IAdtWireResponse;    // what a fuller strategy adds
+  }
+  ```
+
+  Symmetric on purpose, and the symmetry is the design rather than tidiness: a
+  **result** strategy chooses how much to fill in exactly as an error strategy
+  does, so `brief` and `full` are two amounts of one contract on both sides.
+
+  A bare `T` was tried on the result side and is wrong for the reason a bare
+  error type was wrong: a member handing back an unwrapped value has no room to
+  say anything about it, so "how much" becomes a question only the error half can
+  ask. Both halves are contracts, or neither is.
+
 - **`IAdtError`** — the contract every error strategy returns.
 
   A strategy chooses **how much** to fill in, never what it is. `brief`, `medium`
@@ -92,8 +110,6 @@ consequence of one type serving two purposes; this is the correction.
 
 ### Rejected on the way here, recorded because both were shipped in draft
 
-- **`IAdtResult<T>`**, a wrapper around the value. It put a shape of ours around
-  the result after the consumer had said what shape they wanted.
 - **`TError` as a free type parameter.** It offered a choice and took the contract
   away with it: an implementation returning `number` and one returning
   `IAdtError` are not interchangeable, so "swap in your own" would have meant

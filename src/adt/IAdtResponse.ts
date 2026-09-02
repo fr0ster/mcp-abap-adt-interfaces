@@ -11,7 +11,7 @@
  * const answer = await utils.search({ query: 'ZCL_*' });
  *
  * if (answer.ok) {
- *   answer.getResult();          // ISearchResult[]
+ *   answer.getResult().value;    // ISearchResult[]
  * } else {
  *   answer.getError().origin;    // connection, refusal, parse
  *   answer.getError().message;   // what SAP said, when SAP said anything
@@ -130,7 +130,7 @@ export interface IAdtError {
  * const answer = await utils.search({ query: 'ZCL_*' });
  *
  * if (answer.ok) {
- *   answer.getResult();          // ISearchResult[] — not `| undefined`
+ *   answer.getResult().value;    // ISearchResult[] — not `| undefined`
  * } else {
  *   answer.getError().origin;    // IAdtError — not `| undefined`
  * }
@@ -144,12 +144,12 @@ export interface IAdtError {
  * `full` are three amounts of one contract, so a caller writes against
  * `IAdtError` once and reads whatever their strategy provided.
  *
- * **`TResult` has no default.** A member answering `IAdtResponse` and promising
- * nothing is the free type this design refuses, reached by omission.
+ * **The type parameter has no default.** A member answering `IAdtResponse` and
+ * promising nothing is the free type this design refuses, reached by omission.
  */
-export interface IAdtSuccess<TResult> {
+export interface IAdtSuccess<T> {
   readonly ok: true;
-  getResult(): TResult;
+  getResult(): IAdtResult<T>;
   getError(): undefined;
 }
 
@@ -161,6 +161,35 @@ export interface IAdtFailure {
 }
 
 /**
+ * A result, as the contract it is — the other half of the pair with
+ * {@link IAdtError}.
+ *
+ * Symmetric on purpose, and the symmetry is the design rather than tidiness. A
+ * **result strategy** chooses how much to fill in exactly as an error strategy
+ * does: `value` is what the member promised and is always there, and `response`
+ * is what a fuller strategy adds for a caller who wants the answer it was read
+ * out of. `brief` and `full` are two amounts of this one contract.
+ *
+ * A bare `T` was tried here and is wrong for the reason a bare `TError` was
+ * wrong: a member that hands back an unwrapped value has no room to say anything
+ * about it, so "how much" becomes a question only the error side can ask. Both
+ * sides of an answer are contracts, or neither is.
+ */
+export interface IAdtResult<T> {
+  /** What the member promised — `ISearchResult[]`, `IPackageHierarchyNode`. */
+  readonly value: T;
+
+  /**
+   * The answer it was read out of, when the strategy was asked for that much.
+   *
+   * Not a duplicate of `value`: one is what the member means, the other is what
+   * arrived. A caller passing the document on, or logging it, needs the second
+   * without giving up the first.
+   */
+  readonly response?: IAdtWireResponse;
+}
+
+/**
  * What a member answers with.
  *
  * The direction for all of them, and reached member by member — decision 19 says
@@ -168,9 +197,9 @@ export interface IAdtFailure {
  * of `IAdtUtilities` have; 169 elsewhere have not, and still answer their result
  * or a frame directly. Each converges when it is next touched.
  *
- * `TResult` is that member's own result contract — `ISearchResult[]` here,
+ * `T` is that member's own result contract — `ISearchResult[]` here,
  * `IPackageHierarchyNode` there. A result strategy chooses how much of it to
  * fill in; it may not hand back something else, or two implementations of one
  * member stop being interchangeable.
  */
-export type IAdtResponse<TResult> = IAdtSuccess<TResult> | IAdtFailure;
+export type IAdtResponse<T> = IAdtSuccess<T> | IAdtFailure;

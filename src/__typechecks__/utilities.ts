@@ -24,7 +24,7 @@ import type {
 /** What a consumer's implementation returns when it succeeded. */
 const succeeded = <T>(value: T): IAdtResponse<T> => ({
   ok: true,
-  getResult: () => value,
+  getResult: () => ({ value }),
   getError: () => undefined,
 });
 
@@ -113,8 +113,9 @@ async function idOfType(
     // cannot silently treat a refusal as a level with nothing under it.
     return undefined;
   }
-  return answer.getResult().childNodes.find((c) => c.objectType === wanted)
-    ?.nodeId;
+  return answer
+    .getResult()
+    .value.childNodes.find((c) => c.objectType === wanted)?.nodeId;
 }
 
 /**

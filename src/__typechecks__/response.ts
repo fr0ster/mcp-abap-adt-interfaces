@@ -12,6 +12,7 @@ import type {
   IAdtError,
   IAdtFailure,
   IAdtResponse,
+  IAdtResult,
   IAdtSuccess,
   ISearchResult,
 } from '../index';
@@ -21,7 +22,9 @@ declare const answer: IAdtResponse<ISearchResult[]>;
 /** Narrowing works, and the result is not `| undefined` on the happy side. */
 export function readHits(): ISearchResult[] {
   if (answer.ok) {
-    return answer.getResult();
+    // `.value` because a result is a contract too, symmetric with IAdtError: the
+    // strategy chooses how much of it to fill in.
+    return answer.getResult().value;
   }
   return [];
 }
@@ -38,7 +41,7 @@ export function readFailure(): string {
 
 /** Reaching the result without asking is refused. */
 // @ts-expect-error getResult() is `undefined` on the failure half of the union
-export const unchecked: ISearchResult[] = answer.getResult();
+export const unchecked: IAdtResult<ISearchResult[]> = answer.getResult();
 
 /** So is reaching the error without asking. */
 // @ts-expect-error getError() is `undefined` on the success half
@@ -57,8 +60,10 @@ export declare const promisesNothing: IAdtResponse;
  */
 export class TheirSuccess implements IAdtSuccess<ISearchResult[]> {
   readonly ok = true as const;
-  getResult(): ISearchResult[] {
-    return [];
+  getResult(): IAdtResult<ISearchResult[]> {
+    // A `brief` result strategy fills in the value and stops; a `full` one adds
+    // the response it was read out of. Two amounts of one contract.
+    return { value: [] };
   }
   getError(): undefined {
     return undefined;
@@ -89,3 +94,7 @@ export const badOrigin: IAdtError = { origin: 'timeout', message: 'x' };
 /** A failure without a message is not one: it is the least it can say. */
 // @ts-expect-error message is required
 export const silent: IAdtError = { origin: 'connection' };
+
+/** A result without its value is not one, for the same reason a failure needs a message. */
+// @ts-expect-error value is required
+export const emptyResult: IAdtResult<ISearchResult[]> = {};

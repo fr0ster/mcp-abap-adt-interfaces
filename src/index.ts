@@ -224,6 +224,7 @@ export type {
   IAdtError,
   IAdtFailure,
   IAdtResponse,
+  IAdtResult,
   IAdtSuccess,
 } from './adt/IAdtResponse';
 export type {
