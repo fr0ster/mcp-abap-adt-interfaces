@@ -922,3 +922,60 @@ about *members*, and it does not extend to withholding what the server said.
 
 **What would change it.** Nothing here. Which members take a strategy is still
 decided one at a time, on whether the caller must control the volume.
+
+## 19. Direction: the default implementation answers, and strategies say how
+
+**Not yet decided — recorded while it is being designed**, because the last three
+decisions were each re-derived from scratch when the case came up again.
+
+**Where this comes from.** Decisions 13 to 18 each fixed one consequence of the
+same thing: `IAdtResponse` used as a result. Name the result (13), stop the
+envelope leaking into atoms (16), stop it being the default (17), stop a refusal
+being reported as an answer (18). Six decisions, one cause. **Once the envelopes
+are gone the rest gets simpler**, and this is what the shape looks like without
+them.
+
+**The proposal.** A contract member's default implementation returns SAP's
+answer, applying whatever strategies the consumer supplied. There are two things
+that can come back and they are not the same thing, so the contract says both:
+
+- what to do with a **result**;
+- what to do with an **error**;
+
+or one strategy over the answer as a whole, where a caller wants to handle both
+in one place. The member's job is to obtain the answer; the strategies say what
+form it takes on the way out.
+
+**What it settles that today's shape does not.**
+
+Today the library decides how a failure is delivered: `AdtExceptionDocumentError`
+is thrown, and a caller who would rather branch than catch has no say. That is
+the library choosing on the caller's behalf — the thing decision 18 forbids for
+*results* while still doing it for *errors*. An error strategy makes the two
+symmetric: what comes back is the caller's choice, what comes back **is
+complete** is not.
+
+It also removes the last reason for an envelope. `IAdtResponse` survives in
+contracts because a member sometimes has to hand over "everything, I cannot say
+what you need". A strategy is the caller saying what they need, so the envelope
+has nothing left to do.
+
+**What is not settled, and must be before this is built.**
+
+1. **Does an error strategy let a consumer mask a refusal?** A handler that
+   ignores what it is given hides it — but it hides it *by an explicit choice at
+   the call site*, which is not what decision 18 was written against: silent
+   masking by a library nobody asked. Probably acceptable; not yet decided.
+2. **Two methods or one?** "Return the result, return the error" reads as a
+   result type carrying both, which makes the branch checkable by the compiler
+   and forces every call site to acknowledge it. One strategy over the answer is
+   smaller and leaves the branch to the caller. These are different contracts,
+   and the substitution test (decision 13) says pick one.
+3. **What is the default when no strategy is given?** It has to be a contract
+   (decision 17's correction), so a member still names its result and a strategy
+   replaces it. Whether errors still throw by default is the same question as 1.
+4. **Migration.** Every member of every atom is affected. This is not a release,
+   it is a direction several releases move toward.
+
+**What would change it.** Building it. Until then this section exists so the
+questions above are answered once rather than re-litigated per member.
