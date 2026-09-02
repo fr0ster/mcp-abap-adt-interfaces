@@ -220,6 +220,11 @@ export type {
   IUpdateProgramSourceParams,
 } from './adt/IAdtProgram';
 export type {
+  AdtFailureOrigin,
+  IAdtError,
+  IAdtResponse,
+} from './adt/IAdtResponse';
+export type {
   ICreateScalarFunctionParams,
   IDeleteScalarFunctionParams,
   IScalarFunctionConfig,
@@ -391,7 +396,7 @@ export { CALM_SERVICES } from './connection/CalmService';
 // Connection domain
 export type {
   IAbapConnection,
-  IAdtResponse,
+  IAdtWireResponse,
 } from './connection/IAbapConnection';
 export type { IAbapRequestOptions } from './connection/IAbapRequestOptions';
 export type {

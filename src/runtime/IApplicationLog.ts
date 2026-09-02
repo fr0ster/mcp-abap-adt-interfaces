@@ -1,4 +1,4 @@
-import type { IAdtResponse } from '../connection/IAbapConnection';
+import type { IAdtWireResponse } from '../connection/IAbapConnection';
 import type { IRuntimeAnalysisObject } from './types';
 
 export interface IGetApplicationLogObjectOptions {
@@ -20,10 +20,10 @@ export interface IApplicationLog
   getObject(
     objectName: string,
     options?: IGetApplicationLogObjectOptions,
-  ): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
   getSource(
     objectName: string,
     options?: IGetApplicationLogSourceOptions,
-  ): Promise<IAdtResponse>;
-  validateName(objectName: string): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
+  validateName(objectName: string): Promise<IAdtWireResponse>;
 }

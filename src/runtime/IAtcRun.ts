@@ -7,7 +7,7 @@
  * nothing here takes an execution id.
  */
 
-import type { IAdtResponse } from '../connection/IAbapConnection';
+import type { IAdtWireResponse } from '../connection/IAbapConnection';
 
 /**
  * The object kinds ATC will check, at a URI a client can build for them.
@@ -194,5 +194,5 @@ export interface IAtcFindings {
    * Read it after the run reports finished. Read earlier it is empty whatever
    * happened, which is indistinguishable from a run that found nothing.
    */
-  getFindings(worklistId: string): Promise<IAdtResponse>;
+  getFindings(worklistId: string): Promise<IAdtWireResponse>;
 }

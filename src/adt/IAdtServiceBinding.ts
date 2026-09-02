@@ -2,7 +2,7 @@
  * Service Binding ADT operation parameter interfaces (snake_case, low-level)
  */
 
-import type { IAdtResponse } from '../connection/IAbapConnection';
+import type { IAdtWireResponse } from '../connection/IAbapConnection';
 import type { IAdtObjectState } from './IAdtObjectState';
 
 export type ServiceBindingType = 'ODATA' | 'INA' | 'SQL';
@@ -104,8 +104,8 @@ export interface IServiceBindingConfig {
 }
 
 export interface IServiceBindingState extends IAdtObjectState {
-  serviceTypesResult?: IAdtResponse;
-  inactiveCheckResult?: IAdtResponse;
-  generatedInfoResult?: IAdtResponse;
-  activeCheckResult?: IAdtResponse;
+  serviceTypesResult?: IAdtWireResponse;
+  inactiveCheckResult?: IAdtWireResponse;
+  generatedInfoResult?: IAdtWireResponse;
+  activeCheckResult?: IAdtWireResponse;
 }

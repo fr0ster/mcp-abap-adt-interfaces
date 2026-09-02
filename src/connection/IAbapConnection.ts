@@ -12,7 +12,19 @@ export type IAdtHeaderValue =
   | undefined
   | object;
 
-export interface IAdtResponse<T = any, D = any> {
+/**
+ * The transport frame: status, headers, body — what HTTP or RFC hands back.
+ *
+ * Renamed from `IAdtWireResponse`, which now names the **answer** a member gives
+ * (`adt/IAdtResponse.ts`). This is the wire, and it belongs exactly here: at the
+ * connection boundary, where decision 14 says an envelope is legitimate and
+ * everywhere above it is not.
+ *
+ * The old name was the whole problem in miniature — the same type served as
+ * "what came off the wire" and "what a caller gets", so 94 members answered a
+ * frame and no member could name its result.
+ */
+export interface IAdtWireResponse<T = any, D = any> {
   data: T;
   status: number;
   statusText: string;
@@ -72,5 +84,5 @@ export interface IAbapConnection {
    */
   makeAdtRequest<T = any, D = any>(
     options: IAbapRequestOptions,
-  ): Promise<IAdtResponse<T, D>>;
+  ): Promise<IAdtWireResponse<T, D>>;
 }

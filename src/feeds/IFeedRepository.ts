@@ -2,7 +2,7 @@
  * Feed Repository Interface
  *
  * Domain-facing interface for feed access.
- * All methods return domain types (no raw IAdtResponse).
+ * All methods return domain types (no raw IAdtWireResponse).
  */
 
 import type {

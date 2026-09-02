@@ -13,7 +13,7 @@ import type {
   IAdtObjectAccess,
   IAdtPackageBrowsing,
   IAdtRepositoryStructure,
-  IAdtResponse,
+  IAdtWireResponse,
   IGetSqlQueryParams,
   IGetTableContentsParams,
   IRepositoryNodeContents,
@@ -22,10 +22,12 @@ import type {
 
 /** One family alone, implemented by something that knows nothing of the others. */
 class MyDataPreview implements IAdtDataPreview {
-  async getSqlQuery(_p: IGetSqlQueryParams): Promise<IAdtResponse> {
+  async getSqlQuery(_p: IGetSqlQueryParams): Promise<IAdtWireResponse> {
     return { status: 200, statusText: 'OK', data: '', headers: {} };
   }
-  async getTableContents(_p: IGetTableContentsParams): Promise<IAdtResponse> {
+  async getTableContents(
+    _p: IGetTableContentsParams,
+  ): Promise<IAdtWireResponse> {
     return { status: 200, statusText: 'OK', data: '', headers: {} };
   }
 }
@@ -71,7 +73,7 @@ class NodeReaderWithExtras implements IAdtRepositoryStructure {
   ): Promise<IRepositoryNodeContents> {
     return { objects: [], childNodes: [] };
   }
-  async getObjectStructure(_t: string, _n: string): Promise<IAdtResponse> {
+  async getObjectStructure(_t: string, _n: string): Promise<IAdtWireResponse> {
     return { status: 200, statusText: 'OK', data: '', headers: {} };
   }
 }

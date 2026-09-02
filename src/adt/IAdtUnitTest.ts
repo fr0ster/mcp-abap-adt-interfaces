@@ -2,7 +2,7 @@
  * Unit Test ADT operation parameter interfaces (snake_case, low-level)
  */
 
-import type { IAdtResponse } from '../connection/IAbapConnection';
+import type { IAdtWireResponse } from '../connection/IAbapConnection';
 import type { IClassState } from './IAdtClass';
 import type { IAdtObjectState } from './IAdtObjectState';
 
@@ -104,7 +104,7 @@ export interface ICdsUnitTestConfig extends IUnitTestConfig {
 
 export interface ICdsUnitTestState extends IUnitTestState {
   testClassState?: IClassState;
-  cdsCheckResponse?: IAdtResponse;
+  cdsCheckResponse?: IAdtWireResponse;
 }
 
 /** Options for fetching a finished run's result document. */
@@ -135,13 +135,16 @@ export interface ITestRunInformation {
    * @param runId the run to ask about
    * @param withLongPolling let ADT hold the request until the run progresses
    */
-  getStatus(runId: string, withLongPolling?: boolean): Promise<IAdtResponse>;
+  getStatus(
+    runId: string,
+    withLongPolling?: boolean,
+  ): Promise<IAdtWireResponse>;
 
   /** Fetch the result document of a finished run. */
   getResult(
     runId: string,
     options?: IUnitTestResultOptions,
-  ): Promise<IAdtResponse>;
+  ): Promise<IAdtWireResponse>;
 }
 
 /**

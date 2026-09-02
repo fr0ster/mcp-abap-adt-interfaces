@@ -5,7 +5,7 @@
  * should extend this interface to ensure consistency across all ADT object types.
  */
 
-import type { IAdtResponse } from '../connection/IAbapConnection';
+import type { IAdtWireResponse } from '../connection/IAbapConnection';
 
 /**
  * Base state that all ADT Object state types should extend
@@ -24,27 +24,27 @@ import type { IAdtResponse } from '../connection/IAbapConnection';
  */
 export interface IAdtObjectState {
   /** Validation response from validate() method */
-  validationResponse?: IAdtResponse;
+  validationResponse?: IAdtWireResponse;
   /** Create operation response from create() method */
-  createResult?: IAdtResponse;
+  createResult?: IAdtWireResponse;
   /** Lock handle obtained from lock operations */
   lockHandle?: string;
   /** Update operation response from update() method */
-  updateResult?: IAdtResponse;
+  updateResult?: IAdtWireResponse;
   /** Check operation response from check() method */
-  checkResult?: IAdtResponse;
+  checkResult?: IAdtWireResponse;
   /** Unlock operation response from unlock operations */
-  unlockResult?: IAdtResponse;
+  unlockResult?: IAdtWireResponse;
   /** Activate operation response from activate() method */
-  activateResult?: IAdtResponse;
+  activateResult?: IAdtWireResponse;
   /** Delete operation response from delete() method */
-  deleteResult?: IAdtResponse;
+  deleteResult?: IAdtWireResponse;
   /** Read operation response from read() method (source code or XML) */
-  readResult?: IAdtResponse;
+  readResult?: IAdtWireResponse;
   /** Metadata read result from readMetadata() method (object characteristics: package, responsible, description, etc.) */
-  metadataResult?: IAdtResponse;
+  metadataResult?: IAdtWireResponse;
   /** Transport request read result from readTransport() method */
-  transportResult?: IAdtResponse;
+  transportResult?: IAdtWireResponse;
   /** Array of errors that occurred during operations */
   errors: Array<{ method: string; error: Error; timestamp: Date }>;
 }

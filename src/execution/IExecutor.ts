@@ -1,4 +1,4 @@
-import type { IAdtResponse } from '../connection/IAbapConnection';
+import type { IAdtWireResponse } from '../connection/IAbapConnection';
 import type { IAdtRunnable } from './IAdtRunnable';
 
 /**
@@ -10,7 +10,7 @@ import type { IAdtRunnable } from './IAdtRunnable';
  */
 export interface IExecutor<
   TTarget,
-  TResult = IAdtResponse,
+  TResult = IAdtWireResponse,
   TRunWithProfilerOptions = unknown,
   TRunWithProfilingOptions = unknown,
   TRunWithProfilingResult = unknown,

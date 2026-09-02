@@ -2,7 +2,7 @@
  * Behavior Definition ADT operation parameter interfaces (snake_case, low-level)
  */
 
-import type { IAdtResponse as AxiosResponse } from '../connection/IAbapConnection';
+import type { IAdtWireResponse as AxiosResponse } from '../connection/IAbapConnection';
 import type { IAdtObjectState } from './IAdtObjectState';
 
 export type BehaviorDefinitionImplementationType =

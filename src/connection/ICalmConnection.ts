@@ -1,8 +1,8 @@
 import type { CalmService } from './CalmService';
-import type { IAdtResponse } from './IAbapConnection';
+import type { IAdtWireResponse } from './IAbapConnection';
 import type { ICalmRequestOptions } from './ICalmRequestOptions';
 
-export type ICalmResponse<T = unknown, D = unknown> = IAdtResponse<T, D>;
+export type ICalmResponse<T = unknown, D = unknown> = IAdtWireResponse<T, D>;
 
 /**
  * Minimal connection interface for SAP Cloud ALM HTTP APIs.

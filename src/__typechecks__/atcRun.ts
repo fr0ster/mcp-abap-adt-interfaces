@@ -1,6 +1,6 @@
 // Compile-only assertions. If these stop compiling, the types regressed.
 
-import type { IAdtResponse } from '../connection/IAbapConnection';
+import type { IAdtWireResponse } from '../connection/IAbapConnection';
 import type { IAdtRunnable } from '../execution/IAdtRunnable';
 import type {
   AtcObjectType,
@@ -12,7 +12,7 @@ import type {
   IAtcRunTarget,
 } from '../runtime/IAtcRun';
 
-const response: IAdtResponse = {
+const response: IAdtWireResponse = {
   data: '',
   status: 200,
   statusText: 'OK',
@@ -39,7 +39,7 @@ const _handler: AtcHandler = {
     void runId;
     return { status: 'finished', isFinished: true };
   },
-  getFindings: async (worklistId: string): Promise<IAdtResponse> => {
+  getFindings: async (worklistId: string): Promise<IAdtWireResponse> => {
     void worklistId;
     return response;
   },

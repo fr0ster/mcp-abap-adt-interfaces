@@ -2,7 +2,7 @@
  * Transport ADT operation parameter interfaces (snake_case, low-level)
  */
 
-import type { IAdtResponse } from '../connection/IAbapConnection';
+import type { IAdtWireResponse } from '../connection/IAbapConnection';
 import type { IAdtCrud } from './IAdtCapabilities';
 import type { IAdtObjectState } from './IAdtObjectState';
 
@@ -86,7 +86,7 @@ export interface ITransportConfig {
 export interface ITransportState extends IAdtObjectState {
   transportNumber?: string;
   taskNumber?: string;
-  listResult?: IAdtResponse;
+  listResult?: IAdtWireResponse;
 }
 
 /**

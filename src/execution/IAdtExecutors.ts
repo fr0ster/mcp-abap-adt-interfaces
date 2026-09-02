@@ -6,7 +6,7 @@
  * one place to import from and one place to override.
  */
 
-import type { IAdtResponse } from '../connection/IAbapConnection';
+import type { IAdtWireResponse } from '../connection/IAbapConnection';
 import type { IProfilerTraceParameters } from '../runtime/IProfiler';
 import type { IExecutor } from './IExecutor';
 import type { ITraceScheduling } from './ITraceScheduling';
@@ -40,14 +40,14 @@ export interface IClassExecuteWithProfilingOptions {
  * honest about exactly this — see the comment it has carried all along.
  */
 export interface IClassExecuteWithProfilingResult {
-  response: IAdtResponse;
+  response: IAdtWireResponse;
   profilerId: string;
 }
 
 export interface IClassExecutor
   extends IExecutor<
       IClassExecutionTarget,
-      IAdtResponse,
+      IAdtWireResponse,
       IClassExecuteWithProfilerOptions,
       IClassExecuteWithProfilingOptions,
       IClassExecuteWithProfilingResult
@@ -67,7 +67,7 @@ export interface IProgramExecuteWithProfilingOptions {
 }
 
 export interface IProgramExecuteWithProfilingResult {
-  response: IAdtResponse;
+  response: IAdtWireResponse;
   profilerId: string;
   // traceId is NOT included — program execution is fire-and-forget.
   // Traces are written asynchronously by SAP after the program completes.
@@ -77,7 +77,7 @@ export interface IProgramExecuteWithProfilingResult {
 export interface IProgramExecutor
   extends IExecutor<
       IProgramExecutionTarget,
-      IAdtResponse,
+      IAdtWireResponse,
       IProgramExecuteWithProfilerOptions,
       IProgramExecuteWithProfilingOptions,
       IProgramExecuteWithProfilingResult
