@@ -439,6 +439,15 @@ compose (a method can return a contract *and* take a strategy) but neither
 substitutes for the other.
 
 **The envelope is a container for everything, which is the deeper fault.**
+
+> Throughout decisions 13 to 16 below, `IAdtResponse` means the **transport
+> frame** — `data`, `status`, `headers`. That is what the name meant when they
+> were written. Since 28.0.0 the frame is `IAdtWireResponse` and `IAdtResponse`
+> is the answer a member gives, which is the correction these decisions argued
+> for. Read the older text with the old meaning; renaming it here would make the
+> arguments unreadable, since the whole point of several is that one name was
+> doing two jobs.
+
 `IAdtResponse<T = any>` defaults its body to `any`. Counted: **180** uses in this
 package name no type argument against **4** that do, and in
 `@mcp-abap-adt/adt-clients` it is **1121 against 5**. The generic exists and is
@@ -1335,15 +1344,22 @@ it raises when an error is present, so a caller who ignores failures still fails
 loudly, and a caller who wants to branch asks `getError()` first. Throwing was
 never a property of the member — that was the confusion.
 
-**No member signature changes.** A member still returns one thing. What changes
-is what that thing is, and the migration is a type acquiring meaning rather than
-94 signatures being rewritten. Members already returning `Promise<IAdtResponse>`
-are not each a separate correction; they are the same correction once.
+**Every member signature changes, and I predicted otherwise.** The thought was
+that a member still returns one thing, so the migration would be a type acquiring
+meaning rather than signatures being rewritten. That was wrong once the halves
+became contracts: `Promise<ISearchResult[]>` became
+`Promise<IAdtResponse<IAdtResult<ISearchResult[]>>>`, and 28.0.0 rewrote all 22
+asynchronous members of `IAdtUtilities` plus 784 call sites in `adt-clients`.
+
+Kept rather than corrected away, because the mistake is instructive: "the type
+acquires meaning" is what a rename does, and this was never a rename. The moment
+both halves of an answer are named contracts, every signature that returns an
+answer says so.
 
 **The generic stops being decoration.** Decision 14 measured `IAdtResponse<T>`'s
 type parameter as never supplied — the generic exists and has never carried a
-type. Here it is the point: `IAdtResponse<ISearchResult[]>` is an outcome whose
-result is the hits. What decision 14 recorded as an unused pass-through was the
+type. Here it is the point: `IAdtResponse<IAdtResult<ISearchResult[]>>` is an
+answer whose result is the hits. What decision 14 recorded as an unused pass-through was the
 right idea with nothing behind it yet.
 
 **Two shapes, and they are mutually exclusive.**
@@ -1408,7 +1424,7 @@ Four reasons, in the order they weigh:
    are thrown today. B makes the strategies an explanation of behaviour that
    exists; A would make the current behaviour a special case of a shape nothing
    implements yet.
-4. **One method keeps the outcome a result.** `IAdtResponse<ISearchResult[]>`
+4. **One method keeps the outcome a result.** `IAdtResponse<IAdtResult<ISearchResult[]>>`
    reads as "an answer carrying hits". With two it reads as a container to be
    interrogated, which is what this whole line of decisions has been getting away
    from.

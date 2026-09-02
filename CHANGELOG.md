@@ -78,9 +78,10 @@ consequence of one type serving two purposes; this is the correction.
 
 - **BREAKING: every asynchronous member of `IAdtUtilities` returns it.** All 22
   of them — 23 signatures, because `search` has the strategy overload — each
-  naming its own result: `IAdtResponse<ISearchResult[]>`,
-  `IAdtResponse<IPackageHierarchyNode>`, and so on. The 12 that have no named
-  result yet say `IAdtResponse<IAdtWireResponse>` — honest about handing back a
+  naming its own result: `IAdtResponse<IAdtResult<ISearchResult[]>>`,
+  `IAdtResponse<IAdtResult<IPackageHierarchyNode>>`, and so on. The 12 that have
+  no named result yet say `IAdtResponse<IAdtResult<IAdtWireResponse>>` — honest
+  about handing back a
   frame, and visible as work remaining rather than hidden in a shared alias. The
   three synchronous members compute a string and issue no request; they are
   unchanged.
