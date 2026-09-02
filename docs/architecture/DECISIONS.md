@@ -1022,6 +1022,28 @@ has nothing left to do.
    because failing loudly is the safe behaviour for a caller who has not said
    otherwise, and they are replaceable once the strategies land.
 
+   **The library ships a set of them, and that is what makes this usable.** A
+   consumer who wants a different amount of the answer should not have to write a
+   parser to get it — writing one is the escape hatch, picking one is the normal
+   case. Three families:
+
+   | family | what it decides | shipped |
+   |---|---|---|
+   | result | how much of the result comes back | full · medium · brief |
+   | error | how much of a failure comes back | full · medium · brief |
+   | error detection | what counts as a failure at all | the default rules, replaceable |
+
+   The third has no "amount" axis because it answers a different question, and it
+   is the one a library cannot ship a single answer for — hence it being a
+   strategy rather than a rule.
+
+   Two consequences worth stating now, before any of it is built. The shipped
+   strategies are **named contracts**, not loose functions: a consumer selects one
+   and a different implementation of the same member must honour the same names,
+   or "brief" means whatever each implementation felt like. And **"full" is not
+   the same as the envelope** — it is the complete result *stated as a contract*,
+   which is what decision 13 has been about all along.
+
 **Still open.**
 
 - **How the default throw and the outcome type meet.** Answer 1 says a refusal
