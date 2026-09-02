@@ -1115,10 +1115,17 @@ has nothing left to do.
    the dark. Decision 18 stands unchanged — what comes back is the caller's
    choice, what comes back *whole* is not.
 
-   Where the library ships defaults today — a refusal throws, an unreadable
-   answer throws — those are the **default strategies**, not the law. They exist
-   because failing loudly is the safe behaviour for a caller who has not said
-   otherwise, and they are replaceable once the strategies land.
+   Where the library fails loudly today — a refusal, an unreadable answer — that
+   is the **default strategies' judgement**, not the law. Failing loudly is the
+   safe behaviour for a caller who has not said otherwise, and both are replaced
+   by supplying a strategy that judges differently.
+
+   How each *arrives* matters, and the composition above is exact about it. The
+   default error strategy **returns** an `AdtSAPError` — a verdict, which the
+   composer then throws. It does not throw one itself: a strategy throwing is row
+   1 of that table, a bug in the strategy, and a routine SAP refusal is not a bug.
+   `AdtParseError` is the other kind: a result strategy that genuinely could not
+   read the answer throws, and that is row 3.
 
    **The library ships a set of them, and that is what makes this usable.** A
    consumer who wants a different amount of the answer should not have to write a
@@ -1236,10 +1243,15 @@ that only holds if the name is a contract both sides read. A name shipped only b
 one implementation is a convention, and conventions drift.
 
 `AdtSAPError` and `AdtParseError` are the same question and are **not** answered
-here. They are classes in `adt-clients` today, thrown by default strategies. If a
-consumer is to catch them across implementations, what they catch has to be a
-contract — and if only the default strategies throw them, they can stay where
-they are. That depends on the outcome type's shape, which is still open.
+here. They are classes in `adt-clients` today: the default error strategy
+*returns* an `AdtSAPError` for the composer to throw, and a result strategy that
+cannot read the answer *throws* an `AdtParseError`. Both reach a caller as
+exceptions; only the second is thrown by the strategy itself.
+
+If a consumer is to recognise them across implementations, what they recognise
+has to be a contract — and if only the shipped strategies produce them, they can
+stay where they are. That depends on the outcome type's shape, which is still
+open.
 
 **The shape this takes, and it resolves the question above.**
 
