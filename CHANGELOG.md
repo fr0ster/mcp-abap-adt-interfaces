@@ -92,14 +92,20 @@ consequence of one type serving two purposes; this is the correction.
   **result** strategy chooses how much to fill in exactly as an error strategy
   does, so `brief` and `full` are two amounts of one contract on both sides.
 
-  **"How much" means how much of `T`, not how much of the wire.** A `brief`
-  search fills fewer fields of `ISearchResult`; a `full` one fills more. It does
-  not attach the response the hits were read out of. A `response` field was in
-  the first draft of this interface, and it put `status`, `headers` and `data`
-  back inside every result under one more layer of nesting — a domain answer
-  re-bound to a transport shape, which is the thing this release exists to undo.
-  Decision 19 is explicit: `full` is the complete result **stated as a
-  contract**, not the envelope returning.
+  **The two halves vary differently, and that is not a slip.** An error strategy
+  varies the fullness of `IAdtError` — two required fields, five optional, so
+  `brief` and `full` are genuinely two amounts of one contract. A result cannot
+  work that way: `ISearchResult` requires `description`, so no strategy returns
+  "fewer fields" of it without the compiler refusing. A result strategy varies
+  **`T` itself**, which is what the strategy overload already does — a shipped
+  `brief` is a shipped parser with a narrower result contract.
+
+  What `IAdtResult` must never hold is the transport frame. A `response` field
+  was in the first draft and put `status`, `headers` and `data` back inside every
+  result under one more layer of nesting — a domain answer re-bound to a
+  transport shape, which is what this release undoes. Decision 19 is explicit:
+  `full` is the complete result **stated as a contract**, not the envelope
+  returning.
 
   `IAdtError` keeps its `response`, and the asymmetry is deliberate. Diagnosing a
   failure needs the status and headers it arrived with; reading a result does

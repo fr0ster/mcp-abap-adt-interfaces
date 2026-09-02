@@ -164,18 +164,25 @@ export interface IAdtFailure {
  * A result, as the contract it is — the other half of the pair with
  * {@link IAdtError}.
  *
- * Symmetric on purpose, and the symmetry is the design rather than tidiness: a
- * **result strategy** chooses how much to fill in exactly as an error strategy
- * does.
+ * **The two halves are not symmetric in how they vary, and saying otherwise was
+ * wrong.** An error strategy varies the *fullness of one contract*: `IAdtError`
+ * has two required fields and five optional ones, so `brief` and `full` are
+ * genuinely two amounts of it. A result cannot work that way — `ISearchResult`
+ * requires `description`, so no strategy can return "fewer fields" of it without
+ * the compiler refusing.
  *
- * **But "how much" here means how much of `T`, not how much of the wire.** A
- * `brief` search fills fewer fields of `ISearchResult`; a `full` one fills more.
- * It does not attach the response the hits were read out of. A `response` field
- * was in the first draft of this interface and is the reason to say so: it put
- * `status`, `headers` and `data` back inside every result under one more layer
- * of nesting, and re-bound a domain answer to a transport shape — the thing this
- * whole design exists to undo. Decision 19 is explicit that `full` is the
- * complete result **stated as a contract**, not the envelope returning.
+ * A result strategy varies **`T` itself**. That is what the strategy overload
+ * already does: `search(criteria)` answers `IAdtResponse<ISearchResult[]>` and
+ * `search(criteria, parse)` answers `IAdtResponse<whatever the parser returns>`.
+ * A shipped `brief` is a shipped parser with a narrower result contract, not the
+ * same contract half-filled.
+ *
+ * So what does this interface buy, if it holds one field? It is the **named half
+ * of an answer**, the counterpart to `IAdtError`, and it is where anything a
+ * result needs to say *about itself* goes when a case for one appears — stated
+ * as a contract, the way decision 19 requires. What it must never hold is the
+ * transport frame: a `response` field was in the first draft and put `status`,
+ * `headers` and `data` back inside every result under one more layer of nesting.
  *
  * A caller who wants the document asks for it the way decision 19 says: a result
  * strategy of their own that answers the document, in a member whose contract

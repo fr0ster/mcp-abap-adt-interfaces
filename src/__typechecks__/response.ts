@@ -61,8 +61,9 @@ export declare const promisesNothing: IAdtResponse;
 export class TheirSuccess implements IAdtSuccess<ISearchResult[]> {
   readonly ok = true as const;
   getResult(): IAdtResult<ISearchResult[]> {
-    // A `brief` result strategy fills in the value and stops; a `full` one adds
-    // the response it was read out of. Two amounts of one contract.
+    // The value is the member's own result contract. A `brief` strategy does not
+    // half-fill this one — `ISearchResult` requires `description`, so it cannot
+    // be half-filled. It narrows `T` instead, through the strategy overload.
     return { value: [] };
   }
   getError(): undefined {
