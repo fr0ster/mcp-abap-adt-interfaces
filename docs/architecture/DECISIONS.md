@@ -1055,6 +1055,33 @@ has nothing left to do.
    rule with options. The library's shipped rules are a sensible default, not a
    definition.
 
+   **And this is where the envelope finally has nothing left to do.** The one
+   case it exists for is a caller who wants everything, raw, and will judge it
+   themselves. Under strategies that caller is served without the contract
+   naming an envelope at all: a result strategy that hands back the full answer
+   as it came, and an error strategy that recognises nothing — so the analysis
+   and the handling are entirely theirs.
+
+   ```typescript
+   const raw = await utils.getWhereUsed(params, {
+     onResult: (answer) => answer,   // everything, as SAP sent it
+     onError: () => undefined,       // nothing is a failure here; I will judge
+   });
+   ```
+
+   That is the same behaviour `Promise<IAdtResponse>` gave, arrived at by the
+   caller asking for it rather than by every caller being given it. The
+   difference is not cosmetic: with the envelope in the contract, every consumer
+   pays for one consumer's need and no member can name its result. With a
+   strategy, the member states a contract and the caller who wants the raw answer
+   says so at the call site — visibly, and only for themselves.
+
+   The responsibility moves with it. An error strategy that recognises nothing is
+   a consumer deciding to do their own analysis; that is a decision at the call
+   site, in their code, not silence from a library that never told them. That is
+   the line decision 18 draws, and it is what makes this safe: masking stays
+   possible, and stays theirs.
+
    Two consequences worth stating now, before any of it is built. The shipped
    strategies are **named contracts**, not loose functions: a consumer selects one
    and a different implementation of the same member must honour the same names,
