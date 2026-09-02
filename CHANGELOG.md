@@ -43,8 +43,9 @@ consequence of one type serving two purposes; this is the correction.
   an object from what a method returns — one field, and both methods stop being
   maybes.
 
-- **BREAKING: every asynchronous member of `IAdtUtilities` returns it.** All 23,
-  each naming its own result: `IAdtResponse<ISearchResult[]>`,
+- **BREAKING: every asynchronous member of `IAdtUtilities` returns it.** All 22
+  of them — 23 signatures, because `search` has the strategy overload — each
+  naming its own result: `IAdtResponse<ISearchResult[]>`,
   `IAdtResponse<IPackageHierarchyNode>`, and so on. The 12 that have no named
   result yet say `IAdtResponse<IAdtWireResponse>` — honest about handing back a
   frame, and visible as work remaining rather than hidden in a shared alias. The
@@ -102,9 +103,24 @@ consequence of one type serving two purposes; this is the correction.
 
 ### Documentation
 
-- Decisions 17-19 in `docs/architecture/DECISIONS.md` (merged in #59) are what
-  this implements: what a contract takes, what it gives back, and where
-  strategies go.
+- Decisions 17-19 in `docs/architecture/DECISIONS.md` are what this implements:
+  what a contract takes, what it gives back, and where strategies go.
+- **Decision 19's "Decided: B" is superseded, and says so.** B was one method
+  with failures as exceptions — my conclusion after being asked to choose, not
+  the design that was being described. The design has two methods, and that is
+  what ships.
+
+  Recorded with the reason it is also the better of the two, which B could not
+  answer: **an exception is invisible to the type system.** Nothing makes a
+  caller catch it, nothing tells them it exists, and the failure path is found at
+  run time by whoever is unlucky. The union makes handling compulsory at compile
+  time — `answer.getResult()` does not type-check until the caller has asked
+  which half they hold. A type that admits only the happy answer pushes the other
+  where the compiler cannot see it, and B was that shape wearing an exception.
+
+  What B got right is untouched: the error-detection strategy carries the "not an
+  error for me" case, and a consumer who says a "not found" is their answer
+  receives it as a result. That never depended on how a failure is delivered.
 - `src/__typechecks__/response.ts` asserts the guarantee in both directions:
   narrowing gives a result that is not `| undefined`, reaching either half
   without asking is refused, a member cannot answer without naming what it gives
