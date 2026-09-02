@@ -1214,15 +1214,28 @@ wanting brief answers in one place and full ones in another costs an object, not
 a session. That distinction matters: multiplying sessions is not acceptable,
 multiplying clients is nothing.
 
-**`AdtSAPError` and `AdtParseError` move here, as classes.** A consumer
-recognising a failure across implementations has to recognise something this
-package names, or every implementation invents its own and `instanceof` is a lie
-between them.
+**`AdtSAPError` and `AdtParseError` stay in `adt-clients`. This package gets no
+classes.** A contract says what a thing is and how to work with it; a class is
+one way of being that thing. The moment this package ships a class, a consumer
+depends on an implementation through the door meant for contracts, and "swap in
+your own" stops being true for that piece.
 
-They can be classes rather than shapes with a discriminant, because this package
-already ships two — `AdtOperationError` and `TransportSearchConfigurationMissing`.
-It is not types-only and never claimed to be, so `instanceof` works across
-implementations without inventing a `kind` field to stand in for it.
+So the split is the same as everywhere else here: the **shape** of a failure is
+named here, and the classes that are it live in `adt-clients` — which is where a
+consumer takes them from, `instanceof` and all.
+
+The consequence, stated rather than left to be discovered: a consumer who swaps
+in a different implementation of a member recognises a failure **structurally**,
+by the shape this package names, not with `instanceof`. That is the cost of not
+shipping classes, and it is the right way round — `instanceof` is a convenience
+for the common case of using the shipped implementation, not the mechanism the
+contract rests on.
+
+**Pre-existing debt, named because this decision makes it visible.**
+`AdtOperationError` and `TransportSearchConfigurationMissing` are classes in this
+package today. They predate this rule and contradict it. Not corrected here —
+both are thrown across package boundaries and moving them is a breaking change on
+its own timetable — but they are not precedent, and nothing new joins them.
 
 **Migration: member by member.** Nothing forces the atoms to move together, and
 nothing should — each member converges when it is next touched, which is how the
