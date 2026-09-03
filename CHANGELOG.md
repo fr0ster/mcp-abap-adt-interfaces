@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [29.0.0] - 2026-09-04
+
+Two passes, and the second is why this is one release rather than two: 29.0.0 was
+never published — its tag was cut and then deleted once the first pass turned out
+to have left the envelope in place. A consumer therefore crosses from 28.0.0 to
+this in a single step.
+
 ### Changed
 
 - **BREAKING: `IAdtResponse` takes the value, not a wrapper around it.** It was
@@ -84,7 +91,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   document a caller needs in order to know what SAP actually said, which is the
   requirement this redesign started from. Removing them would remove the point.
 
-## [29.0.0] - 2026-09-03
+### The first pass
 
 ### Changed
 
