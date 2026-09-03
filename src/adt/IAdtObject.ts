@@ -21,24 +21,51 @@ import type {
 import type { IAdtError } from './IAdtResponse';
 
 /**
- * Error codes that can be thrown by IAdtObject methods
- * Consumers can catch specific errors using these constants
+ * Error codes for the `IAdtObject` members that still signal failure by throwing.
  *
- * Example:
+ * **The CRUD members no longer throw.** `create`, `read`, `readMetadata`,
+ * `update`, `delete`, `validate`, `check` and `activate` answer `IAdtResponse`,
+ * so a failure comes back rather than flying past, and it is read from the
+ * contract:
+ *
+ * ```typescript
+ * const answer = await adtObject.read({ className: 'ZTEST' });
+ *
+ * if (answer.ok) {
+ *   answer.getResult().value;    // the state
+ * } else {
+ *   const failure = answer.getError();
+ *   failure.origin;              // 'connection' | 'refusal' | 'parse'
+ *   failure.message;             // what SAP said, in SAP's words
+ *   failure.response;            // the answer it was read from, untouched
+ * }
+ * ```
+ *
+ * Note what is *not* in that example: a check for "not found". ADT answers a
+ * request for a missing object with **200 and an empty body** rather than a 404,
+ * so absence is not a distinct failure the library can report on its own
+ * authority — a read-modify-write must treat it as one, since writing back what
+ * it read erases the object, while a listing must treat it as an empty list.
+ * That reading is supplied through {@link IAdtOperationOptions.analyse}.
+ *
+ * These codes therefore apply only to the members that have no failure half to
+ * put a refusal in: `lock`, `unlock`, `getVersions` and `getVersionSource`.
+ *
  * ```typescript
  * import { AdtObjectErrorCodes, AdtOperationError } from '@mcp-abap-adt/interfaces';
  *
  * try {
- *   await adtObject.read({ className: 'ZTEST' });
+ *   await adtObject.lock({ className: 'ZTEST' });
  * } catch (error: unknown) {
  *   const e = error as AdtOperationError;
- *   if (e.code === AdtObjectErrorCodes.OBJECT_NOT_FOUND) {
- *     // Handle not found
- *   } else if (e.code === AdtObjectErrorCodes.OBJECT_NOT_READY) {
- *     // Handle not ready
+ *   if (e.code === AdtObjectErrorCodes.LOCK_FAILED) {
+ *     // held by someone else
  *   }
  * }
  * ```
+ *
+ * The remaining members' codes are kept for consumers still on the throwing
+ * contract and will go when those call sites do.
  */
 export const AdtObjectErrorCodes = {
   /** Object not found (404) */
