@@ -33,7 +33,7 @@ type Assert<T extends true> = T;
  * The smallest thing that satisfies the contract, so these proofs stay about
  * atom composition rather than about how a success is built.
  */
-function answered<T>(value: T): IAdtResponse<IAdtResult<T>> {
+function answered<T>(value: T): IAdtResponse<T> {
   return { ok: true, getResult: () => ({ value }), getError: () => undefined };
 }
 

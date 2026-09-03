@@ -147,9 +147,9 @@ export interface IAdtError {
  * **The type parameter has no default.** A member answering `IAdtResponse` and
  * promising nothing is the free type this design refuses, reached by omission.
  */
-export interface IAdtSuccess<TResult extends IAdtResult<unknown>> {
+export interface IAdtSuccess<TValue> {
   readonly ok: true;
-  getResult(): TResult;
+  getResult(): IAdtResult<TValue>;
   getError(): undefined;
 }
 
@@ -173,8 +173,8 @@ export interface IAdtFailure<TError extends IAdtError = IAdtError> {
  *
  * A result strategy varies **`T` itself**. That is what the strategy overload
  * already does: `search(criteria)` answers
- * `IAdtResponse<IAdtResult<ISearchResult[]>>`, and `search(criteria, parse)`
- * answers `IAdtResponse<IAdtResult<whatever the parser returns>>`.
+ * `IAdtResponse<ISearchResult[]>`, and `search(criteria, parse)`
+ * answers `IAdtResponse<whatever the parser returns>`.
  * A shipped `brief` is a shipped parser with a narrower result contract, not the
  * same contract half-filled.
  *
@@ -215,15 +215,15 @@ export interface IAdtResult<T> {
  * implementation with no way to describe what it actually returns, which is the
  * opposite of "swap in your own".
  *
- * `TError` defaults to `IAdtError`, so a member that adds nothing writes
- * `IAdtResponse<IAdtResult<ISearchResult[]>>` and no more.
+ * `TValue` is what the member promised, typed all the way through: a caller
+ * reads `getResult().value` and gets `ISearchResult[]`, never a cast. `IAdtResult`
+ * is the contract carrying it, and it is not written at the call site — a member
+ * that adds nothing writes `IAdtResponse<ISearchResult[]>` and no more.
  *
- * Neither parameter is free. `extends IAdtResult<unknown>` and
- * `extends IAdtError` are what keep two implementations of one member
- * interchangeable: a caller may read more than the contract if their
- * implementation offers more, and never less.
+ * `TError` defaults to `IAdtError` and is constrained to it, which is what keeps
+ * two implementations of one member interchangeable: a caller may read more than
+ * the contract if their implementation offers more, and never less.
  */
-export type IAdtResponse<
-  TResult extends IAdtResult<unknown>,
-  TError extends IAdtError = IAdtError,
-> = IAdtSuccess<TResult> | IAdtFailure<TError>;
+export type IAdtResponse<TValue, TError extends IAdtError = IAdtError> =
+  | IAdtSuccess<TValue>
+  | IAdtFailure<TError>;

@@ -142,7 +142,7 @@ export interface IFeatureToggleObject
     IAdtValidatable<IFeatureToggleConfig, IFeatureToggleState>,
     IAdtCheckable<IFeatureToggleConfig, IFeatureToggleState>,
     IAdtActivatable<IFeatureToggleConfig, IFeatureToggleState>,
-    IAdtLockable<IFeatureToggleConfig, IFeatureToggleState> {
+    IAdtLockable<IFeatureToggleConfig> {
   switchOn(
     config: Partial<IFeatureToggleConfig>,
     opts: { transportRequest: string; userSpecific?: boolean },

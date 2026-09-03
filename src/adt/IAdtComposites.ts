@@ -16,16 +16,13 @@ import type { IClassConfig, IClassState } from './IAdtClass';
 import type { IAdtObject } from './IAdtObject';
 
 /** Full capability set — source-backed objects (has /source/main → versions). */
-export type IAdtSourceObject<TConfig, TReadResult = TConfig> = IAdtCrud<
-  TConfig,
-  TReadResult
-> &
-  IAdtValidatable<TConfig, TReadResult> &
-  IAdtCheckable<TConfig, TReadResult> &
-  IAdtActivatable<TConfig, TReadResult> &
-  IAdtLockable<TConfig, TReadResult> &
+export type IAdtSourceObject<TConfig, TValue> = IAdtCrud<TConfig, TValue> &
+  IAdtValidatable<TConfig, TValue> &
+  IAdtCheckable<TConfig, TValue> &
+  IAdtActivatable<TConfig, TValue> &
+  IAdtLockable<TConfig> &
   IAdtVersionable<TConfig> &
-  IAdtTransportAware<TConfig, TReadResult>;
+  IAdtTransportAware<TConfig, TValue>;
 
 /** Assertion helper: instantiating with `false` is a compile error. */
 type Assert<T extends true> = T;

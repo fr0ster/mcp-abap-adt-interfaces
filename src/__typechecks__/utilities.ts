@@ -23,7 +23,7 @@ import type {
 } from '../index';
 
 /** What a consumer's implementation returns when it succeeded. */
-const succeeded = <T>(value: T): IAdtResponse<IAdtResult<T>> => ({
+const succeeded = <T>(value: T): IAdtResponse<T> => ({
   ok: true,
   getResult: () => ({ value }),
   getError: () => undefined,
@@ -33,12 +33,12 @@ const succeeded = <T>(value: T): IAdtResponse<IAdtResult<T>> => ({
 class MyDataPreview implements IAdtDataPreview {
   async getSqlQuery(
     _p: IGetSqlQueryParams,
-  ): Promise<IAdtResponse<IAdtResult<IAdtWireResponse>>> {
+  ): Promise<IAdtResponse<IAdtWireResponse>> {
     return succeeded({ status: 200, statusText: 'OK', data: '', headers: {} });
   }
   async getTableContents(
     _p: IGetTableContentsParams,
-  ): Promise<IAdtResponse<IAdtResult<IAdtWireResponse>>> {
+  ): Promise<IAdtResponse<IAdtWireResponse>> {
     return succeeded({ status: 200, statusText: 'OK', data: '', headers: {} });
   }
 }
@@ -81,13 +81,13 @@ class NodeReaderWithExtras implements IAdtRepositoryStructure {
     _parentName: string,
     _nodeId?: string,
     _withShortDescriptions?: boolean,
-  ): Promise<IAdtResponse<IAdtResult<IRepositoryNodeContents>>> {
+  ): Promise<IAdtResponse<IRepositoryNodeContents>> {
     return succeeded({ objects: [], childNodes: [] });
   }
   async getObjectStructure(
     _t: string,
     _n: string,
-  ): Promise<IAdtResponse<IAdtResult<IAdtWireResponse>>> {
+  ): Promise<IAdtResponse<IAdtWireResponse>> {
     return succeeded({ status: 200, statusText: 'OK', data: '', headers: {} });
   }
 }
@@ -127,7 +127,7 @@ async function idOfType(
 declare const info: IAdtInformationSystem;
 
 /** No parser: the parsed hits, as before. */
-const hits: Promise<IAdtResponse<IAdtResult<ISearchResult[]>>> = info.search({
+const hits: Promise<IAdtResponse<ISearchResult[]>> = info.search({
   query: 'ZCL_*',
 });
 
@@ -135,7 +135,7 @@ const hits: Promise<IAdtResponse<IAdtResult<ISearchResult[]>>> = info.search({
 interface RawHits {
   xml: string;
 }
-const raw: Promise<IAdtResponse<IAdtResult<RawHits>>> = info.search(
+const raw: Promise<IAdtResponse<RawHits>> = info.search(
   { query: 'ZCL_*' },
   (data) => ({ xml: String(data) }),
 );

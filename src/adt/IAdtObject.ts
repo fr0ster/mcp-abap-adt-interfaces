@@ -18,7 +18,7 @@ import type {
   IAdtValidatable,
   IAdtVersionable,
 } from './IAdtCapabilities';
-import type { IAdtError } from './IAdtResponse';
+import type { IAdtError, IAdtResult } from './IAdtResponse';
 
 /**
  * Error codes for the `IAdtObject` members that still signal failure by throwing.
@@ -218,11 +218,11 @@ export interface IObjectVersion {
  * full-capability composite for backward compatibility and will be removed in a
  * later major. New code should depend on the specific capability it needs.
  */
-export interface IAdtObject<TConfig, TReadResult = TConfig>
-  extends IAdtCrud<TConfig, TReadResult>,
-    IAdtValidatable<TConfig, TReadResult>,
-    IAdtCheckable<TConfig, TReadResult>,
-    IAdtActivatable<TConfig, TReadResult>,
-    IAdtLockable<TConfig, TReadResult>,
+export interface IAdtObject<TConfig, TValue>
+  extends IAdtCrud<TConfig, TValue>,
+    IAdtValidatable<TConfig, TValue>,
+    IAdtCheckable<TConfig, TValue>,
+    IAdtActivatable<TConfig, TValue>,
+    IAdtLockable<TConfig>,
     IAdtVersionable<TConfig>,
-    IAdtTransportAware<TConfig, TReadResult> {}
+    IAdtTransportAware<TConfig, TValue> {}
