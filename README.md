@@ -260,6 +260,7 @@ This package is responsible for:
     - Update: lock → check(inactive) → update → unlock → check → activate
     - Delete: check(deletion) → delete
 - **Capability atoms** (`adt/IAdtCapabilities.ts`, since 11.2.0) — small interfaces that partition the 13 methods of `IAdtObject`, each method belonging to exactly one, so a consumer can depend on just the capability it needs instead of the whole contract:
+  - Since 29.0.0 the eight members of these atoms — `create`, `read`, `readMetadata`, `update`, `delete`, `validate`, `check`, `activate` — answer `Promise<IAdtResponse<IAdtResult<TReadResult>>>` instead of throwing. `@throws` remains only on `lock`, `unlock`, `getVersions` and `getVersionSource`, which answer a lock handle, a state and a version list respectively and so have no failure half to put a refusal in
   - `IAdtCreatable` — `create`
   - `IAdtReadable` — `read`, `readMetadata`
   - `IAdtUpdatable` — `update` (since 15.0.0)
@@ -281,11 +282,13 @@ This package is responsible for:
   - Since 17.0.0 **no interface in this package declares a capability the object does not have**. `IFeatureToggleObject` and `IAdtServiceBinding` were the last two extending `IAdtObject` while their handlers refused version history, and a lock or a transport; each now extends the atoms it satisfies. That is asserted rather than believed: a guard in `@mcp-abap-adt/adt-clients` compares all 36 factory return types against the 10 atoms in both directions, and calls every declared method to check it issues the request its capability names.
   - There is no atom or composite for "everything but versions" — a capability vocabulary states what an object supports, never what it lacks. A handler that is the full set minus `IAdtVersionable` declares `IAdtCrud & IAdtValidatable & IAdtCheckable & IAdtActivatable & IAdtLockable & IAdtTransportAware` directly (see the [15.0.0 CHANGELOG entry](CHANGELOG.md) for why the earlier `IAdtNonVersionedObject` composite was removed).
 - `IAdtOperationOptions` - Unified options for create and update operations
-  - Fields: `activateOnCreate`, `activateOnUpdate`, `deleteOnFailure`, `sourceCode`, `xmlContent`, `timeout`
+  - Fields: `analyse`, `activateOnCreate`, `activateOnUpdate`, `deleteOnFailure`, `sourceCode`, `xmlContent`, `lockHandle`, `timeout`
+  - `analyse` (since 29.0.0) is the caller's own reading of what counts as a failure: `(verdict: IAdtError | undefined, answer?: IAdtWireResponse) => IAdtError | undefined`. It is handed the default's verdict **and** the answer it was reached from, so it can overrule in either direction. It exists because no single reading serves every caller — ADT answers a request for a missing object with **200 and an empty body**, and those same bytes are a failure to a read-modify-write, since writing back what it read erases the object, and an empty list to a listing
 - `AdtObjectErrorCodes` - Error code constants for ADT object operations
   - Constants: `OBJECT_NOT_FOUND`, `OBJECT_NOT_READY`, `VALIDATION_FAILED`, `CREATE_FAILED`, `UPDATE_FAILED`, `DELETE_FAILED`, `ACTIVATE_FAILED`, `CHECK_FAILED`, `LOCK_FAILED`, `UNLOCK_FAILED`
-- `IAdtObjectState` - Base state interface for ADT object operations
-  - Fields: `validationResponse`, `createResult`, `lockHandle`, `updateResult`, `checkResult`, `unlockResult`, `activateResult`, `deleteResult`, `readResult`, `metadataResult`, `transportResult`, `errors`
+- `IAdtObjectState` - Base state interface for ADT object operations, and what `IAdtResult` carries for these members: a chain like `create` is seven requests, and this is the only shape naming each one's answer separately
+  - Fields: `validationResponse`, `createResult`, `lockHandle`, `updateResult`, `checkResult`, `unlockResult`, `activateResult`, `deleteResult`, `readResult`, `metadataResult`, `transportResult`
+  - **No `errors` field since 29.0.0.** An array of errors travelling beside a successful-looking state is a failure the caller is not required to notice — measured in `@mcp-abap-adt/adt-clients`, five of seven probed chains reported `errors: []` while SAP had refused, three of them writes. A failure is the other half of the `IAdtResponse` the member answers, where `ok` makes reading it compulsory
 - `IAdtObjectConfig` - Base configuration interface for ADT objects
   - Common fields: `packageName`, `description`, `transportRequest`
 - **Per-object-type contract types** (`IAdt<Object>.ts`, one file per ADT object type — class, program, interface, table, domain, dataElement, ddl, structure, package, functionGroup/Module/Include, behaviorDefinition/Implementation, metadataExtension, enhancement, accessControl, serviceDefinition/Binding, transformation, scalarFunction(Implementation), tableType, appendStructure, authorizationField, featureToggle, messageClass, transport, unitTest):
