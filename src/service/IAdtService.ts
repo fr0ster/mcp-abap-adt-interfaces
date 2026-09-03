@@ -12,7 +12,6 @@ import type { IAdtOperationOptions } from '../adt/IAdtObject';
 import type {
   IDeleteServiceBindingParams,
   IServiceBindingConfig,
-  IServiceBindingState,
   ServiceBindingVariant,
 } from '../adt/IAdtServiceBinding';
 import type { IAdtWireResponse } from '../connection/IAbapConnection';
@@ -132,10 +131,10 @@ export interface IAdtServiceBinding
     IAdtReadable<IServiceBindingConfig, string, string>,
     IAdtUpdatable<IServiceBindingConfig, void>,
     IAdtDeletable<IServiceBindingConfig, void>,
-    IAdtValidatable<IServiceBindingConfig, IServiceBindingState>,
-    IAdtCheckable<IServiceBindingConfig, IServiceBindingState>,
-    IAdtActivatable<IServiceBindingConfig, IServiceBindingState>,
-    IAdtTransportAware<IServiceBindingConfig, IServiceBindingState> {
+    IAdtValidatable<IServiceBindingConfig, string>,
+    IAdtCheckable<IServiceBindingConfig, string>,
+    IAdtActivatable<IServiceBindingConfig, string>,
+    IAdtTransportAware<IServiceBindingConfig, string> {
   getServiceBindingTypes(): Promise<IAdtWireResponse>;
   validateServiceBinding(
     params: IValidateServiceBindingParams,

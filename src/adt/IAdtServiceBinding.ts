@@ -3,7 +3,6 @@
  */
 
 import type { IAdtWireResponse } from '../connection/IAbapConnection';
-import type { IAdtObjectState } from './IAdtObjectState';
 
 export type ServiceBindingType = 'ODATA' | 'INA' | 'SQL';
 export type ServiceBindingVersion = 'V2' | 'V4' | '0001' | '0000' | string;
@@ -101,11 +100,4 @@ export interface IServiceBindingConfig {
   serviceType?: GeneratedServiceType;
   transportRequest?: string;
   runTransportCheck?: boolean;
-}
-
-export interface IServiceBindingState extends IAdtObjectState {
-  serviceTypesResult?: IAdtWireResponse;
-  inactiveCheckResult?: IAdtWireResponse;
-  generatedInfoResult?: IAdtWireResponse;
-  activeCheckResult?: IAdtWireResponse;
 }

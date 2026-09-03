@@ -3,7 +3,6 @@
  */
 
 import type { IAdtWireResponse as AxiosResponse } from '../connection/IAbapConnection';
-import type { IAdtObjectState } from './IAdtObjectState';
 
 export interface ICreateClassParams {
   class_name: string;
@@ -47,17 +46,6 @@ export interface IClassConfig {
   masterSystem?: string;
   responsible?: string;
   classTemplate?: string;
-}
-
-export interface IClassState extends IAdtObjectState {
-  // All operation results are in IAdtObjectState:
-  // validationResponse, createResult, lockHandle, updateResult, checkResult,
-  // unlockResult, activateResult, deleteResult, readResult, transportResult
-  // Class-specific fields can be added here if needed
-  testClassCode?: string;
-  testActivateResult?: AxiosResponse;
-  testLockHandle?: string;
-  testClassesResult?: AxiosResponse;
 }
 
 // Class-includes config types — promoted verbatim from adt-clients

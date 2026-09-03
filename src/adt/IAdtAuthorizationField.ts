@@ -2,8 +2,6 @@
  * AuthorizationField (SUSO / AUTH) ADT operation parameter interfaces (low-level)
  */
 
-import type { IAdtObjectState } from './IAdtObjectState';
-
 export interface ICreateAuthorizationFieldParams {
   authorization_field_name: string;
   description?: string;
@@ -53,5 +51,3 @@ export interface IAuthorizationFieldConfig {
 
   onLock?: (lockHandle: string) => void;
 }
-
-export interface IAuthorizationFieldState extends IAdtObjectState {}

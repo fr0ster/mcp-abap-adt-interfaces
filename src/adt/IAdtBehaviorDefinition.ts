@@ -3,7 +3,6 @@
  */
 
 import type { IAdtWireResponse as AxiosResponse } from '../connection/IAbapConnection';
-import type { IAdtObjectState } from './IAdtObjectState';
 
 export type BehaviorDefinitionImplementationType =
   | 'Managed'
@@ -69,27 +68,6 @@ export interface IBehaviorDefinitionConfig {
   rootEntity?: string; // Required for validate operations, optional for others
   sourceCode?: string;
   onLock?: (lockHandle: string) => void;
-}
-
-/**
- * State maintained by the Behavior Definition Builder
- */
-export interface IBehaviorDefinitionState extends IAdtObjectState {
-  /** Name of the behavior definition */
-  name?: string;
-  /** Lock result */
-  lockResult?: AxiosResponse<unknown>;
-  /** Update source result (separate from updateResult) */
-  updateSourceResult?: AxiosResponse<unknown>;
-  /** Check results (array for multiple checks) */
-  checkResults?: AxiosResponse<unknown>[];
-  /** Delete check result */
-  deleteCheckResult?: AxiosResponse<unknown>;
-  /** Validation result */
-  validationResult?: AxiosResponse<unknown>;
-  // All operation results are in IAdtObjectState:
-  // validationResponse, createResult, lockHandle, updateResult, checkResult,
-  // unlockResult, activateResult, deleteResult, readResult, transportResult
 }
 
 // Result/check helper types — promoted verbatim from adt-clients

@@ -2,8 +2,6 @@
  * Metadata Extension ADT operation parameter interfaces (low-level)
  */
 
-import type { IAdtObjectState } from './IAdtObjectState';
-
 // Promoted verbatim from adt-clients src/core/metadataExtension/types.ts
 export interface IMetadataExtensionValidationParams {
   name: string;
@@ -33,11 +31,4 @@ export interface IMetadataExtensionConfig {
   masterSystem?: string;
   responsible?: string;
   sessionId?: string;
-}
-
-export interface IMetadataExtensionState extends IAdtObjectState {
-  sourceCode?: string; // MetadataExtension-specific: stored source code
-  // All operation results are in IAdtObjectState:
-  // validationResponse, createResult, lockHandle, updateResult, checkResult,
-  // unlockResult, activateResult, deleteResult, readResult, transportResult
 }

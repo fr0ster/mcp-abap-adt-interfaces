@@ -2,8 +2,6 @@
  * Function Group ADT operation parameter interfaces (snake_case, low-level)
  */
 
-import type { IAdtObjectState } from './IAdtObjectState';
-
 export interface ICreateFunctionGroupParams {
   functionGroupName: string;
   description: string;
@@ -39,11 +37,4 @@ export interface IFunctionGroupConfig {
   responsible?: string; // User responsible for the object — falls back to SAP_USERNAME env var
   sessionId?: string;
   onLock?: (lockHandle: string) => void;
-}
-
-export interface IFunctionGroupState extends IAdtObjectState {
-  // All operation results are in IAdtObjectState:
-  // validationResponse, createResult, lockHandle, updateResult, checkResult,
-  // unlockResult, activateResult, deleteResult, readResult, transportResult
-  // FunctionGroup-specific fields can be added here if needed
 }

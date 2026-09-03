@@ -2,7 +2,7 @@
  * Interface ADT operation parameter interfaces (snake_case, low-level)
  */
 
-import type { IAdtObjectConfig, IAdtObjectState } from './IAdtObjectState';
+import type { IAdtObjectConfig } from './IAdtObjectState';
 
 export interface ICreateInterfaceParams {
   interfaceName: string;
@@ -37,8 +37,4 @@ export interface IInterfaceConfig extends IAdtObjectConfig {
   sourceCode?: string;
   sessionId?: string;
   onLock?: (lockHandle: string) => void;
-}
-
-export interface IInterfaceState extends IAdtObjectState {
-  // Interface-specific state can be added here if needed
 }

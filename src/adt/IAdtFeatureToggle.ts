@@ -12,7 +12,6 @@ import type {
   IAdtUpdatable,
   IAdtValidatable,
 } from './IAdtCapabilities';
-import type { IAdtObjectState } from './IAdtObjectState';
 
 export type FeatureToggleState = 'on' | 'off' | 'undefined';
 
@@ -125,12 +124,6 @@ export interface IFeatureToggleConfig {
   onLock?: (lockHandle: string) => void;
 }
 
-export interface IFeatureToggleState extends IAdtObjectState {
-  runtimeState?: IFeatureToggleRuntimeState;
-  checkStateResult?: IFeatureToggleCheckStateResult;
-  sourceResult?: IFeatureToggleSource;
-}
-
 /**
  * A feature toggle, and what ADT gives one.
  *
@@ -145,31 +138,31 @@ export interface IFeatureToggleObject
     IAdtReadable<IFeatureToggleConfig, string, string>,
     IAdtUpdatable<IFeatureToggleConfig, void>,
     IAdtDeletable<IFeatureToggleConfig, void>,
-    IAdtValidatable<IFeatureToggleConfig, IFeatureToggleState>,
-    IAdtCheckable<IFeatureToggleConfig, IFeatureToggleState>,
-    IAdtActivatable<IFeatureToggleConfig, IFeatureToggleState>,
+    IAdtValidatable<IFeatureToggleConfig, IFeatureToggleRuntimeState>,
+    IAdtCheckable<IFeatureToggleConfig, IFeatureToggleRuntimeState>,
+    IAdtActivatable<IFeatureToggleConfig, IFeatureToggleRuntimeState>,
     IAdtLockable<IFeatureToggleConfig> {
   switchOn(
     config: Partial<IFeatureToggleConfig>,
     opts: { transportRequest: string; userSpecific?: boolean },
-  ): Promise<IFeatureToggleState>;
+  ): Promise<IFeatureToggleRuntimeState>;
 
   switchOff(
     config: Partial<IFeatureToggleConfig>,
     opts: { transportRequest: string; userSpecific?: boolean },
-  ): Promise<IFeatureToggleState>;
+  ): Promise<IFeatureToggleRuntimeState>;
 
   getRuntimeState(
     config: Partial<IFeatureToggleConfig>,
-  ): Promise<IFeatureToggleState>;
+  ): Promise<IFeatureToggleRuntimeState>;
 
   checkState(
     config: Partial<IFeatureToggleConfig>,
     opts?: { userSpecific?: boolean },
-  ): Promise<IFeatureToggleState>;
+  ): Promise<IFeatureToggleRuntimeState>;
 
   readSource(
     config: Partial<IFeatureToggleConfig>,
     version?: 'active' | 'inactive',
-  ): Promise<IFeatureToggleState>;
+  ): Promise<IFeatureToggleRuntimeState>;
 }

@@ -10,7 +10,6 @@ import type {
   IAdtRequest,
   IListTransportsOptions,
   ITransportConfig,
-  ITransportState,
   ITransportTree,
 } from '../index';
 
@@ -44,8 +43,8 @@ class MyOwnRequests implements IAdtRequest {
   ): Promise<IAdtResponse<void>> {
     return answered(undefined);
   }
-  async list(_options?: IListTransportsOptions): Promise<ITransportState> {
-    return {};
+  async list(_options?: IListTransportsOptions): Promise<ITransportTree> {
+    return { attributes: {}, requests: [] };
   }
   async listNodes(options?: IListTransportsOptions): Promise<ITransportTree>;
   async listNodes<T>(

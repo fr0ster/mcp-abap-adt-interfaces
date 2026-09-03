@@ -9,7 +9,6 @@ import type {
   IAdtReadable,
   IAdtUpdatable,
 } from './IAdtCapabilities';
-import type { IAdtObjectState } from './IAdtObjectState';
 
 export interface ICreateTransportParams {
   transport_type?: string;
@@ -69,12 +68,6 @@ export interface ITransportConfig {
 }
 
 // Transport state
-export interface ITransportState extends IAdtObjectState {
-  transportNumber?: string;
-  taskNumber?: string;
-  listResult?: IAdtWireResponse;
-}
-
 /**
  * One container a request was nested under — `tm:workbench`, `tm:target`,
  * `tm:modifiable` and whatever else a system groups by.
@@ -179,7 +172,7 @@ export interface IAdtRequest
    * `configUri` is required by the layer beneath — see `IListTransportsParams`,
    * where the measurement is. This resolves it; that one does not.
    */
-  list(options?: IListTransportsOptions): Promise<ITransportState>;
+  list(options?: IListTransportsOptions): Promise<ITransportTree>;
 
   /** The tree the server sends, parsed by this package. */
   listNodes(options?: IListTransportsOptions): Promise<ITransportTree>;

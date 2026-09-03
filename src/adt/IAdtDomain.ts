@@ -2,8 +2,6 @@
  * Domain ADT operation parameter interfaces (snake_case, low-level)
  */
 
-import type { IAdtObjectState } from './IAdtObjectState';
-
 export interface IFixedValue {
   low: string;
   text: string;
@@ -69,5 +67,3 @@ export interface IDomainConfig {
   value_table?: string;
   fixed_values?: IFixedValue[];
 }
-
-export interface IDomainState extends IAdtObjectState {}

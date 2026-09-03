@@ -2,8 +2,6 @@
  * FunctionInclude (FUGR/I) ADT operation parameter interfaces (low-level)
  */
 
-import type { IAdtObjectState } from './IAdtObjectState';
-
 export interface ICreateFunctionIncludeParams {
   function_group_name: string;
   include_name: string;
@@ -24,5 +22,3 @@ export interface IFunctionIncludeConfig {
   sessionId?: string;
   onLock?: (lockHandle: string) => void;
 }
-
-export interface IFunctionIncludeState extends IAdtObjectState {}
