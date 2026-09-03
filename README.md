@@ -260,7 +260,7 @@ This package is responsible for:
     - Update: lock → check(inactive) → update → unlock → check → activate
     - Delete: check(deletion) → delete
 - **Capability atoms** (`adt/IAdtCapabilities.ts`, since 11.2.0) — small interfaces that partition the 13 methods of `IAdtObject`, each method belonging to exactly one, so a consumer can depend on just the capability it needs instead of the whole contract:
-  - Since 29.0.0 the eight members of these atoms — `create`, `read`, `readMetadata`, `update`, `delete`, `validate`, `check`, `activate` — answer `Promise<IAdtResponse<IAdtResult<TReadResult>>>` instead of throwing. `@throws` remains only on `lock`, `unlock`, `getVersions` and `getVersionSource`, which answer a lock handle, a state and a version list respectively and so have no failure half to put a refusal in
+  - Since 29.0.0 the eight members of these atoms — `create`, `read`, `readMetadata`, `update`, `delete`, `validate`, `check`, `activate` — answer `Promise<IAdtResponse<IAdtResult<TReadResult>>>` instead of throwing. `@throws` remains only on `lock`, `unlock`, `getVersions` and `getVersionSource` — they answer a lock handle, a state, a version list and a source string respectively, so none of them has a failure half to put a refusal in
   - `IAdtCreatable` — `create`
   - `IAdtReadable` — `read`, `readMetadata`
   - `IAdtUpdatable` — `update` (since 15.0.0)
