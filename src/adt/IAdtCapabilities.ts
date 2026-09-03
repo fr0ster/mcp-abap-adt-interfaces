@@ -221,6 +221,10 @@ export interface IAdtVersionable<TConfig> {
   /**
    * Fetch the source code of a specific version.
    * @param contentUri the opaque, complete `contentUri` from a getVersions() entry.
+   * @throws an error when the version resource cannot be read. Like its pair
+   *         above, this member answers the source itself and so has no failure
+   *         half to put a refusal in. The error's type is the implementation's;
+   *         this package ships no error class to name here.
    */
   getVersionSource(contentUri: string): Promise<string>;
 }

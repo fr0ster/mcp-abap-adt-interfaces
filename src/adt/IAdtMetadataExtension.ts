@@ -39,5 +39,5 @@ export interface IMetadataExtensionState extends IAdtObjectState {
   sourceCode?: string; // MetadataExtension-specific: stored source code
   // All operation results are in IAdtObjectState:
   // validationResponse, createResult, lockHandle, updateResult, checkResult,
-  // unlockResult, activateResult, deleteResult, readResult, transportResult, errors
+  // unlockResult, activateResult, deleteResult, readResult, transportResult
 }

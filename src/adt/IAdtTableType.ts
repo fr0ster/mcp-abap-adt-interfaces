@@ -100,6 +100,6 @@ export interface ITableTypeConfig {
 export interface ITableTypeState extends IAdtObjectState {
   // All operation results are in IAdtObjectState:
   // validationResponse, createResult, lockHandle, updateResult, checkResult,
-  // unlockResult, activateResult, deleteResult, readResult, transportResult, errors
+  // unlockResult, activateResult, deleteResult, readResult, transportResult
   // TableType-specific fields can be added here if needed
 }

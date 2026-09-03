@@ -46,6 +46,6 @@ export interface IFunctionModuleConfig {
 export interface IFunctionModuleState extends IAdtObjectState {
   // All operation results are in IAdtObjectState:
   // validationResponse, createResult, lockHandle, updateResult, checkResult,
-  // unlockResult, activateResult, deleteResult, readResult, transportResult, errors
+  // unlockResult, activateResult, deleteResult, readResult, transportResult
   // FunctionModule-specific fields can be added here if needed
 }

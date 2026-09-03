@@ -44,6 +44,6 @@ export interface IFunctionGroupConfig {
 export interface IFunctionGroupState extends IAdtObjectState {
   // All operation results are in IAdtObjectState:
   // validationResponse, createResult, lockHandle, updateResult, checkResult,
-  // unlockResult, activateResult, deleteResult, readResult, transportResult, errors
+  // unlockResult, activateResult, deleteResult, readResult, transportResult
   // FunctionGroup-specific fields can be added here if needed
 }
