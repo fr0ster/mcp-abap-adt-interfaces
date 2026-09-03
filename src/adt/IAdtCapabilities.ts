@@ -211,9 +211,10 @@ export interface IAdtVersionable<TConfig> {
    * List the version history of this object's source. Identity is passed per
    * call (the implementations are stateless factories) — e.g.
    * `getVersions({ className: 'ZCL_X' })`.
-   * @throws AdtOperationError(UNSUPPORTED_OPERATION) when the object has no
-   *         version resource (SAP 404/406, or a non-source object type).
-   *         Never leaks raw HTTP.
+   * @throws an error carrying `code: AdtObjectErrorCodes.UNSUPPORTED_OPERATION`
+   *         when the object has no version resource (SAP 404/406, or a
+   *         non-source object type). The type is the implementation's; this
+   *         package ships no error class to name here. Never leaks raw HTTP.
    */
   getVersions(config: Partial<TConfig>): Promise<IObjectVersion[]>;
 

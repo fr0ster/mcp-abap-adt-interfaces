@@ -51,14 +51,20 @@ import type { IAdtError } from './IAdtResponse';
  * These codes therefore apply only to the members that have no failure half to
  * put a refusal in: `lock`, `unlock`, `getVersions` and `getVersionSource`.
  *
+ * The code is read structurally, off whatever was thrown. This package exports
+ * no error class to narrow with — a contract says what a thing is, and shipping
+ * a class from it would make "use your own implementation" untrue for that
+ * piece — so an implementation is free to throw its own type as long as it
+ * carries `code`.
+ *
  * ```typescript
- * import { AdtObjectErrorCodes, AdtOperationError } from '@mcp-abap-adt/interfaces';
+ * import { AdtObjectErrorCodes } from '@mcp-abap-adt/interfaces';
  *
  * try {
  *   await adtObject.lock({ className: 'ZTEST' });
  * } catch (error: unknown) {
- *   const e = error as AdtOperationError;
- *   if (e.code === AdtObjectErrorCodes.LOCK_FAILED) {
+ *   const code = (error as { code?: string }).code;
+ *   if (code === AdtObjectErrorCodes.LOCK_FAILED) {
  *     // held by someone else
  *   }
  * }
