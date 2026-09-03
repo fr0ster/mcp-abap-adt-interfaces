@@ -18,12 +18,7 @@
  * the other.
  */
 import type { IAdtOperationOptions, IObjectVersion } from './IAdtObject';
-import type { IAdtWireResponse } from '../connection/IAbapConnection';
-import type {
-  IAdtError,
-  IAdtResponse,
-  IAdtResult,
-} from './IAdtResponse';
+import type { IAdtResponse, IAdtResult } from './IAdtResponse';
 import type { IAdtObjectHit, ISearchObjectsParams } from './IAdtShared';
 
 /**
@@ -189,6 +184,12 @@ export interface IAdtLockable<TConfig, TReadResult = TConfig> {
    *
    * @param config - Object identification
    * @returns Lock handle (string) that must be used in unlock() and update operations
+   * @throws Error if lock fails (object may be locked by another user)
+   *
+   * Still throws, deliberately: this member answers a lock handle rather than
+   * `IAdtResponse`, so it has no failure half to put a refusal in. It migrates
+   * with the lock pair or not at all — a lock and its unlock are one operation
+   * seen from two ends.
    */
   lock(config: Partial<TConfig>): Promise<string>;
 
@@ -200,6 +201,7 @@ export interface IAdtLockable<TConfig, TReadResult = TConfig> {
    * @param config - Object identification
    * @param lockHandle - Lock handle returned from lock() operation
    * @returns State with unlock result
+   * @throws Error if unlock fails
    */
   unlock(config: Partial<TConfig>, lockHandle: string): Promise<TReadResult>;
 }
@@ -209,6 +211,7 @@ export interface IAdtVersionable<TConfig> {
    * List the version history of this object's source. Identity is passed per
    * call (the implementations are stateless factories) — e.g.
    * `getVersions({ className: 'ZCL_X' })`.
+   * @throws AdtOperationError(UNSUPPORTED_OPERATION) when the object has no
    *         version resource (SAP 404/406, or a non-source object type).
    *         Never leaks raw HTTP.
    */

@@ -8,6 +8,7 @@
  * provides high-level operation chains with automatic error handling and cleanup.
  */
 
+import type { IAdtWireResponse } from '../connection/IAbapConnection';
 import type {
   IAdtActivatable,
   IAdtCheckable,
@@ -17,7 +18,6 @@ import type {
   IAdtValidatable,
   IAdtVersionable,
 } from './IAdtCapabilities';
-import type { IAdtWireResponse } from '../connection/IAbapConnection';
 import type { IAdtError } from './IAdtResponse';
 
 /**
@@ -91,7 +91,6 @@ export interface IAdtOperationOptions {
     verdict: IAdtError | undefined,
     answer?: IAdtWireResponse,
   ) => IAdtError | undefined;
-
 
   /**
    * Activate object after creation (for create operations)

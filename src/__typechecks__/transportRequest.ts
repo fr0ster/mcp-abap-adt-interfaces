@@ -5,6 +5,7 @@
 // something written entirely outside the package fits too, and that a caller
 // holding the contract can reach everything the handler is for.
 
+import type { IAdtResponse, IAdtResult } from '../adt/IAdtResponse';
 import type {
   IAdtRequest,
   IListTransportsOptions,
@@ -12,7 +13,6 @@ import type {
   ITransportState,
   ITransportTree,
 } from '../index';
-import type { IAdtResponse, IAdtResult } from '../adt/IAdtResponse';
 
 /** A success, built by hand — these proofs are about the shape, not the helper. */
 function answered<T>(value: T): IAdtResponse<IAdtResult<T>> {
