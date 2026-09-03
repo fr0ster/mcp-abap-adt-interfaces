@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [29.0.0] - 2026-09-03
+
 ### Changed
 
 - **BREAKING: the seven capability atoms answer `IAdtResponse` instead of
@@ -96,7 +98,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and left out, because `IAdtError`, `IAdtWireResponse`, `ILogger` and the
   established `parse: (data: unknown) => T` form already cover them.
 
-## [28.1.0] - 2026-09-03
+### Note on 28.1.0
+
+**28.1.0 was tagged but never published**, so npm goes from 28.0.0 straight to
+29.0.0. Its content — the move to `LGPL-3.0-only` — is part of this release, and
+its entry is kept below rather than merged so the licence change stays findable
+under its own heading.
+
+## [28.1.0] - 2026-09-03 — tagged, not published
 
 ### Licence
 
