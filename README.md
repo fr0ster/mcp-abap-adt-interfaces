@@ -244,7 +244,7 @@ This package is responsible for:
 
 #### What This Package Does NOT Do
 
-- **Does NOT implement anything**: This is a type-only package
+- **Does NOT implement anything**: no class and no function is exported. The only executable output is the constants listed above, which are values a contract names rather than behaviour it performs
 - **Does NOT have runtime dependencies**: Only devDependencies for TypeScript compilation
 - **Does NOT know about implementations**: Interfaces are independent of implementations
 
@@ -339,7 +339,8 @@ This package is responsible for:
 - `ICertificateMaterial` / `ICertificateMaterialLoader` - Loaded TLS client-certificate
   material (`cert` / `key` / `pfx` / `passphrase`) and the loader that produces it from a
   config. Structural on purpose: it is the shape an HTTPS client needs, named without
-  importing one, because this package has no runtime.
+  importing one — this package depends on no HTTPS implementation and ships no code
+  that would use one.
 - `IAuthProvider` (since 17.2.0) - **How a connection proves who it
   is on each request**, as opposed to which system it is dialling. Deliberately not "give me a
   token": four of the five ways in are not tokens — basic is a header built from a username, a
