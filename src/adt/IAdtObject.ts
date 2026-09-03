@@ -17,6 +17,8 @@ import type {
   IAdtValidatable,
   IAdtVersionable,
 } from './IAdtCapabilities';
+import type { IAdtWireResponse } from '../connection/IAbapConnection';
+import type { IAdtError } from './IAdtResponse';
 
 /**
  * Error codes that can be thrown by IAdtObject methods
@@ -68,6 +70,29 @@ export const AdtObjectErrorCodes = {
  * Unified interface for both create and update operations
  */
 export interface IAdtOperationOptions {
+  /**
+   * The caller's own reading of what counts as a failure.
+   *
+   * Handed the default's verdict **and** the answer it was reached from, so it
+   * can overrule in either direction: name a failure the default let through, or
+   * clear one it raised. Returning `undefined` means "not a failure here".
+   *
+   * This exists because no single reading serves every caller. ADT answers a
+   * request for a missing object with 200 and an empty body, and those same
+   * bytes are a failure to a read-modify-write — writing back what it read
+   * erases the object — and an empty list to a listing. Neither reading can be
+   * the library's.
+   *
+   * The status is not the signal: a refusal arrives inside a 200, and what
+   * decides is the message severity in the document, which is why the raw answer
+   * is passed rather than a summary of it.
+   */
+  analyse?: (
+    verdict: IAdtError | undefined,
+    answer?: IAdtWireResponse,
+  ) => IAdtError | undefined;
+
+
   /**
    * Activate object after creation (for create operations)
    * @default false

@@ -7,6 +7,75 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **BREAKING: the seven capability atoms answer `IAdtResponse` instead of
+  throwing.** `create`, `read`, `readMetadata`, `update`, `delete`, `validate`,
+  `check` and `activate` now return
+  `Promise<IAdtResponse<IAdtResult<TReadResult>>>`, and the `@throws` lines are
+  gone from all of them.
+
+  Throwing was not merely permitted by these atoms, it was *specified*: an
+  implementation could not answer instead of throwing without failing to satisfy
+  the interface. The compiler proved that once already, when `AdtUtils` had to
+  drop `IAdtSearchable` because one atom promised `ISearchResult[]` and another
+  promised `IAdtResponse` for the same member. And because the contract said only
+  "Error", every consumer invented its own reading of the message — which is how
+  a user came to see a sentence the library composed rather than the one SAP
+  sent.
+
+  ```typescript
+  const answer = await client.getClass().create(config);
+  if (answer.ok) {
+    answer.getResult().value;   // IClassState — every step of the chain
+  } else {
+    answer.getError().origin;   // 'connection' | 'refusal' | 'parse'
+    answer.getError().message;  // what SAP said
+  }
+  ```
+
+- **BREAKING: `IAdtObjectState` no longer has `errors`.** An array of errors
+  travelling beside a successful-looking state is a failure the caller is not
+  required to notice. Measured in `@mcp-abap-adt/adt-clients`: five of seven
+  probed chains reported `errors: []` while SAP had refused, three of them
+  writes. A failure is now the other half of the union, where `ok` makes reading
+  it compulsory.
+
+  Nothing is lost — `IAdtError` carries `origin`, SAP's own message, the raw
+  document and the request that produced it, which is strictly more than the
+  array held.
+
+### Added
+
+- **`IAdtOperationOptions.analyse`** — the caller's own reading of what counts as
+  a failure. Handed the default's verdict **and** the answer it was reached from,
+  so it can overrule in either direction: name a failure the default let through,
+  or clear one it raised.
+
+  It exists because no single reading serves every caller. ADT answers a request
+  for a missing object with **200 and an empty body**, and those same bytes are a
+  failure to a read-modify-write — writing back what it read erases the object —
+  and an empty list to a listing. Neither reading can be the library's.
+
+  The raw answer is passed rather than a summary because the status is not the
+  signal: a refusal arrives inside a 200, and what decides is the message
+  severity in the document.
+
+### Decisions
+
+- **20 — choice is offered by injection, never by more contract.** Strategies are
+  injected rather than enumerated; the contract names the injection point and
+  nothing about how it is filled; existing shapes are reused before new ones are
+  declared; a function is preferred to a fixed set of variants.
+- **21 — a test asks the contract whether there was an error**, rather than
+  reading a status code, asserts both directions, and prints its skips.
+
+  Both were followed while writing this change, and both removed things from it:
+  a step type, a logging-strategy interface, a named result-strategy type, a
+  message-severity enum and a full/medium/short detail enum were all considered
+  and left out, because `IAdtError`, `IAdtWireResponse`, `ILogger` and the
+  established `parse: (data: unknown) => T` form already cover them.
+
 ## [28.1.0] - 2026-09-03
 
 ### Licence

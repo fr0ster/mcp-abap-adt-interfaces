@@ -11,7 +11,15 @@ import type { IAdtWireResponse } from '../connection/IAbapConnection';
  * Base state that all ADT Object state types should extend
  *
  * This interface defines the common structure for all operation results
- * returned by IAdtObject methods (validate, create, read, readMetadata, update, delete, activate, check, readTransport).
+ * returned by IAdtObject methods (validate, create, read, readMetadata, update,
+ * delete, activate, check, readTransport).
+ *
+ * **There is no `errors` field.** A failure is the other half of the
+ * `IAdtResponse` a member answers, where `ok` makes reading it compulsory. An
+ * error array travelling beside a successful-looking state is a failure the
+ * caller is not required to notice — measured in @mcp-abap-adt/adt-clients,
+ * five of seven probed chains reported `errors: []` while SAP had refused,
+ * three of them writes.
  *
  * Specific state types can extend this interface to add entity-specific fields.
  *
@@ -45,8 +53,6 @@ export interface IAdtObjectState {
   metadataResult?: IAdtWireResponse;
   /** Transport request read result from readTransport() method */
   transportResult?: IAdtWireResponse;
-  /** Array of errors that occurred during operations */
-  errors: Array<{ method: string; error: Error; timestamp: Date }>;
 }
 
 /**
