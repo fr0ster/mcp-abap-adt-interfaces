@@ -27,7 +27,7 @@ import type { IAdtObjectHit, ISearchObjectsParams } from './IAdtShared';
  * Separate from IAdtModifiable because creation and mutation do not travel
  * together: a unit-test run is created and never updated.
  */
-export interface IAdtCreatable<TConfig, TValue> {
+export interface IAdtCreatable<TConfig, TCreated> {
   /**
    * Create object with full operation chain:
    * validate → create → check → lock → check(inactive) → update → unlock → check → activate (optional)
@@ -39,11 +39,11 @@ export interface IAdtCreatable<TConfig, TValue> {
   create(
     config: TConfig,
     options?: IAdtOperationOptions,
-  ): Promise<IAdtResponse<TValue>>;
+  ): Promise<IAdtResponse<TCreated>>;
 }
 
 /** Obtain a representation of an object — its source, or the metadata about it. */
-export interface IAdtReadable<TConfig, TValue> {
+export interface IAdtReadable<TConfig, TSource, TMetadata> {
   /**
    * Read object (source code or XML that describes the object)
    * For objects without source code (Domain, DataElement), this returns metadata XML.
@@ -60,7 +60,7 @@ export interface IAdtReadable<TConfig, TValue> {
     config: Partial<TConfig>,
     version?: 'active' | 'inactive',
     options?: { withLongPolling?: boolean } & IAdtOperationOptions,
-  ): Promise<IAdtResponse<TValue>>;
+  ): Promise<IAdtResponse<TSource>>;
 
   /**
    * Read object metadata (object characteristics: package, responsible, description, etc.)
@@ -80,10 +80,10 @@ export interface IAdtReadable<TConfig, TValue> {
       withLongPolling?: boolean;
       version?: 'active' | 'inactive';
     } & IAdtOperationOptions,
-  ): Promise<IAdtResponse<TValue>>;
+  ): Promise<IAdtResponse<TMetadata>>;
 }
 
-export interface IAdtUpdatable<TConfig, TValue> {
+export interface IAdtUpdatable<TConfig, TUpdated> {
   /**
    * Update object with full operation chain:
    * lock → check(inactive) → update → unlock → check → activate (optional)
@@ -95,10 +95,10 @@ export interface IAdtUpdatable<TConfig, TValue> {
   update(
     config: Partial<TConfig>,
     options?: IAdtOperationOptions,
-  ): Promise<IAdtResponse<TValue>>;
+  ): Promise<IAdtResponse<TUpdated>>;
 }
 
-export interface IAdtDeletable<TConfig, TValue> {
+export interface IAdtDeletable<TConfig, TDeleted> {
   /**
    * Delete object
    * Performs deletion check before deleting.
@@ -109,37 +109,10 @@ export interface IAdtDeletable<TConfig, TValue> {
   delete(
     config: Partial<TConfig>,
     options?: IAdtOperationOptions,
-  ): Promise<IAdtResponse<TValue>>;
+  ): Promise<IAdtResponse<TDeleted>>;
 }
 
-/**
- * Change **and** remove an existing object — the composite for handlers that do
- * both.
- *
- * The two do not travel together, which is why they are separate atoms: a
- * transport request, for one, takes a new description and can be deleted while
- * empty, but a handler may well support only the first. Name
- * {@link IAdtUpdatable} or {@link IAdtDeletable} when only one is required, and
- * this one when a consumer genuinely needs both.
- */
-export interface IAdtModifiable<TConfig, TValue>
-  extends IAdtUpdatable<TConfig, TValue>,
-    IAdtDeletable<TConfig, TValue> {}
-
-/**
- * create / read / readMetadata / update / delete.
- *
- * Retained as the composite of {@link IAdtCreatable}, {@link IAdtReadable} and
- * {@link IAdtModifiable} so existing consumers keep compiling. Prefer naming the
- * atom you actually need: this one claims an object can be changed and removed,
- * which is not true of every handler.
- */
-export interface IAdtCrud<TConfig, TValue>
-  extends IAdtCreatable<TConfig, TValue>,
-    IAdtReadable<TConfig, TValue>,
-    IAdtModifiable<TConfig, TValue> {}
-
-export interface IAdtValidatable<TConfig, TValue> {
+export interface IAdtValidatable<TConfig, TValidated> {
   /**
    * Validate object configuration before creation
    * @param config - Object configuration
@@ -148,10 +121,10 @@ export interface IAdtValidatable<TConfig, TValue> {
   validate(
     config: Partial<TConfig>,
     options?: IAdtOperationOptions,
-  ): Promise<IAdtResponse<TValue>>;
+  ): Promise<IAdtResponse<TValidated>>;
 }
 
-export interface IAdtCheckable<TConfig, TValue> {
+export interface IAdtCheckable<TConfig, TChecked> {
   /**
    * Check object (syntax, consistency, etc.)
    * @param config - Object identification
@@ -162,10 +135,10 @@ export interface IAdtCheckable<TConfig, TValue> {
     config: Partial<TConfig>,
     status?: string,
     options?: IAdtOperationOptions,
-  ): Promise<IAdtResponse<TValue>>;
+  ): Promise<IAdtResponse<TChecked>>;
 }
 
-export interface IAdtActivatable<TConfig, TValue> {
+export interface IAdtActivatable<TConfig, TActivated> {
   /**
    * Activate object
    * @param config - Object identification
@@ -174,7 +147,7 @@ export interface IAdtActivatable<TConfig, TValue> {
   activate(
     config: Partial<TConfig>,
     options?: IAdtOperationOptions,
-  ): Promise<IAdtResponse<TValue>>;
+  ): Promise<IAdtResponse<TActivated>>;
 }
 
 export interface IAdtLockable<TConfig> {
@@ -245,7 +218,7 @@ export interface IAdtSearchable<
   search(criteria: TCriteria): Promise<TValue[]>;
 }
 
-export interface IAdtTransportAware<TConfig, TValue> {
+export interface IAdtTransportAware<TConfig, TTransport> {
   /**
    * Read transport request information for the object
    * @param config - Object identification
@@ -257,34 +230,5 @@ export interface IAdtTransportAware<TConfig, TValue> {
   readTransport(
     config: Partial<TConfig>,
     options?: { withLongPolling?: boolean } & IAdtOperationOptions,
-  ): Promise<IAdtResponse<TValue>>;
+  ): Promise<IAdtResponse<TTransport>>;
 }
-
-import type { IClassConfig, IClassState } from './IAdtClass';
-import type { IAdtObject } from './IAdtObject';
-
-/** Assertion helper: instantiating with `false` is a compile error. */
-type Assert<T extends true> = T;
-
-/** The intersection of every atom that composes IAdtObject. */
-type AllAtoms<C, R> = IAdtCrud<C, R> &
-  IAdtValidatable<C, R> &
-  IAdtCheckable<C, R> &
-  IAdtActivatable<C, R> &
-  IAdtLockable<C> &
-  IAdtVersionable<C> &
-  IAdtTransportAware<C, R>;
-
-/**
- * Guard that the partition stays exact. IAdtObject is now assembled from the
- * atoms, so one direction holds by construction — but the other still catches
- * a method declared on IAdtObject directly instead of on an atom, which is the
- * way this partition would rot.
- */
-type _PartitionIsExact<C, R> = [
-  Assert<IAdtObject<C, R> extends AllAtoms<C, R> ? true : false>,
-  Assert<AllAtoms<C, R> extends IAdtObject<C, R> ? true : false>,
-];
-
-// Instantiate at a concrete pair so the constraints are actually evaluated.
-type _Check = _PartitionIsExact<IClassConfig, IClassState>;

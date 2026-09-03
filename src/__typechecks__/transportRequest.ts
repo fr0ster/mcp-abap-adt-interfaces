@@ -21,30 +21,28 @@ function answered<T>(value: T): IAdtResponse<T> {
 
 /** A consumer's own handler. Nothing here comes from the implementation. */
 class MyOwnRequests implements IAdtRequest {
-  async create(
-    config: ITransportConfig,
-  ): Promise<IAdtResponse<ITransportState>> {
-    return answered({ transportNumber: config.description });
+  async create(config: ITransportConfig): Promise<IAdtResponse<string>> {
+    return answered(config.description);
   }
   async read(
     _config: Partial<ITransportConfig>,
-  ): Promise<IAdtResponse<ITransportState>> {
-    return answered({});
+  ): Promise<IAdtResponse<string>> {
+    return answered('');
   }
   async readMetadata(
     _config: Partial<ITransportConfig>,
-  ): Promise<IAdtResponse<ITransportState>> {
-    return answered({});
+  ): Promise<IAdtResponse<string>> {
+    return answered('');
   }
   async update(
     _config: Partial<ITransportConfig>,
-  ): Promise<IAdtResponse<ITransportState>> {
-    return answered({});
+  ): Promise<IAdtResponse<void>> {
+    return answered(undefined);
   }
   async delete(
     _config: Partial<ITransportConfig>,
-  ): Promise<IAdtResponse<ITransportState>> {
-    return answered({});
+  ): Promise<IAdtResponse<void>> {
+    return answered(undefined);
   }
   async list(_options?: IListTransportsOptions): Promise<ITransportState> {
     return {};
@@ -81,7 +79,7 @@ const mine: Promise<MyShape> = requests.listNodes(
  * The CRUD half is reachable through the contract, not only the class — and it
  * answers `IAdtResponse`, so a caller is made to check before reading.
  */
-const created: Promise<IAdtResponse<ITransportState>> = requests.create({
+const created: Promise<IAdtResponse<string>> = requests.create({
   description: 'x',
 });
 

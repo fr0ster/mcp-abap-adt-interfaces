@@ -5,8 +5,11 @@
 import type {
   IAdtActivatable,
   IAdtCheckable,
-  IAdtCrud,
+  IAdtCreatable,
+  IAdtDeletable,
   IAdtLockable,
+  IAdtReadable,
+  IAdtUpdatable,
   IAdtValidatable,
 } from './IAdtCapabilities';
 import type { IAdtObjectState } from './IAdtObjectState';
@@ -138,7 +141,10 @@ export interface IFeatureToggleState extends IAdtObjectState {
  * point of a toggle — switching it and asking what it is doing right now.
  */
 export interface IFeatureToggleObject
-  extends IAdtCrud<IFeatureToggleConfig, IFeatureToggleState>,
+  extends IAdtCreatable<IFeatureToggleConfig, void>,
+    IAdtReadable<IFeatureToggleConfig, string, string>,
+    IAdtUpdatable<IFeatureToggleConfig, void>,
+    IAdtDeletable<IFeatureToggleConfig, void>,
     IAdtValidatable<IFeatureToggleConfig, IFeatureToggleState>,
     IAdtCheckable<IFeatureToggleConfig, IFeatureToggleState>,
     IAdtActivatable<IFeatureToggleConfig, IFeatureToggleState>,

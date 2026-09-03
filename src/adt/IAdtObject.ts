@@ -9,15 +9,6 @@
  */
 
 import type { IAdtWireResponse } from '../connection/IAbapConnection';
-import type {
-  IAdtActivatable,
-  IAdtCheckable,
-  IAdtCrud,
-  IAdtLockable,
-  IAdtTransportAware,
-  IAdtValidatable,
-  IAdtVersionable,
-} from './IAdtCapabilities';
 import type { IAdtError, IAdtResult } from './IAdtResponse';
 
 /**
@@ -203,26 +194,3 @@ export interface IObjectVersion {
   /** Short text / description of that transport request, if any. */
   transportDescription?: string;
 }
-
-/**
- * High-level ADT Object Operations Interface
- *
- * Provides simplified CRUD operations with automatic operation chains,
- * error handling, and resource cleanup.
- *
- * @template TConfig - Configuration type for the object (e.g., ClassBuilderConfig)
- * @template TReadResult - Result type for read operations (defaults to TConfig)
- *
- * @deprecated Since 11.3.0. Handlers now declare their honest capability set
- * (see IAdtComposites and the capability atoms). `IAdtObject` remains as the
- * full-capability composite for backward compatibility and will be removed in a
- * later major. New code should depend on the specific capability it needs.
- */
-export interface IAdtObject<TConfig, TValue>
-  extends IAdtCrud<TConfig, TValue>,
-    IAdtValidatable<TConfig, TValue>,
-    IAdtCheckable<TConfig, TValue>,
-    IAdtActivatable<TConfig, TValue>,
-    IAdtLockable<TConfig>,
-    IAdtVersionable<TConfig>,
-    IAdtTransportAware<TConfig, TValue> {}

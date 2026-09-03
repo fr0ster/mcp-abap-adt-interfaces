@@ -3,7 +3,12 @@
  */
 
 import type { IAdtWireResponse } from '../connection/IAbapConnection';
-import type { IAdtCrud } from './IAdtCapabilities';
+import type {
+  IAdtCreatable,
+  IAdtDeletable,
+  IAdtReadable,
+  IAdtUpdatable,
+} from './IAdtCapabilities';
 import type { IAdtObjectState } from './IAdtObjectState';
 
 export interface ICreateTransportParams {
@@ -164,7 +169,10 @@ export interface ITransportTree {
  * nothing else lists a collection this way.
  */
 export interface IAdtRequest
-  extends IAdtCrud<ITransportConfig, ITransportState> {
+  extends IAdtCreatable<ITransportConfig, string>,
+    IAdtReadable<ITransportConfig, string, string>,
+    IAdtUpdatable<ITransportConfig, void>,
+    IAdtDeletable<ITransportConfig, void> {
   /**
    * The saved-configuration search, as state.
    *

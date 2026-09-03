@@ -1,8 +1,11 @@
 import type {
   IAdtActivatable,
   IAdtCheckable,
-  IAdtCrud,
+  IAdtCreatable,
+  IAdtDeletable,
+  IAdtReadable,
   IAdtTransportAware,
+  IAdtUpdatable,
   IAdtValidatable,
 } from '../adt/IAdtCapabilities';
 import type { IAdtOperationOptions } from '../adt/IAdtObject';
@@ -125,7 +128,10 @@ export type ICreateAndGenerateServiceBindingParamsLegacy =
  * classifying a service.
  */
 export interface IAdtServiceBinding
-  extends IAdtCrud<IServiceBindingConfig, IServiceBindingState>,
+  extends IAdtCreatable<IServiceBindingConfig, void>,
+    IAdtReadable<IServiceBindingConfig, string, string>,
+    IAdtUpdatable<IServiceBindingConfig, void>,
+    IAdtDeletable<IServiceBindingConfig, void>,
     IAdtValidatable<IServiceBindingConfig, IServiceBindingState>,
     IAdtCheckable<IServiceBindingConfig, IServiceBindingState>,
     IAdtActivatable<IServiceBindingConfig, IServiceBindingState>,
