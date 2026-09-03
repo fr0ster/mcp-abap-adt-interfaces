@@ -18,6 +18,7 @@
  * the other.
  */
 import type { IAdtOperationOptions, IObjectVersion } from './IAdtObject';
+import type { IAdtResponse, IAdtResult } from './IAdtResponse';
 import type { IAdtObjectHit, ISearchObjectsParams } from './IAdtShared';
 
 /**
@@ -34,10 +35,11 @@ export interface IAdtCreatable<TConfig, TReadResult = TConfig> {
    * @param config - Object configuration
    * @param options - Create options (activation, cleanup, source code)
    * @returns Created object configuration
-   * @throws Error if validation fails (object is not created)
-   * @throws Error if any operation fails (with cleanup if deleteOnFailure=true)
    */
-  create(config: TConfig, options?: IAdtOperationOptions): Promise<TReadResult>;
+  create(
+    config: TConfig,
+    options?: IAdtOperationOptions,
+  ): Promise<IAdtResponse<IAdtResult<TReadResult>>>;
 }
 
 /** Obtain a representation of an object — its source, or the metadata about it. */
@@ -57,8 +59,8 @@ export interface IAdtReadable<TConfig, TReadResult = TConfig> {
   read(
     config: Partial<TConfig>,
     version?: 'active' | 'inactive',
-    options?: { withLongPolling?: boolean },
-  ): Promise<TReadResult | undefined>;
+    options?: { withLongPolling?: boolean } & IAdtOperationOptions,
+  ): Promise<IAdtResponse<IAdtResult<TReadResult | undefined>>>;
 
   /**
    * Read object metadata (object characteristics: package, responsible, description, etc.)
@@ -74,8 +76,11 @@ export interface IAdtReadable<TConfig, TReadResult = TConfig> {
    */
   readMetadata(
     config: Partial<TConfig>,
-    options?: { withLongPolling?: boolean; version?: 'active' | 'inactive' },
-  ): Promise<TReadResult>;
+    options?: {
+      withLongPolling?: boolean;
+      version?: 'active' | 'inactive';
+    } & IAdtOperationOptions,
+  ): Promise<IAdtResponse<IAdtResult<TReadResult>>>;
 }
 
 export interface IAdtUpdatable<TConfig, TReadResult = TConfig> {
@@ -86,13 +91,11 @@ export interface IAdtUpdatable<TConfig, TReadResult = TConfig> {
    * @param config - Object configuration with updates
    * @param options - Update options (activation, cleanup, lock handle)
    * @returns Updated object configuration
-   * @throws Error if lock fails
-   * @throws Error if any operation fails (with cleanup if deleteOnFailure=true)
    */
   update(
     config: Partial<TConfig>,
     options?: IAdtOperationOptions,
-  ): Promise<TReadResult>;
+  ): Promise<IAdtResponse<IAdtResult<TReadResult>>>;
 }
 
 export interface IAdtDeletable<TConfig, TReadResult = TConfig> {
@@ -102,9 +105,11 @@ export interface IAdtDeletable<TConfig, TReadResult = TConfig> {
    *
    * @param config - Object identification
    * @returns State with delete result
-   * @throws Error if deletion check fails (object is not deleted)
    */
-  delete(config: Partial<TConfig>): Promise<TReadResult>;
+  delete(
+    config: Partial<TConfig>,
+    options?: IAdtOperationOptions,
+  ): Promise<IAdtResponse<IAdtResult<TReadResult>>>;
 }
 
 /**
@@ -140,7 +145,10 @@ export interface IAdtValidatable<TConfig, TReadResult = TConfig> {
    * @param config - Object configuration
    * @returns State with validation result
    */
-  validate(config: Partial<TConfig>): Promise<TReadResult>;
+  validate(
+    config: Partial<TConfig>,
+    options?: IAdtOperationOptions,
+  ): Promise<IAdtResponse<IAdtResult<TReadResult>>>;
 }
 
 export interface IAdtCheckable<TConfig, TReadResult = TConfig> {
@@ -149,9 +157,12 @@ export interface IAdtCheckable<TConfig, TReadResult = TConfig> {
    * @param config - Object identification
    * @param status - Optional status to check ('active', 'inactive', 'deletion')
    * @returns State with check result
-   * @throws Error if check finds errors (type E in XML response)
    */
-  check(config: Partial<TConfig>, status?: string): Promise<TReadResult>;
+  check(
+    config: Partial<TConfig>,
+    status?: string,
+    options?: IAdtOperationOptions,
+  ): Promise<IAdtResponse<IAdtResult<TReadResult>>>;
 }
 
 export interface IAdtActivatable<TConfig, TReadResult = TConfig> {
@@ -160,7 +171,10 @@ export interface IAdtActivatable<TConfig, TReadResult = TConfig> {
    * @param config - Object identification
    * @returns State with activation result
    */
-  activate(config: Partial<TConfig>): Promise<TReadResult>;
+  activate(
+    config: Partial<TConfig>,
+    options?: IAdtOperationOptions,
+  ): Promise<IAdtResponse<IAdtResult<TReadResult>>>;
 }
 
 export interface IAdtLockable<TConfig, TReadResult = TConfig> {
@@ -171,6 +185,11 @@ export interface IAdtLockable<TConfig, TReadResult = TConfig> {
    * @param config - Object identification
    * @returns Lock handle (string) that must be used in unlock() and update operations
    * @throws Error if lock fails (object may be locked by another user)
+   *
+   * Still throws, deliberately: this member answers a lock handle rather than
+   * `IAdtResponse`, so it has no failure half to put a refusal in. It migrates
+   * with the lock pair or not at all — a lock and its unlock are one operation
+   * seen from two ends.
    */
   lock(config: Partial<TConfig>): Promise<string>;
 
@@ -192,15 +211,20 @@ export interface IAdtVersionable<TConfig> {
    * List the version history of this object's source. Identity is passed per
    * call (the implementations are stateless factories) — e.g.
    * `getVersions({ className: 'ZCL_X' })`.
-   * @throws AdtOperationError(UNSUPPORTED_OPERATION) when the object has no
-   *         version resource (SAP 404/406, or a non-source object type).
-   *         Never leaks raw HTTP.
+   * @throws an error carrying `code: AdtObjectErrorCodes.UNSUPPORTED_OPERATION`
+   *         when the object has no version resource (SAP 404/406, or a
+   *         non-source object type). The type is the implementation's; this
+   *         package ships no error class to name here. Never leaks raw HTTP.
    */
   getVersions(config: Partial<TConfig>): Promise<IObjectVersion[]>;
 
   /**
    * Fetch the source code of a specific version.
    * @param contentUri the opaque, complete `contentUri` from a getVersions() entry.
+   * @throws an error when the version resource cannot be read. Like its pair
+   *         above, this member answers the source itself and so has no failure
+   *         half to put a refusal in. The error's type is the implementation's;
+   *         this package ships no error class to name here.
    */
   getVersionSource(contentUri: string): Promise<string>;
 }

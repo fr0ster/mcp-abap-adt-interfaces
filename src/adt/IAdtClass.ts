@@ -52,7 +52,7 @@ export interface IClassConfig {
 export interface IClassState extends IAdtObjectState {
   // All operation results are in IAdtObjectState:
   // validationResponse, createResult, lockHandle, updateResult, checkResult,
-  // unlockResult, activateResult, deleteResult, readResult, transportResult, errors
+  // unlockResult, activateResult, deleteResult, readResult, transportResult
   // Class-specific fields can be added here if needed
   testClassCode?: string;
   testActivateResult?: AxiosResponse;

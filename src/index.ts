@@ -6,7 +6,6 @@
  */
 
 export type { HttpError, XmlNode } from './adt/AdtTypes';
-export { AdtOperationError } from './adt/AdtTypes';
 export type {
   AbapGitStatus,
   IAbapGitErrorLogEntry,
@@ -339,10 +338,7 @@ export type {
   ITransportTreeRequest,
   ITransportTreeTask,
 } from './adt/IAdtTransport';
-export {
-  TRANSPORT_SEARCH_CONFIGURATIONS_URL,
-  TransportSearchConfigurationMissing,
-} from './adt/IAdtTransport';
+export { TRANSPORT_SEARCH_CONFIGURATIONS_URL } from './adt/IAdtTransport';
 export type {
   ClassUnitTestDefinition,
   ClassUnitTestRunOptions,
@@ -412,10 +408,7 @@ export type {
   IDeferredResponseConnection,
   ISessionLifecycleAware,
 } from './connection/IConnectionCapabilities';
-export {
-  ADT_SESSION_ERROR,
-  hasDeferredResponses,
-} from './connection/IConnectionCapabilities';
+export { ADT_SESSION_ERROR } from './connection/IConnectionCapabilities';
 export type {
   IWebSocketCloseInfo,
   IWebSocketConnectOptions,
@@ -424,10 +417,7 @@ export type {
   IWebSocketTransport,
 } from './connection/IWebSocketTransport';
 export type { NetworkErrorCode } from './connection/NetworkErrors';
-export {
-  isNetworkError,
-  NETWORK_ERROR_CODES,
-} from './connection/NetworkErrors';
+export { NETWORK_ERROR_CODES } from './connection/NetworkErrors';
 export type {
   IClassExecuteWithProfilerOptions,
   IClassExecuteWithProfilingOptions,

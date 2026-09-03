@@ -8,6 +8,7 @@
  * provides high-level operation chains with automatic error handling and cleanup.
  */
 
+import type { IAdtWireResponse } from '../connection/IAbapConnection';
 import type {
   IAdtActivatable,
   IAdtCheckable,
@@ -17,26 +18,60 @@ import type {
   IAdtValidatable,
   IAdtVersionable,
 } from './IAdtCapabilities';
+import type { IAdtError } from './IAdtResponse';
 
 /**
- * Error codes that can be thrown by IAdtObject methods
- * Consumers can catch specific errors using these constants
+ * Error codes for the `IAdtObject` members that still signal failure by throwing.
  *
- * Example:
+ * **The CRUD members no longer throw.** `create`, `read`, `readMetadata`,
+ * `update`, `delete`, `validate`, `check` and `activate` answer `IAdtResponse`,
+ * so a failure comes back rather than flying past, and it is read from the
+ * contract:
+ *
  * ```typescript
- * import { AdtObjectErrorCodes, AdtOperationError } from '@mcp-abap-adt/interfaces';
+ * const answer = await adtObject.read({ className: 'ZTEST' });
+ *
+ * if (answer.ok) {
+ *   answer.getResult().value;    // the state
+ * } else {
+ *   const failure = answer.getError();
+ *   failure.origin;              // 'connection' | 'refusal' | 'parse'
+ *   failure.message;             // what SAP said, in SAP's words
+ *   failure.response;            // the answer it was read from, untouched
+ * }
+ * ```
+ *
+ * Note what is *not* in that example: a check for "not found". ADT answers a
+ * request for a missing object with **200 and an empty body** rather than a 404,
+ * so absence is not a distinct failure the library can report on its own
+ * authority — a read-modify-write must treat it as one, since writing back what
+ * it read erases the object, while a listing must treat it as an empty list.
+ * That reading is supplied through {@link IAdtOperationOptions.analyse}.
+ *
+ * These codes therefore apply only to the members that have no failure half to
+ * put a refusal in: `lock`, `unlock`, `getVersions` and `getVersionSource`.
+ *
+ * The code is read structurally, off whatever was thrown. This package exports
+ * no error class to narrow with — a contract says what a thing is, and shipping
+ * a class from it would make "use your own implementation" untrue for that
+ * piece — so an implementation is free to throw its own type as long as it
+ * carries `code`.
+ *
+ * ```typescript
+ * import { AdtObjectErrorCodes } from '@mcp-abap-adt/interfaces';
  *
  * try {
- *   await adtObject.read({ className: 'ZTEST' });
+ *   await adtObject.lock({ className: 'ZTEST' });
  * } catch (error: unknown) {
- *   const e = error as AdtOperationError;
- *   if (e.code === AdtObjectErrorCodes.OBJECT_NOT_FOUND) {
- *     // Handle not found
- *   } else if (e.code === AdtObjectErrorCodes.OBJECT_NOT_READY) {
- *     // Handle not ready
+ *   const code = (error as { code?: string }).code;
+ *   if (code === AdtObjectErrorCodes.LOCK_FAILED) {
+ *     // held by someone else
  *   }
  * }
  * ```
+ *
+ * The remaining members' codes are kept for consumers still on the throwing
+ * contract and will go when those call sites do.
  */
 export const AdtObjectErrorCodes = {
   /** Object not found (404) */
@@ -68,6 +103,28 @@ export const AdtObjectErrorCodes = {
  * Unified interface for both create and update operations
  */
 export interface IAdtOperationOptions {
+  /**
+   * The caller's own reading of what counts as a failure.
+   *
+   * Handed the default's verdict **and** the answer it was reached from, so it
+   * can overrule in either direction: name a failure the default let through, or
+   * clear one it raised. Returning `undefined` means "not a failure here".
+   *
+   * This exists because no single reading serves every caller. ADT answers a
+   * request for a missing object with 200 and an empty body, and those same
+   * bytes are a failure to a read-modify-write — writing back what it read
+   * erases the object — and an empty list to a listing. Neither reading can be
+   * the library's.
+   *
+   * The status is not the signal: a refusal arrives inside a 200, and what
+   * decides is the message severity in the document, which is why the raw answer
+   * is passed rather than a summary of it.
+   */
+  analyse?: (
+    verdict: IAdtError | undefined,
+    answer?: IAdtWireResponse,
+  ) => IAdtError | undefined;
+
   /**
    * Activate object after creation (for create operations)
    * @default false

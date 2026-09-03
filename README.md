@@ -224,7 +224,7 @@ try {
 
 ### Core Development Principle
 
-**Interface-Only Communication**: This package defines **interfaces only**. It contains no implementations, no dependencies on other packages (except type-only imports), and serves as the single source of truth for all interface definitions.
+**Interface-Only Communication**: This package defines **contracts** — interfaces, types and the constants they refer to. It contains no implementations: no classes, no functions, and no dependencies on other packages beyond type-only imports. It is the single source of truth for the shapes every package here agrees on.
 
 ### Package Responsibilities
 
@@ -240,11 +240,11 @@ This package is responsible for:
 - **Defines interfaces**: All interfaces used across MCP ABAP ADT packages
 - **Organizes by domain**: Interfaces grouped by functional domain
 - **Follows naming convention**: All interfaces start with `I` prefix
-- **Type-only exports**: No runtime code, only type definitions
+- **Contracts, not code**: types and interfaces, plus the constants they name. Since 29.0.0 the package ships **no class and no function** — `AdtOperationError`, `TransportSearchConfigurationMissing`, `isNetworkError()` and `hasDeferredResponses()` were removed, because a contract says what a thing *is* and shipping one way of being it makes "use your own implementation" untrue for that piece. What remains executable is 50 exported constants (`AdtObjectErrorCodes`, the `HEADER_*` names, `NETWORK_ERROR_CODES`, `AUTH_TYPE_*` and so on); every emitted module is otherwise empty
 
 #### What This Package Does NOT Do
 
-- **Does NOT implement anything**: This is a type-only package
+- **Does NOT implement anything**: no class and no function is exported. The only executable output is the constants listed above, which are values a contract names rather than behaviour it performs
 - **Does NOT have runtime dependencies**: Only devDependencies for TypeScript compilation
 - **Does NOT know about implementations**: Interfaces are independent of implementations
 
@@ -260,6 +260,7 @@ This package is responsible for:
     - Update: lock → check(inactive) → update → unlock → check → activate
     - Delete: check(deletion) → delete
 - **Capability atoms** (`adt/IAdtCapabilities.ts`, since 11.2.0) — small interfaces that partition the 13 methods of `IAdtObject`, each method belonging to exactly one, so a consumer can depend on just the capability it needs instead of the whole contract:
+  - Since 29.0.0 the eight members of these atoms — `create`, `read`, `readMetadata`, `update`, `delete`, `validate`, `check`, `activate` — answer `Promise<IAdtResponse<IAdtResult<TReadResult>>>` instead of throwing. `@throws` remains only on `lock`, `unlock`, `getVersions` and `getVersionSource` — they answer a lock handle, a state, a version list and a source string respectively, so none of them has a failure half to put a refusal in
   - `IAdtCreatable` — `create`
   - `IAdtReadable` — `read`, `readMetadata`
   - `IAdtUpdatable` — `update` (since 15.0.0)
@@ -281,11 +282,13 @@ This package is responsible for:
   - Since 17.0.0 **no interface in this package declares a capability the object does not have**. `IFeatureToggleObject` and `IAdtServiceBinding` were the last two extending `IAdtObject` while their handlers refused version history, and a lock or a transport; each now extends the atoms it satisfies. That is asserted rather than believed: a guard in `@mcp-abap-adt/adt-clients` compares all 36 factory return types against the 10 atoms in both directions, and calls every declared method to check it issues the request its capability names.
   - There is no atom or composite for "everything but versions" — a capability vocabulary states what an object supports, never what it lacks. A handler that is the full set minus `IAdtVersionable` declares `IAdtCrud & IAdtValidatable & IAdtCheckable & IAdtActivatable & IAdtLockable & IAdtTransportAware` directly (see the [15.0.0 CHANGELOG entry](CHANGELOG.md) for why the earlier `IAdtNonVersionedObject` composite was removed).
 - `IAdtOperationOptions` - Unified options for create and update operations
-  - Fields: `activateOnCreate`, `activateOnUpdate`, `deleteOnFailure`, `sourceCode`, `xmlContent`, `timeout`
+  - Fields: `analyse`, `activateOnCreate`, `activateOnUpdate`, `deleteOnFailure`, `sourceCode`, `xmlContent`, `lockHandle`, `timeout`
+  - `analyse` (since 29.0.0) is the caller's own reading of what counts as a failure: `(verdict: IAdtError | undefined, answer?: IAdtWireResponse) => IAdtError | undefined`. It is handed the default's verdict **and** the answer it was reached from, so it can overrule in either direction. It exists because no single reading serves every caller — ADT answers a request for a missing object with **200 and an empty body**, and those same bytes are a failure to a read-modify-write, since writing back what it read erases the object, and an empty list to a listing
 - `AdtObjectErrorCodes` - Error code constants for ADT object operations
   - Constants: `OBJECT_NOT_FOUND`, `OBJECT_NOT_READY`, `VALIDATION_FAILED`, `CREATE_FAILED`, `UPDATE_FAILED`, `DELETE_FAILED`, `ACTIVATE_FAILED`, `CHECK_FAILED`, `LOCK_FAILED`, `UNLOCK_FAILED`
-- `IAdtObjectState` - Base state interface for ADT object operations
-  - Fields: `validationResponse`, `createResult`, `lockHandle`, `updateResult`, `checkResult`, `unlockResult`, `activateResult`, `deleteResult`, `readResult`, `metadataResult`, `transportResult`, `errors`
+- `IAdtObjectState` - Base state interface for ADT object operations, and what `IAdtResult` carries for these members: a chain like `create` is seven requests, and this is the only shape naming each one's answer separately
+  - Fields: `validationResponse`, `createResult`, `lockHandle`, `updateResult`, `checkResult`, `unlockResult`, `activateResult`, `deleteResult`, `readResult`, `metadataResult`, `transportResult`
+  - **No `errors` field since 29.0.0.** An array of errors travelling beside a successful-looking state is a failure the caller is not required to notice — measured in `@mcp-abap-adt/adt-clients`, five of seven probed chains reported `errors: []` while SAP had refused, three of them writes. A failure is the other half of the `IAdtResponse` the member answers, where `ok` makes reading it compulsory
 - `IAdtObjectConfig` - Base configuration interface for ADT objects
   - Common fields: `packageName`, `description`, `transportRequest`
 - **Per-object-type contract types** (`IAdt<Object>.ts`, one file per ADT object type — class, program, interface, table, domain, dataElement, ddl, structure, package, functionGroup/Module/Include, behaviorDefinition/Implementation, metadataExtension, enhancement, accessControl, serviceDefinition/Binding, transformation, scalarFunction(Implementation), tableType, appendStructure, authorizationField, featureToggle, messageClass, transport, unitTest):
@@ -307,7 +310,7 @@ This package is responsible for:
 - **ADT client options** (`adt/IAdtClientOptions.ts`, since 14.0.0) — `IAdtClientOptions` (`enableAcceptCorrection`, `masterSystem`, `responsible`, `masterLanguage`, `contentTypes`, `unicode`) and `IAdtSystemContext`, so configuring a client does not require importing `adt-clients` to describe the options.
 - **Content-type contract** (`adt/IAdtContentTypes.ts`, since 14.0.0) — `IAdtHeaders` (`accept`, `contentType`) and `IAdtContentTypes`, the per-operation Accept/Content-Type provider a consumer overrides for a system that needs different headers. The two shipped implementations (`AdtContentTypesBase`/`AdtContentTypesModern`, 354 lines/38 methods) and `resolveContentTypes()` stay in `adt-clients` — that is behaviour, not contract.
 - **Standalone `PROG/I` includes** (`adt/IAdtInclude.ts`, since 22.0.0) — `IIncludeConfig`, `IIncludeState`, `ICreateIncludeParams`, `IUpdateIncludeSourceParams`, `IDeleteIncludeParams`, plus `IAdtContentTypes.includeCreate()`. An include is a different resource from a program, measured: it answers with `include:abapInclude`, its own namespace, `adtcore:type="PROG/I"` and `include:contextRefCount`, against a program's `program:abapProgram`, `program:programType` and `PROG/P` — and the two collections advertise different accepted content types, so modelling one as a flavour of the other builds the wrong document and posts it to the wrong place. There is no `IValidateIncludeParams`: `/includes/validation` takes the same three parameters `/programs/validation` does. Creation is a modern on-prem capability — only there does discovery give the includes collection an `app:accept`, and a collection without one is not a POST target.
-- **Transport search configuration** (`adt/IAdtTransport.ts`) — `IListTransportsParams.configUri` is **required** (since 14.0.0, breaking): the five filter fields it replaces (`user`, `status`, `date_range`, `target_system`, `request_type`) were never read by the server — `/sap/bc/adt/cts/transportrequests` is a saved-configuration search, not a filtered query. `IListTransportsOptions` (`configUri` optional) is the high-level surface that opts into resolving a default configuration. `ITransportSearchConfiguration` describes one saved configuration (`uri`, `etag`, `attributes`); `TRANSPORT_SEARCH_CONFIGURATIONS_URL` is where they live; `TransportSearchConfigurationMissing` is thrown when none exists. See the [14.0.0 CHANGELOG entry](CHANGELOG.md) for the migration and the probe evidence.
+- **Transport search configuration** (`adt/IAdtTransport.ts`) — `IListTransportsParams.configUri` is **required** (since 14.0.0, breaking): the five filter fields it replaces (`user`, `status`, `date_range`, `target_system`, `request_type`) were never read by the server — `/sap/bc/adt/cts/transportrequests` is a saved-configuration search, not a filtered query. `IListTransportsOptions` (`configUri` optional) is the high-level surface that opts into resolving a default configuration. `ITransportSearchConfiguration` describes one saved configuration (`uri`, `etag`, `attributes`); `TRANSPORT_SEARCH_CONFIGURATIONS_URL` is where they live. The error raised when none exists belongs to the implementation — `@mcp-abap-adt/adt-clients` exports it — because this package ships contracts, not classes. See the [14.0.0 CHANGELOG entry](CHANGELOG.md) for the migration and the probe evidence.
 - **Parsed transport tree** (`adt/IAdtTransport.ts`, since 14.1.0) — `ITransportTree` (root `attributes` plus `requests`), `ITransportTreeRequest` (`attributes`, `containers`, `links`, `longDesc`, `tasks`), `ITransportTreeTask` (`attributes`, `links`, `longDesc`), `ITransportTreeNode` (one container a request was nested under — `element` plus `attributes`) and `ITransportTreeLink` (one `atom:link`'s `attributes`). `containers` is an ordered list, not named fields, because the chain a request is nested under is not fixed: `?configUri=` alone returns `tm:workbench > tm:modifiable > tm:request`, while `?targets=true&configUri=` inserts a `tm:target` level. Every attribute is verbatim (`tm:number`, never `number`) and typed `Record<string, string | undefined>`, since this repo does not set `noUncheckedIndexedAccess`. `longDesc` is `undefined` when `tm:long_desc` is absent and `''` when present and empty — the two are not the same thing. There is deliberately no parser type here: the parser is a call-site generic in the consuming package. See the [14.1.0 CHANGELOG entry](CHANGELOG.md) for the two captured request chains.
 
 ### Authentication Domain (`auth/`)
@@ -336,7 +339,8 @@ This package is responsible for:
 - `ICertificateMaterial` / `ICertificateMaterialLoader` - Loaded TLS client-certificate
   material (`cert` / `key` / `pfx` / `passphrase`) and the loader that produces it from a
   config. Structural on purpose: it is the shape an HTTPS client needs, named without
-  importing one, because this package has no runtime.
+  importing one — this package depends on no HTTPS implementation and ships no code
+  that would use one.
 - `IAuthProvider` (since 17.2.0) - **How a connection proves who it
   is on each request**, as opposed to which system it is dialling. Deliberately not "give me a
   token": four of the five ways in are not tokens — basic is a header built from a username, a
@@ -407,7 +411,18 @@ This package is responsible for:
     - `null` is not a verdict on the connection: it means no identity is known, which happens both when no session exists *and* when the connection is live over a server that issues no session cookie. Use `isConnected()` for connection state. It follows that `null` → non-null is not a replacement, only a *changed* value is
   - `ADT_SESSION_ERROR` / `AdtSessionErrorCode` — `ADT_NOT_CONNECTED`, `ADT_SESSION_REPLACED`, `ADT_RELEASE_PENDING`. Match on the code, not on the message
   - Additive to `IAbapConnection`, which is unchanged. An RFC connection, a batch recorder and a test stub are all legitimate connections that own no HTTP session; making these methods mandatory would force each of them to implement a lie. A compile-time proof in `__typechecks__/connectionCapabilities.ts` asserts a session-less connection still satisfies `IAbapConnection`
-  - `IDeferredResponseConnection` / `hasDeferredResponses()` (since 14.0.0) — marks a connection (typically a batch recorder) whose responses resolve only after a later flush, so awaiting one mid-recording would deadlock. `hasDeferredResponses()` is a type guard, generic over whatever the caller already holds, so the atom carries no dependency on `IAbapConnection`.
+  - `IDeferredResponseConnection` (since 14.0.0) — marks a connection (typically a batch recorder) whose responses resolve only after a later flush, so awaiting one mid-recording would deadlock. The atom carries no dependency on `IAbapConnection`, so a caller narrows whatever they already hold with a guard of their own:
+
+    ```typescript
+    function hasDeferredResponses<T extends object>(
+      connection: T,
+    ): connection is T & IDeferredResponseConnection {
+      return (
+        (connection as Partial<IDeferredResponseConnection>)
+          .responsesAreDeferred === true
+      );
+    }
+    ```
 - `IWebSocketTransport` - Generic realtime transport contract for WS-based flows
   - Methods: `connect()`, `disconnect()`, `send()`, `onMessage()`, `onOpen()`, `onError()`, `onClose()`, `isConnected()`
 - `IWebSocketConnectOptions` - WS connect options (`protocols`, `headers`, timeouts, heartbeat)

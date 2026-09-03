@@ -1522,3 +1522,85 @@ vocabulary alive in a design whose point is that there are only two.
 
 **What would change it.** Building it. Until then this section exists so the
 questions above are answered once rather than re-litigated per member.
+
+## 20. Choice is offered by injection, never by more contract
+
+Decisions 3, 12 and 19 each state one half of how this package is meant to grow.
+Put together they answer the question that keeps recurring — *a consumer needs
+different behaviour; what do we add?* — and the answer is: usually nothing.
+
+**Give the consumer a strategy to supply, not an interface to learn.** When
+behaviour must vary, the variation is injected. Declaring a new type is the last
+resort, not the first move: every type added is a symbol every implementation
+must satisfy and every consumer must read, while an injected function costs
+neither.
+
+**The contract names the injection point and nothing about how it is filled.**
+Defaults, per-object variants, and the inheritance that arranges them are the
+implementing library's business. A contract that describes how a default is
+composed has stopped being a contract.
+
+**Reuse before declaring.** Before a shape is added, the existing ones are
+checked. `IAdtError` already describes a failure and carries the raw answer and
+the request; `IAdtWireResponse` is the untouched answer; `ILogger` is already
+injected everywhere; and `parse: (data: unknown) => T` already establishes what a
+strategy looks like here. A new name for something that exists is not a smaller
+contract, it is a second one.
+
+**Do not enumerate what a function already covers.** Fixed variants — sizes,
+modes, levels — freeze someone's guess at the useful cases into the contract. A
+function spans the space and does not need extending when the guess was wrong.
+
+**Return the contract; do not throw.** This is what makes an implementation
+replaceable without touching the consumer, which is the whole reason this package
+exists. A thrown error is invisible to the compiler, so a consumer never learns
+from the type that a failure path exists — and `@throws` in a contract forces
+every implementation to invent a message, which is how a consumer ends up reading
+a sentence the library composed instead of the one the server sent.
+
+### Applied here
+
+The seven capability atoms — creatable, readable, updatable, deletable,
+validatable, checkable, activatable — answer
+`IAdtResponse<IAdtResult<TState>>`. The state stays: a chain is seven requests,
+and it is the only shape that names each one's answer separately. `errors[]`
+leaves it, because an array of errors travelling beside a successful-looking
+result is a failure the consumer is not required to notice.
+
+The two strategies a handler takes — one for the result, one for errors — arrive
+as optional functions on the `IAdtOperationOptions` handlers already accept. The
+error one is given both the default's verdict and the raw answer, so a consumer
+can overrule in either direction.
+
+**Why the choice cannot be replaced by a better default.** ADT answers a request
+for a missing object with 200 and an empty body rather than a refusal. The same
+bytes mean opposite things depending on the caller: a read-modify-write must
+treat empty as a failure, since writing back what it read erases the object,
+while a listing must treat it as an empty list. Neither reading can be the
+library's, which is what makes this an injection point rather than a fix.
+
+## 21. A test asks the contract whether there was an error
+
+Decision 9 says green is not proof. This says what a test must do instead, and it
+follows from the contract rather than from testing taste.
+
+**The verdict comes from the contract, not from the status code.** A test reads
+`ok`, and takes the failure from `getError()` or the value from `getResult()`.
+Asserting on a status is asserting on the channel: ADT answers a refusal inside a
+200, answers a missing object with 200 and an empty body, and reports the real
+outcome in a message whose severity — an `E` — is the only thing that decides.
+A test that checks `status === 200` can pass while the server refused.
+
+**Analysing our own code is not enough, and cannot be made enough.** Whether a
+given answer is a failure is decided at run time, by a strategy reading the
+document SAP actually sent. No inspection of our source settles it. So the tests
+that matter run against a real system and assert on what came back.
+
+**Both directions are asserted.** That an error is reported when SAP refused, and
+that no error is reported when it did not. Only the first is usually written, and
+a library that reports failures for everything would pass it.
+
+**A test that did not run is not a test that passed.** Skips are printed, always
+and unconditionally, so a suite reporting green states plainly which of its cases
+executed. A silently skipped case reads as coverage that does not exist — and is
+worse than a red one, because nobody goes looking for it.

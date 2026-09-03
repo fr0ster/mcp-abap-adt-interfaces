@@ -100,21 +100,3 @@ export interface IDeferredResponseConnection {
   /** Always `true`. "Sometimes deferred" is not a state a caller could act on. */
   readonly responsesAreDeferred: true;
 }
-
-/**
- * Whether awaiting this connection's responses is safe right now.
- *
- * Generic so the atom carries no dependency on `IAbapConnection`: it narrows
- * whatever the caller already holds.
- *
- * Not a proof of absence — a third-party connection that defers responses
- * without declaring it will still deadlock. It makes the known case honest.
- */
-export function hasDeferredResponses<T extends object>(
-  connection: T,
-): connection is T & IDeferredResponseConnection {
-  return (
-    (connection as Partial<IDeferredResponseConnection>)
-      .responsesAreDeferred === true
-  );
-}

@@ -14,6 +14,7 @@ import type {
   IAdtReadable,
   IAdtUpdatable,
 } from '../adt/IAdtCapabilities';
+import type { IAdtResponse, IAdtResult } from '../adt/IAdtResponse';
 
 interface Config {
   name: string;
@@ -28,6 +29,14 @@ type Assert<T extends true> = T;
 
 // The four-atom intersection is exactly IAdtCrud — the split changed nothing
 // about the shape a handler that implements everything presents.
+/**
+ * The smallest thing that satisfies the contract, so these proofs stay about
+ * atom composition rather than about how a success is built.
+ */
+function answered<T>(value: T): IAdtResponse<IAdtResult<T>> {
+  return { ok: true, getResult: () => ({ value }), getError: () => undefined };
+}
+
 type FourAtoms = IAdtCreatable<Config, State> &
   IAdtReadable<Config, State> &
   IAdtUpdatable<Config, State> &
@@ -40,7 +49,8 @@ type _CrudUnchanged = [
 
 // A handler declaring only update() satisfies IAdtUpdatable...
 const _updateOnly: IAdtUpdatable<Config, State> = {
-  update: async (config) => ({ name: config.name ?? '', errors: [] }),
+  update: async (config: Partial<Config>) =>
+    answered({ name: config.name ?? '', errors: [] }),
 };
 void _updateOnly;
 
@@ -51,7 +61,8 @@ void _updateOnlyAsModifiable;
 
 // And the reverse: a handler declaring only delete() satisfies IAdtDeletable...
 const _deleteOnly: IAdtDeletable<Config, State> = {
-  delete: async (config) => ({ name: config.name ?? '', errors: [] }),
+  delete: async (config: Partial<Config>) =>
+    answered({ name: config.name ?? '', errors: [] }),
 };
 void _deleteOnly;
 
