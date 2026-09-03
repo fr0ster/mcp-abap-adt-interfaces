@@ -2,8 +2,6 @@
  * Class ADT operation parameter interfaces (snake_case, low-level)
  */
 
-import type { IAdtWireResponse as AxiosResponse } from '../connection/IAbapConnection';
-
 export interface ICreateClassParams {
   class_name: string;
   description?: string;

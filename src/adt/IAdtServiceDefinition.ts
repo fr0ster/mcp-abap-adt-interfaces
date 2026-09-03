@@ -2,8 +2,6 @@
  * Service Definition ADT operation parameter interfaces (snake_case, low-level)
  */
 
-import type { IAdtWireResponse } from '../connection/IAbapConnection';
-
 export interface ICreateServiceDefinitionParams {
   service_definition_name: string;
   description?: string;

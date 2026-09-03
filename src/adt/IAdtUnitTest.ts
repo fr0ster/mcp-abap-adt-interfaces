@@ -2,8 +2,6 @@
  * Unit Test ADT operation parameter interfaces (snake_case, low-level)
  */
 
-import type { IAdtWireResponse } from '../connection/IAbapConnection';
-
 export interface IUnitTestScope {
   own_tests?: boolean;
   foreign_tests?: boolean;
@@ -136,16 +134,10 @@ export interface ITestRunInformation {
    * @param runId the run to ask about
    * @param withLongPolling let ADT hold the request until the run progresses
    */
-  getStatus(
-    runId: string,
-    withLongPolling?: boolean,
-  ): Promise<IAdtWireResponse>;
+  getStatus(runId: string, withLongPolling?: boolean): Promise<string>;
 
   /** Fetch the result document of a finished run. */
-  getResult(
-    runId: string,
-    options?: IUnitTestResultOptions,
-  ): Promise<IAdtWireResponse>;
+  getResult(runId: string, options?: IUnitTestResultOptions): Promise<string>;
 }
 
 /**

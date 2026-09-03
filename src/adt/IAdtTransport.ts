@@ -2,7 +2,6 @@
  * Transport ADT operation parameter interfaces (snake_case, low-level)
  */
 
-import type { IAdtWireResponse } from '../connection/IAbapConnection';
 import type {
   IAdtCreatable,
   IAdtDeletable,

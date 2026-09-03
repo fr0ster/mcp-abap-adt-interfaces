@@ -2,8 +2,6 @@
  * Service Binding ADT operation parameter interfaces (snake_case, low-level)
  */
 
-import type { IAdtWireResponse } from '../connection/IAbapConnection';
-
 export type ServiceBindingType = 'ODATA' | 'INA' | 'SQL';
 export type ServiceBindingVersion = 'V2' | 'V4' | '0001' | '0000' | string;
 export type GeneratedServiceType = 'odatav2' | 'odatav4';

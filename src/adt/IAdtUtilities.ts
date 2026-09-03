@@ -42,11 +42,11 @@
  *
  * ## The gap, named rather than papered over
  *
- * **A result is part of the contract — decision 13 — and 12 of the 25
- * members here do not state one.** They answer `Promise<IAdtWireResponse>`: the transport
- * envelope, which every method could name and which tells a consumer only that
- * a request happened. The other 13 state what the caller gets — ten a
- * shape, three a string or a boolean.
+ * **Every member states its result.** Twelve of the twenty-five answered
+ * `IAdtWireResponse` — the transport envelope, which every method could name and
+ * which told a consumer only that a request happened. They now answer the
+ * document their endpoint produced, and parsing it is the consumer's (decision
+ * 5). The other thirteen already stated what the caller gets.
  *
  * Counted as **members**, not signatures: `search` has two, because one endpoint
  * is one member (decision 16) and the second signature is the strategy, not a
@@ -94,7 +94,6 @@
  * shape of the thing rather than a finished one.
  */
 
-import type { IAdtWireResponse } from '../connection/IAbapConnection';
 import type { INamedItem } from '../execution/ITraceScheduling';
 import type { IReadOptions } from '../shared/IReadOptions';
 import type { IAdtResponse, IAdtResult } from './IAdtResponse';
@@ -203,7 +202,7 @@ export interface IAdtInformationSystem {
   /** The scope document a where-used run is filtered by. */
   getWhereUsedScope(
     params: IGetWhereUsedScopeParams,
-  ): Promise<IAdtResponse<IAdtWireResponse>>;
+  ): Promise<IAdtResponse<string>>;
 
   /**
    * That scope document, edited. Issues no request — it rewrites the XML the
@@ -222,7 +221,7 @@ export interface IAdtInformationSystem {
   /** The repository as folders, under a preselection. */
   getVirtualFoldersContents(
     params: IGetVirtualFoldersContentsParams,
-  ): Promise<IAdtResponse<IAdtWireResponse>>;
+  ): Promise<IAdtResponse<string>>;
 
   /**
    * The object types this system knows.
@@ -280,7 +279,7 @@ export interface IAdtRepositoryStructure {
   getObjectStructure(
     objectType: string,
     objectName: string,
-  ): Promise<IAdtResponse<IAdtWireResponse>>;
+  ): Promise<IAdtResponse<string>>;
 }
 
 /**
@@ -314,7 +313,7 @@ export interface IAdtGroupLifecycle {
   activateObjectsGroup(
     objects: IObjectReference[],
     preauditRequested?: boolean,
-  ): Promise<IAdtResponse<IAdtWireResponse>>;
+  ): Promise<IAdtResponse<string>>;
 
   /** What is inactive right now. */
   getInactiveObjects(options?: {
@@ -324,33 +323,29 @@ export interface IAdtGroupLifecycle {
   /** Whether a set can be deleted, asked before deleting it. */
   checkDeletionGroup(
     objects: IObjectReference[],
-  ): Promise<IAdtResponse<IAdtWireResponse>>;
+  ): Promise<IAdtResponse<string>>;
 
   /** Delete several objects in one request. */
   deleteObjectsGroup(
     objects: IObjectReference[],
     transportRequest?: string,
-  ): Promise<IAdtResponse<IAdtWireResponse>>;
+  ): Promise<IAdtResponse<string>>;
 }
 
 /** `/sap/bc/adt/datapreview/*` — reading data rather than definitions. */
 export interface IAdtDataPreview {
   /** A freestyle SQL query. */
-  getSqlQuery(
-    params: IGetSqlQueryParams,
-  ): Promise<IAdtResponse<IAdtWireResponse>>;
+  getSqlQuery(params: IGetSqlQueryParams): Promise<IAdtResponse<string>>;
 
   /** The rows of one table. */
   getTableContents(
     params: IGetTableContentsParams,
-  ): Promise<IAdtResponse<IAdtWireResponse>>;
+  ): Promise<IAdtResponse<string>>;
 }
 
 /** `/sap/bc/adt/discovery` — what this system says it serves. */
 export interface IAdtDiscovery {
-  discovery(
-    params?: IGetDiscoveryParams,
-  ): Promise<IAdtResponse<IAdtWireResponse>>;
+  discovery(params?: IGetDiscoveryParams): Promise<IAdtResponse<string>>;
 }
 
 /**
@@ -368,7 +363,7 @@ export interface IAdtObjectAccess {
     functionGroup?: string,
     version?: 'active' | 'inactive',
     options?: IReadOptions,
-  ): Promise<IAdtResponse<IAdtWireResponse>>;
+  ): Promise<IAdtResponse<string>>;
 
   /** Metadata of any object. */
   readObjectMetadata(
@@ -376,7 +371,7 @@ export interface IAdtObjectAccess {
     objectName: string,
     functionGroup?: string,
     options?: IReadOptions,
-  ): Promise<IAdtResponse<IAdtWireResponse>>;
+  ): Promise<IAdtResponse<string>>;
 
   /** Whether that type has source at all. Issues no request. */
   supportsSourceCode(objectType: AdtObjectType): boolean;
@@ -390,7 +385,7 @@ export interface IAdtObjectAccess {
   ): string;
 
   /** A standalone include. */
-  getInclude(includeName: string): Promise<IAdtResponse<IAdtWireResponse>>;
+  getInclude(includeName: string): Promise<IAdtResponse<string>>;
 
   /** The includes an object is built from. */
   getIncludesList(

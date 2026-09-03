@@ -5,8 +5,6 @@
  * should extend this interface to ensure consistency across all ADT object types.
  */
 
-import type { IAdtWireResponse } from '../connection/IAbapConnection';
-
 /**
  * Base configuration interface for all ADT Object operations
  *

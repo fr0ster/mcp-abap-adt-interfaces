@@ -31,15 +31,13 @@ const succeeded = <T>(value: T): IAdtResponse<T> => ({
 
 /** One family alone, implemented by something that knows nothing of the others. */
 class MyDataPreview implements IAdtDataPreview {
-  async getSqlQuery(
-    _p: IGetSqlQueryParams,
-  ): Promise<IAdtResponse<IAdtWireResponse>> {
-    return succeeded({ status: 200, statusText: 'OK', data: '', headers: {} });
+  async getSqlQuery(_p: IGetSqlQueryParams): Promise<IAdtResponse<string>> {
+    return succeeded('');
   }
   async getTableContents(
     _p: IGetTableContentsParams,
-  ): Promise<IAdtResponse<IAdtWireResponse>> {
-    return succeeded({ status: 200, statusText: 'OK', data: '', headers: {} });
+  ): Promise<IAdtResponse<string>> {
+    return succeeded('');
   }
 }
 
@@ -87,8 +85,8 @@ class NodeReaderWithExtras implements IAdtRepositoryStructure {
   async getObjectStructure(
     _t: string,
     _n: string,
-  ): Promise<IAdtResponse<IAdtWireResponse>> {
-    return succeeded({ status: 200, statusText: 'OK', data: '', headers: {} });
+  ): Promise<IAdtResponse<string>> {
+    return succeeded('');
   }
 }
 
