@@ -45,6 +45,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   document and the request that produced it, which is strictly more than the
   array held.
 
+### Removed
+
+- **BREAKING: the package ships no executable code.** Two classes and two
+  functions are gone, and what remains is types, interfaces and constants:
+
+  | removed | where it lives now |
+  |---|---|
+  | `AdtOperationError` | nowhere — decision 19 recorded that it stops existing; 20 throws, zero `instanceof` anywhere, and of its five fields only `code` was ever read |
+  | `TransportSearchConfigurationMissing` | `@mcp-abap-adt/adt-clients`, which took it over in 17.0.0 |
+  | `isNetworkError()` | the implementation's; it is logic, not a contract |
+  | `hasDeferredResponses()` | the implementation's — `IDeferredResponseConnection` is the shape, and a consumer writes the three-line guard themselves |
+
+  A contract says what a thing *is*; a class is one way of being it, and shipping
+  one from the contracts package makes "swap in your own implementation" untrue
+  for that piece. `TransportSearchConfigurationMissing` had already proved the
+  cost: it existed here *and* in `adt-clients`, so `instanceof` against this one
+  stopped matching what the library actually threw.
+
+  The published surface is now 50 runtime values, all of them constants.
+
 ### Added
 
 - **`IAdtOperationOptions.analyse`** — the caller's own reading of what counts as

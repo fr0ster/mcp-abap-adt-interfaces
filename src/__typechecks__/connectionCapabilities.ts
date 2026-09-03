@@ -64,10 +64,7 @@ void _codes;
 
 // A batch recorder is a legitimate IAbapConnection whose responses arrive late.
 // The atom says so; nothing in IAbapConnection can.
-import {
-  hasDeferredResponses,
-  type IDeferredResponseConnection,
-} from '../connection/IConnectionCapabilities';
+import type { IDeferredResponseConnection } from '../connection/IConnectionCapabilities';
 
 const _deferring: IAbapConnection & IDeferredResponseConnection = {
   ..._sessionless,
@@ -75,10 +72,21 @@ const _deferring: IAbapConnection & IDeferredResponseConnection = {
 };
 void _deferring;
 
-// The guard narrows whatever the caller holds, without the caller importing the
-// atom's shape.
+// The atom is enough to narrow with: a consumer writes the guard themselves,
+// which is the point of it being a shape rather than a function this package
+// ships. Nothing executable is needed here, only the declaration to check
+// against.
+function theirGuard<T extends object>(
+  connection: T,
+): connection is T & IDeferredResponseConnection {
+  return (
+    (connection as Partial<IDeferredResponseConnection>)
+      .responsesAreDeferred === true
+  );
+}
+
 const _narrowed: IAbapConnection = _sessionless;
-if (hasDeferredResponses(_narrowed)) {
+if (theirGuard(_narrowed)) {
   const _flag: true = _narrowed.responsesAreDeferred;
   void _flag;
 }

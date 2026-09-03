@@ -54,25 +54,6 @@ export interface ITransportSearchConfiguration {
 export const TRANSPORT_SEARCH_CONFIGURATIONS_URL =
   '/sap/bc/adt/cts/transportrequests/searchconfiguration/configurations';
 
-/**
- * A system with no saved transport search has nothing for `list()` to run.
- *
- * Named rather than a bare Error because a caller may reasonably want to react
- * to it — by creating a configuration in Eclipse, or by supplying a configUri
- * it already knows.
- */
-export class TransportSearchConfigurationMissing extends Error {
-  constructor(public readonly endpoint: string) {
-    super(
-      'No transport search configuration exists on this system. The transport ' +
-        'list is a saved-configuration search, so there is nothing to run: create ' +
-        'a configuration in Eclipse, or pass configUri explicitly. Configurations ' +
-        `live at ${endpoint}`,
-    );
-    this.name = 'TransportSearchConfigurationMissing';
-  }
-}
-
 // Transport request configuration (camelCase)
 export interface ITransportConfig {
   description: string;
