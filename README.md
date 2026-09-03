@@ -224,7 +224,7 @@ try {
 
 ### Core Development Principle
 
-**Interface-Only Communication**: This package defines **interfaces only**. It contains no implementations, no dependencies on other packages (except type-only imports), and serves as the single source of truth for all interface definitions.
+**Interface-Only Communication**: This package defines **contracts** — interfaces, types and the constants they refer to. It contains no implementations: no classes, no functions, and no dependencies on other packages beyond type-only imports. It is the single source of truth for the shapes every package here agrees on.
 
 ### Package Responsibilities
 
@@ -240,7 +240,7 @@ This package is responsible for:
 - **Defines interfaces**: All interfaces used across MCP ABAP ADT packages
 - **Organizes by domain**: Interfaces grouped by functional domain
 - **Follows naming convention**: All interfaces start with `I` prefix
-- **Type-only exports**: No runtime code, only type definitions
+- **Contracts, not code**: types and interfaces, plus the constants they name. Since 29.0.0 the package ships **no class and no function** — `AdtOperationError`, `TransportSearchConfigurationMissing`, `isNetworkError()` and `hasDeferredResponses()` were removed, because a contract says what a thing *is* and shipping one way of being it makes "use your own implementation" untrue for that piece. What remains executable is 50 exported constants (`AdtObjectErrorCodes`, the `HEADER_*` names, `NETWORK_ERROR_CODES`, `AUTH_TYPE_*` and so on); every emitted module is otherwise empty
 
 #### What This Package Does NOT Do
 
