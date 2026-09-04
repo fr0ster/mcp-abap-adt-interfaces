@@ -20,7 +20,11 @@ void _forwardCompatible;
 // The client interface is implementable by something that is not our class —
 // which is the whole point of publishing it.
 const _client: Pick<IAdtAbapGitClient, 'listRepos'> = {
-  listRepos: async () => [],
+  listRepos: async () => ({
+    ok: true,
+    getResult: () => ({ value: [] }),
+    getError: () => undefined,
+  }),
 };
 void _client;
 

@@ -7,6 +7,7 @@
 
 import type { IAdtResponse } from '../adt/IAdtResponse';
 import type {
+  IAdtCreatable,
   IAdtRequest,
   IListTransportsOptions,
   ITransportConfig,
@@ -43,49 +44,50 @@ class MyOwnRequests implements IAdtRequest {
   ): Promise<IAdtResponse<void>> {
     return answered(undefined);
   }
-  async list(_options?: IListTransportsOptions): Promise<ITransportTree> {
-    return { attributes: {}, requests: [] };
-  }
-  async listNodes(options?: IListTransportsOptions): Promise<ITransportTree>;
-  async listNodes<T>(
-    parse: (data: unknown) => T,
-    options?: IListTransportsOptions,
-  ): Promise<T>;
-  async listNodes<T>(
-    first?: IListTransportsOptions | ((data: unknown) => T),
-    _second?: IListTransportsOptions,
-  ): Promise<ITransportTree | T> {
-    return typeof first === 'function'
-      ? first(undefined)
-      : { attributes: {}, requests: [] };
+  async list(
+    _options?: IListTransportsOptions,
+  ): Promise<IAdtResponse<ITransportTree>> {
+    return answered({ attributes: {}, requests: [] });
   }
 }
 
 declare const requests: IAdtRequest;
 
 /** The default tree, from the contract alone. */
-const tree: Promise<ITransportTree> = requests.listNodes();
+const tree: Promise<IAdtResponse<ITransportTree>> = requests.list();
 
-/** A consumer's own parser, and its own type comes back — not `unknown`. */
+/**
+ * A consumer's own shape, chosen when the implementation was constructed — the
+ * reading `listNodes(parse)` used to take at the call. One member, one reading
+ * per implementation, and the type says which.
+ */
 interface MyShape {
   ids: string[];
 }
-const mine: Promise<MyShape> = requests.listNodes(
-  (data): MyShape => ({ ids: [String(data)] }),
-);
+declare const mineRequests: IAdtRequest<MyShape>;
+const mine: Promise<IAdtResponse<MyShape>> = mineRequests.list();
 
 /**
- * The CRUD half is reachable through the contract, not only the class — and it
- * answers `IAdtResponse`, so a caller is made to check before reading.
+ * The CRUD half is composed, not inherited.
+ *
+ * `IAdtRequest` declares what is the transport's alone; a caller who also wants
+ * to create one spells the atom beside it. That is what "minimal interfaces,
+ * composed" buys: an implementation that only lists transports is a legitimate
+ * implementation of the listing contract, and a caller who needs both says so in
+ * the type instead of being handed eight members because they wanted one.
  */
-const created: Promise<IAdtResponse<string>> = requests.create({
+type Requests = IAdtRequest & IAdtCreatable<ITransportConfig, string>;
+declare const both: Requests;
+const created: Promise<IAdtResponse<string>> = both.create({
   description: 'x',
 });
 
-/** A parser returning the wrong shape is refused. */
-// @ts-expect-error the parser yields MyShape, not ITransportTree
-const wrong: Promise<ITransportTree> = requests.listNodes(
-  (data): MyShape => ({ ids: [String(data)] }),
-);
+/** The implementation's reading is the one that comes back. */
+// @ts-expect-error this implementation answers MyShape, not ITransportTree
+const wrong: Promise<IAdtResponse<ITransportTree>> = mineRequests.list();
+
+/** No member takes a parser any more. */
+// @ts-expect-error list takes options and nothing else
+requests.list((data: unknown) => String(data));
 
 export { MyOwnRequests, tree, mine, created, wrong };

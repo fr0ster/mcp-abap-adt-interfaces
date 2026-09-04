@@ -183,11 +183,6 @@ export interface IGetWhereUsedListParams {
    * Applied on top of the default scope (or after `enableOnlyTypes`/`enableAllTypes`).
    */
   disableTypes?: string[];
-  /**
-   * Include raw XML in response
-   * Default: false
-   */
-  includeRawXml?: boolean;
 }
 
 /**
@@ -222,8 +217,6 @@ export interface IWhereUsedListResult {
   resultDescription: string;
   /** List of referencing objects (excluding packages) */
   references: IWhereUsedReference[];
-  /** Raw XML response (if includeRawXml was true) */
-  rawXml?: string;
 }
 
 /**
@@ -243,12 +236,6 @@ export interface IGetVirtualFoldersContentsParams {
   facetOrder?: string[];
   withVersions?: boolean;
   ignoreShortDescriptions?: boolean;
-}
-
-export interface IGetPackageHierarchyOptions {
-  includeSubpackages?: boolean;
-  maxDepth?: number;
-  includeDescriptions?: boolean;
 }
 
 export type PackageHierarchySupportedType =
@@ -279,18 +266,6 @@ export interface IPackageHierarchyNode extends IAdtObjectHit {
   codeFormat?: PackageHierarchyCodeFormat;
   restoreStatus?: 'ok' | 'not-implemented';
   children?: IPackageHierarchyNode[];
-}
-
-/**
- * Options for getPackageContentsList
- */
-export interface IGetPackageContentsListOptions {
-  /** Include contents of subpackages recursively (default: false) */
-  includeSubpackages?: boolean;
-  /** Maximum depth for subpackage traversal (default: 5) */
-  maxDepth?: number;
-  /** Include object descriptions (default: true) */
-  includeDescriptions?: boolean;
 }
 
 /**

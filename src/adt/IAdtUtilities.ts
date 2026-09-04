@@ -101,8 +101,6 @@ import type {
   AdtObjectType,
   AdtSourceObjectType,
   IGetDiscoveryParams,
-  IGetPackageContentsListOptions,
-  IGetPackageHierarchyOptions,
   IGetSqlQueryParams,
   IGetTableContentsParams,
   IGetVirtualFoldersContentsParams,
@@ -169,35 +167,33 @@ export interface IRepositoryNodeContents {
  * *where* something is: what exists, what uses it, and what the repository will
  * show under a filter.
  */
-export interface IAdtInformationSystem {
-  /** Objects matching a query, parsed. */
-  search(
-    criteria: ISearchObjectsParams,
-  ): Promise<IAdtResponse<ISearchResult[]>>;
-
+export interface IAdtInformationSystem<
+  TSearch = ISearchResult[],
+  TWhereUsed = IWhereUsedListResult,
+  TTypes = INamedItem[],
+> {
   /**
-   * The same search, read by the caller instead.
+   * Objects matching a query.
    *
-   * One endpoint is one member (decision 16), so this is an overload and not a
-   * second method returning the envelope. What varies is behaviour, and the
-   * consumer chooses it: the implementation issues the same request and hands
-   * the answer over untouched rather than forming an opinion about it.
+   * One signature. Until 30.0.0 a second overload took
+   * `parse: (data: unknown) => T` so a caller could keep the document — a
+   * recorded hit list runs to 473 rows and 1.3MB, with nested references
+   * {@link ISearchResult} deliberately does not carry. That reading is still
+   * available and is now chosen the way every other reading is: an
+   * {@link IResultStrategy} given to the implementation, with `TSearch`
+   * following it.
    *
-   * It exists because the hit list is one of the documents decision 5 is about —
-   * a recorded one runs to 473 rows and 1.3MB, with nested references a caller
-   * may need and `ISearchResult` deliberately does not carry. A consumer wanting
-   * that document, or feeding it somewhere unparsed, takes it here with a
-   * contract, rather than reaching for a raw member and guessing at the shape.
+   * Decision 20 — choice is offered by injection, never by more contract — and
+   * decision 22, which says where the injection happens. A per-call argument is
+   * a second signature every implementer pays for whether or not their callers
+   * use it.
    */
-  search<T>(
-    criteria: ISearchObjectsParams,
-    parse: (data: unknown) => T,
-  ): Promise<IAdtResponse<T>>;
+  search(criteria: ISearchObjectsParams): Promise<IAdtResponse<TSearch>>;
 
   /** Where an object is used, parsed into references. */
   getWhereUsedList(
     params: IGetWhereUsedListParams,
-  ): Promise<IAdtResponse<IWhereUsedListResult>>;
+  ): Promise<IAdtResponse<TWhereUsed>>;
 
   /** The scope document a where-used run is filtered by. */
   getWhereUsedScope(
@@ -235,14 +231,14 @@ export interface IAdtInformationSystem {
     maxItemCount?: number,
     name?: string,
     data?: string,
-  ): Promise<IAdtResponse<INamedItem[]>>;
+  ): Promise<IAdtResponse<TTypes>>;
 }
 
 /**
  * `/sap/bc/adt/repository/nodestructure` and `/objectstructure` — the tree, and
  * one object's place in it.
  */
-export interface IAdtRepositoryStructure {
+export interface IAdtRepositoryStructure<TNode = IRepositoryNodeContents> {
   /**
    * Children of a node: the objects it holds, and the nodes below it.
    *
@@ -255,25 +251,25 @@ export interface IAdtRepositoryStructure {
    * The child half is pairs, not ids: see {@link IRepositoryNodeChild} for why
    * an id on its own cannot answer the question a walk asks.
    *
-   * **No `withShortDescriptions`.** The implementation takes one and sends it,
-   * but every parser that has read this document reads exactly the four identity
-   * fields {@link IRepositoryObjectNode} names — nothing has ever read a
-   * description out of it. A parameter that asks for something the result cannot
-   * express is a parameter with no observable effect for anyone holding the
-   * contract, and adding `description?: string` to make it observable would be
-   * inventing a field nobody has seen, which decision 1 forbids. An
-   * implementation may still accept it as an extra optional argument.
+   * **`withShortDescriptions` reaches the wire, so it is a parameter** (decision
+   * 17). What no *result* has ever carried is a description — every parser that
+   * has read this document reads exactly the four identity fields
+   * {@link IRepositoryObjectNode} names. A consumer who needs one supplies an
+   * {@link IResultStrategy} that reads it, which is what `TNode` is for;
+   * inventing a `description?: string` field nobody has captured is what
+   * decision 1 forbids.
    *
-   * **What would change this.** A capture of the response with the flag set. If
-   * a description is in there, the field is named from the capture and the
-   * parameter comes back with it — both together, because neither is any use
-   * alone.
+   * **What this is for.** The node structure asked for as itself — a class's
+   * includes, a program's parts, a node walked by hand. What a package holds is
+   * asked of {@link IAdtPackageBrowsing}; that an implementation may come
+   * through this same resource to answer it is invisible from outside, as it
+   * should be.
    */
   fetchNodeStructure(
     parentType: string,
     parentName: string,
-    nodeId?: string,
-  ): Promise<IAdtResponse<IRepositoryNodeContents>>;
+    options?: IGetNodeContentsOptions,
+  ): Promise<IAdtResponse<TNode>>;
 
   /** The parts one object is made of. */
   getObjectStructure(
@@ -283,42 +279,73 @@ export interface IAdtRepositoryStructure {
 }
 
 /**
- * `/sap/bc/adt/packages/*`, walked through the node structure.
+ * What a package holds.
  *
  * Its own atom rather than part of {@link IAdtRepositoryStructure}: a package is
  * a container ADT gives its own resource, and reading what is in one is a
- * question about that container, not about the tree it happens to be walked
- * with.
+ * question about that container — **not** about the tree an implementation
+ * happens to walk to answer it. Which requests it issues, and to which resource,
+ * is its business.
+ *
+ * **One member.** Until 30.0.0 there were two: `getPackageContentsList`,
+ * answering `IPackageContentItem[]`, and `getPackageHierarchy`, answering
+ * `IPackageHierarchyNode`. One question, two answers, and which one a caller got
+ * was decided by the method name rather than by the caller. What the answer
+ * becomes is now an {@link IResultStrategy}, injected into the implementation
+ * once — a flat list, a tree, names and type codes alone, or the document
+ * untouched. {@link IPackageContentItem} and {@link IPackageHierarchyNode}
+ * survive as the shapes the shipped strategies return.
+ *
+ * **No `maxDepth`, no `includeSubpackages`.** Those described a walk the library
+ * performed on the caller's behalf across many requests. A member answers one
+ * read; a consumer holding a result with sub-package references walks them
+ * itself, which is what every consumer of the old tree did anyway.
  */
-export interface IAdtPackageBrowsing {
-  /** What a package holds, parsed. */
-  getPackageContentsList(
+export interface IAdtPackageBrowsing<TContents = IPackageContentItem[]> {
+  getPackageContents(
     packageName: string,
-    options?: IGetPackageContentsListOptions,
-  ): Promise<IAdtResponse<IPackageContentItem[]>>;
+    options?: IGetPackageContentsOptions,
+  ): Promise<IAdtResponse<TContents>>;
+}
 
-  /** A package and the packages under it. */
-  getPackageHierarchy(
-    packageName: string,
-    options?: IGetPackageHierarchyOptions,
-  ): Promise<IAdtResponse<IPackageHierarchyNode>>;
+/** What the request itself takes; `maxDepth` is deliberately not among them. */
+export interface IGetPackageContentsOptions {
+  withShortDescriptions?: boolean;
+}
+
+/**
+ * What the node-structure request itself takes.
+ *
+ * `node_id` selects a sub-node of the parent; without it the server answers the
+ * parent's own level. Both reach the wire (decision 17), which is why they are
+ * here and a traversal depth is not.
+ */
+export interface IGetNodeContentsOptions {
+  nodeId?: string;
+  withShortDescriptions?: boolean;
 }
 
 /**
  * `/sap/bc/adt/activation` and `/sap/bc/adt/deletion` — operations ADT takes on
  * a set of objects at once, rather than on one.
  */
-export interface IAdtGroupLifecycle {
+export interface IAdtGroupLifecycle<TInactive = IInactiveObjectsResponse> {
   /** Activate several objects in one request. */
   activateObjectsGroup(
     objects: IObjectReference[],
     preauditRequested?: boolean,
   ): Promise<IAdtResponse<string>>;
 
-  /** What is inactive right now. */
-  getInactiveObjects(options?: {
-    includeRawXml?: boolean;
-  }): Promise<IAdtResponse<IInactiveObjectsResponse>>;
+  /**
+   * What is inactive right now.
+   *
+   * **No `includeRawXml`.** A boolean that changes what the result *is* is a
+   * reading chosen at the call site, which is the shape decisions 16 and 20 rule
+   * out — and it could offer exactly two readings, chosen by whoever wrote the
+   * flag. `TInactive` spans the space instead, following the
+   * {@link IResultStrategy} the implementation was constructed with.
+   */
+  getInactiveObjects(): Promise<IAdtResponse<TInactive>>;
 
   /** Whether a set can be deleted, asked before deleting it. */
   checkDeletionGroup(

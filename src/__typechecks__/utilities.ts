@@ -14,8 +14,11 @@ import type {
   IAdtPackageBrowsing,
   IAdtRepositoryStructure,
   IAdtResponse,
+  IGetNodeContentsOptions,
   IGetSqlQueryParams,
   IGetTableContentsParams,
+  IPackageContentItem,
+  IPackageHierarchyNode,
   IRepositoryNodeContents,
   ISearchResult,
 } from '../index';
@@ -52,7 +55,7 @@ declare const utils: AllUtilities;
 
 /** A caller holding the intersection reaches every family. */
 const found = utils.search({ query: 'ZCL_X' });
-const tree = utils.getPackageHierarchy('ZPKG');
+const contents = utils.getPackageContents('ZPKG');
 const rows = utils.getTableContents({ table_name: 'T000' });
 const inactive = utils.getInactiveObjects();
 
@@ -64,19 +67,16 @@ preview.search({ query: 'ZCL_X' });
 /**
  * An implementation may take arguments the contract does not name.
  *
- * `fetchNodeStructure` drops `withShortDescriptions`: nothing has ever read a
- * description out of that document, so the contract cannot express the flag's
- * effect and does not ask for it. The shipped implementation still accepts one,
- * and that has to keep satisfying the contract — an extra *optional* parameter
- * is assignable, an extra required one is not. Both directions are asserted,
- * because "it compiled when I tried it" is not a thing anyone can re-run.
+ * An extra *optional* parameter is assignable, an extra required one is not.
+ * Both directions are asserted, because "it compiled when I tried it" is not a
+ * thing anyone can re-run.
  */
 class NodeReaderWithExtras implements IAdtRepositoryStructure {
   async fetchNodeStructure(
     _parentType: string,
     _parentName: string,
-    _nodeId?: string,
-    _withShortDescriptions?: boolean,
+    _options?: IGetNodeContentsOptions,
+    _trace?: boolean,
   ): Promise<IAdtResponse<IRepositoryNodeContents>> {
     return succeeded({ objects: [], childNodes: [] });
   }
@@ -89,8 +89,37 @@ class NodeReaderWithExtras implements IAdtRepositoryStructure {
 }
 
 declare const nodes: IAdtRepositoryStructure;
-// @ts-expect-error the contract takes three arguments; the flag is not one of them
-nodes.fetchNodeStructure('DEVC/K', 'ZPKG', '000000', true);
+// @ts-expect-error the contract takes three arguments; a bare node id is not the third
+nodes.fetchNodeStructure('DEVC/K', 'ZPKG', '000000');
+
+/**
+ * One question, four readings, and the reading is the implementation's — chosen
+ * when it was constructed, not at the call. This is what the two members
+ * `getPackageContentsList` and `getPackageHierarchy` could not offer: a caller
+ * got whichever shape the method name had decided, and the document was gone.
+ */
+class TreeBrowsing implements IAdtPackageBrowsing<IPackageHierarchyNode> {
+  async getPackageContents(
+    _packageName: string,
+  ): Promise<IAdtResponse<IPackageHierarchyNode>> {
+    return succeeded({
+      name: 'ZPKG',
+      type: 'DEVC/K',
+    } as unknown as IPackageHierarchyNode);
+  }
+}
+
+/** The backup consumer's reading, which 29.0.0 could not express at all. */
+class RawBrowsing implements IAdtPackageBrowsing<string> {
+  async getPackageContents(): Promise<IAdtResponse<string>> {
+    return succeeded('<asx:abap/>');
+  }
+}
+
+/** Naming no strategy answers what the list member answered before. */
+declare const browsing: IAdtPackageBrowsing;
+const listed: Promise<IAdtResponse<IPackageContentItem[]>> =
+  browsing.getPackageContents('ZPKG');
 
 /**
  * The question 26.2.0's shape could not answer.
@@ -122,33 +151,37 @@ async function idOfType(
  */
 declare const info: IAdtInformationSystem;
 
-/** No parser: the parsed hits, as before. */
+/** Naming no strategy: the parsed hits, as before. */
 const hits: Promise<IAdtResponse<ISearchResult[]>> = info.search({
   query: 'ZCL_*',
 });
 
-/** A parser: the consumer's own type, not `unknown` and not an envelope. */
+/** A consumer's own type, chosen once — not `unknown`, and not an envelope. */
 interface RawHits {
   xml: string;
 }
-const raw: Promise<IAdtResponse<RawHits>> = info.search(
-  { query: 'ZCL_*' },
-  (data) => ({ xml: String(data) }),
-);
+declare const rawInfo: IAdtInformationSystem<RawHits>;
+const raw: Promise<IAdtResponse<RawHits>> = rawInfo.search({ query: 'ZCL_*' });
 
-/** A parser yielding the wrong shape is refused. */
-// @ts-expect-error the parser yields RawHits, not ISearchResult[]
-const wrong: Promise<ISearchResult[]> = info.search(
-  { query: 'ZCL_*' },
-  (data): RawHits => ({ xml: String(data) }),
-);
+/** The choice is the implementation's, so the wrong shape cannot be asked for. */
+// @ts-expect-error this implementation answers RawHits, not ISearchResult[]
+const wrong: Promise<IAdtResponse<ISearchResult[]>> = rawInfo.search({
+  query: 'ZCL_*',
+});
+
+/** No member takes a parser any more. */
+// @ts-expect-error search takes the criteria and nothing else
+info.search({ query: 'ZCL_*' }, (data: unknown) => String(data));
 
 export {
   idOfType,
   MyDataPreview,
   NodeReaderWithExtras,
+  RawBrowsing,
+  TreeBrowsing,
   found,
-  tree,
+  contents,
+  listed,
   rows,
   inactive,
   hits,

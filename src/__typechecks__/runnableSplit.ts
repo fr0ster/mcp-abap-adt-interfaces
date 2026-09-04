@@ -1,16 +1,22 @@
 /**
- * `IAdtRunnable` is extracted from `IExecutor` without changing its shape.
+ * `IAdtRunnable` is one method, and its arguments have never changed.
  *
- * The claim this file exists to hold: an existing executor implementation and an
- * existing caller both see exactly what they saw before the split. If that ever
- * stops being true, the extraction stopped being free and the change needs a
- * migration note rather than a paragraph saying none is needed.
+ * The extraction from `IExecutor` was free, and this file held that claim: an
+ * existing implementation and an existing caller saw exactly what they saw
+ * before. **30.0.0 breaks it on purpose** — `run` answers `IAdtResponse` rather
+ * than a bare result, so an implementation written against the old shape no
+ * longer fits, and that is asserted below rather than quietly dropped.
+ *
+ * What did not change is the parameter list, and those assertions are the ones
+ * still worth their weight: a consumer reading `Parameters<IExecutor['run']>`,
+ * or building a wrapper from tuple types, is unaffected.
  *
  * Proved load-bearing 2026-08-14: making `options` required in `IAdtRunnable`
- * makes `_CallerLosesNothing` fail with TS2344, and reverting that one edit
- * makes it pass again.
+ * makes `_ExecutorRunTakesExactlyTarget` fail with TS2344, and reverting that
+ * one edit makes it pass again.
  */
 
+import type { IAdtResponse } from '../adt/IAdtResponse';
 import type { IAdtWireResponse } from '../connection/IAbapConnection';
 import type { IAdtRunnable } from '../execution/IAdtRunnable';
 import type { IExecutor } from '../execution/IExecutor';
@@ -37,13 +43,22 @@ interface ExecutorBefore<
   ): Promise<TProfilingResult>;
 }
 
-type Executor = IExecutor<
-  { name: string },
-  IAdtWireResponse,
-  { id: string },
-  { x: 1 },
-  { y: 2 }
->;
+/**
+ * The executor, composed rather than inherited.
+ *
+ * Until 30.0.0 `IExecutor` extended `IAdtRunnable`, so nobody could take the
+ * profiler half without the run, or the run without the profiler. Minimal
+ * contracts, composed where they are used, is what replaced that — and the
+ * assertions below are about the composition, which is what a consumer holds.
+ */
+type Executor = IAdtRunnable<{ name: string }, IAdtWireResponse> &
+  IExecutor<
+    { name: string },
+    IAdtWireResponse,
+    { id: string },
+    { x: 1 },
+    { y: 2 }
+  >;
 type Before = ExecutorBefore<
   { name: string },
   IAdtWireResponse,
@@ -52,14 +67,21 @@ type Before = ExecutorBefore<
   { y: 2 }
 >;
 
-/** An implementation written against the old shape still satisfies the new one. */
-export type _OldImplementationStillFits = Assert<
-  Before extends Executor ? true : false
+/**
+ * The 30.0.0 break, stated as a fact rather than left to be discovered.
+ *
+ * An implementation answering a bare result no longer satisfies the contract,
+ * because the contract now answers {@link IAdtResponse} — a caller is made to
+ * ask whether there was a failure before reading a value, which is the whole
+ * point of decision 20. Both directions are asserted so that a later edge back
+ * towards the old shape fails here rather than in a consumer.
+ */
+export type _OldImplementationNoLongerFits = Assert<
+  Before extends Executor ? false : true
 >;
 
-/** And a caller holding the new type still gets everything the old one gave. */
-export type _CallerLosesNothing = Assert<
-  Executor extends Before ? true : false
+export type _NewContractIsNotTheOldOne = Assert<
+  Executor extends Before ? false : true
 >;
 
 /** `run` alone is the atom, with nothing else smuggled into it. */
@@ -92,7 +114,7 @@ export type _RunnableKeepsItsOptions = Assert<
 
 /** A type with only `run` satisfies the atom and not the executor. */
 interface OnlyRuns {
-  run(target: { name: string }): Promise<IAdtWireResponse>;
+  run(target: { name: string }): Promise<IAdtResponse<IAdtWireResponse>>;
 }
 export type _RunOnlyIsRunnable = Assert<
   OnlyRuns extends IAdtRunnable<{ name: string }, IAdtWireResponse>

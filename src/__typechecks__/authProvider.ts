@@ -50,7 +50,8 @@ const _plainToken: IAuthProvider = {
   transportMaterial: () => ({}),
 };
 
-const _renewable: IRenewableCredential = {
+/** A provider that can also be renewed: the two contracts, composed. */
+const _renewable: IAuthProvider & IRenewableCredential = {
   kind: 'token',
   prepare: async () => {},
   authorizationHeader: async () => 'Bearer x',
@@ -60,7 +61,9 @@ const _renewable: IRenewableCredential = {
 };
 
 // The narrowing a consumer writes: evidence, not a cast.
-function isRenewable(c: IAuthProvider): c is IRenewableCredential {
+function isRenewable(
+  c: IAuthProvider,
+): c is IAuthProvider & IRenewableCredential {
   return typeof (c as Partial<IRenewableCredential>).renew === 'function';
 }
 void isRenewable(_plainToken);

@@ -5,6 +5,7 @@
  * All methods return domain types (no raw IAdtWireResponse).
  */
 
+import type { IAdtResponse } from '../adt/IAdtResponse';
 import type {
   IFeedDescriptor,
   IFeedEntry,
@@ -15,8 +16,12 @@ import type {
   ISystemMessageEntry,
 } from './types';
 
-export interface IFeedRepository {
-  list(): Promise<IFeedDescriptor[]>;
+export interface IFeedRepository<
+  TFeeds = IFeedDescriptor[],
+  TVariants = IFeedVariant[],
+  TEntries = IFeedEntry[],
+> {
+  list(): Promise<IAdtResponse<TFeeds>>;
   /**
    * Feed variants for a category.
    *
@@ -32,9 +37,15 @@ export interface IFeedRepository {
    * with an empty body, so there was nothing to enumerate from. A union would
    * be a guess dressed as a contract.
    */
-  variants(category: string): Promise<IFeedVariant[]>;
-  dumps(options?: IFeedQueryOptions): Promise<IFeedEntry[]>;
-  systemMessages(options?: IFeedQueryOptions): Promise<ISystemMessageEntry[]>;
-  gatewayErrors(options?: IFeedQueryOptions): Promise<IGatewayErrorEntry[]>;
-  gatewayErrorDetail(feedUrl: string): Promise<IGatewayErrorDetail>;
+  variants(category: string): Promise<IAdtResponse<TVariants>>;
+  dumps(options?: IFeedQueryOptions): Promise<IAdtResponse<TEntries>>;
+  systemMessages(
+    options?: IFeedQueryOptions,
+  ): Promise<IAdtResponse<ISystemMessageEntry[]>>;
+  gatewayErrors(
+    options?: IFeedQueryOptions,
+  ): Promise<IAdtResponse<IGatewayErrorEntry[]>>;
+  gatewayErrorDetail(
+    feedUrl: string,
+  ): Promise<IAdtResponse<IGatewayErrorDetail>>;
 }

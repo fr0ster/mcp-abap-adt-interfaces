@@ -200,6 +200,36 @@ export interface IAdtResult<T> {
 }
 
 /**
+ * How an answer becomes a value.
+ *
+ * {@link IAdtResult} says a result has a value; this says where that value came
+ * from. One endpoint serves callers who want very different amounts of it — an
+ * MCP server passing the answer to a language model, where size is a budget; a
+ * backup tool that must keep the document byte for byte; a script that wants two
+ * fields — and none of those readings is more correct than the others.
+ *
+ * So the reading is not the library's. It is injected into the implementation
+ * once, and the member's result type follows it (decision 22). What is *not*
+ * offered is a second member per reading — that is decision 16 — nor a parse
+ * argument at the call, which was tried across 23 members and reverted.
+ *
+ * **It is handed the whole answer, not the body.** A reading may need the status
+ * or a header, and {@link IAdtOperationOptions.analyse}, the strategy on the
+ * error axis, already takes the answer for the same reason. The two axes are
+ * symmetric: one decides whether an answer is a failure at all, the other what a
+ * non-failure becomes.
+ *
+ * **It sees this member's own answer.** Requests an implementation issues on the
+ * way — to obtain a node id, a scope document, a token — are its own business and
+ * reach the consumer only as failures.
+ *
+ * ```typescript
+ * const raw: IResultStrategy<string> = (answer) => String(answer.data);
+ * ```
+ */
+export type IResultStrategy<T> = (answer: IAdtWireResponse) => T;
+
+/**
  * What a member answers with.
  *
  * The direction for all of them, and reached member by member — decision 19 says

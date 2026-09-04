@@ -12,6 +12,7 @@
  * that were previously easy to confuse.
  */
 
+import type { IAdtResponse } from '../adt/IAdtResponse';
 import type { IProfilerTraceParameters } from '../runtime/IProfiler';
 
 /** An entry of one of the two catalogues: a URI and what it means. */
@@ -73,10 +74,14 @@ export interface ITraceRequestEntry {
 //
 // It is additive in a minor release the moment a capture exists.
 
-export interface ITraceScheduling {
+export interface ITraceScheduling<
+  TTypes = INamedItem[],
+  TRequests = ITraceRequestEntry[],
+  TScheduled = string,
+> {
   /** What may be traced. The cloud flow reads these before choosing. */
-  listObjectTypes(): Promise<INamedItem[]>;
-  listProcessTypes(): Promise<INamedItem[]>;
+  listObjectTypes(): Promise<IAdtResponse<TTypes>>;
+  listProcessTypes(): Promise<IAdtResponse<TTypes>>;
 
   /**
    * The schedule — what is queued, not what has been recorded.
@@ -86,10 +91,10 @@ export interface ITraceScheduling {
    * `application/atom+xml;type=feed` and answers anything else
    * `400 acceptHeaderMissing`, which reads like a missing header and is not.
    */
-  listRequests(): Promise<ITraceRequestEntry[]>;
+  listRequests(): Promise<IAdtResponse<TRequests>>;
 
   /** The same schedule, read through the server's second, URI-keyed flavour. */
-  getRequestsByUri(uri: string): Promise<ITraceRequestEntry[]>;
+  getRequestsByUri(uri: string): Promise<IAdtResponse<TRequests>>;
 
   /**
    * Configure a measurement from parameters alone, without the catalogues.
@@ -97,5 +102,7 @@ export interface ITraceScheduling {
    * Resolves to the request id, taken from the `Location` header — what the run
    * is GIVEN, not what it produces.
    */
-  scheduleTrace(options?: IProfilerTraceParameters): Promise<string>;
+  scheduleTrace(
+    options?: IProfilerTraceParameters,
+  ): Promise<IAdtResponse<TScheduled>>;
 }

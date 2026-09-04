@@ -1,6 +1,6 @@
 // Compile-only assertions. If these stop compiling, the types regressed.
 
-import type { IAdtWireResponse } from '../connection/IAbapConnection';
+import type { IAdtResponse } from '../adt/IAdtResponse';
 import type { IAdtRunnable } from '../execution/IAdtRunnable';
 import type {
   AtcObjectType,
@@ -12,12 +12,12 @@ import type {
   IAtcRunTarget,
 } from '../runtime/IAtcRun';
 
-const response: IAdtWireResponse = {
-  data: '',
-  status: 200,
-  statusText: 'OK',
-  headers: {},
-};
+/** What an implementation answers with when it succeeded. */
+const answered = <T>(value: T): IAdtResponse<T> => ({
+  ok: true,
+  getResult: () => ({ value }),
+  getError: () => undefined,
+});
 
 // The shape a handler must satisfy: the runnable atom plus the two readers,
 // spelled as an intersection because one getter has this set. A named
@@ -30,18 +30,18 @@ const _handler: AtcHandler = {
   run: async (
     target: IAtcRunTarget,
     options?: IAtcRunOptions,
-  ): Promise<IAtcRunResult> => {
+  ): Promise<IAdtResponse<IAtcRunResult>> => {
     void target.objects[0].objectType;
     void options?.wait;
-    return { waited: false, worklistId: 'W', runId: 'R' };
+    return answered({ waited: false, worklistId: 'W', runId: 'R' });
   },
-  getRunStatus: async (runId: string): Promise<IAtcRunStatus> => {
+  getRunStatus: async (runId: string): Promise<IAdtResponse<IAtcRunStatus>> => {
     void runId;
-    return { status: 'finished', isFinished: true };
+    return answered({ status: 'finished', isFinished: true });
   },
-  getFindings: async (worklistId: string): Promise<IAdtWireResponse> => {
+  getFindings: async (worklistId: string): Promise<IAdtResponse<string>> => {
     void worklistId;
-    return response;
+    return answered('<atcworklist:worklist/>');
   },
 };
 

@@ -7,8 +7,8 @@ import type {
 import type {
   ITraceDeletion,
   ITraceFamily,
+  ITraceListing,
   ITraceReading,
-  ITraceReadingWithParser,
   ITraceView,
 } from './ITrace';
 
@@ -88,11 +88,7 @@ export interface IAbapTraceViews {
  * they were one operation with three names, and `read(traceId, view)` returns
  * the view's own type rather than a raw response every caller re-parses.
  */
-export type IProfiler = ITraceFamily<
-  'profiler',
-  IAbapTraceEntry,
-  IProfilerListOptions
-> &
+export type IProfiler = ITraceFamily<'profiler'> &
+  ITraceListing<IAbapTraceEntry, IProfilerListOptions> &
   ITraceReading<IAbapTraceViews> &
-  ITraceReadingWithParser<IAbapTraceViews> &
   ITraceDeletion;

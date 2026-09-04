@@ -1,4 +1,5 @@
-import type { IAdtWireResponse } from '../connection/IAbapConnection';
+import type { IAdtResponse } from '../adt/IAdtResponse';
+
 import type { IAdtRunnable } from './IAdtRunnable';
 
 /**
@@ -10,17 +11,17 @@ import type { IAdtRunnable } from './IAdtRunnable';
  */
 export interface IExecutor<
   TTarget,
-  TResult = IAdtWireResponse,
+  TResult = string,
   TRunWithProfilerOptions = unknown,
   TRunWithProfilingOptions = unknown,
   TRunWithProfilingResult = unknown,
-> extends IAdtRunnable<TTarget, TResult> {
+> {
   runWithProfiler(
     target: TTarget,
     options: TRunWithProfilerOptions,
-  ): Promise<TResult>;
+  ): Promise<IAdtResponse<TResult>>;
   runWithProfiling(
     target: TTarget,
     options?: TRunWithProfilingOptions,
-  ): Promise<TRunWithProfilingResult>;
+  ): Promise<IAdtResponse<TRunWithProfilingResult>>;
 }

@@ -7,6 +7,107 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [30.0.0] - 2026-09-04
+
+29.0.0 made every ADT member answer a contract instead of throwing. It did that
+for 32 members and missed 74, and it left the older defect underneath untouched:
+members that exist only to hand a caller a different amount of one endpoint's
+answer. This release finishes both.
+
+Two decisions were taken to get here, and they are recorded in
+`docs/architecture/DECISIONS.md` with their reasoning — 22, the shape is injected
+into the implementation rather than chosen at the call, and 23, contracts are
+composed and never inherited.
+
+### Changed
+
+- **BREAKING: `IResultStrategy<T>` is how a consumer says what an answer becomes.**
+  `(answer: IAdtWireResponse) => T` — the whole answer, because a reading may need
+  the status or a header, and because `analyse` on the error axis already takes it.
+  The type lives here; every implementation of it ships from
+  `@mcp-abap-adt/adt-clients`, since this package emits no function.
+
+- **BREAKING: members that duplicated one endpoint are one member each.**
+
+  | was | is |
+  |---|---|
+  | `getPackageContentsList`, `getPackageHierarchy` | `getPackageContents`, with `IAdtPackageBrowsing<TContents>` |
+  | `search`, `search<T>(criteria, parse)` | `search`, with `IAdtInformationSystem<TSearch>` |
+  | `list`, `listNodes`, `listNodes<T>(parse, …)` | `list`, with `IAdtRequest<TList>` |
+  | eight `*ServiceBinding` members beside the atoms | the atoms |
+  | `IAdtSearchable.search` | `IAdtInformationSystem.search` |
+  | `ITraceReadingWithParser.readWith` | a strategy given to the implementation |
+
+- **BREAKING: no member takes a parser.** All four are gone — `search`,
+  `listNodes`, `readWith` and the profiler's parser reading. A per-call parser is
+  a second signature every implementer owes whether or not their callers use it,
+  and it moves the result's meaning from the contract to the call site.
+
+- **BREAKING: 74 members now answer `IAdtResponse`.** The runtime contracts, the
+  service binding, abapGit, the feature toggle, unit tests, the feed repository,
+  trace scheduling and the executors all answered the transport envelope or their
+  own type directly, so a consumer had nowhere to receive a failure but `catch`.
+
+- **BREAKING: nothing in this package throws.** `lock`, `unlock`, `getVersions`
+  and `getVersionSource` were the last four, exempted in 29.0.0 on the grounds
+  that they "have no failure half". A lock refused because another user holds it
+  is a 403, and a version resource a system does not expose is a 404. There is no
+  `@throws` tag left in the package.
+
+- **BREAKING: contracts are composed, not inherited.** `IAdtServiceBinding`,
+  `IAdtRequest`, `IFeatureToggleObject`, `IExecutor`, `IClassExecutor`,
+  `IProgramExecutor`, `ITraceFamily`, `IRenewableCredential` and the eight runtime
+  contracts no longer extend anything. A consumer spells the intersection they
+  need — `IAdtRequest & IAdtCreatable<ITransportConfig, string>` — and an
+  implementation of the narrow thing is no longer forced to provide the wide one.
+
+- **BREAKING: `includeRawXml` is gone**, with the `rawXml` field it filled. A
+  boolean that changes what the result *is* is a reading chosen at the call site,
+  and it offered exactly two of them.
+
+- **BREAKING: `maxDepth` and `includeSubpackages` are gone** from package
+  contents. They described a walk the library performed across many requests on
+  the caller's behalf; a member answers one read, and a consumer holding a result
+  with sub-package references walks them itself.
+
+- **BREAKING: `createAndGenerateServiceBinding` answers one value**, not six
+  envelopes. What an implementation does on the way to an answer is its own
+  business.
+
+### Removed
+
+- **BREAKING: `IDebugger`, `IAdtDebuggerSession`, `IMemorySnapshots` and
+  `IAdtBatch`.** They move to a research branch of `@mcp-abap-adt/adt-clients` and
+  come back when they have been measured. 39 of `IDebugger`'s 42 members answered
+  `IAdtWireResponse`, which is what a contract looks like before anyone knows what
+  the endpoints return, and how memory snapshots are meant to function is still
+  open. Batch is the precedent: a contract nobody can yet state should not be
+  published, because every consumer that adopts it has to be migrated again when
+  it changes.
+
+- **BREAKING: `IRuntimeAnalysisObject` and `IListableRuntimeObject`.** They
+  existed only to be inherited. Each runtime contract declares its own `kind` and
+  its own `list` instead.
+
+- **BREAKING: `IAdtService` and `AdtServiceBindingType`**, two aliases for
+  `IAdtServiceBinding`. Import that.
+
+### Migration from 29.0.0
+
+| 29.0.0 | 30.0.0 |
+|---|---|
+| `utils.getPackageContentsList('Z1')` | `utils.getPackageContents('Z1')` on an implementation constructed with the list strategy |
+| `utils.getPackageHierarchy('Z1', { maxDepth: 5 })` | `utils.getPackageContents('Z1')` on one constructed with the tree strategy; the walk into sub-packages is the caller's |
+| `utils.fetchNodeStructure('CLAS/OC', 'ZCL_X', '0000')` | `utils.fetchNodeStructure('CLAS/OC', 'ZCL_X', { nodeId: '0000' })` |
+| `utils.search(criteria, parse)` | `search(criteria)` on an implementation constructed with that reading |
+| `requests.listNodes(parse, options)` | `requests.list(options)` on one constructed with that reading |
+| `getInactiveObjects({ includeRawXml: true })` | `getInactiveObjects()` on one constructed with the raw reading |
+| `profiler.readWith(parse, id, view)` | `profiler.read(id, view)` on one constructed with that reading |
+| `await dumps.getById(id)` → `IAdtWireResponse` | `const a = await dumps.getById(id); a.ok ? a.getResult().value : a.getError()` |
+| `try { await obj.lock(cfg) } catch` | `const a = await obj.lock(cfg); if (!a.ok) …` |
+| `class X implements IAdtServiceBinding` with `create` inherited | `implements IAdtServiceBinding & IAdtCreatable<IServiceBindingConfig, void>` |
+| `IDebugger`, `IMemorySnapshots`, `IAdtBatch` | not published here; take the implementation's own types from `adt-clients` |
+
 ## [29.0.0] - 2026-09-04
 
 Two passes, and the second is why this is one release rather than two: 29.0.0 was

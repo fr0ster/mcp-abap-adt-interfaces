@@ -6,11 +6,14 @@
  * handler may offer — profiling, or asking about a past run — is a different
  * capability with its own interface, not a wider version of this one.
  *
- * `IExecutor` extends this with its profiler variants, and a unit-test handler
- * declares it directly. There is deliberately no test-specific runnable: two
- * differently-shaped contracts for "this can be executed" would be two
- * vocabularies for one idea.
+ * `IExecutor` is composed beside this where a runner also profiles, and a
+ * unit-test handler declares this one alone. There is deliberately no
+ * test-specific runnable: two differently-shaped contracts for "this can be
+ * executed" would be two vocabularies for one idea — and no inheritance either,
+ * which would decide for the composer that whoever runs must also profile.
  */
+import type { IAdtResponse } from '../adt/IAdtResponse';
+
 export interface IAdtRunnable<TTarget, TResult, TOptions = never> {
   /**
    * Execute the target.
@@ -27,5 +30,5 @@ export interface IAdtRunnable<TTarget, TResult, TOptions = never> {
   run(
     target: TTarget,
     ...args: [TOptions] extends [never] ? [] : [options?: TOptions]
-  ): Promise<TResult>;
+  ): Promise<IAdtResponse<TResult>>;
 }

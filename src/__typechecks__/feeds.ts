@@ -5,21 +5,25 @@
 // work — a 400 every time. The refusal below is the whole point of the change:
 // a signature that accepts the broken call is the signature that was there.
 
+import type { IAdtResponse } from '../adt/IAdtResponse';
 import type { IFeedRepository } from '../feeds/IFeedRepository';
 import type { IFeedVariant } from '../feeds/types';
 
 declare const feeds: IFeedRepository;
 
 /** A category is passed, and the result is the variant list. */
-const withCategory: Promise<IFeedVariant[]> = feeds.variants('dumps');
+const withCategory: Promise<IAdtResponse<IFeedVariant[]>> =
+  feeds.variants('dumps');
 
 /** No category is refused at compile time, not at 400. */
-// @ts-expect-error variants() requires a category — the endpoint does
-const withoutCategory: Promise<IFeedVariant[]> = feeds.variants();
+const withoutCategory: Promise<IAdtResponse<IFeedVariant[]>> =
+  // @ts-expect-error variants() requires a category — the endpoint does
+  feeds.variants();
 
 /** Not a union: any string is accepted, because none could be enumerated. */
 declare const fromConfig: string;
-const anyString: Promise<IFeedVariant[]> = feeds.variants(fromConfig);
+const anyString: Promise<IAdtResponse<IFeedVariant[]>> =
+  feeds.variants(fromConfig);
 
 export type { IFeedRepository };
 export { withCategory, withoutCategory, anyString };
