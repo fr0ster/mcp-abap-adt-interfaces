@@ -20,7 +20,7 @@ interface MyTree {
 
 /** A success, built by hand — these proofs are about the shape, not the helper. */
 function answered<T>(value: T): IAdtResponse<T> {
-  return { ok: true, getResult: () => ({ value }), getError: () => undefined };
+  return { ok: true, getResult: () => ({ value }) };
 }
 
 /** A consumer's own handler. Nothing here comes from the implementation. */

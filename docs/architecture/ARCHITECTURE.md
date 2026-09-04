@@ -16,10 +16,10 @@ Measured against the tree at 30.0.0. Numbers here are counted from the emitted
 ## 1. What this package is
 
 `@mcp-abap-adt/interfaces` is **the contract, and nothing else**. 346 exported
-symbols, of which 50 carry runtime values: 42 string constants (`HEADER_*`,
-`AUTH_TYPE_*`), 6 maps of codes (`AdtObjectErrorCodes`, `NETWORK_ERROR_CODES`,
-`SERVICE_BINDING_VARIANT_MAP` and three more) and 2 enums (`AuthMethodPriority`,
-`LogLevel`). Everything else is a type. It emits **no class and no function** —
+symbols, of which 51 carry runtime values: 43 string constants (`HEADER_*`,
+`AUTH_TYPE_*`, `ADT_NO_FAILURE`), 6 maps of codes (`AdtObjectErrorCodes`,
+`NETWORK_ERROR_CODES`, `SERVICE_BINDING_VARIANT_MAP` and three more) and 2 enums
+(`AuthMethodPriority`, `LogLevel`). Everything else is a type. It emits **no class and no function** —
 every other module compiles to an empty JavaScript file.
 
 That is a design constraint, not an accident of scope. A contract says what a
@@ -75,9 +75,16 @@ type IAdtResponse<TValue, TError extends IAdtError = IAdtError> =
 A discriminated union, so a caller cannot reach `getResult()` without the
 compiler having made them ask `ok` first. A forgotten check does not compile.
 
-**Nothing throws.** There is no `@throws` tag in the package. A thrown error is
-invisible to the compiler, so a consumer never learns from the type that a
-failure path exists — decision 20.
+**No member of this contract throws.** There is no `@throws` tag in the package.
+A thrown error is invisible to the compiler, so a consumer never learns from the
+type that a failure path exists — decision 20.
+
+That is a statement about **what the server's answer becomes**, not a ban on
+exceptions inside an implementation. The two are different failures: what SAP
+said, or did not say, is described here and comes back as `IAdtError`; what goes
+wrong *inside* a library while it reads that answer is that library's own, and it
+may throw. `'parse'` left `AdtFailureOrigin` in 31.0.0 for exactly this reason —
+a strategy is free to read an answer any way it likes, or not to parse at all.
 
 ### The two axes
 
@@ -101,7 +108,7 @@ readings, and neither is the library's to impose.
 
 | axis | shape | supplied |
 |---|---|---|
-| error | `(verdict, answer?) => IAdtError \| undefined` | to the implementation at construction, and — on the nine members that take `IAdtOperationOptions` — overruled per call through `analyse` |
+| error | `(verdict, answer?) => IAdtError \| AdtNoFailure` | to the implementation at construction, and — on the nine members that take `IAdtOperationOptions` — overruled per call through `analyse` |
 | result | `IResultStrategy<T>` = `(answer: IAdtWireResponse) => T` | to the implementation at construction; the member's result type follows it |
 
 Both are handed the whole answer — status, headers, body — because a reading may
@@ -130,18 +137,23 @@ later release, not a gap this one hides.
 ### Where a strategy is supplied
 
 **Into the implementation, once** (decision 22). A member's result type is a type
-parameter of its interface, defaulting to the shape it answered before:
+parameter of its interface, and the interface names no shape for it:
 
 ```typescript
-interface IAdtPackageBrowsing<TContents = IPackageContentItem[]> {
+interface IAdtPackageBrowsing<TContents> {
   getPackageContents(name: string): Promise<IAdtResponse<TContents>>;
 }
 
-// the shipped default                    // a consumer's own reading
-const utils: IAdtPackageBrowsing          const raw: IAdtPackageBrowsing<string>
-await utils.getPackageContents('Z1');     await raw.getPackageContents('Z1');
-//   → IPackageContentItem[]              //   → the document, untouched
+// one implementation's reading            // another's
+const items: IAdtPackageBrowsing<PackageItem[]>
+const raw: IAdtPackageBrowsing<string>
+await items.getPackageContents('Z1');      await raw.getPackageContents('Z1');
+//   → PackageItem[], declared there       //   → the document, untouched
 ```
+
+**No default, and no shape named here.** 31.0.0 took both out: the shapes went to
+the implementations that read them, and the defaults went with them, because a
+default is a claim about what a reading produces.
 
 No member takes a parser argument. That was tried across 23 members and
 reverted: it is a second signature every implementer owes whether or not their

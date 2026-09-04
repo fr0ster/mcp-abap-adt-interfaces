@@ -65,6 +65,46 @@ and left open, and this release acts on.
 
 ### Changed
 
+- **BREAKING: `AdtFailureOrigin` is `'connection' | 'refusal'`.** `'parse'` left.
+  The contract describes what came from the **server** — what it said, or the
+  absence of an answer. An answer that arrived and could not be read is a failure
+  inside an implementation, and a strategy is free to read any way it likes, or
+  not to parse at all, so a category naming a step it may never take is one it
+  cannot honour. What an implementation does when its own reading fails is its
+  business, and it may throw.
+
+- **BREAKING: `IAdtError.cause` left with it.** It carried "whatever the
+  transport or a parser threw" — an internal thrown object, typed `unknown`,
+  which a consumer could not read type-safely and which the contract has no
+  business describing. What a failure says about itself is `origin`, `message`,
+  `code`, and the `response` and `request` it came from.
+
+- **BREAKING: `analyse` says "not a failure" with a token, not `undefined`.**
+  `ADT_NO_FAILURE` is exported, and the signature is
+  `(verdict: IAdtError | AdtNoFailure, answer?) => IAdtError | AdtNoFailure`. The
+  field is optional, so `undefined` already meant "there is no strategy here";
+  making it also mean "this answer is fine" put two different facts in one value,
+  and neither a reader nor a type could tell them apart. A verdict of "fine" is
+  something a strategy *says*, so it is named.
+
+- **BREAKING: neither half of `IAdtResponse` answers `undefined` any more.**
+  `IAdtSuccess` declared `getError(): undefined` and `IAdtFailure`
+  `getResult(): undefined`, so both were callable on the union and answered a
+  sentinel — a caller who forgot to check `ok` got `undefined` and compiled.
+  Each half now declares only its own method, so reaching either one requires
+  narrowing first. `const err = answer.getError()` on an unnarrowed response is a
+  type error now; `answer.ok ? answer.getResult() : answer.getError()` is the
+  shape.
+
+- **BREAKING: no contract in this package inherits from another.** Decision 23
+  carved out data shapes; that carve-out is gone. `IInterfaceConfig` and
+  `ICdsUnitTestConfig` are intersections with the base config,
+  `ICreateAndGenerateServiceBindingParams` is an alias rather than an empty
+  extension, and the doc example that taught `extends` now teaches `&`. Small
+  interfaces, composed, is what this package is for; where inheritance looked
+  necessary it was a sign the type belonged to the implementation instead — which
+  is what happened to `IServiceBindingDocuments` and `ICrossTraceDocuments`.
+
 - **BREAKING: `IObjectReference` states its own fields.** It extended
   `IAdtObjectHit` — a result shape — and stayed behind when that left, because
   `activateObjectsGroup`, `checkDeletionGroup` and `deleteObjectsGroup` take it: a
@@ -88,6 +128,10 @@ and left open, and this release acts on.
 | `IRuntimeDumps` (bare) | `IRuntimeDumps<YourList, YourDump>` |
 | `IObjectReference` via `IAdtObjectHit`'s fields | the same four fields, declared on `IObjectReference` itself |
 | `IAbapGitPullArgs` | `IAbapGitPullArgs<YourStatus>` |
+| `const err = answer.getError()` before checking `ok` | `if (!answer.ok) { answer.getError() }` — the union no longer answers `undefined` |
+| `analyse: () => undefined` for "not a failure" | `analyse: () => ADT_NO_FAILURE` |
+| `if (failure.origin === 'parse')` | a reading that fails is the implementation's — catch it, or ask your implementation what it does |
+| `IAdtServiceBinding` / `ICrossTrace` (bare) | `IAdtServiceBinding<YourReadings>` / `ICrossTrace<YourReadings>`; the `*Documents` records were implementation defaults and left |
 
 A consumer who only *uses* an implementation is largely unaffected: the factory
 of whatever library they hold returns fully instantiated types. What changes is
@@ -170,6 +214,10 @@ composed and never inherited.
   business.
 
 ### Documentation
+
+- The runtime-bearing exports are 51 now, not 50: `ADT_NO_FAILURE` joins the 43
+  string constants beside the 6 maps of codes and 2 enums. Counted from the
+  emitted `.d.ts`, as every number in these documents now is.
 
 - **`docs/architecture/ARCHITECTURE.md` is new.** The repository had `DECISIONS.md`
   — why each choice was made — and a README inventory of what is exported, and

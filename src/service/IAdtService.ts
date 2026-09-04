@@ -94,8 +94,8 @@ export interface IGenerateServiceBindingParams {
   serviceDefinitionName: string;
 }
 
-export interface ICreateAndGenerateServiceBindingParams
-  extends ICreateServiceBindingParams {}
+export type ICreateAndGenerateServiceBindingParams =
+  ICreateServiceBindingParams;
 
 // Backward compatibility alias
 export type ICreateAndGenerateServiceBindingParamsLegacy =
@@ -126,15 +126,6 @@ export interface IServiceBindingResults {
   classification: unknown;
 }
 
-/** The shipped default: every answer is the document as it arrived. */
-export interface IServiceBindingDocuments extends IServiceBindingResults {
-  bindingTypes: string;
-  generation: string;
-  odata: string;
-  publication: string;
-  classification: string;
-}
-
 /**
  * A service binding.
  *
@@ -151,9 +142,7 @@ export interface IServiceBindingDocuments extends IServiceBindingResults {
  * What remains below has no atom, because nothing else does it: the type
  * catalogue, generation, the OData readings, publication and classification.
  */
-export interface IAdtServiceBinding<
-  R extends IServiceBindingResults = IServiceBindingDocuments,
-> {
+export interface IAdtServiceBinding<R extends IServiceBindingResults> {
   /** The binding types this system offers. */
   getServiceBindingTypes(): Promise<IAdtResponse<R['bindingTypes']>>;
 

@@ -22,18 +22,7 @@ export interface ICrossTraceResults {
   activations: unknown;
 }
 
-/** The shipped default: every answer is the document as it arrived. */
-export interface ICrossTraceDocuments extends ICrossTraceResults {
-  list: string;
-  trace: string;
-  records: string;
-  recordContent: string;
-  activations: string;
-}
-
-export interface ICrossTrace<
-  R extends ICrossTraceResults = ICrossTraceDocuments,
-> {
+export interface ICrossTrace<R extends ICrossTraceResults> {
   /** Which runtime resource this is, for a consumer narrowing a union of them. */
   readonly kind: 'crossTrace';
 

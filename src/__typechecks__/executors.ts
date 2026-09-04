@@ -33,7 +33,6 @@ type Scheduling = ITraceScheduling<INamedItem[], ITraceRequestEntry[], string>;
 const answered = <T>(value: T): IAdtResponse<T> => ({
   ok: true,
   getResult: () => ({ value }),
-  getError: () => undefined,
 });
 
 const scheduling: Scheduling = {

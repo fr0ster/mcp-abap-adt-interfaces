@@ -13,7 +13,7 @@
  * if (answer.ok) {
  *   answer.getResult().value;    // whatever this implementation reads
  * } else {
- *   answer.getError().origin;    // connection, refusal, parse
+ *   answer.getError().origin;    // connection, refusal
  *   answer.getError().message;   // what SAP said, when SAP said anything
  * }
  * ```
@@ -35,19 +35,44 @@
 import type { IAdtWireResponse } from '../connection/IAbapConnection';
 
 /**
- * Where a failure came from, because the three have different remedies.
+ * What an error strategy answers when the answer is **not** a failure.
  *
- * A caller cannot act on "something went wrong". Reauthenticate, ask the server
- * something else, or fix a parser are three different days of work, and flattening
- * them into one message makes the caller guess which.
+ * A token, not `undefined`. Until 31.0.0 `analyse` answered
+ * `IAdtError | undefined`, where `undefined` had to mean two different things —
+ * "there is no strategy here" for the optional field, and "this is not a
+ * failure" for its result. A reader could not tell which, and neither could a
+ * type: absence is not a verdict, and a verdict of "fine" is a thing a strategy
+ * says, so it is named.
+ *
+ * ```typescript
+ * analyse: (verdict) => isMissingObject ? ADT_NO_FAILURE : verdict
+ * ```
+ */
+export const ADT_NO_FAILURE = 'adt:no-failure' as const;
+
+/** The type of {@link ADT_NO_FAILURE}, for a strategy's signature. */
+export type AdtNoFailure = typeof ADT_NO_FAILURE;
+
+/**
+ * Where a failure came from — **on the server's side of the wire**.
+ *
+ * A caller cannot act on "something went wrong". Reauthenticating and asking the
+ * server something else are different days of work, and flattening them into one
+ * message makes the caller guess which.
+ *
+ * **Two, not three.** `'parse'` was here until 31.0.0, for an answer that
+ * arrived and could not be read. That is a failure *inside an implementation*,
+ * and this contract describes what came from the server: a strategy is free to
+ * read an answer any way it likes — or not to parse at all — so a category
+ * naming a step it may never take is one it cannot honour. What an
+ * implementation does when its own reading fails is its business, and it may
+ * throw.
  */
 export type AdtFailureOrigin =
   /** No usable answer exists — unreachable host, expired session, no authority. */
   | 'connection'
   /** SAP answered, about this object, and said no. */
-  | 'refusal'
-  /** An answer arrived and could not be read. */
-  | 'parse';
+  | 'refusal';
 
 /**
  * A failure, whichever strategy produced it.
@@ -73,7 +98,7 @@ export type AdtFailureOrigin =
  * replace the strategy and it goes with it.
  */
 export interface IAdtError {
-  /** Which of the three this is. */
+  /** Which of the two this is. */
   readonly origin: AdtFailureOrigin;
 
   /**
@@ -112,9 +137,6 @@ export interface IAdtError {
     readonly method?: string;
     readonly url?: string;
   };
-
-  /** Whatever the transport or a parser threw, when something did. */
-  readonly cause?: unknown;
 
   /**
    * The failure's own code, when the strategy names one.
@@ -174,13 +196,22 @@ export interface IAdtError {
 export interface IAdtSuccess<TValue> {
   readonly ok: true;
   getResult(): IAdtResult<TValue>;
-  getError(): undefined;
 }
+
+/*
+ * Each half declares only its own method, and that is the point.
+ *
+ * Until 31.0.0 a success also declared `getError(): undefined` and a failure
+ * `getResult(): undefined`, so both were callable on the union and answered a
+ * sentinel. A caller who forgot to check `ok` got `undefined` back and compiled.
+ * Now they do not: reaching either method requires narrowing first, which is the
+ * guarantee this shape exists for — a forgotten check is a type error, not a
+ * value that looks like an empty answer.
+ */
 
 /** The other half of {@link IAdtResponse}: a failure, and no result. */
 export interface IAdtFailure<TError extends IAdtError = IAdtError> {
   readonly ok: false;
-  getResult(): undefined;
   getError(): TError;
 }
 

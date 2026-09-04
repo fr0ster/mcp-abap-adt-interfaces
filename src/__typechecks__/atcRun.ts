@@ -14,7 +14,6 @@ import type {
 const answered = <T>(value: T): IAdtResponse<T> => ({
   ok: true,
   getResult: () => ({ value }),
-  getError: () => undefined,
 });
 
 // The shape a handler must satisfy: the runnable atom plus the two readers,

@@ -19,7 +19,6 @@ import type {
 const answered = <T>(value: T): IAdtResponse<T> => ({
   ok: true,
   getResult: () => ({ value }),
-  getError: () => undefined,
 });
 
 /**
@@ -28,16 +27,17 @@ const answered = <T>(value: T): IAdtResponse<T> => ({
  * Spelled, not named: a consumer that only publishes bindings takes the half it
  * needs, and an implementation that only publishes is a legitimate one.
  */
-type WholeBinding = IAdtServiceBinding &
+type WholeBinding = IAdtServiceBinding<MyReadings> &
   IAdtCreatable<IServiceBindingConfig, void> &
   IAdtReadable<IServiceBindingConfig, string, string> &
   IAdtActivatable<IServiceBindingConfig, string>;
 
 /** The publishing half alone, which the old shape could not express. */
-type PublishingOnly = Pick<IAdtServiceBinding, 'publishODataV2'>;
+type PublishingOnly = Pick<IAdtServiceBinding<MyReadings>, 'publishODataV2'>;
 
 const _publisher: PublishingOnly = {
-  publishODataV2: async () => answered('<adtcore:messages/>'),
+  // this implementation reads a publication as nothing to read
+  publishODataV2: async () => answered(undefined),
 };
 void _publisher;
 
@@ -47,13 +47,14 @@ interface IBindingSummary {
   published: boolean;
 }
 
-interface MyReadings extends IServiceBindingResults {
+/** Composed, not extended — the rule this package holds itself to. */
+type MyReadings = IServiceBindingResults & {
   bindingTypes: string[];
   generation: IBindingSummary;
   odata: string;
   publication: undefined;
   classification: string;
-}
+};
 
 declare const mine: IAdtServiceBinding<MyReadings>;
 
@@ -79,8 +80,8 @@ void _mineAnswers;
  * implementation does on the way to an answer is its own business, and reaches
  * a caller only if it fails.
  */
-declare const binding: IAdtServiceBinding;
-const _oneValue: Promise<IAdtResponse<string>> =
+declare const binding: IAdtServiceBinding<MyReadings>;
+const _oneValue: Promise<IAdtResponse<IBindingSummary>> =
   binding.createAndGenerateServiceBinding({} as never);
 void _oneValue;
 

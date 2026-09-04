@@ -17,7 +17,6 @@ import type {
 const answered = <T>(value: T): IAdtResponse<T> => ({
   ok: true,
   getResult: () => ({ value }),
-  getError: () => undefined,
 });
 
 /** Four fields per dump: what an MCP server can afford to spend on a listing. */

@@ -12,12 +12,14 @@
  */
 
 import type { IAdtWireResponse } from '../connection/IAbapConnection';
-import type { IAdtError } from './IAdtResponse';
+import type { AdtNoFailure, IAdtError } from './IAdtResponse';
 
 /**
  * The codes a failure can name itself by.
  *
- * **Nothing in this package throws** since 30.0.0. Every member answers
+ * **No member of this contract throws** since 30.0.0 — which is about what the
+ * server's answer becomes, not about what an implementation does when its own
+ * reading fails. Every member answers
  * {@link IAdtResponse}, so a failure comes back rather than flying past, and it
  * is read from the contract:
  *
@@ -28,7 +30,7 @@ import type { IAdtError } from './IAdtResponse';
  *   answer.getResult().value;    // what the endpoint produced
  * } else {
  *   const failure = answer.getError();
- *   failure.origin;              // 'connection' | 'refusal' | 'parse'
+ *   failure.origin;              // 'connection' | 'refusal'
  *   failure.message;             // what SAP said, in SAP's words
  *   failure.code;                // one of these, when the strategy named one
  *   failure.response;            // the answer it was read from, untouched
@@ -90,7 +92,9 @@ export interface IAdtOperationOptions {
    *
    * Handed the default's verdict **and** the answer it was reached from, so it
    * can overrule in either direction: name a failure the default let through, or
-   * clear one it raised. Returning `undefined` means "not a failure here".
+   * clear one it raised. Answering {@link ADT_NO_FAILURE} means "not a failure
+   * here" — a token rather than `undefined`, so that the absence of a strategy
+   * and a strategy's verdict of "fine" are not the same value.
    *
    * This exists because no single reading serves every caller. ADT answers a
    * request for a missing object with 200 and an empty body, and those same
@@ -103,9 +107,9 @@ export interface IAdtOperationOptions {
    * is passed rather than a summary of it.
    */
   analyse?: (
-    verdict: IAdtError | undefined,
+    verdict: IAdtError | AdtNoFailure,
     answer?: IAdtWireResponse,
-  ) => IAdtError | undefined;
+  ) => IAdtError | AdtNoFailure;
 
   /**
    * Activate object after creation (for create operations)

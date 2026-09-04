@@ -907,16 +907,16 @@ answer where two members contended for one endpoint, all nine reverse — and
 rather than a contract's. That is a decision about the whole surface, not a
 detail of this one, and it is not taken here.
 
-> **Taken in 30.0.0, by decision 22 — and it is the general rule.** Every member
-> that answers a parsed shape carries the reading as a type parameter of its
-> interface, defaulting to the shape it answered before, so a consumer who names
-> nothing is unmoved and one who needs the document supplies an
-> `IResultStrategy`. The nine did not "reverse": the parsed shape stayed the
-> default and stopped being the only option. `IPackageContentItem`,
-> `IPackageHierarchyNode` and `IRepositoryNodeContents` survive as what the
-> shipped readings return — and two of the nine, `getPackageContentsList` and
+> **Taken in 30.0.0 by decision 22, and completed in 31.0.0.** Every member that
+> answers a parsed shape carries the reading as a type parameter of its
+> interface. 30.0.0 gave those parameters defaults — the shape the member
+> answered before — so that a consumer who named nothing was unmoved; 31.0.0 took
+> the defaults out with the shapes themselves, because a default is a claim about
+> what a reading produces and belongs where the reading does. The nine did not
+> "reverse": the parsed shape stopped being the only option, and then stopped
+> being the contract's to name. Two of them, `getPackageContentsList` and
 > `getPackageHierarchy`, turned out to be one member, which decision 16 had said
-> all along. `includeRawXml`, named above as a shape flag, went with them.
+> all along.
 
 ## 18. The answer goes back whole; the consumer decides its shape
 
@@ -1303,6 +1303,11 @@ open.
 
 The outcome is not a new type beside `IAdtResponse` — it is what `IAdtResponse`
 becomes. Two methods, and a concrete implementation supplies each:
+
+> **The `undefined` halves went in 31.0.0.** Each interface declares only its own
+> method now, so reaching either requires narrowing and a forgotten check is a
+> type error rather than a sentinel. The block below is the shape as proposed
+> here, kept for the reasoning.
 
 ```typescript
 interface IAdtSuccess<TResult extends IAdtResult<unknown>> {
