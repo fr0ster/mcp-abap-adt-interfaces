@@ -51,7 +51,7 @@ interface MyReadings extends IServiceBindingResults {
   bindingTypes: string[];
   generation: IBindingSummary;
   odata: string;
-  publication: void;
+  publication: undefined;
   classification: string;
 }
 

@@ -1,5 +1,4 @@
 import type { IAdtResponse } from '../adt/IAdtResponse';
-import type { IAdtWireResponse } from '../connection/IAbapConnection';
 import type { IFeedQueryOptions } from '../feeds/types';
 
 export interface ISystemMessages<TList, TMessage> {

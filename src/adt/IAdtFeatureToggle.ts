@@ -2,16 +2,6 @@
  * Feature Toggle (FTG2/FT) ADT operation parameter interfaces (low-level)
  */
 
-import type {
-  IAdtActivatable,
-  IAdtCheckable,
-  IAdtCreatable,
-  IAdtDeletable,
-  IAdtLockable,
-  IAdtReadable,
-  IAdtUpdatable,
-  IAdtValidatable,
-} from './IAdtCapabilities';
 import type { IAdtResponse } from './IAdtResponse';
 
 export type FeatureToggleState = 'on' | 'off' | 'undefined';

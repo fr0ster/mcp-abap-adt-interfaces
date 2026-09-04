@@ -1,5 +1,4 @@
 import type { IAdtResponse } from '../adt/IAdtResponse';
-import type { IAdtWireResponse } from '../connection/IAbapConnection';
 
 export type IRuntimeDumpReadView = 'default' | 'summary' | 'formatted';
 

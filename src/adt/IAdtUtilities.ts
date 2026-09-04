@@ -70,7 +70,7 @@
  * wanted rather than a generic member kept in case one is.
  *
  * Two were closed from evidence rather than measurement: `getAllTypes` answers
- * the named-item list {@link INamedItem} already describes, and
+ * the named-item list a trace catalogue answers with, and
  * `fetchNodeStructure` answers objects plus the typed child nodes to walk next.
  * Both shapes were lifted from parsers that have been reading those documents in
  * `mcp-abap-adt` against real systems — code that works is evidence; a shape
@@ -121,7 +121,7 @@ export interface IAdtInformationSystem<TSearch, TWhereUsed, TTypes> {
    * One signature. Until 30.0.0 a second overload took
    * `parse: (data: unknown) => T` so a caller could keep the document — a
    * recorded hit list runs to 473 rows and 1.3MB, with nested references
-   * {@link ISearchResult} deliberately does not carry. That reading is still
+   * a parsed hit list deliberately does not carry. That reading is still
    * available and is now chosen the way every other reading is: an
    * {@link IResultStrategy} given to the implementation, with `TSearch`
    * following it.
@@ -165,10 +165,10 @@ export interface IAdtInformationSystem<TSearch, TWhereUsed, TTypes> {
   /**
    * The object types this system knows.
    *
-   * `nameditem:namedItemList`, which is the shape {@link INamedItem} already
-   * names for trace catalogues — the same document served from a different
-   * resource. Lifted from a parser that has been reading it in
-   * `mcp-abap-adt` against real systems, rather than invented here.
+   * `nameditem:namedItemList` — the same document a trace catalogue serves from
+   * a different resource, so an implementation that reads one reads the other.
+   * Measured against real systems rather than invented; the shape itself is the
+   * implementation's since 31.0.0.
    */
   getAllTypes(
     maxItemCount?: number,
@@ -191,13 +191,15 @@ export interface IAdtRepositoryStructure<TNode> {
    * than handing back the envelope. Lifted from a traversal running in
    * `mcp-abap-adt`.
    *
-   * The child half is pairs, not ids: see {@link IRepositoryNodeChild} for why
-   * an id on its own cannot answer the question a walk asks.
+   * The child half is pairs, not ids: an id on its own cannot answer "which node
+   * holds the includes", which is the question a walk asks. That is a property
+   * an implementation's reading must keep — the shape that used to state it left
+   * in 31.0.0.
    *
    * **`withShortDescriptions` reaches the wire, so it is a parameter** (decision
    * 17). What no *result* has ever carried is a description — every parser that
-   * has read this document reads exactly the four identity fields
-   * {@link IRepositoryObjectNode} names. A consumer who needs one supplies an
+   * has read this document reads exactly four identity fields. A consumer who
+   * needs a description supplies an
    * {@link IResultStrategy} that reads it, which is what `TNode` is for;
    * inventing a `description?: string` field nobody has captured is what
    * decision 1 forbids.
@@ -230,14 +232,13 @@ export interface IAdtRepositoryStructure<TNode> {
  * happens to walk to answer it. Which requests it issues, and to which resource,
  * is its business.
  *
- * **One member.** Until 30.0.0 there were two: `getPackageContentsList`,
- * answering `IPackageContentItem[]`, and `getPackageHierarchy`, answering
- * `IPackageHierarchyNode`. One question, two answers, and which one a caller got
- * was decided by the method name rather than by the caller. What the answer
- * becomes is now an {@link IResultStrategy}, injected into the implementation
- * once — a flat list, a tree, names and type codes alone, or the document
- * untouched. {@link IPackageContentItem} and {@link IPackageHierarchyNode}
- * survive as the shapes the shipped strategies return.
+ * **One member.** Until 30.0.0 there were two — one answering a flat list of
+ * items, the other a tree — so one question had two answers, and which one a
+ * caller got was decided by the method name rather than by the caller. What the
+ * answer becomes is now an {@link IResultStrategy}, injected into the
+ * implementation once: a flat list, a tree, names and type codes alone, or the
+ * document untouched. `TContents` is that reading, and the shapes it names are
+ * the implementation's — 31.0.0 took the last of them out of this package.
  *
  * **No `maxDepth`, no `includeSubpackages`.** Those described a walk the library
  * performed on the caller's behalf across many requests. A member answers one

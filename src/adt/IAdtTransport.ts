@@ -2,12 +2,6 @@
  * Transport ADT operation parameter interfaces (snake_case, low-level)
  */
 
-import type {
-  IAdtCreatable,
-  IAdtDeletable,
-  IAdtReadable,
-  IAdtUpdatable,
-} from './IAdtCapabilities';
 import type { IAdtResponse } from './IAdtResponse';
 
 export interface ICreateTransportParams {
@@ -86,7 +80,7 @@ export interface IAdtRequest<TList> {
    * The transport requests the server lists.
    *
    * Until 30.0.0 this resource had three members: `list` and `listNodes`, which
-   * answered the identical {@link ITransportTree}, and a
+   * answered the identical parsed tree, and a
    * `listNodes<T>(parse, …)` overload. One request, one member (decision 16);
    * a caller wanting the request numbers alone, the tree, or the document
    * untouched injects an {@link IResultStrategy} when the implementation is

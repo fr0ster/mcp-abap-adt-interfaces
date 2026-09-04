@@ -11,7 +11,7 @@
  * const answer = await utils.search({ query: 'ZCL_*' });
  *
  * if (answer.ok) {
- *   answer.getResult().value;    // ISearchResult[]
+ *   answer.getResult().value;    // whatever this implementation reads
  * } else {
  *   answer.getError().origin;    // connection, refusal, parse
  *   answer.getError().message;   // what SAP said, when SAP said anything
@@ -154,7 +154,7 @@ export interface IAdtError {
  * const answer = await utils.search({ query: 'ZCL_*' });
  *
  * if (answer.ok) {
- *   answer.getResult().value;    // ISearchResult[] — not `| undefined`
+ *   answer.getResult().value;    // the value — not `| undefined`
  * } else {
  *   answer.getError().origin;    // IAdtError — not `| undefined`
  * }
@@ -191,15 +191,14 @@ export interface IAdtFailure<TError extends IAdtError = IAdtError> {
  * **The two halves are not symmetric in how they vary, and saying otherwise was
  * wrong.** An error strategy varies the *fullness of one contract*: `IAdtError`
  * has two required fields and five optional ones, so `brief` and `full` are
- * genuinely two amounts of it. A result cannot work that way — `ISearchResult`
- * requires `description`, so no strategy can return "fewer fields" of it without
- * the compiler refusing.
+ * genuinely two amounts of it. A result cannot work that way: a hit shape with
+ * a required `description` cannot be returned with fewer fields without the
+ * compiler refusing.
  *
  * A result strategy varies **`T` itself**, and `T` follows the strategy the
  * implementation was constructed with (decision 22):
- * `IAdtInformationSystem` answers `IAdtResponse<ISearchResult[]>`, and
- * `IAdtInformationSystem<MyHits>` answers `IAdtResponse<MyHits>` from the same
- * `search(criteria)` call. A shipped `brief` is a shipped reading with a
+ * `IAdtInformationSystem<MyHits, …>` answers `IAdtResponse<MyHits>` from the
+ * same `search(criteria)` call, and another implementation answers its own. A shipped `brief` is a shipped reading with a
  * narrower result contract, not the same contract half-filled.
  *
  * Until 30.0.0 this said "the strategy overload", and four members took a parser
@@ -223,7 +222,7 @@ export interface IAdtFailure<TError extends IAdtError = IAdtError> {
  * sides of an answer are contracts, or neither is.
  */
 export interface IAdtResult<T> {
-  /** What the member promised — `ISearchResult[]`, `IPackageHierarchyNode`. */
+  /** What the member promised — whatever this implementation reads. */
   readonly value: T;
 }
 
@@ -274,9 +273,9 @@ export type IResultStrategy<T> = (answer: IAdtWireResponse) => T;
  * opposite of "swap in your own".
  *
  * `TValue` is what the member promised, typed all the way through: a caller
- * reads `getResult().value` and gets `ISearchResult[]`, never a cast. `IAdtResult`
+ * reads `getResult().value` and gets that value typed, never a cast. `IAdtResult`
  * is the contract carrying it, and it is not written at the call site — a member
- * that adds nothing writes `IAdtResponse<ISearchResult[]>` and no more.
+ * that adds nothing writes `IAdtResponse<TValue>` and no more.
  *
  * `TError` defaults to `IAdtError` and is constrained to it, which is what keeps
  * two implementations of one member interchangeable: a caller may read more than

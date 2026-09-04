@@ -8,7 +8,6 @@
  */
 
 import type { IAdtResponse } from '../adt/IAdtResponse';
-import type { IAdtWireResponse } from '../connection/IAbapConnection';
 
 /**
  * The object kinds ATC will check, at a URI a client can build for them.
@@ -62,7 +61,8 @@ export interface IAtcRunOptions {
    * a loop, at the cost of a connection held for as long as the checks take —
    * which nothing bounds, and which grows with the object set.
    *
-   * The two modes answer with different shapes; see `IAtcRunResult`.
+   * The two modes answer with different shapes, and what those shapes are is the
+   * implementation's since 31.0.0.
    */
   wait?: boolean;
 

@@ -6,7 +6,6 @@
  * one place to import from and one place to override.
  */
 
-import type { IAdtWireResponse } from '../connection/IAbapConnection';
 import type { IProfilerTraceParameters } from '../runtime/IProfiler';
 import type {
   IAdtRunnable,

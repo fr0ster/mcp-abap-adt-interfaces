@@ -19,11 +19,16 @@ export interface IAbapGitPullArgs<TStatus> {
   signal?: AbortSignal;
   /**
    * Reported while the pull runs, with whatever the implementation shapes a
-   * repository status into — the same reading its `getRepo` answers. The shape
-   * is the implementation's since 31.0.0, so it arrives as a type parameter
-   * rather than as a type this package declares.
+   * repository status into. The shape is the implementation's since 31.0.0, so
+   * it arrives as a type parameter rather than as a type this package declares.
+   *
+   * `NonNullable` where the client passes its `getRepo` reading: that member
+   * answers `Repo | undefined` because a package may have no repository, and a
+   * progress report exists only while one is being pulled. Handing the callback
+   * an `undefined` it can never receive would make every consumer branch on an
+   * impossible case.
    */
-  onProgress?: (status: TStatus) => void;
+  onProgress?: (status: NonNullable<TStatus>) => void;
 }
 
 export interface IAbapGitUnlinkArgs {

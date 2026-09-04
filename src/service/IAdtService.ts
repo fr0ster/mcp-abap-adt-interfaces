@@ -1,20 +1,5 @@
-import type {
-  IAdtActivatable,
-  IAdtCheckable,
-  IAdtCreatable,
-  IAdtDeletable,
-  IAdtReadable,
-  IAdtTransportAware,
-  IAdtUpdatable,
-  IAdtValidatable,
-} from '../adt/IAdtCapabilities';
 import type { IAdtResponse } from '../adt/IAdtResponse';
-import type {
-  IDeleteServiceBindingParams,
-  IServiceBindingConfig,
-  ServiceBindingVariant,
-} from '../adt/IAdtServiceBinding';
-import type { IAdtWireResponse } from '../connection/IAbapConnection';
+import type { ServiceBindingVariant } from '../adt/IAdtServiceBinding';
 
 export type ServiceBindingType = 'ODATA' | 'INA' | 'SQL';
 export type ServiceBindingVersion = 'V2' | 'V4' | '0001' | '0000' | string;

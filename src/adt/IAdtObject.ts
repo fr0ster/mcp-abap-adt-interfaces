@@ -6,7 +6,7 @@
  * object can do is now stated by the atoms it declares in `IAdtCapabilities.ts`.
  * Nothing here declares an operation — these are the pieces the atoms refer to:
  * {@link IAdtOperationOptions} carries the strategy a caller injects,
- * {@link IObjectVersion} is one entry of a version history, and
+ * a version history's entries are the implementation's since 31.0.0, and
  * {@link AdtObjectErrorCodes} names failures a strategy can put in
  * {@link IAdtError.code}.
  */
