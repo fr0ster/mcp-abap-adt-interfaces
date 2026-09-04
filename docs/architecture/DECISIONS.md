@@ -79,7 +79,12 @@ true.
 ## 3. Capabilities are atoms, composed — not one wide interface
 
 **Decided.** Small interfaces (`IAdtReadable`, `ITraceListing`,
-`ITraceReadingWithParser`), combined per object.
+`ITraceReading`), combined per object.
+
+> **Extended by decision 23 (30.0.0).** "Combined" now means combined by the
+> consumer, at the point of use, and never by one contract extending another —
+> which this decision permitted and 23 does not. `ITraceReadingWithParser`, named
+> here as one of the atoms, is gone with the per-call parsers (decision 22).
 
 **Against.** One `IAdtObject` that every handler implements and that most
 handlers partly lie about.
@@ -141,6 +146,13 @@ happened.
 ---
 
 ## 5. Big XML is the consumer's to parse
+
+> **Mechanism superseded by decision 22 (30.0.0); the decision itself stands.**
+> Big XML is still the consumer's to parse, and they still keep a type. What
+> changed is *where they say so*: the reader is given to the implementation when
+> it is constructed, not passed at the call. Every `(parse)` argument named below
+> — `readWith`, `listNodes(parse)`, `search(criteria, parse)` — was removed, and
+> the "Shape note" about method-versus-overload is moot with neither.
 
 **Decided.** A plain default mapping, plus a way for the consumer to supply its
 own reader and keep a type: `ITraceReadingWithParser.readWith()`,
@@ -293,6 +305,11 @@ forbidden.
 **The problem.** `readWith` gives a consumer its own reader for a trace view.
 A proposal followed to add `listWith`, giving it its own reader for the listing
 — on the grounds that the contract was "lopsided" without it.
+
+> **Both members are gone as of 30.0.0** — decision 22 removed every per-call
+> parser. The decision keeps its force, and gained a second illustration: the
+> symmetry `listWith` was proposed for arrived by making the reading a property
+> of the implementation, where it costs no member at all.
 
 **Decided.** No `listWith`. The proposal was reverted before it shipped.
 
@@ -490,8 +507,11 @@ a status with no body worth naming — and that should be said at the member.
 meaning "94 new types". A contract differs from a concrete class by saying *how
 to work with the thing*, and two methods return the **same** contract when their
 results mean the same. `IAdtObjectHit` already works that way here: `search`,
-`getWhereUsedList`, `getPackageContentsList` and `getPackageHierarchy` all answer
-"an identified object in the repository", through types that extend it.
+`getWhereUsedList` and `getPackageContents` all answer "an identified object in
+the repository", through types that extend it. (`getPackageContentsList` and
+`getPackageHierarchy` were the two members named here until 30.0.0 collapsed them
+into one — the illustration is unchanged by that, which is itself the point: the
+essence was one all along.)
 
 So the question at each member is not "what shall I call this one" but "which
 essence is this". A heap of one-method result types would be the same mistake as
@@ -596,6 +616,13 @@ The envelope is not a weak result contract, and a strategy is not a way to
 supply one. Confusing the last two cost 23 methods — every envelope-returning
 member `IAdtUtilities` had at the time — a second signature each, before it was
 reverted.
+
+> **Read with decision 22 (30.0.0).** The examples below are the shapes that
+> existed when this was written; `listNodes(parse)` and every other per-call
+> parser are gone, and the strategy is given to the implementation instead. The
+> argument this decision makes — that the envelope's type parameter is transport
+> pass-through and not a place to receive a strategy — is untouched by that, and
+> is why the strategy went to the implementation rather than into `IAdtResponse`.
 
 **Against.** Making the generic the result mechanism —
 `getPackageHierarchy(): Promise<IAdtResponse<IPackageHierarchyNode>>` — would
@@ -738,6 +765,12 @@ decision 13's gap never closing: every member could have one, and any member tha
 does need never name its result.
 
 **How the raw document is still reached.** By a strategy, not a second member.
+
+> **Where the strategy lives was settled later, by decision 22 (30.0.0):** in the
+> implementation, chosen once, not in an argument at the call. The paragraph
+> below describes it as `listNodes(parse)` / `readWith` because those were what
+> existed when this was written; both are gone. What survives unchanged is the
+> rule this decision is about — a second member per reading is never the answer.
 Wanting the document rather than the parsed hits is a choice about *behaviour*,
 and behaviour the implementation still performs — it issues the same request,
 handles the same session, and hands the caller the answer to read. That is
@@ -873,6 +906,17 @@ answer where two members contended for one endpoint, all nine reverse — and
 `IRepositoryNodeContents`, shipped in 27.0.0, becomes a strategy's return type
 rather than a contract's. That is a decision about the whole surface, not a
 detail of this one, and it is not taken here.
+
+> **Taken in 30.0.0, by decision 22 — and it is the general rule.** Every member
+> that answers a parsed shape carries the reading as a type parameter of its
+> interface, defaulting to the shape it answered before, so a consumer who names
+> nothing is unmoved and one who needs the document supplies an
+> `IResultStrategy`. The nine did not "reverse": the parsed shape stayed the
+> default and stopped being the only option. `IPackageContentItem`,
+> `IPackageHierarchyNode` and `IRepositoryNodeContents` survive as what the
+> shipped readings return — and two of the nine, `getPackageContentsList` and
+> `getPackageHierarchy`, turned out to be one member, which decision 16 had said
+> all along. `includeRawXml`, named above as a shape flag, went with them.
 
 ## 18. The answer goes back whole; the consumer decides its shape
 
@@ -1052,18 +1096,12 @@ has nothing left to do.
 
 **Settled, so the next member is built this way rather than guessed at.**
 
-1. **Without a strategy, a refusal still throws.** An error strategy makes
-   masking possible again, and it should be — but not free. With the throw as the
-   default, a silent failure takes a deliberately written handler, where today it
-   took a forgotten one. The whole class of defect this decision descends from
-   was masking nobody chose; keeping the safe path as the path of least effort is
-   what stops it returning.
-2. **Completeness is not the strategy's to decide.** A strategy receives the
+1. **Completeness is not the strategy's to decide.** A strategy receives the
    refusal **whole** — the server's message, the document untouched, the ADT
    classification, the response, and the request that produced it. What it does
    with that is the consumer's business. The line is exact: the library answers
    for having handed over everything, the consumer for what they did with it.
-3. **Strategies arrive as one options object, never as positional parameters.**
+2. **Strategies arrive as one options object, never as positional parameters.**
    `{ onResult?, onError? }`. Hanging a second signature on each member was tried
    across 23 of them and reverted: it cost every implementer two signatures per
    method and moved the result's meaning to the call site. An object adds one
@@ -1078,7 +1116,7 @@ has nothing left to do.
    > superseded shape, kept because the reasoning that led away from it is worth
    > reading, and marked so nothing is implemented from it.
 
-4. **Two methods, on the result contract itself.** A result can be a normal
+3. **Two methods, on the result contract itself.** A result can be a normal
    answer or an error, and the contract says so rather than pretending one of
    them does not happen: it exposes both, one accessor each.
 

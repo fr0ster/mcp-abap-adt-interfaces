@@ -16,11 +16,19 @@ the implementation package to do it. Concrete implementations (parsers,
 request builders, the shipped `IAdtContentTypes` classes) stay in
 `adt-clients`; this package never depends on it.
 
-## Decisions, and why
+## Architecture, and why
+
+[`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md)
+describes the shape: what an answer is, the two axes a consumer decides on, how
+contracts are composed rather than inherited, what each family holds, and where
+the seam to an implementation runs. Read it first if you are about to implement
+one of these contracts or replace one.
 
 [`docs/architecture/DECISIONS.md`](docs/architecture/DECISIONS.md) records the
 choices in this contract that could reasonably have gone the other way — what
-was decided, what it was decided *against*, and what would change it.
+was decided, what it was decided *against*, and what would change it. It is a
+log: entries are marked where a later decision superseded them, rather than
+rewritten, because the reasoning that lost is worth reading.
 
 Read it before proposing a shape that looks obviously better: several of the
 entries exist because that shape was tried, and the reason it lost is written
@@ -240,7 +248,7 @@ This package is responsible for:
 - **Defines interfaces**: All interfaces used across MCP ABAP ADT packages
 - **Organizes by domain**: Interfaces grouped by functional domain
 - **Follows naming convention**: All interfaces start with `I` prefix
-- **Contracts, not code**: types and interfaces, plus the constants they name. Since 29.0.0 the package ships **no class and no function** — `AdtOperationError`, `TransportSearchConfigurationMissing`, `isNetworkError()` and `hasDeferredResponses()` were removed, because a contract says what a thing *is* and shipping one way of being it makes "use your own implementation" untrue for that piece. What remains executable is 50 exported constants (`AdtObjectErrorCodes`, the `HEADER_*` names, `NETWORK_ERROR_CODES`, `AUTH_TYPE_*` and so on); every emitted module is otherwise empty
+- **Contracts, not code**: types and interfaces, plus the constants they name. Since 29.0.0 the package ships **no class and no function** — `AdtOperationError`, `TransportSearchConfigurationMissing`, `isNetworkError()` and `hasDeferredResponses()` were removed, because a contract says what a thing *is* and shipping one way of being it makes "use your own implementation" untrue for that piece. What remains executable is 48 constant objects (`AdtObjectErrorCodes`, the `HEADER_*` names, `NETWORK_ERROR_CODES`, `AUTH_TYPE_*` and so on) and two enums (`AuthMethodPriority`, `LogLevel`); every emitted module is otherwise empty
 
 #### What This Package Does NOT Do
 
