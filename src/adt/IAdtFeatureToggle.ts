@@ -97,16 +97,6 @@ export interface IFeatureToggleUserLevel {
   state: FeatureToggleState;
 }
 
-export interface IFeatureToggleRuntimeState {
-  name: string;
-  clientState: FeatureToggleState;
-  userState: FeatureToggleState;
-  clientChangedBy?: string;
-  clientChangedOn?: string;
-  clientStates: IFeatureToggleClientLevel[];
-  userStates: IFeatureToggleUserLevel[];
-}
-
 export interface IFeatureToggleCheckStateResult {
   currentState: FeatureToggleState;
   transportPackage?: string;
@@ -138,28 +128,28 @@ export interface IFeatureToggleConfig {
  * offers them: inheritance decides for the composer what belongs together, and
  * a consumer who wants only the switch had to take eight members to get it.
  */
-export interface IFeatureToggleObject {
+export interface IFeatureToggleObject<TState> {
   switchOn(
     config: Partial<IFeatureToggleConfig>,
     opts: { transportRequest: string; userSpecific?: boolean },
-  ): Promise<IAdtResponse<IFeatureToggleRuntimeState>>;
+  ): Promise<IAdtResponse<TState>>;
 
   switchOff(
     config: Partial<IFeatureToggleConfig>,
     opts: { transportRequest: string; userSpecific?: boolean },
-  ): Promise<IAdtResponse<IFeatureToggleRuntimeState>>;
+  ): Promise<IAdtResponse<TState>>;
 
   getRuntimeState(
     config: Partial<IFeatureToggleConfig>,
-  ): Promise<IAdtResponse<IFeatureToggleRuntimeState>>;
+  ): Promise<IAdtResponse<TState>>;
 
   checkState(
     config: Partial<IFeatureToggleConfig>,
     opts?: { userSpecific?: boolean },
-  ): Promise<IAdtResponse<IFeatureToggleRuntimeState>>;
+  ): Promise<IAdtResponse<TState>>;
 
   readSource(
     config: Partial<IFeatureToggleConfig>,
     version?: 'active' | 'inactive',
-  ): Promise<IAdtResponse<IFeatureToggleRuntimeState>>;
+  ): Promise<IAdtResponse<TState>>;
 }

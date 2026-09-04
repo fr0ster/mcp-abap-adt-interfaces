@@ -1767,14 +1767,26 @@ strategy can build: a strategy sees the answer, and the name is not in it. A sha
 declared here outlived the knowledge of where its fields come from, which is
 precisely what a contract package cannot afford.
 
-**What follows, and what does not.** Nothing is blocked: `TContents`, `TNode` and
-their kin are type parameters, so an implementation answering with its own types
-is what these contracts are shaped for, and the defaults are a convenience for a
-caller who names nothing. **Whether the result shapes now living here —
+**Answered in 31.0.0: they left.** Thirty-seven result shapes —
 `IPackageContentItem`, `IPackageHierarchyNode`, `IRepositoryNodeContents`,
-`ISearchResult` and the rest — should leave is a question about the whole surface,
-and it is open.** Named here rather than answered in passing; decision 17 stood
-open the same way until 30.0.0 closed it.
+`ISearchResult`, `IWhereUsedListResult`, `ITransportTree` and its nodes, the feed
+entries, `INamedItem`, `IObjectVersion`, the abapGit results, `IAtcRunResult`,
+`IFeatureToggleRuntimeState` and the rest — and the package went from 409 exported
+symbols to 372.
+
+**The defaults left with them**, and that is the same rule rather than a second
+one: a default is a claim about what a reading produces, so it belongs where the
+reading does. `IAdtPackageBrowsing<TContents>` has no default and names no shape;
+an implementation says what it answers, and a consumer holds whatever their
+implementation gave them. The question "should the default be the document, then"
+dissolves — the contract has no opinion to state.
+
+**What stayed, and the line it draws.** `IObjectReference` did, because
+`activateObjectsGroup`, `checkDeletionGroup` and `deleteObjectsGroup` take it: a
+caller cannot make the call without it. It used to extend `IAdtObjectHit` — a
+result shape — and now states its own fields. That is the test in practice: not
+"is this data about ADT" but "is it needed to make the call or to satisfy the
+signature".
 
 **How to catch a violation.** A type declared here that no member signature needs
 in order to be called or implemented. A required field whose value comes from the

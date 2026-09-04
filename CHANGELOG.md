@@ -7,6 +7,72 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [31.0.0] - 2026-09-04
+
+30.0.0 made the shape of an answer the consumer's, injected into the
+implementation. This release finishes the thought: **the shapes themselves leave
+too.** A contract carries what is needed to use it or replace it, and what a
+reading builds out of a document is neither — decision 24, which 30.0.0 recorded
+and left open, and this release acts on.
+
+409 exported symbols → **372**.
+
+### Removed
+
+- **BREAKING: thirty-seven result shapes.** Package contents
+  (`IPackageContentItem`, `IPackageHierarchyNode`, `IRepositoryObjectNode`,
+  `IRepositoryNodeChild`, `IRepositoryNodeContents`), search and where-used
+  (`ISearchResult`, `IWhereUsedListResult`, `IWhereUsedReference`,
+  `IAdtObjectHit`), the transport tree (`ITransportTree` and its four node types),
+  the feed entries (`IFeedDescriptor`, `IFeedEntry`, `IFeedVariant`,
+  `ISystemMessageEntry`, `IGatewayErrorEntry`, `IGatewayErrorDetail`), the trace
+  catalogue (`INamedItem`, `ITraceRequestEntry`, `ITraceExecutions`), abapGit
+  (`IAbapGitRepoStatus`, `IAbapGitPullResult`, `IAbapGitErrorLogEntry`,
+  `AbapGitStatus`, the external-repo shapes), `IObjectVersion`, `IAtcRunResult`,
+  `IAtcRunStatus`, `ICdsUnitTestResult`, `IFeatureToggleRuntimeState`,
+  `IInactiveObjectsResponse`.
+
+  They are declared by whoever answers them. `@mcp-abap-adt/adt-clients` ships
+  its own; a consumer replacing it ships theirs.
+
+- **BREAKING: every type-parameter default.** A default is a claim about what a
+  reading produces, so it belongs where the reading does.
+  `IAdtPackageBrowsing<TContents>` names no shape and assumes none;
+  `IRuntimeDumps<TList, TDump>`, `IAdtInformationSystem<TSearch, TWhereUsed, TTypes>`,
+  `IFeedRepository<…six…>`, `IAdtRequest<TList>` and the rest are the same. An
+  implementation states what it answers, in its own type.
+
+### Changed
+
+- **BREAKING: `IObjectReference` states its own fields.** It extended
+  `IAdtObjectHit` — a result shape — and stayed behind when that left, because
+  `activateObjectsGroup`, `checkDeletionGroup` and `deleteObjectsGroup` take it: a
+  caller cannot make those calls without it. `name`, `type`, `uri?`,
+  `parentName?`, all of them what the request carries.
+
+- **BREAKING: members whose result was named now take a parameter for it** —
+  `IAdtVersionable<TConfig, TVersions, TSource>`, `IFeatureToggleObject<TState>`,
+  `IAtcRunStatusReadable<TStatus>`, `ICdsTestDoubleCheckable<TResult>`,
+  `IAdtAbapGitClient<TRepos, TRepo, TErrorLog, TPull, TExternalRepo>`,
+  `IClassExecutor<TRun, TTypes, TRequests, TScheduled>` and its program twin.
+  `IAbapGitPullArgs<TStatus>` carries the progress callback's type, since the
+  status it reports is the implementation's reading.
+
+### Migration from 30.0.0
+
+| 30.0.0 | 31.0.0 |
+|---|---|
+| `import type { ISearchResult } from '@mcp-abap-adt/interfaces'` | import it from your implementation — `@mcp-abap-adt/adt-clients` declares its own |
+| `IAdtPackageBrowsing` (bare) | `IAdtPackageBrowsing<YourContents>` — the contract has no default to fall back on |
+| `IRuntimeDumps` (bare) | `IRuntimeDumps<YourList, YourDump>` |
+| `IObjectReference` via `IAdtObjectHit`'s fields | the same four fields, declared on `IObjectReference` itself |
+| `IAbapGitPullArgs` | `IAbapGitPullArgs<YourStatus>` |
+
+A consumer who only *uses* an implementation is largely unaffected: the factory
+of whatever library they hold returns fully instantiated types. What changes is
+for anyone who imported a result shape from here in order to name a variable —
+that import moves to the implementation.
+
 ## [30.0.0] - 2026-09-04
 
 29.0.0 made every ADT member answer a contract instead of throwing. It did that

@@ -44,7 +44,7 @@ class ShortDumps implements IRuntimeDumps<IDumpSummary[], string> {
 void new ShortDumps();
 
 /** Naming no reading answers the document, so an unchanged consumer compiles. */
-declare const dumps: IRuntimeDumps;
+declare const dumps: IRuntimeDumps<string, string>;
 const _document: Promise<IAdtResponse<string>> = dumps.getById('D1');
 void _document;
 
@@ -79,7 +79,9 @@ void _ids;
  * wanting the listing had to take the kind and vice versa. Each declares what is
  * its own now, and a union still narrows.
  */
-declare const anyRuntime: IRuntimeDumps | ISystemMessages;
+declare const anyRuntime:
+  | IRuntimeDumps<string, string>
+  | ISystemMessages<string, string>;
 function _narrow(): string {
   return anyRuntime.kind === 'runtimeDumps' ? 'dumps' : 'messages';
 }

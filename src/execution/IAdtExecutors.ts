@@ -44,7 +44,7 @@ export interface IClassExecuteWithProfilingOptions {
  * This makes the class result identical to the program one, which was already
  * honest about exactly this — see the comment it has carried all along.
  */
-export interface IClassExecuteWithProfilingResult<TRun = string> {
+export interface IClassExecuteWithProfilingResult<TRun> {
   /**
    * What the run itself answered.
    *
@@ -70,7 +70,7 @@ export interface IClassExecuteWithProfilingResult<TRun = string> {
  * second name for what {@link IAdtRunnable} already said — a target, some
  * options, an answer.
  */
-export type IClassExecutor<TRun = string> = IAdtRunnable<
+export type IClassExecutor<TRun, TTypes, TRequests, TScheduled> = IAdtRunnable<
   IClassExecutionTarget,
   TRun
 > &
@@ -84,7 +84,7 @@ export type IClassExecutor<TRun = string> = IAdtRunnable<
     IClassExecuteWithProfilingResult<TRun>,
     IClassExecuteWithProfilingOptions
   > &
-  ITraceScheduling;
+  ITraceScheduling<TTypes, TRequests, TScheduled>;
 
 export interface IProgramExecutionTarget {
   programName: string;
@@ -98,7 +98,7 @@ export interface IProgramExecuteWithProfilingOptions {
   profilerParameters?: IProfilerTraceParameters;
 }
 
-export interface IProgramExecuteWithProfilingResult<TRun = string> {
+export interface IProgramExecuteWithProfilingResult<TRun> {
   /** What the run itself answered; see {@link IClassExecuteWithProfilingResult}. */
   run: TRun;
   profilerId: string;
@@ -108,18 +108,16 @@ export interface IProgramExecuteWithProfilingResult<TRun = string> {
 }
 
 /** The program executor, composed the same way — see {@link IClassExecutor}. */
-export type IProgramExecutor<TRun = string> = IAdtRunnable<
-  IProgramExecutionTarget,
-  TRun
-> &
-  IRunnableWithProfiler<
-    IProgramExecutionTarget,
-    TRun,
-    IProgramExecuteWithProfilerOptions
-  > &
-  IRunnableWithProfiling<
-    IProgramExecutionTarget,
-    IProgramExecuteWithProfilingResult<TRun>,
-    IProgramExecuteWithProfilingOptions
-  > &
-  ITraceScheduling;
+export type IProgramExecutor<TRun, TTypes, TRequests, TScheduled> =
+  IAdtRunnable<IProgramExecutionTarget, TRun> &
+    IRunnableWithProfiler<
+      IProgramExecutionTarget,
+      TRun,
+      IProgramExecuteWithProfilerOptions
+    > &
+    IRunnableWithProfiling<
+      IProgramExecutionTarget,
+      IProgramExecuteWithProfilingResult<TRun>,
+      IProgramExecuteWithProfilingOptions
+    > &
+    ITraceScheduling<TTypes, TRequests, TScheduled>;

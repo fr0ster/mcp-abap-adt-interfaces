@@ -13,11 +13,16 @@ import type {
   IProgramExecutionTarget,
   IProgramExecutor,
 } from '../execution/IAdtExecutors';
-import type {
-  INamedItem,
-  ITraceRequestEntry,
-  ITraceScheduling,
-} from '../execution/ITraceScheduling';
+import type { ITraceScheduling } from '../execution/ITraceScheduling';
+
+/** A consumer's own readings — the contract declares none since 31.0.0. */
+interface INamedItem {
+  name: string;
+}
+interface ITraceRequestEntry {
+  id: string;
+}
+type Scheduling = ITraceScheduling<INamedItem[], ITraceRequestEntry[], string>;
 
 /**
  * Scheduling, satisfied once and reused by both executors below.
@@ -31,7 +36,7 @@ const answered = <T>(value: T): IAdtResponse<T> => ({
   getError: () => undefined,
 });
 
-const scheduling: ITraceScheduling = {
+const scheduling: Scheduling = {
   listObjectTypes: async (): Promise<IAdtResponse<INamedItem[]>> =>
     answered([]),
   listProcessTypes: async (): Promise<IAdtResponse<INamedItem[]>> =>
@@ -51,7 +56,12 @@ const document = '<adtcore:objectReference/>';
 
 // Published so a consumer can substitute its own runner — a real implementation,
 // not our ClassExecutor, must satisfy this shape exactly.
-const _class: IClassExecutor = {
+const _class: IClassExecutor<
+  string,
+  INamedItem[],
+  ITraceRequestEntry[],
+  string
+> = {
   ...scheduling,
   run: async (target: IClassExecutionTarget): Promise<IAdtResponse<string>> => {
     void target.className;
@@ -68,7 +78,7 @@ const _class: IClassExecutor = {
   runWithProfiling: async (
     target: IClassExecutionTarget,
     options?: IClassExecuteWithProfilingOptions,
-  ): Promise<IAdtResponse<IClassExecuteWithProfilingResult>> => {
+  ): Promise<IAdtResponse<IClassExecuteWithProfilingResult<string>>> => {
     void target.className;
     void options?.profilerParameters;
     // No `traceId` here, and the assertion below proves it is refused rather
@@ -81,7 +91,7 @@ void _class;
 // A run promises no trace. This is the whole point of the executor change: the
 // trace is written asynchronously, so a result that named one was lying about
 // timing that the caller then built retries around.
-const _classResult: IClassExecuteWithProfilingResult = {
+const _classResult: IClassExecuteWithProfilingResult<string> = {
   run: document,
   profilerId: 'p1',
   // @ts-expect-error a run result does not carry a trace id
@@ -100,7 +110,12 @@ void _optionsAreTheSame;
 void _andBack;
 
 // The same shape check for the program executor, which also schedules.
-const _program: IProgramExecutor = {
+const _program: IProgramExecutor<
+  string,
+  INamedItem[],
+  ITraceRequestEntry[],
+  string
+> = {
   ...scheduling,
   run: async (
     target: IProgramExecutionTarget,
@@ -119,7 +134,7 @@ const _program: IProgramExecutor = {
   runWithProfiling: async (
     target: IProgramExecutionTarget,
     options?: IProgramExecuteWithProfilingOptions,
-  ): Promise<IAdtResponse<IProgramExecuteWithProfilingResult>> => {
+  ): Promise<IAdtResponse<IProgramExecuteWithProfilingResult<string>>> => {
     void target.programName;
     void options?.profilerParameters;
     return answered({ run: document, profilerId: 'p2' });

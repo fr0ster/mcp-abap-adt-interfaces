@@ -166,22 +166,3 @@ export interface IAdtOperationOptions {
    */
   timeout?: number;
 }
-
-/** One entry in an object's version history (from the ADT versions Atom feed). */
-export interface IObjectVersion {
-  /** Version number, e.g. '00000'. */
-  versionId: string;
-  /** The user who created the version (atom:author/name), if present. */
-  author?: string;
-  /** ISO timestamp of the version (atom:updated), if present. */
-  updatedAt?: string;
-  /** Feed title, e.g. 'Version List of ZCL_X (CLAS)', if present. */
-  title?: string;
-  /** Opaque, complete URI to fetch this version's source (atom:content@src). */
-  contentUri: string;
-  /** Transport request id this version was recorded under, if any (from the
-   *  entry's transport-request link, e.g. 'DS4K901917'). */
-  transportRequest?: string;
-  /** Short text / description of that transport request, if any. */
-  transportDescription?: string;
-}

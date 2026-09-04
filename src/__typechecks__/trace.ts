@@ -144,11 +144,7 @@ import type {
   IAbapTraceEntry,
   IAbapTraceHitListEntry,
 } from '../runtime/IAbapTrace';
-import type {
-  IAtcRunOptions,
-  IAtcRunResult,
-  IAtcRunTarget,
-} from '../runtime/IAtcRun';
+import type { IAtcRunOptions, IAtcRunTarget } from '../runtime/IAtcRun';
 import type { IAbapTraceViews, IProfiler } from '../runtime/IProfiler';
 
 // The timings are a shape now, not `unknown` — a consumer reads them without
@@ -266,7 +262,11 @@ void _profilerCalls;
  * this stops compiling — which is the guard, because the cost of that mistake is an
  * ATC run having to answer for trace parameters.
  */
-const _atc: IAdtRunnable<IAtcRunTarget, IAtcRunResult, IAtcRunOptions> = {
+const _atc: IAdtRunnable<
+  IAtcRunTarget,
+  { worklistId: string },
+  IAtcRunOptions
+> = {
   run: async (target, options) => {
     void target;
     void options;

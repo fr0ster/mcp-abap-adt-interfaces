@@ -9,7 +9,7 @@ export interface IGetCheckFailureLogsOptions {
   phaseKey?: string;
 }
 
-export interface IAtcLog<TCheckFailures = string, TExecutionLog = string> {
+export interface IAtcLog<TCheckFailures, TExecutionLog> {
   /** Which runtime resource this is, for a consumer narrowing a union of them. */
   readonly kind: 'atcLog';
 

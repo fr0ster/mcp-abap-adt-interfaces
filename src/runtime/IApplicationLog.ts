@@ -15,11 +15,7 @@ export interface IGetApplicationLogSourceOptions {
   version?: string;
 }
 
-export interface IApplicationLog<
-  TObject = string,
-  TSource = string,
-  TValidation = string,
-> {
+export interface IApplicationLog<TObject, TSource, TValidation> {
   /** Which runtime resource this is, for a consumer narrowing a union of them. */
   readonly kind: 'applicationLog';
 

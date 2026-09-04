@@ -53,42 +53,23 @@ export type AdtSourceObjectType =
   | Uppercase<AdtSourceObjectTypeLower>;
 
 /**
- * Anything the repository can hand back as a located object.
+ * What a group operation is given, per object.
  *
- * Every way of finding an object — search, where-used, package contents,
- * package hierarchy, the inactive list — answers with a name and an ADT type
- * code. Those two are the identity of a hit; everything else is per-source
- * detail. Before this base existed the code lived under `type` in three of the
- * shapes and under `adtType` in the other two, where `type` meant an unrelated
- * enum — so a consumer could not read a hit without knowing which producer made
- * it. That is what this removes.
+ * A **request** parameter, which is why it survived 31.0.0 while the result
+ * shapes left: `activateObjectsGroup`, `checkDeletionGroup` and
+ * `deleteObjectsGroup` take these, and a consumer cannot call them without the
+ * type. It extended `IAdtObjectHit` — a result shape — until 31.0.0 and now
+ * states its own fields, which are the ones the request carries.
  */
-export interface IAdtObjectHit {
-  /** Object name. */
+export interface IObjectReference {
+  /** Object name, `adtcore:name`. */
   name: string;
-  /** ADT object type code, e.g. 'CLAS/OC', 'DDLS/DF', 'DEVC/K'. */
+  /** ADT object type code, e.g. `'CLAS/OC'`. */
   type: string;
-  /** ADT URI of the object, where the producer knows it. */
+  /** ADT URI of the object, `adtcore:uri`, where the caller knows it. */
   uri?: string;
-  /** Package containing the object, where the producer knows it. */
-  packageName?: string;
-  /** Human-readable description, where the producer knows it. */
-  description?: string;
-}
-
-/**
- * Object reference for group activation and inactive objects
- */
-export interface IObjectReference extends IAdtObjectHit {
+  /** Owning object, where the reference is to a part of one. */
   parentName?: string;
-}
-
-/**
- * Response from getInactiveObjects
- */
-export interface IInactiveObjectsResponse {
-  objects: IObjectReference[];
-  xmlStr?: string;
 }
 
 /**
@@ -98,14 +79,6 @@ export interface ISearchObjectsParams {
   query: string;
   objectType?: string;
   maxResults?: number;
-}
-
-/**
- * Search result entry
- */
-export interface ISearchResult extends IAdtObjectHit {
-  /** Search always reports a description, even when empty. */
-  description: string;
 }
 
 /**
@@ -186,40 +159,6 @@ export interface IGetWhereUsedListParams {
 }
 
 /**
- * Single where-used reference
- */
-export interface IWhereUsedReference extends IAdtObjectHit {
-  /** ADT URI of the referencing object — always known for a where-used hit. */
-  uri: string;
-  /** Parent URI (for hierarchical display) */
-  parentUri?: string;
-  /** Responsible user */
-  responsible?: string;
-  /** Whether this is a direct result or container */
-  isResult: boolean;
-  /** Usage information (e.g., 'gradeDirect,includeProductive') */
-  usageInformation?: string;
-  /** Object identifier for navigation */
-  objectIdentifier?: string;
-}
-
-/**
- * Result from getWhereUsedList
- */
-export interface IWhereUsedListResult {
-  /** Object that was searched */
-  objectName: string;
-  /** Object type that was searched */
-  objectType: string;
-  /** Total number of references found */
-  totalReferences: number;
-  /** Result description from SAP */
-  resultDescription: string;
-  /** List of referencing objects (excluding packages) */
-  references: IWhereUsedReference[];
-}
-
-/**
  * Virtual folders preselection entry
  */
 export interface IVirtualFoldersPreselection {
@@ -236,46 +175,4 @@ export interface IGetVirtualFoldersContentsParams {
   facetOrder?: string[];
   withVersions?: boolean;
   ignoreShortDescriptions?: boolean;
-}
-
-export type PackageHierarchySupportedType =
-  | 'package'
-  | 'domain'
-  | 'dataElement'
-  | 'structure'
-  | 'table'
-  | 'tableType'
-  | 'view'
-  | 'class'
-  | 'interface'
-  | 'program'
-  | 'functionGroup'
-  | 'functionModule'
-  | 'serviceDefinition'
-  | 'metadataExtension'
-  | 'behaviorDefinition'
-  | 'behaviorImplementation';
-
-export type PackageHierarchyCodeFormat = 'source' | 'xml';
-
-export interface IPackageHierarchyNode extends IAdtObjectHit {
-  /** Coarse classification of the node, derived from its `type` code. */
-  kind?: PackageHierarchySupportedType;
-  /** Whether this node is a subpackage. */
-  isPackage: boolean;
-  codeFormat?: PackageHierarchyCodeFormat;
-  restoreStatus?: 'ok' | 'not-implemented';
-  children?: IPackageHierarchyNode[];
-}
-
-/**
- * Single item in package contents list
- */
-export interface IPackageContentItem extends IAdtObjectHit {
-  /** Coarse classification of the item, derived from its `type` code. */
-  kind?: PackageHierarchySupportedType;
-  /** Package containing this object — always known when listing a package. */
-  packageName: string;
-  /** Whether this item is a subpackage */
-  isPackage: boolean;
 }

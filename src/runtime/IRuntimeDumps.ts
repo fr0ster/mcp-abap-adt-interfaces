@@ -17,7 +17,7 @@ export interface IRuntimeDumpReadOptions {
   view?: IRuntimeDumpReadView;
 }
 
-export interface IRuntimeDumps<TList = string, TDump = string> {
+export interface IRuntimeDumps<TList, TDump> {
   /** Which runtime resource this is, for a consumer narrowing a union of them. */
   readonly kind: 'runtimeDumps';
 

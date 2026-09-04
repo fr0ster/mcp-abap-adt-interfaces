@@ -7,7 +7,7 @@ export interface IGetActivationGraphOptions {
   logName?: string;
 }
 
-export interface IDdicActivation<TGraph = string> {
+export interface IDdicActivation<TGraph> {
   /** Which runtime resource this is, for a consumer narrowing a union of them. */
   readonly kind: 'ddicActivation';
 

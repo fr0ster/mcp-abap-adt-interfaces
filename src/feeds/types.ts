@@ -20,75 +20,9 @@ export interface IFeedQueryOptions {
   to?: IAbapTimestamp;
 }
 
-export interface IFeedEntry {
-  id: string;
-  title: string;
-  updated: IAbapTimestamp;
-  link: string;
-  content: string;
-  author?: string;
-  category?: string;
-}
-
-export interface IFeedDescriptor {
-  id: string;
-  title: string;
-  url: string;
-  category?: string;
-}
-
-export interface IFeedVariant {
-  id: string;
-  title: string;
-  url: string;
-}
-
 // --- System message types ---
 
-export interface ISystemMessageEntry {
-  id: string;
-  title: string;
-  text: string;
-  severity: string;
-  validFrom: IAbapTimestamp;
-  validTo: IAbapTimestamp;
-  createdBy: string;
-}
-
 // --- Gateway error types ---
-
-export interface IGatewayErrorEntry {
-  type: string;
-  shortText: string;
-  transactionId: string;
-  package: string;
-  applicationComponent: string;
-  dateTime: IAbapTimestamp;
-  username: string;
-  client: string;
-  requestKind: string;
-}
-
-export interface IGatewayErrorDetail extends IGatewayErrorEntry {
-  serviceInfo: {
-    namespace: string;
-    serviceName: string;
-    serviceVersion: string;
-    groupId: string;
-    serviceRepository: string;
-    destination: string;
-  };
-  errorContext: {
-    errorInfo: string;
-    resolution: Record<string, string>;
-    exceptions: IGatewayException[];
-  };
-  sourceCode: {
-    lines: ISourceCodeLine[];
-    errorLine: number;
-  };
-  callStack: ICallStackEntry[];
-}
 
 export interface IGatewayException {
   type: string;
