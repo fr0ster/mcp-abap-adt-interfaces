@@ -15,7 +15,7 @@ Measured against the tree at 30.0.0. Numbers here are counted from the emitted
 
 ## 1. What this package is
 
-`@mcp-abap-adt/interfaces` is **the contract, and nothing else**. 353 exported
+`@mcp-abap-adt/interfaces` is **the contract, and nothing else**. 346 exported
 symbols, of which 50 carry runtime values: 42 string constants (`HEADER_*`,
 `AUTH_TYPE_*`), 6 maps of codes (`AdtObjectErrorCodes`, `NETWORK_ERROR_CODES`,
 `SERVICE_BINDING_VARIANT_MAP` and three more) and 2 enums (`AuthMethodPriority`,
@@ -33,7 +33,8 @@ constants they name. What a reading builds out of a document is the
 implementation's: `adt-clients` ships strategies and the shapes they return are
 its own, and a replacement declares its own. Declaring every result shape here,
 with every field required, is how a contract package becomes a schema catalogue —
-decision 24 — and 31.0.0 acted on it: the result shapes left — forty-eight of them, and their
+decision 24 — and 31.0.0 acted on it: sixty-three exported symbols left, all of
+them result shapes or their parts, and their
 type-parameter defaults left with them, because a default is a claim about what a
 reading produces. So `AdtOperationError`, `isNetworkError()` and
 `hasDeferredResponses()` were removed in 29.0.0, and the classes that *are* these

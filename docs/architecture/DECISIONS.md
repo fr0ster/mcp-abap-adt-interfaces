@@ -1767,12 +1767,13 @@ strategy can build: a strategy sees the answer, and the name is not in it. A sha
 declared here outlived the knowledge of where its fields come from, which is
 precisely what a contract package cannot afford.
 
-**Answered in 31.0.0: they left.** Forty-eight result shapes —
+**Answered in 31.0.0: they left.** Sixty-three exported symbols, all of them
+result shapes or the parts those were built from —
 `IPackageContentItem`, `IPackageHierarchyNode`, `IRepositoryNodeContents`,
 `ISearchResult`, `IWhereUsedListResult`, `ITransportTree` and its nodes, the feed
 entries, `INamedItem`, `IObjectVersion`, the abapGit results, `IAtcRunResult`,
 `IFeatureToggleRuntimeState` and the rest — and the package went from 409 exported
-symbols to 353.
+symbols to 346, sixty-three fewer, with nothing added.
 
 **Including the parts they were built from.** A review found the nested shapes
 still exported after their parents left — the feature-toggle levels, the

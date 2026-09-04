@@ -15,11 +15,13 @@ too.** A contract carries what is needed to use it or replace it, and what a
 reading builds out of a document is neither — decision 24, which 30.0.0 recorded
 and left open, and this release acts on.
 
-409 exported symbols → **353**.
+409 exported symbols → **346**. Sixty-three left, none was added; counted from
+`src/index.ts` at `v30.0.0` against this branch, not estimated.
 
 ### Removed
 
-- **BREAKING: thirty-seven result shapes.** Package contents
+- **BREAKING: sixty-three exported symbols, all of them result shapes or their
+  parts.** Package contents
   (`IPackageContentItem`, `IPackageHierarchyNode`, `IRepositoryObjectNode`,
   `IRepositoryNodeChild`, `IRepositoryNodeContents`), search and where-used
   (`ISearchResult`, `IWhereUsedListResult`, `IWhereUsedReference`,
