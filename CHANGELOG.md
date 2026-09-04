@@ -32,6 +32,12 @@ and left open, and this release acts on.
   `IAtcRunStatus`, `ICdsUnitTestResult`, `IFeatureToggleRuntimeState`,
   `IInactiveObjectsResponse`.
 
+  **And the shapes that answered nothing**, found by sweeping for the class
+  rather than the instance: behaviorDefinition's `ICheckRunResult`,
+  `ICheckMessage`, `IValidationResult`, `ILockResult` and `CheckReporter`, the
+  message-class `IParsedMessageClass`/`IParsedMessage`, and
+  `IEnhancementMetadata` — every one a parsed shape no member ever answered.
+
   **And the parts they were built from**, which a review caught still exported
   after their parents left: the feature-toggle levels and `FeatureToggleState`,
   the gateway-error internals (`IGatewayException`, `ICallStackEntry`,

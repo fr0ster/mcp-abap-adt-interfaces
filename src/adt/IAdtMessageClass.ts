@@ -13,26 +13,6 @@ export interface IDeleteMessageClassParams {
 // Nested shapes a message-class read answers with
 // (promoted from adt-clients src/core/messageClass/xml.ts — minimal closure
 // needed to compile the Config/State types below)
-export interface IParsedMessage {
-  msgno: string;
-  msgtext: string;
-  selfExplanatory?: boolean;
-  description?: string;
-  rawAttrs?: Record<string, string>;
-}
-
-export interface IParsedMessageClass {
-  name: string;
-  description?: string;
-  language?: string;
-  masterLanguage?: string;
-  masterSystem?: string;
-  responsible?: string;
-  packageName?: string;
-  messages: IParsedMessage[];
-  rawAttrs?: Record<string, string>;
-}
-
 // High-level configuration (camelCase, public API)
 export interface IMessageClassConfig {
   /** Message class name (e.g. ZMY_MSGS) */

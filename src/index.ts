@@ -32,15 +32,10 @@ export type {
 } from './adt/IAdtAuthorizationField';
 export type {
   BehaviorDefinitionImplementationType,
-  CheckReporter,
   IBehaviorDefinitionConfig,
   IBehaviorDefinitionCreateParams,
   IBehaviorDefinitionValidationParams,
-  ICheckMessage,
-  ICheckRunResult,
-  ILockResult,
   IUpdateBehaviorDefinitionParams,
-  IValidationResult,
 } from './adt/IAdtBehaviorDefinition';
 export type {
   IBehaviorImplementationConfig,
@@ -98,7 +93,6 @@ export type {
   ICreateEnhancementParams,
   IDeleteEnhancementParams,
   IEnhancementConfig,
-  IEnhancementMetadata,
   IUpdateEnhancementParams,
   IValidateEnhancementParams,
 } from './adt/IAdtEnhancement';
@@ -148,8 +142,6 @@ export type {
   IDeleteMessageClassParams,
   IMessageClassConfig,
   IMessageClassMessageConfig,
-  IParsedMessage,
-  IParsedMessageClass,
 } from './adt/IAdtMessageClass';
 export type {
   IMetadataExtensionConfig,
