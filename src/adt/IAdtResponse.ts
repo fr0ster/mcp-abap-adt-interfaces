@@ -35,19 +35,44 @@
 import type { IAdtWireResponse } from '../connection/IAbapConnection';
 
 /**
- * Where a failure came from, because the three have different remedies.
+ * What an error strategy answers when the answer is **not** a failure.
  *
- * A caller cannot act on "something went wrong". Reauthenticate, ask the server
- * something else, or fix a parser are three different days of work, and flattening
- * them into one message makes the caller guess which.
+ * A token, not `undefined`. Until 31.0.0 `analyse` answered
+ * `IAdtError | undefined`, where `undefined` had to mean two different things —
+ * "there is no strategy here" for the optional field, and "this is not a
+ * failure" for its result. A reader could not tell which, and neither could a
+ * type: absence is not a verdict, and a verdict of "fine" is a thing a strategy
+ * says, so it is named.
+ *
+ * ```typescript
+ * analyse: (verdict) => isMissingObject ? ADT_NO_FAILURE : verdict
+ * ```
+ */
+export const ADT_NO_FAILURE = 'adt:no-failure' as const;
+
+/** The type of {@link ADT_NO_FAILURE}, for a strategy's signature. */
+export type AdtNoFailure = typeof ADT_NO_FAILURE;
+
+/**
+ * Where a failure came from — **on the server's side of the wire**.
+ *
+ * A caller cannot act on "something went wrong". Reauthenticating and asking the
+ * server something else are different days of work, and flattening them into one
+ * message makes the caller guess which.
+ *
+ * **Two, not three.** `'parse'` was here until 31.0.0, for an answer that
+ * arrived and could not be read. That is a failure *inside an implementation*,
+ * and this contract describes what came from the server: a strategy is free to
+ * read an answer any way it likes — or not to parse at all — so a category
+ * naming a step it may never take is one it cannot honour. What an
+ * implementation does when its own reading fails is its business, and it may
+ * throw.
  */
 export type AdtFailureOrigin =
   /** No usable answer exists — unreachable host, expired session, no authority. */
   | 'connection'
   /** SAP answered, about this object, and said no. */
-  | 'refusal'
-  /** An answer arrived and could not be read. */
-  | 'parse';
+  | 'refusal';
 
 /**
  * A failure, whichever strategy produced it.
@@ -113,7 +138,13 @@ export interface IAdtError {
     readonly url?: string;
   };
 
-  /** Whatever the transport or a parser threw, when something did. */
+  /**
+   * Whatever the transport threw, when it threw — a socket reset, a timeout.
+   *
+   * The transport only. An implementation's own failure to read an answer is not
+   * described by this contract (see {@link AdtFailureOrigin}), so nothing from a
+   * parser arrives here.
+   */
   readonly cause?: unknown;
 
   /**

@@ -101,7 +101,7 @@ readings, and neither is the library's to impose.
 
 | axis | shape | supplied |
 |---|---|---|
-| error | `(verdict, answer?) => IAdtError \| undefined` | to the implementation at construction, and — on the nine members that take `IAdtOperationOptions` — overruled per call through `analyse` |
+| error | `(verdict, answer?) => IAdtError \| AdtNoFailure` | to the implementation at construction, and — on the nine members that take `IAdtOperationOptions` — overruled per call through `analyse` |
 | result | `IResultStrategy<T>` = `(answer: IAdtWireResponse) => T` | to the implementation at construction; the member's result type follows it |
 
 Both are handed the whole answer — status, headers, body — because a reading may

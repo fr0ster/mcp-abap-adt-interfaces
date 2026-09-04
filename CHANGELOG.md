@@ -65,6 +65,23 @@ and left open, and this release acts on.
 
 ### Changed
 
+- **BREAKING: `AdtFailureOrigin` is `'connection' | 'refusal'`.** `'parse'` left.
+  The contract describes what came from the **server** — what it said, or the
+  absence of an answer. An answer that arrived and could not be read is a failure
+  inside an implementation, and a strategy is free to read any way it likes, or
+  not to parse at all, so a category naming a step it may never take is one it
+  cannot honour. What an implementation does when its own reading fails is its
+  business, and it may throw. `IAdtError.cause` is scoped to the transport with
+  it — nothing from a parser arrives there.
+
+- **BREAKING: `analyse` says "not a failure" with a token, not `undefined`.**
+  `ADT_NO_FAILURE` is exported, and the signature is
+  `(verdict: IAdtError | AdtNoFailure, answer?) => IAdtError | AdtNoFailure`. The
+  field is optional, so `undefined` already meant "there is no strategy here";
+  making it also mean "this answer is fine" put two different facts in one value,
+  and neither a reader nor a type could tell them apart. A verdict of "fine" is
+  something a strategy *says*, so it is named.
+
 - **BREAKING: neither half of `IAdtResponse` answers `undefined` any more.**
   `IAdtSuccess` declared `getError(): undefined` and `IAdtFailure`
   `getResult(): undefined`, so both were callable on the union and answered a
@@ -107,6 +124,8 @@ and left open, and this release acts on.
 | `IObjectReference` via `IAdtObjectHit`'s fields | the same four fields, declared on `IObjectReference` itself |
 | `IAbapGitPullArgs` | `IAbapGitPullArgs<YourStatus>` |
 | `const err = answer.getError()` before checking `ok` | `if (!answer.ok) { answer.getError() }` — the union no longer answers `undefined` |
+| `analyse: () => undefined` for "not a failure" | `analyse: () => ADT_NO_FAILURE` |
+| `if (failure.origin === 'parse')` | a reading that fails is the implementation's — catch it, or ask your implementation what it does |
 | `IAdtServiceBinding` / `ICrossTrace` (bare) | `IAdtServiceBinding<YourReadings>` / `ICrossTrace<YourReadings>`; the `*Documents` records were implementation defaults and left |
 
 A consumer who only *uses* an implementation is largely unaffected: the factory

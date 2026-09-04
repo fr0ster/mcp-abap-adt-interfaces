@@ -167,6 +167,7 @@ export type {
 } from './adt/IAdtProgram';
 export type {
   AdtFailureOrigin,
+  AdtNoFailure,
   IAdtError,
   IAdtFailure,
   IAdtResponse,
@@ -174,6 +175,7 @@ export type {
   IAdtSuccess,
   IResultStrategy,
 } from './adt/IAdtResponse';
+export { ADT_NO_FAILURE } from './adt/IAdtResponse';
 export type {
   ICreateScalarFunctionParams,
   IDeleteScalarFunctionParams,
