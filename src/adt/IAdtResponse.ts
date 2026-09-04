@@ -195,12 +195,16 @@ export interface IAdtFailure<TError extends IAdtError = IAdtError> {
  * requires `description`, so no strategy can return "fewer fields" of it without
  * the compiler refusing.
  *
- * A result strategy varies **`T` itself**. That is what the strategy overload
- * already does: `search(criteria)` answers
- * `IAdtResponse<ISearchResult[]>`, and `search(criteria, parse)`
- * answers `IAdtResponse<whatever the parser returns>`.
- * A shipped `brief` is a shipped parser with a narrower result contract, not the
- * same contract half-filled.
+ * A result strategy varies **`T` itself**, and `T` follows the strategy the
+ * implementation was constructed with (decision 22):
+ * `IAdtInformationSystem` answers `IAdtResponse<ISearchResult[]>`, and
+ * `IAdtInformationSystem<MyHits>` answers `IAdtResponse<MyHits>` from the same
+ * `search(criteria)` call. A shipped `brief` is a shipped reading with a
+ * narrower result contract, not the same contract half-filled.
+ *
+ * Until 30.0.0 this said "the strategy overload", and four members took a parser
+ * at the call. They do not any more — a per-call parser is a second signature
+ * every implementer owes whether or not their callers use it.
  *
  * So what does this interface buy, if it holds one field? It is the **named half
  * of an answer**, the counterpart to `IAdtError`, and it is where anything a

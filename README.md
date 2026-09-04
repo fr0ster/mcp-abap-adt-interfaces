@@ -7,8 +7,8 @@ Shared interfaces for MCP ABAP ADT packages.
 This package provides all TypeScript interfaces used across the MCP ABAP ADT ecosystem, ensuring consistency and type safety across all packages.
 
 This package exists to be the **one import point** for the contract: object
-configs/states, client options, abapGit, batch payloads, executors, and
-debugger session parameters all live here rather than in
+configs, client options, abapGit, the execution atoms, the runtime and service
+contracts all live here rather than in
 `@mcp-abap-adt/adt-clients`, so a consumer imports one package and has exactly
 one seam to override at — a custom `IAdtContentTypes`, a connection that
 implements `IDeferredResponseConnection`, and so on — without reaching into
@@ -38,7 +38,7 @@ npm install @mcp-abap-adt/interfaces
 
 This package contains all interfaces organized by domain:
 
-- **`adt/`** - ADT object operations interfaces (capability atoms, operation options, error codes), plus the abapGit client contract, batch payload shapes, ADT client options, and the content-type/header contract
+- **`adt/`** - ADT object operations interfaces (capability atoms, operation options, error codes), plus the abapGit client contract, ADT client options, and the content-type/header contract
 - **`auth/`** - Core authentication interfaces: configs and auth types, the credential contract a connection authenticates with (`IAuthProvider`), and how an interactive login is conducted (`IAuthorizationStrategy`)
 - **`token/`** - Token-related interfaces (token provider, results, options)
 - **`session/`** - Session storage interface
@@ -46,9 +46,9 @@ This package contains all interfaces organized by domain:
 - **`connection/`** - Connection and realtime transport interfaces (AbapConnection, request options, WebSocket transport contracts, deferred-response detection)
 - **`execution/`** - Execution contracts for runnable entities (`IAdtRunnable`, the two profiler atoms, class/program executors composed from them)
 - **`feeds/`** - Feed access interfaces (IFeedRepository, feed entries, system messages, gateway errors)
-- **`runtime/`** - Runtime analysis domain interfaces (debugger, profiler, traces, dumps, logs, memory snapshots, etc.)
+- **`runtime/`** - Runtime analysis domain interfaces (profiler, traces, dumps, logs, ATC, system messages, gateway errors)
 - **`sap/`** - SAP-specific configuration (SapConfig, SapAuthType)
-- **`service/`** - Business service lifecycle contracts (`IAdtService`, service binding params)
+- **`service/`** - Business service lifecycle contracts (`IAdtServiceBinding`, service binding params)
 - **`storage/`** - Storage interfaces (session storage, state)
 - **`logging/`** - Logging interfaces (ILogger, LogLevel enum)
 - **`validation/`** - Validation interfaces
@@ -390,7 +390,7 @@ This package is responsible for:
   - For Basic: no token refresh needed
 - `IAdtWireResponse` - the transport frame returned by `makeAdtRequest()`: `data`, `status`, `statusText`, `headers`. Named `IAdtResponse` until 28.0.0, which is where the trouble was — one type meant both "what came off the wire" and "what a caller gets"
 - `IAdtResponse<TValue, TError>` (`adt/IAdtResponse.ts`, since 28.0.0; reshaped in 29.0.0) - what a **member** answers with, and a **discriminated union**: `IAdtSuccess<TValue>` (`ok: true`, `getResult(): IAdtResult<TValue>`) or `IAdtFailure<TError>` (`ok: false`, `getError(): TError`). It takes the **value**, not a wrapper around it: 28.0.0 constrained the first parameter to `IAdtResult<unknown>`, so every member wrote `IAdtResponse<IAdtResult<X>>` — two wrappers where one was meant — and the contract displayed `unknown` to anyone reading it. `TError` defaults to `IAdtError` and stays constrained to it, so an implementation answering `IAdtError & { retryAfter: number }` can say so while a caller written against `IAdtError` reads it unchanged. Checking `answer.ok` narrows, so neither method is `| undefined` once you have asked
-- `IAdtResult<T>` (since 28.0.0) - the result half, and a contract like the error half: `value` is what the member promised. The two halves vary differently, and that is not a slip — an error strategy varies the fullness of `IAdtError`, which has two required fields and five optional; a result strategy varies `T` itself, through the strategy overload, because `ISearchResult` requires `description` and cannot be returned half-filled. What `IAdtResult` must never hold is the transport frame — `IAdtError` keeps a `response` because diagnosing a failure needs the status it arrived with, and reading a result does not
+- `IAdtResult<T>` (since 28.0.0) - the result half, and a contract like the error half: `value` is what the member promised. The two halves vary differently, and that is not a slip — an error strategy varies the fullness of `IAdtError`, which has two required fields and five optional; a result strategy varies `T` itself — `IAdtInformationSystem` answers `ISearchResult[]` and `IAdtInformationSystem<MyHits>` answers `MyHits` from the same call — because `ISearchResult` requires `description` and cannot be returned half-filled. What `IAdtResult` must never hold is the transport frame — `IAdtError` keeps a `response` because diagnosing a failure needs the status it arrived with, and reading a result does not
 - `IAdtError` (since 28.0.0) - the contract every error strategy returns. A strategy chooses **how much** to fill in, never what it is: `brief`, `medium` and `full` are three amounts of one contract, so a caller writes against it once. `origin` (`'connection' | 'refusal' | 'parse'` — three failures, three different remedies) and `message` are required; `adtType`, `namespace`, `response`, `request`, `cause` and `code` are what a fuller strategy adds. `code` (since 30.0.0) carries `AdtObjectErrorCodes` — it is there because the contract promises specific failures in specific places, such as `UNSUPPORTED_OPERATION` from `getVersions` on a type with no version resource, and until those members stopped throwing a consumer read that code off whatever was caught. An implementation may fill it in however it likes and a consumer's code does not change, because the methods are the same
 - **Connection capability atom** (`connection/IConnectionCapabilities.ts`) — the same split as the ADT atoms above, for the same reason: `IAbapConnection` is the minimum every transport can honour, and this is a thing only some can.
   - `ISessionLifecycleAware` — `disconnect()`, `isConnected()`, `getSessionIdentity()`
@@ -417,9 +417,6 @@ This package is responsible for:
 - `IWebSocketConnectOptions` - WS connect options (`protocols`, `headers`, timeouts, heartbeat)
 - `IWebSocketMessageEnvelope` - Generic request/response/event/error message shape with correlation id
 - `IWebSocketCloseInfo` / `IWebSocketMessageHandler` - Close payload and message callback contracts
-- `IAbapConnectionExtended` - Deprecated, for backward compatibility
-  - Extends `IAbapConnection` with: `getConfig()`, `getAuthHeaders()`, `reset()`
-  - Will be removed in next major version
 - `IAbapRequestOptions` - Request options for ADT operations
 
 ### Feeds Domain (`feeds/`)
@@ -460,9 +457,10 @@ This package is responsible for:
 - `SapAuthType` - Authentication type: `"basic" | "jwt"`
 
 ### Service Domain (`service/`)
-- `IAdtService` - Service binding lifecycle contract for non-CRUD service operations
-  - Methods for binding discovery/validation, transport checks, create/read/update, activate/check, and generation
-  - `updateServiceBinding()` uses explicit `desiredPublicationState` and validates allowed state transition
+- `IAdtServiceBinding<R>` - what a service binding has that nothing else does: the type catalogue, generation, the two OData readings, publication and classification. The aliases `IAdtService` and `AdtServiceBindingType` were removed in 30.0.0 — two names for one type
+  - **CRUD is the atoms, composed beside it.** Until 30.0.0 this extended eight of them *and* declared `createServiceBinding`, `readServiceBinding`, `updateServiceBinding`, `deleteServiceBinding`, `checkServiceBinding`, `activateServiceBinding`, `validateServiceBinding` and `transportCheckServiceBinding` next to them — the same operations on the same endpoints, twice, with the second set answering the transport envelope. A caller who needs both writes `IAdtServiceBinding & IAdtCreatable<IServiceBindingConfig, void> & …`
+  - `R` is the readings, keyed rather than positional (`IServiceBindingResults`, defaulting to `IServiceBindingDocuments`): five distinct answers would otherwise be five type parameters, and the fourth unnameable without spelling the first three
+  - `createAndGenerateServiceBinding()` answers **one** value; it handed back six envelopes, one per request it made along the way, until 30.0.0
 - Parameter/enum types:
   - `ServiceBindingVariant` — `'ODATA_V2_UI' | 'ODATA_V2_WEB_API' | 'ODATA_V4_UI' | 'ODATA_V4_WEB_API'`
   - `SERVICE_BINDING_VARIANT_MAP` — maps variant to `{ bindingType, bindingVersion, bindingCategory, serviceType }`
