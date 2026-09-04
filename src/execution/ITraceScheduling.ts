@@ -2,7 +2,7 @@
  * Configuring a measurement — the half that is not reading one.
  *
  * This is composed into `IClassExecutor` and `IProgramExecutor`, and
- * deliberately NOT put on `IExecutor` or `IAdtRunnable`: an ATC run and a unit
+ * deliberately NOT put on `IAdtRunnable` or the profiler atoms: an ATC run and a unit
  * test run implement those too, and neither has any business answering for
  * trace parameters. Composed in, the capability is stated exactly where it is
  * true.

@@ -262,8 +262,8 @@ void _profilerCalls;
 /**
  * An ATC-shaped runnable owes nothing to scheduling.
  *
- * If `ITraceScheduling` ever migrates onto `IAdtRunnable` or `IExecutor`, this
- * stops compiling — which is the guard, because the cost of that mistake is an
+ * If `ITraceScheduling` ever migrates onto `IAdtRunnable` or a profiler atom,
+ * this stops compiling — which is the guard, because the cost of that mistake is an
  * ATC run having to answer for trace parameters.
  */
 const _atc: IAdtRunnable<IAtcRunTarget, IAtcRunResult, IAtcRunOptions> = {

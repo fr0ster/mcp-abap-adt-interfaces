@@ -8,8 +8,12 @@
 
 import type { IAdtWireResponse } from '../connection/IAbapConnection';
 import type { IProfilerTraceParameters } from '../runtime/IProfiler';
-import type { IAdtRunnable } from './IAdtRunnable';
-import type { IExecutor } from './IExecutor';
+import type {
+  IAdtRunnable,
+  IRunnableWithProfiler,
+  IRunnableWithProfiling,
+} from './IAdtRunnable';
+
 import type { ITraceScheduling } from './ITraceScheduling';
 
 export interface IClassExecutionTarget {
@@ -56,22 +60,29 @@ export interface IClassExecuteWithProfilingResult<TRun = string> {
 /**
  * What a class executor is, spelled as the composition it is.
  *
- * Until 30.0.0 this extended `IExecutor` and `ITraceScheduling`. Inheritance
- * between contracts is what makes a surface un-composable: a consumer who wants
- * the run without the scheduling, or the scheduling without the run, has no way
- * to say so, and every implementation of the narrow thing is forced to provide
- * the wide one. An intersection says the same and lets either half stand alone.
+ * Until 30.0.0 this extended `IExecutor`, which extended `IAdtRunnable`, and
+ * `ITraceScheduling` beside it. Inheritance between contracts is what makes a
+ * surface un-composable: a consumer who wants the run without the scheduling,
+ * or the plain run without either profiler variant, has no way to say so, and
+ * every implementation of the narrow thing is forced to provide the wide one.
+ *
+ * `IExecutor` itself is gone with it. It was a bundle of two capabilities and a
+ * second name for what {@link IAdtRunnable} already said — a target, some
+ * options, an answer.
  */
 export type IClassExecutor<TRun = string> = IAdtRunnable<
   IClassExecutionTarget,
   TRun
 > &
-  IExecutor<
+  IRunnableWithProfiler<
     IClassExecutionTarget,
     TRun,
-    IClassExecuteWithProfilerOptions,
-    IClassExecuteWithProfilingOptions,
-    IClassExecuteWithProfilingResult<TRun>
+    IClassExecuteWithProfilerOptions
+  > &
+  IRunnableWithProfiling<
+    IClassExecutionTarget,
+    IClassExecuteWithProfilingResult<TRun>,
+    IClassExecuteWithProfilingOptions
   > &
   ITraceScheduling;
 
@@ -101,11 +112,14 @@ export type IProgramExecutor<TRun = string> = IAdtRunnable<
   IProgramExecutionTarget,
   TRun
 > &
-  IExecutor<
+  IRunnableWithProfiler<
     IProgramExecutionTarget,
     TRun,
-    IProgramExecuteWithProfilerOptions,
-    IProgramExecuteWithProfilingOptions,
-    IProgramExecuteWithProfilingResult<TRun>
+    IProgramExecuteWithProfilerOptions
+  > &
+  IRunnableWithProfiling<
+    IProgramExecutionTarget,
+    IProgramExecuteWithProfilingResult<TRun>,
+    IProgramExecuteWithProfilingOptions
   > &
   ITraceScheduling;

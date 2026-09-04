@@ -169,9 +169,14 @@ export interface ITraceReading<
  *
  * What a caller needs to know is still unmeasured: whether a second delete
  * answers `200` or `404`. What has changed is what to do about it — code that
- * must tolerate a missing id reads `ok` and decides, instead of catching, and a
- * consumer who wants a repeat delete treated as success supplies that reading
- * through `analyse`.
+ * must tolerate a missing id reads `ok` and decides, instead of catching.
+ *
+ * **This member takes no options, so there is no per-call `analyse` here.**
+ * `IAdtOperationOptions` is carried by the CRUD atoms, where a caller overrules
+ * the verdict for one request; a consumer who wants a repeat delete counted as
+ * success everywhere states that in the error strategy their implementation is
+ * constructed with, which is the same place its result strategy comes from
+ * (decision 22). A member with no options is not a member with no choice.
  */
 export interface ITraceDeletion {
   delete(traceId: string): Promise<IAdtResponse<void>>;

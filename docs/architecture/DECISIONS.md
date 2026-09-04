@@ -1668,6 +1668,10 @@ members whose implementations issue the same request.
 contracts extended two shared bases, `ITraceFamily` carried a listing, and
 `IRenewableCredential` extended the whole of `IAuthProvider` to add one method.
 
+Inheritance also hides a second name for the same idea, which is how `IExecutor`
+survived review twice: read as "the executor contract" it looks like a thing,
+and read as its members it is `IAdtRunnable` twice over with different options.
+
 **Decided.** No contract extends another. Each declares what is its own, and a
 consumer spells the composition where they need it:
 
@@ -1687,8 +1691,8 @@ family and leave the rest.
 or a detail entry extending its list entry, is not a contract deciding what an
 implementer owes.
 
-**What was deleted rather than kept.** `IRuntimeAnalysisObject` and
-`IListableRuntimeObject` existed only to be inherited. With nothing extending
+**What was deleted rather than kept.** `IExecutor`, `IRuntimeAnalysisObject` and
+`IListableRuntimeObject` existed only to be inherited or to bundle. With nothing extending
 them they had no readers, so they went; each runtime contract now declares its
 own `kind` and its own `list`, which is a line each and leaves them
 self-contained.

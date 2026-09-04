@@ -390,8 +390,11 @@ export type {
   IProgramExecutionTarget,
   IProgramExecutor,
 } from './execution/IAdtExecutors';
-export type { IAdtRunnable } from './execution/IAdtRunnable';
-export type { IExecutor } from './execution/IExecutor';
+export type {
+  IAdtRunnable,
+  IRunnableWithProfiler,
+  IRunnableWithProfiling,
+} from './execution/IAdtRunnable';
 export type {
   INamedItem,
   ITraceExecutions,

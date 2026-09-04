@@ -97,6 +97,16 @@ composed and never inherited.
   existed only to be inherited. Each runtime contract declares its own `kind` and
   its own `list` instead.
 
+- **BREAKING: `IExecutor`.** It bundled two capabilities and inherited a third,
+  so "runs a class" and "profiles a class" were one thing an implementer had to
+  take whole — and it was a second name for what `IAdtRunnable` already said: a
+  target, some options, an answer. `IRunnableWithProfiler` and
+  `IRunnableWithProfiling` replace it, one method each, and `IClassExecutor` /
+  `IProgramExecutor` are the intersection of those with `IAdtRunnable` and
+  `ITraceScheduling`. An implementation that only runs, or only profiles, is now
+  a legitimate implementation of what it does — asserted in
+  `src/__typechecks__/runnableSplit.ts`.
+
 - **BREAKING: `IAdtService` and `AdtServiceBindingType`**, two aliases for
   `IAdtServiceBinding`. Import that.
 
@@ -115,6 +125,7 @@ composed and never inherited.
 | `try { await obj.lock(cfg) } catch` | `const a = await obj.lock(cfg); if (!a.ok) …` |
 | `class X implements IAdtServiceBinding` with `create` inherited | `implements IAdtServiceBinding & IAdtCreatable<IServiceBindingConfig, void>` |
 | `IDebugger`, `IMemorySnapshots`, `IAdtBatch` | not published here; take the implementation's own types from `adt-clients` |
+| `implements IExecutor<T, R, PO, GO, GR>` | `IAdtRunnable<T, R> & IRunnableWithProfiler<T, R, PO> & IRunnableWithProfiling<T, GR, GO>` |
 
 ## [29.0.0] - 2026-09-04
 
