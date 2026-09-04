@@ -7,6 +7,7 @@
 import type { IAdtResponse } from '../adt/IAdtResponse';
 
 type Assert<T extends true> = T;
+
 import type {
   ITraceDeletion,
   ITraceEntry,
@@ -140,11 +141,13 @@ export type { Reader, WithViews, ListingOnly };
 export { _listingOnly, _listingAndName, _assertions };
 
 // ---------------------------------------------------------------------------
-// A consumer's own profiler, composed from the atoms.
+// A consumer's own profiler.
 //
-// `IProfiler` and the trace shapes left in 31.0.0 — a composition of atoms with
-// an implementation's readings is that implementation's. What is asserted here
-// is that the atoms still compose into one, with shapes this file declares.
+// `IProfiler` is published — a composition is a contract, and a consumer needs
+// it both to type a profiler and to implement one. What left in 31.0.0 are the
+// shapes it used to name, so it takes them as parameters. Asserted below: that
+// the published composition IS the intersection it claims to be, and that this
+// file can instantiate it with readings of its own.
 
 import type { IAdtRunnable } from '../execution/IAdtRunnable';
 import type { IAtcRunOptions, IAtcRunTarget } from '../runtime/IAtcRun';
@@ -175,7 +178,11 @@ type Spelled = ITraceFamily<'profiler'> &
   ITraceReading<MyViews> &
   ITraceDeletion;
 type _CompositionIsWhatItSays = Assert<
-  MyProfiler extends Spelled ? (Spelled extends MyProfiler ? true : false) : false
+  MyProfiler extends Spelled
+    ? Spelled extends MyProfiler
+      ? true
+      : false
+    : false
 >;
 
 const _profiler: MyProfiler = {
