@@ -82,6 +82,19 @@ composed and never inherited.
   envelopes. What an implementation does on the way to an answer is its own
   business.
 
+### Documentation
+
+- **`docs/architecture/ARCHITECTURE.md` is new.** The repository had `DECISIONS.md`
+  — why each choice was made — and a README inventory of what is exported, and
+  nothing that described the shape: what an answer is, the two axes a consumer
+  decides on, how contracts compose, what each family holds, where the seam to an
+  implementation runs. Read it first if you are about to implement one of these
+  contracts.
+
+- Entries in `DECISIONS.md` that a later decision superseded are marked as such —
+  3, 5, 11, 14, 16 and 17 all describe mechanisms that 22 and 23 replaced, and 17
+  carried an open question about the whole surface which 30.0.0 answers.
+
 ### Removed
 
 - **BREAKING: `IDebugger`, `IAdtDebuggerSession`, `IMemorySnapshots` and
