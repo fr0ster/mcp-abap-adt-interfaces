@@ -248,7 +248,7 @@ This package is responsible for:
 - **Defines interfaces**: All interfaces used across MCP ABAP ADT packages
 - **Organizes by domain**: Interfaces grouped by functional domain
 - **Follows naming convention**: All interfaces start with `I` prefix
-- **Contracts, not code**: types and interfaces, plus the constants they name. Since 29.0.0 the package ships **no class and no function** — `AdtOperationError`, `TransportSearchConfigurationMissing`, `isNetworkError()` and `hasDeferredResponses()` were removed, because a contract says what a thing *is* and shipping one way of being it makes "use your own implementation" untrue for that piece. What remains executable is 48 constant objects (`AdtObjectErrorCodes`, the `HEADER_*` names, `NETWORK_ERROR_CODES`, `AUTH_TYPE_*` and so on) and two enums (`AuthMethodPriority`, `LogLevel`); every emitted module is otherwise empty
+- **Contracts, not code**: types and interfaces, plus the constants they name. Since 29.0.0 the package ships **no class and no function** — `AdtOperationError`, `TransportSearchConfigurationMissing`, `isNetworkError()` and `hasDeferredResponses()` were removed, because a contract says what a thing *is* and shipping one way of being it makes "use your own implementation" untrue for that piece. What remains executable is 50 exports: 42 string constants (the `HEADER_*` and `AUTH_TYPE_*` names), 6 maps of codes (`AdtObjectErrorCodes`, `NETWORK_ERROR_CODES`, `SERVICE_BINDING_VARIANT_MAP` and three more) and two enums (`AuthMethodPriority`, `LogLevel`); every emitted module is otherwise empty
 
 #### What This Package Does NOT Do
 

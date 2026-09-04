@@ -16,9 +16,11 @@ Measured against the tree at 30.0.0. Numbers here are counted from the emitted
 ## 1. What this package is
 
 `@mcp-abap-adt/interfaces` is **the contract, and nothing else**. 409 exported
-symbols: interfaces, type aliases, 48 constant objects and 2 enums
-(`AuthMethodPriority`, `LogLevel`). It emits **no class and no function** — every
-other module compiles to an empty JavaScript file.
+symbols, of which 50 carry runtime values: 42 string constants (`HEADER_*`,
+`AUTH_TYPE_*`), 6 maps of codes (`AdtObjectErrorCodes`, `NETWORK_ERROR_CODES`,
+`SERVICE_BINDING_VARIANT_MAP` and three more) and 2 enums (`AuthMethodPriority`,
+`LogLevel`). Everything else is a type. It emits **no class and no function** —
+every other module compiles to an empty JavaScript file.
 
 That is a design constraint, not an accident of scope. A contract says what a
 thing *is*; shipping one way of being it makes "use your own implementation"
@@ -85,13 +87,33 @@ read-modify-write must call that a failure, since writing back what it read
 erases the object. A listing must call it an empty list. Same bytes, opposite
 readings, and neither is the library's to impose.
 
-| axis | contract | shape |
+| axis | shape | supplied |
 |---|---|---|
-| error | `IAdtOperationOptions.analyse` | `(verdict, answer?) => IAdtError \| undefined` |
-| result | `IResultStrategy<T>` | `(answer: IAdtWireResponse) => T` |
+| error | `(verdict, answer?) => IAdtError \| undefined` | to the implementation at construction, and — on the eight members that take `IAdtOperationOptions` — overruled per call through `analyse` |
+| result | `IResultStrategy<T>` = `(answer: IAdtWireResponse) => T` | to the implementation at construction; the member's result type follows it |
 
 Both are handed the whole answer — status, headers, body — because a reading may
 need any of it.
+
+**The two axes are not equally visible in the contract, and that is worth saying
+plainly.** The result axis is: a member's result type is a type parameter of its
+interface, so what a given implementation answers is written in its type. The
+error axis is not. `IAdtOperationOptions.analyse` reaches exactly eight members —
+`create`, `read`, `update`, `delete`, `validate`, `check`, `activate` and
+`readTransport`, all on the capability atoms. The other 89 take no options at
+all; `ITraceDeletion.delete(traceId)` is the plain case, one argument and no
+seam.
+
+For those, the reading is the implementation's, chosen when it is constructed,
+and this package does not name that constructor — `@mcp-abap-adt/adt-clients`
+does, because a contract that described how a default is composed would have
+stopped being a contract (decision 20). What the contract does carry is the
+*shape* every strategy must answer, `IAdtError`, and the room to say a fuller one
+comes back: `IAdtResponse<TValue, TError extends IAdtError>`. No interface
+instantiates that second parameter today, so a consumer whose failures carry more
+than `IAdtError` states it at their own boundary rather than in ours. Named here
+rather than left to be discovered; whether it should change is a question for a
+later release, not a gap this one hides.
 
 ### Where a strategy is supplied
 
@@ -207,7 +229,8 @@ implementation package:
 | to change | supply |
 |---|---|
 | what an answer becomes | an `IResultStrategy`, at construction |
-| what counts as a failure | `analyse`, per call where a member takes options |
+| what counts as a failure, everywhere | the error strategy the implementation is constructed with |
+| what counts as a failure, for one call | `analyse`, on the eight capability members that take `IAdtOperationOptions` |
 | the headers a request carries | your own `IAdtContentTypes` |
 | how a request is made at all | your own `IAbapConnection` |
 | a whole family | your own implementation of those atoms |
