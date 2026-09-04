@@ -4,9 +4,11 @@
  *
  * The wide `IAdtObject` this file was named for was removed in 29.0.0; what an
  * object can do is now stated by the atoms it declares in `IAdtCapabilities.ts`.
- *
- * Unlike Builders which provide low-level method chaining, this interface
- * provides high-level operation chains with automatic error handling and cleanup.
+ * Nothing here declares an operation — these are the pieces the atoms refer to:
+ * {@link IAdtOperationOptions} carries the strategy a caller injects,
+ * {@link IObjectVersion} is one entry of a version history, and
+ * {@link AdtObjectErrorCodes} names the failures of the four members that still
+ * throw.
  */
 
 import type { IAdtWireResponse } from '../connection/IAbapConnection';

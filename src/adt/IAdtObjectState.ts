@@ -1,8 +1,13 @@
 /**
- * Base state interface for all ADT Object operations
+ * The configuration shapes an ADT object is identified and created by.
  *
- * All specific state types (DomainBuilderState, DataElementBuilderState, etc.)
- * should extend this interface to ensure consistency across all ADT object types.
+ * The state interfaces this file is named for were removed in 29.0.0 — they were
+ * a bag of transport frames, and a state is a shape an *implementation* builds
+ * rather than something a contract hands back. What a member answers is now
+ * named by its own atom in `IAdtCapabilities.ts`.
+ *
+ * The filename outlives them for one release so import paths do not churn twice;
+ * it is `IAdtObjectConfig.ts` in spirit.
  */
 
 /**
