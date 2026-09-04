@@ -24,7 +24,17 @@ every other module compiles to an empty JavaScript file.
 
 That is a design constraint, not an accident of scope. A contract says what a
 thing *is*; shipping one way of being it makes "use your own implementation"
-untrue for that piece. So `AdtOperationError`, `isNetworkError()` and
+untrue for that piece.
+
+**The same line runs through the types.** This package carries what a consumer
+needs to *use* one of these contracts or to *replace* it — member signatures,
+request parameters, `IAdtResponse`, `IAdtError`, `IResultStrategy`, and the
+constants they name. What a reading builds out of a document is the
+implementation's: `adt-clients` ships strategies and the shapes they return are
+its own, and a replacement declares its own. Declaring every result shape here,
+with every field required, is how a contract package becomes a schema catalogue —
+decision 24, which also records that the shapes still living here are an open
+question rather than a settled part of the surface. So `AdtOperationError`, `isNetworkError()` and
 `hasDeferredResponses()` were removed in 29.0.0, and the classes that *are* these
 shapes live in `@mcp-abap-adt/adt-clients`, where a consumer takes them from if
 they want `instanceof` as a convenience.
