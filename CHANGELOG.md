@@ -15,7 +15,7 @@ too.** A contract carries what is needed to use it or replace it, and what a
 reading builds out of a document is neither — decision 24, which 30.0.0 recorded
 and left open, and this release acts on.
 
-409 exported symbols → **372**.
+409 exported symbols → **353**.
 
 ### Removed
 
@@ -31,6 +31,18 @@ and left open, and this release acts on.
   `AbapGitStatus`, the external-repo shapes), `IObjectVersion`, `IAtcRunResult`,
   `IAtcRunStatus`, `ICdsUnitTestResult`, `IFeatureToggleRuntimeState`,
   `IInactiveObjectsResponse`.
+
+  **And the parts they were built from**, which a review caught still exported
+  after their parents left: the feature-toggle levels and `FeatureToggleState`,
+  the gateway-error internals (`IGatewayException`, `ICallStackEntry`,
+  `ISourceCodeLine`), and the whole ABAP-trace family with `IAbapTraceViews`.
+
+  `IProfiler` went with them. It was a **named composition** — `ITraceFamily &
+  ITraceListing<IAbapTraceEntry, …> & ITraceReading<IAbapTraceViews> &
+  ITraceDeletion` — and a composition of atoms with an implementation's readings
+  is that implementation's. The atoms stayed, with the view machinery a caller
+  needs to implement `read`, and so did the profiler's **options**: those are the
+  request side.
 
   They are declared by whoever answers them. `@mcp-abap-adt/adt-clients` ships
   its own; a consumer replacing it ships theirs.

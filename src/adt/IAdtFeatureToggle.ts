@@ -4,8 +4,6 @@
 
 import type { IAdtResponse } from './IAdtResponse';
 
-export type FeatureToggleState = 'on' | 'off' | 'undefined';
-
 export interface IFeatureToggleReleasePlan {
   version: string;
   sp: string;
@@ -74,24 +72,6 @@ export interface IToggleFeatureToggleParams {
   state: 'on' | 'off';
   is_user_specific: boolean;
   transport_request?: string;
-}
-
-export interface IFeatureToggleClientLevel {
-  client: string;
-  description?: string;
-  state: FeatureToggleState;
-}
-
-export interface IFeatureToggleUserLevel {
-  user: string;
-  state: FeatureToggleState;
-}
-
-export interface IFeatureToggleCheckStateResult {
-  currentState: FeatureToggleState;
-  transportPackage?: string;
-  transportUri?: string;
-  customizingTransportAllowed: boolean;
 }
 
 export interface IFeatureToggleConfig {

@@ -103,12 +103,9 @@ export type {
   IValidateEnhancementParams,
 } from './adt/IAdtEnhancement';
 export type {
-  FeatureToggleState,
   ICreateFeatureToggleParams,
   IDeleteFeatureToggleParams,
   IFeatureToggleAttribute,
-  IFeatureToggleCheckStateResult,
-  IFeatureToggleClientLevel,
   IFeatureToggleConfig,
   IFeatureToggleHeader,
   IFeatureToggleObject,
@@ -116,7 +113,6 @@ export type {
   IFeatureToggleReleasePlan,
   IFeatureToggleRollout,
   IFeatureToggleSource,
-  IFeatureToggleUserLevel,
   IToggleFeatureToggleParams,
 } from './adt/IAdtFeatureToggle';
 export type {
@@ -372,28 +368,13 @@ export type { ITraceScheduling } from './execution/ITraceScheduling';
 export type { IFeedRepository } from './feeds/IFeedRepository';
 export type {
   IAbapTimestamp,
-  ICallStackEntry,
   IFeedQueryOptions,
-  IGatewayException,
-  ISourceCodeLine,
 } from './feeds/types';
 // Headers domain
 export * from './Headers';
 // Logging domain
 export type { ILogger } from './logging/ILogger';
 export { LogLevel } from './logging/LogLevel';
-export type {
-  IAbapTraceAccessTime,
-  IAbapTraceDbAccess,
-  IAbapTraceDbAccesses,
-  IAbapTraceEntry,
-  IAbapTraceHitList,
-  IAbapTraceHitListEntry,
-  IAbapTraceStatement,
-  IAbapTraceStatements,
-  ITraceProgramRef,
-  ITraceTiming,
-} from './runtime/IAbapTrace';
 export type {
   IApplicationLog,
   IGetApplicationLogObjectOptions,
@@ -423,8 +404,6 @@ export type {
 } from './runtime/IDdicActivation';
 export type { IGatewayErrorLog } from './runtime/IGatewayErrorLog';
 export type {
-  IAbapTraceViews,
-  IProfiler,
   IProfilerListOptions,
   IProfilerTraceDbAccessesOptions,
   IProfilerTraceHitListOptions,

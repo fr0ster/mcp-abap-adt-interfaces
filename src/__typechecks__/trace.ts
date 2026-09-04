@@ -6,6 +6,7 @@
 
 import type { IAdtResponse } from '../adt/IAdtResponse';
 import type {
+  ITraceDeletion,
   ITraceEntry,
   ITraceFamily,
   ITraceListing,
@@ -137,89 +138,52 @@ export type { Reader, WithViews, ListingOnly };
 export { _listingOnly, _listingAndName, _assertions };
 
 // ---------------------------------------------------------------------------
-// The published families, and who is NOT obliged to schedule.
+// A consumer's own profiler, composed from the atoms.
+//
+// `IProfiler` and the trace shapes left in 31.0.0 — a composition of atoms with
+// an implementation's readings is that implementation's. What is asserted here
+// is that the atoms still compose into one, with shapes this file declares.
 
 import type { IAdtRunnable } from '../execution/IAdtRunnable';
-import type {
-  IAbapTraceEntry,
-  IAbapTraceHitListEntry,
-} from '../runtime/IAbapTrace';
 import type { IAtcRunOptions, IAtcRunTarget } from '../runtime/IAtcRun';
-import type { IAbapTraceViews, IProfiler } from '../runtime/IProfiler';
+import type { IProfilerListOptions } from '../runtime/IProfiler';
 
-// The timings are a shape now, not `unknown` — a consumer reads them without
-// narrowing, and the compiler refuses a wrong member.
-function _timings(entry: IAbapTraceHitListEntry) {
-  const ms: number | undefined = entry.grossTime?.time;
-  const share: number | undefined = entry.grossTime?.percentage;
-  // @ts-expect-error the unit was never measured, so there is no such member
-  const micros = entry.grossTime?.timeMicros;
-  return { ms, share, micros };
+interface MyTraceEntry extends ITraceEntry {
+  user: string;
 }
-void _timings;
-
-// The ABAP entry says what the feed actually carries, and says it is there.
-function _abapEntry(entry: IAbapTraceEntry) {
-  const user: string = entry.user;
-  const system: string = entry.system;
-  const client: string = entry.client;
-  const aggregated: boolean = entry.isAggregated;
-  const finished: string = entry.state.text;
-  // @ts-expect-error the feed carries no such field
-  const nothing = entry.tracedProgramLine;
-  return { user, system, client, aggregated, finished, nothing };
+interface MyHitList {
+  entries: { grossTime: number }[];
 }
-void _abapEntry;
+interface MyViews {
+  hitlist: ITraceView<MyHitList>;
+}
 
-/**
- * A consumer's own profiler. Nothing from this package implements it here —
- * that is the point: the contract must be satisfiable by somebody else's class.
- */
-const _profiler: IProfiler = {
+type MyProfiler = ITraceFamily<'profiler'> &
+  ITraceListing<MyTraceEntry, IProfilerListOptions> &
+  ITraceReading<MyViews> &
+  ITraceDeletion;
+
+const _profiler: MyProfiler = {
   kind: 'profiler',
-  // One real entry rather than `[]`: an empty array satisfies any element type,
-  // so it proves nothing about whether the shape can actually be built.
-  list: async (options?: { user?: string }) => {
-    void options?.user;
-    return answered([
+  list: async () =>
+    answered([
       {
         id: 'ABCDEF0123456789ABCD',
         recordedAt: '2026-08-29T06:09:50Z',
-        user: 'SOMEONE',
         objectName: 'ZCL_SOMETHING=========CP',
-        state: { value: 'R', text: 'Finished' },
-        expiresAt: '2026-09-24T06:09:50Z',
-        system: 'ABC',
-        client: '100',
-        host: 'somehost',
-        size: 8,
-        runtime: 554,
-        runtimeABAP: 553,
-        runtimeSystem: 1,
-        runtimeDatabase: 0,
-        isAggregated: false,
-        amdpFileSize: 0,
-      },
-    ]);
-  },
-  // An implementer must write this generically — a union parameter does NOT
-  // satisfy it, and the compiler says so. That is the contract working: the
-  // return type depends on which view was asked for, and a method that took a
-  // union could not honour that dependency.
-  read: async <K extends keyof IAbapTraceViews>(
+        user: 'SOMEONE',
+      } as MyTraceEntry,
+    ]),
+  read: async <K extends keyof MyViews>(
     traceId: string,
     view: K,
-    ...args: ViewArgs<IAbapTraceViews, K>
-  ): Promise<IAdtResponse<ViewResult<IAbapTraceViews, K>>> => {
+    ...args: ViewArgs<MyViews, K>
+  ): Promise<IAdtResponse<ViewResult<MyViews, K>>> => {
     void traceId;
     void view;
     void args;
-    // A real one parses the response; the assertion here is about the
-    // signature, so this is the narrowest thing that satisfies it.
     return undefined as never;
   },
-  // Deletion is part of the contract now, so an implementer owes it — a
-  // profiler that only reads no longer satisfies `IProfiler`.
   delete: async (traceId: string) => {
     void traceId;
     return answered(undefined);
@@ -227,31 +191,16 @@ const _profiler: IProfiler = {
 };
 void _profiler;
 
-async function _profilerCalls(p: IProfiler) {
-  const rows = read(await p.read('t1', 'hitlist')).entries;
-  await p.read('t1', 'statements', {
-    id: 7,
-    withDetails: true,
-    autoDrillDownThreshold: 20,
-    withSystemEvents: false,
-  });
-  const total = read(await p.read('t1', 'dbAccesses')).accesses[0]?.accessTime
-    ?.total;
+async function _profilerCalls(p: MyProfiler) {
+  const hits: MyHitList = read(await p.read('t1', 'hitlist'));
+  const rows = hits.entries;
   const kind: 'profiler' = p.kind;
-
-  // A consumer's own reading keeps its own type. It is chosen when the
-  // implementation is constructed — `readWith(parse, …)` at the call site is
-  // gone, and with it the second signature every implementer owed.
-  const mine = read(await p.read('t1', 'hitlist'));
-
-  // Deletion answers with nothing to read — but it still answers, so a caller
-  // is made to ask whether it happened.
   const deleted: void = read(await p.delete('t1'));
 
-  // @ts-expect-error a cross-trace option is not a profiler option
-  await p.list({ traceUser: 'A' });
+  // @ts-expect-error this profiler has one view, and that is not it
+  await p.read('t1', 'dbAccesses');
 
-  return { rows, total, kind, mine, deleted };
+  return { rows, kind, deleted };
 }
 void _profilerCalls;
 

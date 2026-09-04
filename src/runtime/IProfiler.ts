@@ -1,16 +1,18 @@
-import type {
-  IAbapTraceDbAccesses,
-  IAbapTraceEntry,
-  IAbapTraceHitList,
-  IAbapTraceStatements,
-} from './IAbapTrace';
-import type {
-  ITraceDeletion,
-  ITraceFamily,
-  ITraceListing,
-  ITraceReading,
-  ITraceView,
-} from './ITrace';
+/**
+ * What a profiler run is asked for — the options, and nothing else.
+ *
+ * `IProfiler` itself was a **named composition** naming concrete readings:
+ * `ITraceFamily<'profiler'> & ITraceListing<IAbapTraceEntry, …> &
+ * ITraceReading<IAbapTraceViews> & ITraceDeletion`. The composition and the
+ * shapes in it left in 31.0.0 — a composition of atoms with an implementation's
+ * readings is that implementation's, and `adt-clients` declares it. The atoms it
+ * was made of stayed, in `ITrace.ts`, along with the view machinery a caller
+ * needs to implement `read`.
+ *
+ * What is below is the request side: what a caller passes when scheduling or
+ * reading a trace. Decision 24 — the contract carries what is needed to use it
+ * or replace it.
+ */
 
 export interface IProfilerListOptions {
   user?: string;
@@ -53,42 +55,3 @@ export interface IProfilerTraceStatementsOptions {
 export interface IProfilerTraceDbAccessesOptions {
   withSystemEvents?: boolean;
 }
-
-/**
- * The three views an ABAP trace offers, each with the options it accepts.
- *
- * The feed confirms them independently: every trace entry carries a link per
- * view, and the `statements` link advertises exactly the query parameters
- * {@link IProfilerTraceStatementsOptions} already published.
- */
-export interface IAbapTraceViews {
-  hitlist: ITraceView<
-    IAbapTraceHitList,
-    IProfilerTraceHitListOptions | undefined
-  >;
-  statements: ITraceView<
-    IAbapTraceStatements,
-    IProfilerTraceStatementsOptions | undefined
-  >;
-  dbAccesses: ITraceView<
-    IAbapTraceDbAccesses,
-    IProfilerTraceDbAccessesOptions | undefined
-  >;
-}
-
-/**
- * The profiler: what traces exist, and what is inside one.
- *
- * Same name consumers import today; what changed is what it means. Everything
- * about *configuring* a measurement left — see `ITraceScheduling`, which the
- * executors compose in, because a request nobody fulfils is litter and its life
- * is bounded by the run.
- *
- * `getHitList` / `getStatements` / `getDbAccesses` are gone as separate members:
- * they were one operation with three names, and `read(traceId, view)` returns
- * the view's own type rather than a raw response every caller re-parses.
- */
-export type IProfiler = ITraceFamily<'profiler'> &
-  ITraceListing<IAbapTraceEntry, IProfilerListOptions> &
-  ITraceReading<IAbapTraceViews> &
-  ITraceDeletion;

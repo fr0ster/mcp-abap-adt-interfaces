@@ -1767,12 +1767,19 @@ strategy can build: a strategy sees the answer, and the name is not in it. A sha
 declared here outlived the knowledge of where its fields come from, which is
 precisely what a contract package cannot afford.
 
-**Answered in 31.0.0: they left.** Thirty-seven result shapes —
+**Answered in 31.0.0: they left.** Forty-eight result shapes —
 `IPackageContentItem`, `IPackageHierarchyNode`, `IRepositoryNodeContents`,
 `ISearchResult`, `IWhereUsedListResult`, `ITransportTree` and its nodes, the feed
 entries, `INamedItem`, `IObjectVersion`, the abapGit results, `IAtcRunResult`,
 `IFeatureToggleRuntimeState` and the rest — and the package went from 409 exported
-symbols to 372.
+symbols to 353.
+
+**Including the parts they were built from.** A review found the nested shapes
+still exported after their parents left — the feature-toggle levels, the
+gateway-error internals, the whole ABAP-trace family. `IProfiler` went with them:
+a **named composition** of atoms with an implementation's readings is that
+implementation's, while the atoms it was made of, and the options a caller passes,
+are the contract.
 
 **The defaults left with them**, and that is the same rule rather than a second
 one: a default is a claim about what a reading produces, so it belongs where the

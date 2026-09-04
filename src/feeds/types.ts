@@ -23,24 +23,3 @@ export interface IFeedQueryOptions {
 // --- System message types ---
 
 // --- Gateway error types ---
-
-export interface IGatewayException {
-  type: string;
-  text: string;
-  raiseLocation: string;
-  attributes?: Record<string, string>;
-}
-
-export interface ICallStackEntry {
-  number: number;
-  event: string;
-  program: string;
-  name: string;
-  line: number;
-}
-
-export interface ISourceCodeLine {
-  number: number;
-  content: string;
-  isError: boolean;
-}
