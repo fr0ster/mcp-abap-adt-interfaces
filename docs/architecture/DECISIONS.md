@@ -1734,3 +1734,48 @@ implementer owes.
 them they had no readers, so they went; each runtime contract now declares its
 own `kind` and its own `list`, which is a line each and leaves them
 self-contained.
+
+## 24. The contract carries what is needed to use it or replace it — nothing else
+
+**Decided by the maintainer, 2026-09-04.** An architectural principle, not a ruling
+on the case that surfaced it.
+
+A consumer needs two things from this package and no third: enough to **use** an
+implementation of these contracts, and enough to **replace** one with their own.
+That is member signatures, the parameters a request takes, `IAdtResponse`,
+`IAdtError`, `IResultStrategy` and the constants those name.
+
+**What a reading builds out of a document is the implementation's.**
+`@mcp-abap-adt/adt-clients` ships strategies; the shapes they return are its own,
+and a consumer who replaces it declares theirs. A result type here is not needed
+to use the library — a caller reads it off whatever their implementation answers
+— and it is not needed to replace it, since a replacement returns its own.
+
+**Why this is a boundary and not a preference.** Declaring every result shape
+here, and every field of them required, is how a contract package becomes a schema
+catalogue: each shape is a symbol every implementation must satisfy and every
+consumer must read, and required fields make it worse — they oblige a producer to
+supply what its own source may not carry. Decision 3 says capabilities are minimal
+atoms; this is the same rule applied to the data those atoms answer with.
+
+**The case that surfaced it, kept because it is exact.**
+`IPackageContentItem.packageName` is **required**. The node-structure document
+does not carry the parent package's identity — the implementation's parser
+receives it as a separate argument, from the request. So the type this package
+declares, and defaults `IAdtPackageBrowsing<TContents>` to, is one no honest
+strategy can build: a strategy sees the answer, and the name is not in it. A shape
+declared here outlived the knowledge of where its fields come from, which is
+precisely what a contract package cannot afford.
+
+**What follows, and what does not.** Nothing is blocked: `TContents`, `TNode` and
+their kin are type parameters, so an implementation answering with its own types
+is what these contracts are shaped for, and the defaults are a convenience for a
+caller who names nothing. **Whether the result shapes now living here —
+`IPackageContentItem`, `IPackageHierarchyNode`, `IRepositoryNodeContents`,
+`ISearchResult` and the rest — should leave is a question about the whole surface,
+and it is open.** Named here rather than answered in passing; decision 17 stood
+open the same way until 30.0.0 closed it.
+
+**How to catch a violation.** A type declared here that no member signature needs
+in order to be called or implemented. A required field whose value comes from the
+request rather than the answer.
