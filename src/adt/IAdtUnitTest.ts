@@ -2,6 +2,8 @@
  * Unit Test ADT operation parameter interfaces (snake_case, low-level)
  */
 
+import type { IAdtResponse } from './IAdtResponse';
+
 export interface IUnitTestScope {
   own_tests?: boolean;
   foreign_tests?: boolean;
@@ -128,16 +130,22 @@ export interface IUnitTestResultOptions {
  * answers a collection GET is unverified. An unproven method is exactly what
  * this contract exists not to promise.
  */
-export interface ITestRunInformation {
+export interface ITestRunInformation<TStatus = string, TResult = string> {
   /**
    * Poll a run.
    * @param runId the run to ask about
    * @param withLongPolling let ADT hold the request until the run progresses
    */
-  getStatus(runId: string, withLongPolling?: boolean): Promise<string>;
+  getStatus(
+    runId: string,
+    withLongPolling?: boolean,
+  ): Promise<IAdtResponse<TStatus>>;
 
   /** Fetch the result document of a finished run. */
-  getResult(runId: string, options?: IUnitTestResultOptions): Promise<string>;
+  getResult(
+    runId: string,
+    options?: IUnitTestResultOptions,
+  ): Promise<IAdtResponse<TResult>>;
 }
 
 /**
@@ -151,5 +159,7 @@ export interface ICdsTestDoubleCheckable {
    * Check whether a CDS view can be tested with test doubles.
    * @param cdsViewName the view to inspect
    */
-  checkCdsTestDoubles(cdsViewName: string): Promise<ICdsUnitTestResult>;
+  checkCdsTestDoubles(
+    cdsViewName: string,
+  ): Promise<IAdtResponse<ICdsUnitTestResult>>;
 }

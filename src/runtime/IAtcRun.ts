@@ -7,6 +7,7 @@
  * nothing here takes an execution id.
  */
 
+import type { IAdtResponse } from '../adt/IAdtResponse';
 import type { IAdtWireResponse } from '../connection/IAbapConnection';
 
 /**
@@ -183,10 +184,10 @@ export interface IAtcRunStatusReadable {
    * is the one who can decide when to give up — and `status` travels beside
    * `isFinished` so they can report the state they last saw.
    */
-  getRunStatus(runId: string): Promise<IAtcRunStatus>;
+  getRunStatus(runId: string): Promise<IAdtResponse<IAtcRunStatus>>;
 }
 
-export interface IAtcFindings {
+export interface IAtcFindings<TFindings = string> {
   /**
    * The worklist for a run: every object it checked, each with its findings,
    * empty for the ones that were clean.
@@ -194,5 +195,5 @@ export interface IAtcFindings {
    * Read it after the run reports finished. Read earlier it is empty whatever
    * happened, which is indistinguishable from a run that found nothing.
    */
-  getFindings(worklistId: string): Promise<IAdtWireResponse>;
+  getFindings(worklistId: string): Promise<IAdtResponse<TFindings>>;
 }

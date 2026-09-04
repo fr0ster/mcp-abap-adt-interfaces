@@ -115,6 +115,30 @@ export interface IAdtError {
 
   /** Whatever the transport or a parser threw, when something did. */
   readonly cause?: unknown;
+
+  /**
+   * The failure's own code, when the strategy names one.
+   *
+   * {@link AdtObjectErrorCodes} holds the constants. It is here because the
+   * contract promises specific failures in specific places — a version resource
+   * a system does not expose is `UNSUPPORTED_OPERATION`, and a lock another user
+   * holds is `LOCK_FAILED` — and until 30.0.0 those promises were made by
+   * members that threw, so a consumer read the code off whatever was caught.
+   * With nothing throwing, a promise the failure contract cannot carry is a
+   * promise no consumer can keep without a cast.
+   *
+   * Optional, like `adtType` and `namespace` beside it: what a strategy chooses
+   * is how much of this to fill in, not whether to be it. A `brief` strategy may
+   * answer `origin` and `message` alone.
+   *
+   * ```typescript
+   * const answer = await versionable.getVersions({ className: 'ZCL_X' });
+   * if (!answer.ok && answer.getError().code === AdtObjectErrorCodes.UNSUPPORTED_OPERATION) {
+   *   // this type has no version resource — ask something else
+   * }
+   * ```
+   */
+  readonly code?: string;
 }
 
 /**
@@ -171,12 +195,16 @@ export interface IAdtFailure<TError extends IAdtError = IAdtError> {
  * requires `description`, so no strategy can return "fewer fields" of it without
  * the compiler refusing.
  *
- * A result strategy varies **`T` itself**. That is what the strategy overload
- * already does: `search(criteria)` answers
- * `IAdtResponse<ISearchResult[]>`, and `search(criteria, parse)`
- * answers `IAdtResponse<whatever the parser returns>`.
- * A shipped `brief` is a shipped parser with a narrower result contract, not the
- * same contract half-filled.
+ * A result strategy varies **`T` itself**, and `T` follows the strategy the
+ * implementation was constructed with (decision 22):
+ * `IAdtInformationSystem` answers `IAdtResponse<ISearchResult[]>`, and
+ * `IAdtInformationSystem<MyHits>` answers `IAdtResponse<MyHits>` from the same
+ * `search(criteria)` call. A shipped `brief` is a shipped reading with a
+ * narrower result contract, not the same contract half-filled.
+ *
+ * Until 30.0.0 this said "the strategy overload", and four members took a parser
+ * at the call. They do not any more — a per-call parser is a second signature
+ * every implementer owes whether or not their callers use it.
  *
  * So what does this interface buy, if it holds one field? It is the **named half
  * of an answer**, the counterpart to `IAdtError`, and it is where anything a
@@ -198,6 +226,36 @@ export interface IAdtResult<T> {
   /** What the member promised — `ISearchResult[]`, `IPackageHierarchyNode`. */
   readonly value: T;
 }
+
+/**
+ * How an answer becomes a value.
+ *
+ * {@link IAdtResult} says a result has a value; this says where that value came
+ * from. One endpoint serves callers who want very different amounts of it — an
+ * MCP server passing the answer to a language model, where size is a budget; a
+ * backup tool that must keep the document byte for byte; a script that wants two
+ * fields — and none of those readings is more correct than the others.
+ *
+ * So the reading is not the library's. It is injected into the implementation
+ * once, and the member's result type follows it (decision 22). What is *not*
+ * offered is a second member per reading — that is decision 16 — nor a parse
+ * argument at the call, which was tried across 23 members and reverted.
+ *
+ * **It is handed the whole answer, not the body.** A reading may need the status
+ * or a header, and {@link IAdtOperationOptions.analyse}, the strategy on the
+ * error axis, already takes the answer for the same reason. The two axes are
+ * symmetric: one decides whether an answer is a failure at all, the other what a
+ * non-failure becomes.
+ *
+ * **It sees this member's own answer.** Requests an implementation issues on the
+ * way — to obtain a node id, a scope document, a token — are its own business and
+ * reach the consumer only as failures.
+ *
+ * ```typescript
+ * const raw: IResultStrategy<string> = (answer) => String(answer.data);
+ * ```
+ */
+export type IResultStrategy<T> = (answer: IAdtWireResponse) => T;
 
 /**
  * What a member answers with.

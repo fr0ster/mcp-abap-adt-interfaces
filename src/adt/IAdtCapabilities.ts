@@ -19,9 +19,14 @@
  * taken for a third such pair until 15.0.0 and are not one: nothing in ADT ties
  * changing an object to removing it.
  *
- * `lock`, `unlock`, `getVersions` and `getVersionSource` still throw. They answer
- * a lock handle, nothing, a version list and a source string, so they have no
- * failure half to put a refusal in.
+ * **Nothing here throws.** Until 30.0.0 four members did — `lock`, `unlock`,
+ * `getVersions` and `getVersionSource` — on the grounds that they answer a lock
+ * handle, nothing, a version list and a source string and so have no failure
+ * half. That premise was false: a lock refused because another user holds it is
+ * a 403, and a version resource a system does not expose is a 404. They answer
+ * like everything else, and decision 20 says why — a thrown error is invisible
+ * to the compiler, so a consumer never learns from the type that a failure path
+ * exists.
  */
 import type { IAdtOperationOptions, IObjectVersion } from './IAdtObject';
 import type { IAdtResponse } from './IAdtResponse';
@@ -162,15 +167,13 @@ export interface IAdtLockable<TConfig> {
    * Sets connection to stateful mode before locking.
    *
    * @param config - Object identification
-   * @returns Lock handle (string) that must be used in unlock() and update operations
-   * @throws Error if lock fails (object may be locked by another user)
+   * @returns the lock handle that `unlock` and `update` must be given
    *
-   * Still throws, deliberately: this member answers a lock handle rather than
-   * `IAdtResponse`, so it has no failure half to put a refusal in. It migrates
-   * with the lock pair or not at all — a lock and its unlock are one operation
-   * seen from two ends.
+   * A refusal — another user holds the lock — is a failure in the answer, not
+   * an exception. The pair migrated together, because a lock and its unlock are
+   * one operation seen from two ends.
    */
-  lock(config: Partial<TConfig>): Promise<string>;
+  lock(config: Partial<TConfig>): Promise<IAdtResponse<string>>;
 
   /**
    * Unlock object
@@ -179,10 +182,12 @@ export interface IAdtLockable<TConfig> {
    *
    * @param config - Object identification
    * @param lockHandle - Lock handle returned from lock() operation
-   * @returns State with unlock result
-   * @throws Error if unlock fails
+   * @returns nothing to read, and the answer says whether it happened
    */
-  unlock(config: Partial<TConfig>, lockHandle: string): Promise<void>;
+  unlock(
+    config: Partial<TConfig>,
+    lockHandle: string,
+  ): Promise<IAdtResponse<void>>;
 }
 
 export interface IAdtVersionable<TConfig> {
@@ -190,39 +195,36 @@ export interface IAdtVersionable<TConfig> {
    * List the version history of this object's source. Identity is passed per
    * call (the implementations are stateless factories) — e.g.
    * `getVersions({ className: 'ZCL_X' })`.
-   * @throws an error carrying `code: AdtObjectErrorCodes.UNSUPPORTED_OPERATION`
-   *         when the object has no version resource (SAP 404/406, or a
-   *         non-source object type). The type is the implementation's; this
-   *         package ships no error class to name here. Never leaks raw HTTP.
+   * An object with no version resource — SAP answers 404 or 406, or the type
+   * has no source at all — is a failure in the answer, and the strategy names it
+   * in {@link IAdtError.code} as `AdtObjectErrorCodes.UNSUPPORTED_OPERATION`, so
+   * a consumer branches on it without a cast. Not an exception: a caller asking
+   * a type it did not choose is the normal case here, and a normal case belongs
+   * in the return type.
    */
-  getVersions(config: Partial<TConfig>): Promise<IObjectVersion[]>;
+  getVersions(
+    config: Partial<TConfig>,
+  ): Promise<IAdtResponse<IObjectVersion[]>>;
 
   /**
    * Fetch the source code of a specific version.
    * @param contentUri the opaque, complete `contentUri` from a getVersions() entry.
-   * @throws an error when the version resource cannot be read. Like its pair
-   *         above, this member answers the source itself and so has no failure
-   *         half to put a refusal in. The error's type is the implementation's;
-   *         this package ships no error class to name here.
+   *
+   * Answers like its pair above: a version resource that cannot be read is a
+   * failure in the answer.
    */
-  getVersionSource(contentUri: string): Promise<string>;
+  getVersionSource(contentUri: string): Promise<IAdtResponse<string>>;
 }
 
 /**
- * Locate objects in the repository.
+ * `IAdtSearchable` was here until 30.0.0.
  *
- * Unlike the other atoms this one is not per-object-type: it is implemented by
- * whatever offers a way of finding objects — free-text search, where-used,
- * package contents. The two parameters exist because those differ in what they
- * accept and in what detail they return, while agreeing that a result is a
- * named object with an ADT type code.
+ * Searching is not something an object does to itself, and the question already
+ * had a home: {@link IAdtInformationSystem.search}, over
+ * `/repository/informationsystem/search`. Declaring it here as well made one
+ * endpoint two members across two files — decision 16 — and gave a consumer two
+ * places to look for one answer.
  */
-export interface IAdtSearchable<
-  TCriteria = ISearchObjectsParams,
-  TValue extends IAdtObjectHit = IAdtObjectHit,
-> {
-  search(criteria: TCriteria): Promise<TValue[]>;
-}
 
 export interface IAdtTransportAware<TConfig, TTransport> {
   /**

@@ -1604,3 +1604,95 @@ a library that reports failures for everything would pass it.
 and unconditionally, so a suite reporting green states plainly which of its cases
 executed. A silently skipped case reads as coverage that does not exist — and is
 worse than a red one, because nobody goes looking for it.
+
+## 22. The shape is injected into the implementation, not chosen at the call
+
+Decision 16 says one endpoint is one contract member. Decision 20 says choice
+arrives by injection. Neither says **where** the injection happens, and 29.0.0
+shipped both answers at once: `search` took a per-call `parse`, the transport
+tree took one too, and the capability atoms took their shapes from whatever
+instantiated them.
+
+**Decided.** Into the implementation, once. A member's result type is a type
+parameter of its interface, defaulting to the shape it answers today; the
+consumer supplies the strategy when they construct the implementation, and every
+call through it answers that shape.
+
+```typescript
+type IResultStrategy<T> = (answer: IAdtWireResponse) => T;
+
+interface IAdtPackageBrowsing<TContents = IPackageContentItem[]> {
+  getPackageContents(name: string): Promise<IAdtResponse<TContents>>;
+}
+```
+
+**Why not per call.** It is a second signature every implementer must provide,
+whether or not their callers use it — tried across 23 members and reverted. It
+also moves the result's meaning from the contract to the call site: two calls to
+the same member in one program can then answer different things, and nothing in
+the type says so.
+
+**Why this is not a loss of flexibility.** A consumer wanting two shapes
+constructs two implementations, which is one line, and each is honestly typed.
+Measured against how these consumers actually work: a backup tool wants documents
+whole for everything it touches, a script wants two fields from every read, an
+MCP server picks by what its model is about to do. None changes its mind between
+one call and the next.
+
+**What the strategy is given.** The whole answer — status, headers, body —
+because a reading may need any of it, and because `analyse`, the strategy on the
+error axis, already takes the answer for the same reason. The two axes are
+symmetric: one decides whether an answer is a failure at all, the other what a
+non-failure becomes.
+
+**What it is not given** is anything the implementation did on the way.
+Preliminary requests — fetching a node id, a scope document, a token — are the
+implementation's business and reach the consumer only as failures. A contract
+states what is asked, never which requests were issued to answer it.
+
+**Where a parameter is, and is not, needed.** Where a member answers the document
+as it arrived, nothing is lost and no parameter is added. Where the contract
+names a *parsed* shape, the document is gone unless a reading can be injected —
+so those members carry the parameter. Above three distinct answers in one
+interface the parameters travel together as a record, because
+`IAdtService<A, B, C, D, E>` is a signature nobody can call.
+
+**How to catch a violation.** A member taking a function that shapes its own
+result. A boolean that switches what the result *is* (`includeRawXml`). Two
+members whose implementations issue the same request.
+
+## 23. Contracts are composed, never inherited
+
+**The problem.** `IAdtServiceBinding` extended eight capability atoms.
+`IAdtRequest` extended four. `IExecutor` extended `IAdtRunnable`, the runtime
+contracts extended two shared bases, `ITraceFamily` carried a listing, and
+`IRenewableCredential` extended the whole of `IAuthProvider` to add one method.
+
+Inheritance also hides a second name for the same idea, which is how `IExecutor`
+survived review twice: read as "the executor contract" it looks like a thing,
+and read as its members it is `IAdtRunnable` twice over with different options.
+
+**Decided.** No contract extends another. Each declares what is its own, and a
+consumer spells the composition where they need it:
+
+```typescript
+type Requests = IAdtRequest & IAdtCreatable<ITransportConfig, string>;
+```
+
+**Why.** Inheritance decides for the composer what belongs together. A consumer
+who wants the listing without the CRUD, or renewal without the whole provider,
+has no way to say so, and every implementation of the narrow thing is forced to
+provide the wide one — which is the same failure the wide composites had before
+29.0.0, arriving through a different door. Minimal contracts, composed at the
+point of use, is what this package is for: it is why a consumer can implement one
+family and leave the rest.
+
+**What this is not.** Data shapes are unaffected — a config extending a config,
+or a detail entry extending its list entry, is not a contract deciding what an
+implementer owes.
+
+**What was deleted rather than kept.** `IExecutor`, `IRuntimeAnalysisObject` and
+`IListableRuntimeObject` existed only to be inherited or to bundle. With nothing extending
+them they had no readers, so they went; each runtime contract now declares its
+own `kind` and its own `list`, which is a line each and leaves them
+self-contained.

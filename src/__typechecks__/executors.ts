@@ -1,6 +1,6 @@
 // Compile-only assertions. If these stop compiling, the types regressed.
 
-import type { IAdtWireResponse } from '../connection/IAbapConnection';
+import type { IAdtResponse } from '../adt/IAdtResponse';
 import type {
   IClassExecuteWithProfilerOptions,
   IClassExecuteWithProfilingOptions,
@@ -25,49 +25,55 @@ import type {
  * Spelled out rather than cast, because the point of the assertion is that a
  * consumer's own runner can satisfy it.
  */
+const answered = <T>(value: T): IAdtResponse<T> => ({
+  ok: true,
+  getResult: () => ({ value }),
+  getError: () => undefined,
+});
+
 const scheduling: ITraceScheduling = {
-  listObjectTypes: async (): Promise<INamedItem[]> => [],
-  listProcessTypes: async (): Promise<INamedItem[]> => [],
-  listRequests: async (): Promise<ITraceRequestEntry[]> => [],
-  getRequestsByUri: async (uri: string): Promise<ITraceRequestEntry[]> => {
+  listObjectTypes: async (): Promise<IAdtResponse<INamedItem[]>> =>
+    answered([]),
+  listProcessTypes: async (): Promise<IAdtResponse<INamedItem[]>> =>
+    answered([]),
+  listRequests: async (): Promise<IAdtResponse<ITraceRequestEntry[]>> =>
+    answered([]),
+  getRequestsByUri: async (
+    uri: string,
+  ): Promise<IAdtResponse<ITraceRequestEntry[]>> => {
     void uri;
-    return [];
+    return answered([]);
   },
-  scheduleTrace: async (): Promise<string> => 'r2',
+  scheduleTrace: async (): Promise<IAdtResponse<string>> => answered('r2'),
 };
 
-const response: IAdtWireResponse = {
-  data: '',
-  status: 200,
-  statusText: 'OK',
-  headers: {},
-};
+const document = '<adtcore:objectReference/>';
 
 // Published so a consumer can substitute its own runner — a real implementation,
 // not our ClassExecutor, must satisfy this shape exactly.
 const _class: IClassExecutor = {
   ...scheduling,
-  run: async (target: IClassExecutionTarget): Promise<IAdtWireResponse> => {
+  run: async (target: IClassExecutionTarget): Promise<IAdtResponse<string>> => {
     void target.className;
-    return response;
+    return answered(document);
   },
   runWithProfiler: async (
     target: IClassExecutionTarget,
     options: IClassExecuteWithProfilerOptions,
-  ): Promise<IAdtWireResponse> => {
+  ): Promise<IAdtResponse<string>> => {
     void target.className;
     void options.profilerId;
-    return response;
+    return answered(document);
   },
   runWithProfiling: async (
     target: IClassExecutionTarget,
     options?: IClassExecuteWithProfilingOptions,
-  ): Promise<IClassExecuteWithProfilingResult> => {
+  ): Promise<IAdtResponse<IClassExecuteWithProfilingResult>> => {
     void target.className;
     void options?.profilerParameters;
     // No `traceId` here, and the assertion below proves it is refused rather
     // than merely absent.
-    return { response, profilerId: 'p1' };
+    return answered({ run: document, profilerId: 'p1' });
   },
 };
 void _class;
@@ -76,7 +82,7 @@ void _class;
 // trace is written asynchronously, so a result that named one was lying about
 // timing that the caller then built retries around.
 const _classResult: IClassExecuteWithProfilingResult = {
-  response,
+  run: document,
   profilerId: 'p1',
   // @ts-expect-error a run result does not carry a trace id
   traceId: 't1',
@@ -96,25 +102,27 @@ void _andBack;
 // The same shape check for the program executor, which also schedules.
 const _program: IProgramExecutor = {
   ...scheduling,
-  run: async (target: IProgramExecutionTarget): Promise<IAdtWireResponse> => {
+  run: async (
+    target: IProgramExecutionTarget,
+  ): Promise<IAdtResponse<string>> => {
     void target.programName;
-    return response;
+    return answered(document);
   },
   runWithProfiler: async (
     target: IProgramExecutionTarget,
     options: IProgramExecuteWithProfilerOptions,
-  ): Promise<IAdtWireResponse> => {
+  ): Promise<IAdtResponse<string>> => {
     void target.programName;
     void options.profilerId;
-    return response;
+    return answered(document);
   },
   runWithProfiling: async (
     target: IProgramExecutionTarget,
     options?: IProgramExecuteWithProfilingOptions,
-  ): Promise<IProgramExecuteWithProfilingResult> => {
+  ): Promise<IAdtResponse<IProgramExecuteWithProfilingResult>> => {
     void target.programName;
     void options?.profilerParameters;
-    return { response, profilerId: 'p2' };
+    return answered({ run: document, profilerId: 'p2' });
   },
 };
 void _program;

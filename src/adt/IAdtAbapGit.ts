@@ -1,3 +1,4 @@
+import type { IAdtResponse } from './IAdtResponse';
 /**
  * ADT-integrated abapGit — the contract a consumer calls.
  *
@@ -90,14 +91,18 @@ export interface IAdtAbapGitClientOptions {
   contentTypeVersion?: 'v3' | 'v4';
 }
 
-export interface IAdtAbapGitClient {
-  link(args: IAbapGitLinkArgs): Promise<void>;
-  pull(args: IAbapGitPullArgs): Promise<IAbapGitPullResult>;
-  unlink(args: IAbapGitUnlinkArgs): Promise<void>;
-  listRepos(): Promise<IAbapGitRepoStatus[]>;
-  getRepo(packageName: string): Promise<IAbapGitRepoStatus | undefined>;
-  getErrorLog(packageName: string): Promise<IAbapGitErrorLogEntry[]>;
+export interface IAdtAbapGitClient<
+  TRepos = IAbapGitRepoStatus[],
+  TRepo = IAbapGitRepoStatus | undefined,
+  TErrorLog = IAbapGitErrorLogEntry[],
+> {
+  link(args: IAbapGitLinkArgs): Promise<IAdtResponse<void>>;
+  pull(args: IAbapGitPullArgs): Promise<IAdtResponse<IAbapGitPullResult>>;
+  unlink(args: IAbapGitUnlinkArgs): Promise<IAdtResponse<void>>;
+  listRepos(): Promise<IAdtResponse<TRepos>>;
+  getRepo(packageName: string): Promise<IAdtResponse<TRepo>>;
+  getErrorLog(packageName: string): Promise<IAdtResponse<TErrorLog>>;
   checkExternalRepo(
     args: IAbapGitExternalRepoCredentials,
-  ): Promise<IAbapGitExternalRepoInfo>;
+  ): Promise<IAdtResponse<IAbapGitExternalRepoInfo>>;
 }

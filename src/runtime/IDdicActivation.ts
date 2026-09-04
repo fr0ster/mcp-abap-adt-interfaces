@@ -1,5 +1,5 @@
+import type { IAdtResponse } from '../adt/IAdtResponse';
 import type { IAdtWireResponse } from '../connection/IAbapConnection';
-import type { IRuntimeAnalysisObject } from './types';
 
 export interface IGetActivationGraphOptions {
   objectName?: string;
@@ -7,7 +7,9 @@ export interface IGetActivationGraphOptions {
   logName?: string;
 }
 
-export interface IDdicActivation
-  extends IRuntimeAnalysisObject<'ddicActivation'> {
-  getGraph(options?: IGetActivationGraphOptions): Promise<IAdtWireResponse>;
+export interface IDdicActivation<TGraph = string> {
+  /** Which runtime resource this is, for a consumer narrowing a union of them. */
+  readonly kind: 'ddicActivation';
+
+  getGraph(options?: IGetActivationGraphOptions): Promise<IAdtResponse<TGraph>>;
 }

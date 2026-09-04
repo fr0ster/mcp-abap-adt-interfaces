@@ -37,11 +37,6 @@ export type {
   ICreateAuthorizationFieldParams,
 } from './adt/IAdtAuthorizationField';
 export type {
-  IBatchPayload,
-  IBatchRequestPart,
-  IBatchResponsePart,
-} from './adt/IAdtBatch';
-export type {
   BehaviorDefinitionImplementationType,
   CheckReporter,
   IBehaviorDefinitionConfig,
@@ -64,7 +59,6 @@ export type {
   IAdtDeletable,
   IAdtLockable,
   IAdtReadable,
-  IAdtSearchable,
   IAdtTransportAware,
   IAdtUpdatable,
   IAdtValidatable,
@@ -200,6 +194,7 @@ export type {
   IAdtResponse,
   IAdtResult,
   IAdtSuccess,
+  IResultStrategy,
 } from './adt/IAdtResponse';
 export type {
   ICreateScalarFunctionParams,
@@ -240,8 +235,6 @@ export type {
   AdtSourceObjectTypeLower,
   IAdtObjectHit,
   IGetDiscoveryParams,
-  IGetPackageContentsListOptions,
-  IGetPackageHierarchyOptions,
   IGetSqlQueryParams,
   IGetTableContentsParams,
   IGetVirtualFoldersContentsParams,
@@ -328,6 +321,8 @@ export type {
   IAdtObjectAccess,
   IAdtPackageBrowsing,
   IAdtRepositoryStructure,
+  IGetNodeContentsOptions,
+  IGetPackageContentsOptions,
   IRepositoryNodeChild,
   IRepositoryNodeContents,
   IRepositoryObjectNode,
@@ -395,8 +390,11 @@ export type {
   IProgramExecutionTarget,
   IProgramExecutor,
 } from './execution/IAdtExecutors';
-export type { IAdtRunnable } from './execution/IAdtRunnable';
-export type { IExecutor } from './execution/IExecutor';
+export type {
+  IAdtRunnable,
+  IRunnableWithProfiler,
+  IRunnableWithProfiling,
+} from './execution/IAdtRunnable';
 export type {
   INamedItem,
   ITraceExecutions,
@@ -436,13 +434,6 @@ export type {
   ITraceTiming,
 } from './runtime/IAbapTrace';
 export type {
-  DebuggerStepAction,
-  IDebuggerAttachParams,
-  IDebuggerGetVariablesParams,
-  IDebuggerListenParams,
-  IDebuggerStepParams,
-} from './runtime/IAdtDebuggerSession';
-export type {
   IApplicationLog,
   IGetApplicationLogObjectOptions,
   IGetApplicationLogSourceOptions,
@@ -463,37 +454,15 @@ export type {
 } from './runtime/IAtcRun';
 export type {
   ICrossTrace,
+  ICrossTraceDocuments,
+  ICrossTraceResults,
   IListCrossTracesOptions,
 } from './runtime/ICrossTrace';
 export type {
   IDdicActivation,
   IGetActivationGraphOptions,
 } from './runtime/IDdicActivation';
-// Runtime domain object interfaces
-export type {
-  IAbapDebugger,
-  IAbapDebuggerStepMethod,
-  IAmdpDebugger,
-  IDebugger,
-  IGetAmdpCellSubstringOptions,
-  IGetAmdpDataPreviewOptions,
-  IGetDebuggerOptions,
-  IGetSystemAreaOptions,
-  IGetVariableAsCsvOptions,
-  IGetVariableAsJsonOptions,
-  IGetVariableValueStatementOptions,
-  ILaunchDebuggerOptions,
-  IStartAmdpDebuggerOptions,
-  IStopDebuggerOptions,
-} from './runtime/IDebugger';
 export type { IGatewayErrorLog } from './runtime/IGatewayErrorLog';
-export type {
-  IMemorySnapshots,
-  IMemorySnapshotsListOptions,
-  ISnapshotChildrenOptions,
-  ISnapshotRankingListOptions,
-  ISnapshotReferencesOptions,
-} from './runtime/IMemorySnapshots';
 export type {
   IAbapTraceViews,
   IProfiler,
@@ -517,7 +486,6 @@ export type {
   ITraceFamily,
   ITraceListing,
   ITraceReading,
-  ITraceReadingWithParser,
   ITraceState,
   ITraceView,
   ViewArgs,
@@ -525,20 +493,13 @@ export type {
   ViewResult,
 } from './runtime/ITrace';
 // Runtime domain
-export type {
-  IListableRuntimeObject,
-  IRuntimeAnalysisObject,
-} from './runtime/types';
 // SAP domain
 export type { ISapConfig } from './sap/ISapConfig';
 export type { SapAuthType, SapConnectionType } from './sap/SapAuthType';
 // Service domain
 export type {
-  AdtServiceBindingType,
   IActivateServiceBindingParams,
-  IAdtService,
   IAdtServiceBinding,
-  IAdtServiceOperationOptions,
   ICheckServiceBindingParams,
   IClassifyServiceBindingParams,
   ICreateAndGenerateServiceBindingParams,
@@ -546,6 +507,8 @@ export type {
   IGenerateServiceBindingParams,
   IGetServiceBindingODataParams,
   IPublishODataV2Params,
+  IServiceBindingDocuments,
+  IServiceBindingResults,
   ITransportCheckServiceBindingParams,
   IUnpublishODataV2Params,
   IValidateServiceBindingParams,

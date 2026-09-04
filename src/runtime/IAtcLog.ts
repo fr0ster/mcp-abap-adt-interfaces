@@ -1,5 +1,5 @@
+import type { IAdtResponse } from '../adt/IAdtResponse';
 import type { IAdtWireResponse } from '../connection/IAbapConnection';
-import type { IRuntimeAnalysisObject } from './types';
 
 export interface IGetCheckFailureLogsOptions {
   displayId?: string;
@@ -9,9 +9,12 @@ export interface IGetCheckFailureLogsOptions {
   phaseKey?: string;
 }
 
-export interface IAtcLog extends IRuntimeAnalysisObject<'atcLog'> {
+export interface IAtcLog<TCheckFailures = string, TExecutionLog = string> {
+  /** Which runtime resource this is, for a consumer narrowing a union of them. */
+  readonly kind: 'atcLog';
+
   getCheckFailureLogs(
     options?: IGetCheckFailureLogsOptions,
-  ): Promise<IAdtWireResponse>;
-  getExecutionLog(executionId: string): Promise<IAdtWireResponse>;
+  ): Promise<IAdtResponse<TCheckFailures>>;
+  getExecutionLog(executionId: string): Promise<IAdtResponse<TExecutionLog>>;
 }

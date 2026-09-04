@@ -6,11 +6,15 @@
  * handler may offer — profiling, or asking about a past run — is a different
  * capability with its own interface, not a wider version of this one.
  *
- * `IExecutor` extends this with its profiler variants, and a unit-test handler
- * declares it directly. There is deliberately no test-specific runnable: two
- * differently-shaped contracts for "this can be executed" would be two
- * vocabularies for one idea.
+ * The profiler variants are their own atoms below, composed beside this where a
+ * runner also profiles; a unit-test handler declares this one alone. There is
+ * deliberately no test-specific runnable: two differently-shaped contracts for
+ * "this can be executed" would be two vocabularies for one idea — and no
+ * inheritance either, which would decide for the composer that whoever runs
+ * must also profile.
  */
+import type { IAdtResponse } from '../adt/IAdtResponse';
+
 export interface IAdtRunnable<TTarget, TResult, TOptions = never> {
   /**
    * Execute the target.
@@ -27,5 +31,42 @@ export interface IAdtRunnable<TTarget, TResult, TOptions = never> {
   run(
     target: TTarget,
     ...args: [TOptions] extends [never] ? [] : [options?: TOptions]
-  ): Promise<TResult>;
+  ): Promise<IAdtResponse<TResult>>;
+}
+
+/**
+ * Running the target with a profiler already recording.
+ *
+ * Its own atom rather than a member of a wider "executor": `IExecutor` bundled
+ * this with {@link IRunnableWithProfiling} and inherited {@link IAdtRunnable} on
+ * top, which made three capabilities into one thing an implementer had to take
+ * whole. It was also a second name for an idea that already had one — a target,
+ * some options, an answer — and decision 20 says a new name for something that
+ * exists is not a smaller contract but a second one.
+ *
+ * @param target what to run
+ * @param options which profiler is recording; required, since there is nothing
+ *                to attach to without it
+ */
+export interface IRunnableWithProfiler<TTarget, TResult, TOptions> {
+  runWithProfiler(
+    target: TTarget,
+    options: TOptions,
+  ): Promise<IAdtResponse<TResult>>;
+}
+
+/**
+ * Running the target and starting a measurement for it.
+ *
+ * Distinct from {@link IRunnableWithProfiler}: that one attaches to a profiler
+ * the caller already has, this one asks for a trace to be taken, and it answers
+ * differently — the run's own answer plus the profiler id it was recorded under.
+ * Two capabilities, so two atoms; an implementation that offers one and not the
+ * other says exactly that.
+ */
+export interface IRunnableWithProfiling<TTarget, TResult, TOptions> {
+  runWithProfiling(
+    target: TTarget,
+    options?: TOptions,
+  ): Promise<IAdtResponse<TResult>>;
 }

@@ -121,8 +121,13 @@ export interface IAuthProvider {
  *   // ... and decide for yourself whether to try again
  * }
  * ```
+ *
+ * It declares `renew` and nothing else. A provider that can be renewed is
+ * `IAuthProvider & IRenewableCredential`, spelled where it is meant — the
+ * narrowing above works the same, and a consumer implementing renewal alone is
+ * not made to reimplement the provider to say so.
  */
-export interface IRenewableCredential extends IAuthProvider {
+export interface IRenewableCredential {
   /**
    * The server refused what this last handed out; get a new one.
    *

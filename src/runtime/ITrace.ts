@@ -11,6 +11,8 @@
  * releases and raw bodies are in the design spec and its evidence files.
  */
 
+import type { IAdtResponse } from '../adt/IAdtResponse';
+
 /**
  * A trace's lifecycle state.
  *
@@ -98,7 +100,7 @@ export interface ITraceListing<
   TEntry extends ITraceEntry = ITraceEntry,
   TOptions = void,
 > {
-  list(options?: TOptions): Promise<TEntry[]>;
+  list(options?: TOptions): Promise<IAdtResponse<TEntry[]>>;
 }
 
 /**
@@ -118,48 +120,23 @@ export interface ITraceReading<
     traceId: string,
     view: K,
     ...args: ViewArgs<TViews, K>
-  ): Promise<ViewResult<TViews, K>>;
+  ): Promise<IAdtResponse<ViewResult<TViews, K>>>;
 }
 
 /**
- * Reading a trace with a parser the caller supplies.
+ * Reading a trace differently is a strategy, not a member.
  *
- * A separate atom, not a member of {@link ITraceReading}, because it is a
- * separate capability: a family may offer the plain read and not this one, and
- * a type that lists what IS supported says the rest by omission. Composed in
- * where it is true — which is also the only honest way to say it, since an
- * optional method would mean "perhaps".
+ * `ITraceReadingWithParser` stood here until 30.0.0, taking
+ * `parse: (data: unknown) => T` at the call. It is gone for the reason decision
+ * 22 gives: a reading is chosen once, when the implementation is constructed,
+ * and the member's result type follows it. A consumer that needs a trace read
+ * differently — or that runs against a system answering in a shape the default
+ * does not fit — supplies an `IResultStrategy` and keeps a type, exactly as
+ * before, without every implementer owing a second signature.
  *
- * **What it is for.** A library that speaks ADT should not also be the place
- * where somebody else's XML gets filtered and reshaped. {@link ITraceReading.read}
- * stays deliberately plain: it maps the document onto the view's type and does
- * nothing more. A consumer that needs it read differently — or that runs against
- * a system answering in a shape the default does not fit — passes its own reader
- * **and keeps a type**. Telling it to fall back on the raw response would be
- * telling it to go untyped.
- *
- * Searching and filtering are not what this is for. Those belong to the server,
- * which has endpoints for them.
- *
- * **Why a method and not an overload on `read`.** The transport tree's
- * `listNodes()` uses an overload, but that sits on a concrete class nobody else
- * implements. This is implemented by consumers — the whole point of this
- * package — and an overloaded method cannot be satisfied by an object literal,
- * which the `__typechecks__` file proved the moment it was tried.
+ * What has not changed is what this is *not* for. Searching and filtering
+ * belong to the server, which has endpoints for them.
  */
-export interface ITraceReadingWithParser<
-  TViews extends { [K in keyof TViews]: ITraceView<unknown, unknown> },
-> {
-  /**
-   * @param parse receives the response body exactly as it arrived, unopened
-   */
-  readWith<K extends keyof TViews, T>(
-    parse: (data: unknown) => T,
-    traceId: string,
-    view: K,
-    ...args: ViewArgs<TViews, K>
-  ): Promise<T>;
-}
 
 /**
  * Removing a trace.
@@ -172,8 +149,11 @@ export interface ITraceReadingWithParser<
  * for its three views, and the `DELETE` it points at answers `200` — measured
  * on an on-prem system, 2026-08-30, on a trace produced by a profiled run.
  *
- * `void`, not a response: a caller has nothing to read from a deletion, and
- * handing back a raw body is the thing this family stopped doing in 23.0.0.
+ * The value is `void`: a caller has nothing to read from a deletion. The
+ * *answer* is not — it is {@link IAdtResponse} like everything else, so whether
+ * the deletion happened is asked of `ok`, not caught. Until 30.0.0 this member
+ * resolved with nothing and rejected on failure, and a consumer migrating from
+ * that contract replaces the `catch` with the check.
  *
  * **What deleting an id that is not there does has NOT been measured.** Only the
  * `200` above was: one existing trace, once. An earlier draft said a trace that
@@ -183,30 +163,35 @@ export interface ITraceReadingWithParser<
  * Note what the HTTP definition does and does not give here. `DELETE` is
  * idempotent (RFC 9110 §9.2.2), but that is a statement about the **effect on
  * the server** — the resource ends up absent either way. It promises nothing
- * about the **status returned**, and the status is what decides whether this
- * promise resolves or rejects. So idempotence is true and useless to a caller.
+ * about the **status returned**, and the status is what a strategy reads to
+ * decide whether this is a failure. So idempotence is true and useless to a
+ * caller.
  *
- * What a caller needs to know is unmeasured: whether a second delete answers
- * `200` or `404`. `void` describes the resolved value and says nothing about
- * failure — a `404`, or any transport error, **rejects**. Until somebody
- * measures a repeat, code that must tolerate a missing id has to catch.
+ * What a caller needs to know is still unmeasured: whether a second delete
+ * answers `200` or `404`. What has changed is what to do about it — code that
+ * must tolerate a missing id reads `ok` and decides, instead of catching.
+ *
+ * **This member takes no options, so there is no per-call `analyse` here.**
+ * `IAdtOperationOptions` is carried by the CRUD atoms, where a caller overrules
+ * the verdict for one request; a consumer who wants a repeat delete counted as
+ * success everywhere states that in the error strategy their implementation is
+ * constructed with, which is the same place its result strategy comes from
+ * (decision 22). A member with no options is not a member with no choice.
  */
 export interface ITraceDeletion {
-  delete(traceId: string): Promise<void>;
+  delete(traceId: string): Promise<IAdtResponse<void>>;
 }
 
 /**
- * A trace family: what it is called, and what it lists.
+ * What a trace family is called.
  *
- * Reading is deliberately NOT extended in here — see {@link ITraceReading}.
- * This is also NOT the name a consumer imports: `IProfiler` and `ICrossTrace`
- * keep their names and are compositions of this with reading.
+ * Nothing is extended in here. Until 30.0.0 this carried `ITraceListing` along
+ * with the name, so a family that only lists and one that also reads could not
+ * be told apart by their types — inheritance decides for the composer what
+ * belongs together. `IProfiler` and `ICrossTrace` are compositions of this with
+ * listing, reading and deletion, spelled where they are used.
  */
-export interface ITraceFamily<
-  TKind extends string,
-  TEntry extends ITraceEntry = ITraceEntry,
-  TOptions = void,
-> extends ITraceListing<TEntry, TOptions> {
+export interface ITraceFamily<TKind extends string> {
   /** Literal, so it still discriminates when several families share a shape. */
   readonly kind: TKind;
 }

@@ -8,7 +8,12 @@
 
 import type { IAdtWireResponse } from '../connection/IAbapConnection';
 import type { IProfilerTraceParameters } from '../runtime/IProfiler';
-import type { IExecutor } from './IExecutor';
+import type {
+  IAdtRunnable,
+  IRunnableWithProfiler,
+  IRunnableWithProfiling,
+} from './IAdtRunnable';
+
 import type { ITraceScheduling } from './ITraceScheduling';
 
 export interface IClassExecutionTarget {
@@ -39,20 +44,47 @@ export interface IClassExecuteWithProfilingOptions {
  * This makes the class result identical to the program one, which was already
  * honest about exactly this — see the comment it has carried all along.
  */
-export interface IClassExecuteWithProfilingResult {
-  response: IAdtWireResponse;
+export interface IClassExecuteWithProfilingResult<TRun = string> {
+  /**
+   * What the run itself answered.
+   *
+   * `IAdtWireResponse` until 30.0.0 — the transport envelope, carried inside a
+   * result, which is the shape decision 15 removed from every other contract.
+   * `TRun` is what the answer becomes, and it follows the result strategy the
+   * implementation was constructed with.
+   */
+  run: TRun;
   profilerId: string;
 }
 
-export interface IClassExecutor
-  extends IExecutor<
-      IClassExecutionTarget,
-      IAdtWireResponse,
-      IClassExecuteWithProfilerOptions,
-      IClassExecuteWithProfilingOptions,
-      IClassExecuteWithProfilingResult
-    >,
-    ITraceScheduling {}
+/**
+ * What a class executor is, spelled as the composition it is.
+ *
+ * Until 30.0.0 this extended `IExecutor`, which extended `IAdtRunnable`, and
+ * `ITraceScheduling` beside it. Inheritance between contracts is what makes a
+ * surface un-composable: a consumer who wants the run without the scheduling,
+ * or the plain run without either profiler variant, has no way to say so, and
+ * every implementation of the narrow thing is forced to provide the wide one.
+ *
+ * `IExecutor` itself is gone with it. It was a bundle of two capabilities and a
+ * second name for what {@link IAdtRunnable} already said — a target, some
+ * options, an answer.
+ */
+export type IClassExecutor<TRun = string> = IAdtRunnable<
+  IClassExecutionTarget,
+  TRun
+> &
+  IRunnableWithProfiler<
+    IClassExecutionTarget,
+    TRun,
+    IClassExecuteWithProfilerOptions
+  > &
+  IRunnableWithProfiling<
+    IClassExecutionTarget,
+    IClassExecuteWithProfilingResult<TRun>,
+    IClassExecuteWithProfilingOptions
+  > &
+  ITraceScheduling;
 
 export interface IProgramExecutionTarget {
   programName: string;
@@ -66,20 +98,28 @@ export interface IProgramExecuteWithProfilingOptions {
   profilerParameters?: IProfilerTraceParameters;
 }
 
-export interface IProgramExecuteWithProfilingResult {
-  response: IAdtWireResponse;
+export interface IProgramExecuteWithProfilingResult<TRun = string> {
+  /** What the run itself answered; see {@link IClassExecuteWithProfilingResult}. */
+  run: TRun;
   profilerId: string;
   // traceId is NOT included — program execution is fire-and-forget.
   // Traces are written asynchronously by SAP after the program completes.
   // Use RuntimeListProfilerTraceFiles to poll for the trace after execution.
 }
 
-export interface IProgramExecutor
-  extends IExecutor<
-      IProgramExecutionTarget,
-      IAdtWireResponse,
-      IProgramExecuteWithProfilerOptions,
-      IProgramExecuteWithProfilingOptions,
-      IProgramExecuteWithProfilingResult
-    >,
-    ITraceScheduling {}
+/** The program executor, composed the same way — see {@link IClassExecutor}. */
+export type IProgramExecutor<TRun = string> = IAdtRunnable<
+  IProgramExecutionTarget,
+  TRun
+> &
+  IRunnableWithProfiler<
+    IProgramExecutionTarget,
+    TRun,
+    IProgramExecuteWithProfilerOptions
+  > &
+  IRunnableWithProfiling<
+    IProgramExecutionTarget,
+    IProgramExecuteWithProfilingResult<TRun>,
+    IProgramExecuteWithProfilingOptions
+  > &
+  ITraceScheduling;

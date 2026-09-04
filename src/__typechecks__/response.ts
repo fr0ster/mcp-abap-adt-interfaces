@@ -63,7 +63,8 @@ export class TheirSuccess implements IAdtSuccess<ISearchResult[]> {
   getResult(): IAdtResult<ISearchResult[]> {
     // The value is the member's own result contract. A `brief` strategy does not
     // half-fill this one — `ISearchResult` requires `description`, so it cannot
-    // be half-filled. It narrows `T` instead, through the strategy overload.
+    // be half-filled. It narrows `T` instead, and `T` follows the strategy the
+    // implementation was constructed with.
     return { value: [] };
   }
   getError(): undefined {

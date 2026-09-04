@@ -8,6 +8,7 @@ import type {
   IAdtReadable,
   IAdtUpdatable,
 } from './IAdtCapabilities';
+import type { IAdtResponse } from './IAdtResponse';
 
 export interface ICreateTransportParams {
   transport_type?: string;
@@ -160,33 +161,23 @@ export interface ITransportTree {
  * methods below are the transport's alone, and neither has an atom because
  * nothing else lists a collection this way.
  */
-export interface IAdtRequest
-  extends IAdtCreatable<ITransportConfig, string>,
-    IAdtReadable<ITransportConfig, string, string>,
-    IAdtUpdatable<ITransportConfig, void>,
-    IAdtDeletable<ITransportConfig, void> {
+export interface IAdtRequest<TList = ITransportTree> {
   /**
-   * The saved-configuration search, as state.
+   * The transport requests the server lists.
+   *
+   * Until 30.0.0 this resource had three members: `list` and `listNodes`, which
+   * answered the identical {@link ITransportTree}, and a
+   * `listNodes<T>(parse, …)` overload. One request, one member (decision 16);
+   * a caller wanting the request numbers alone, the tree, or the document
+   * untouched injects an {@link IResultStrategy} when the implementation is
+   * constructed (decision 22).
+   *
+   * The tree is the reading that carries the containers, the description and
+   * the **language** a request holds — none of which a consumer could reach
+   * before without re-fetching and parsing the document themselves.
    *
    * `configUri` is required by the layer beneath — see `IListTransportsParams`,
    * where the measurement is. This resolves it; that one does not.
    */
-  list(options?: IListTransportsOptions): Promise<ITransportTree>;
-
-  /** The tree the server sends, parsed by this package. */
-  listNodes(options?: IListTransportsOptions): Promise<ITransportTree>;
-
-  /**
-   * The tree, parsed by the consumer.
-   *
-   * An overload rather than a second name, because that is the shape the
-   * implementation already ships and this contract describes what exists. A
-   * system whose answer the default parser does not fit is the reason it is
-   * here: the document is handed over untouched, and nothing in this package
-   * forms a second opinion about it.
-   */
-  listNodes<T>(
-    parse: (data: unknown) => T,
-    options?: IListTransportsOptions,
-  ): Promise<T>;
+  list(options?: IListTransportsOptions): Promise<IAdtResponse<TList>>;
 }

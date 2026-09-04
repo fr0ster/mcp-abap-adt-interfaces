@@ -1,5 +1,5 @@
+import type { IAdtResponse } from '../adt/IAdtResponse';
 import type { IAdtWireResponse } from '../connection/IAbapConnection';
-import type { IRuntimeAnalysisObject } from './types';
 
 export interface IGetApplicationLogObjectOptions {
   corrNr?: string;
@@ -15,15 +15,21 @@ export interface IGetApplicationLogSourceOptions {
   version?: string;
 }
 
-export interface IApplicationLog
-  extends IRuntimeAnalysisObject<'applicationLog'> {
+export interface IApplicationLog<
+  TObject = string,
+  TSource = string,
+  TValidation = string,
+> {
+  /** Which runtime resource this is, for a consumer narrowing a union of them. */
+  readonly kind: 'applicationLog';
+
   getObject(
     objectName: string,
     options?: IGetApplicationLogObjectOptions,
-  ): Promise<IAdtWireResponse>;
+  ): Promise<IAdtResponse<TObject>>;
   getSource(
     objectName: string,
     options?: IGetApplicationLogSourceOptions,
-  ): Promise<IAdtWireResponse>;
-  validateName(objectName: string): Promise<IAdtWireResponse>;
+  ): Promise<IAdtResponse<TSource>>;
+  validateName(objectName: string): Promise<IAdtResponse<TValidation>>;
 }

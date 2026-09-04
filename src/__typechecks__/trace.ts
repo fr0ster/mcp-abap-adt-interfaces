@@ -4,6 +4,7 @@
 // not a constraint, and each of the four refusals below is one this design was
 // written to produce.
 
+import type { IAdtResponse } from '../adt/IAdtResponse';
 import type {
   ITraceEntry,
   ITraceFamily,
@@ -41,6 +42,25 @@ interface IRequiredOptionViews {
 }
 type RequiredOptionReader = ITraceReading<IRequiredOptionViews>;
 
+/** What an implementation answers with when it succeeded. */
+const answered = <T>(value: T): IAdtResponse<T> => ({
+  ok: true,
+  getResult: () => ({ value }),
+  getError: () => undefined,
+});
+
+/**
+ * Take the value, having asked the contract whether there was a failure.
+ *
+ * Every member answers {@link IAdtResponse} since 30.0.0, so an assertion about
+ * a *value* has to get past that question first — which is decision 21, and the
+ * shape every consumer writes.
+ */
+const read = <T>(answer: IAdtResponse<T>): T => {
+  if (!answer.ok) throw new Error(answer.getError().message);
+  return answer.getResult().value;
+};
+
 // A map whose members are not views is refused WHERE IT IS DECLARED, not at the
 // call site with a result of `never`.
 interface IBadViews {
@@ -50,14 +70,28 @@ interface IBadViews {
 type _Bad = ITraceReading<IBadViews>;
 
 /** A family with views: the shape `IProfiler` will have. */
-type WithViews = ITraceFamily<'probe', ITraceEntry, { user?: string }> & Reader;
+type WithViews = ITraceFamily<'probe'> &
+  ITraceListing<ITraceEntry, { user?: string }> &
+  Reader;
 
 /** A family without views says nothing about reading — and needs no `read`. */
 type ListingOnly = ITraceFamily<'listing-only'>;
 
+/**
+ * A family that only says what it is called.
+ *
+ * `ITraceFamily` carried a listing with it until 30.0.0, so "a family" and "a
+ * family that lists" could not be distinguished. Minimal contracts, composed
+ * where they are used, is what replaced that: the listing is spelled beside the
+ * name when it is true.
+ */
 const _listingOnly: ListingOnly = {
   kind: 'listing-only',
-  list: async () => [],
+};
+
+const _listingAndName: ListingOnly & ITraceListing = {
+  kind: 'listing-only',
+  list: async () => answered([]),
 };
 
 async function _assertions(
@@ -66,7 +100,7 @@ async function _assertions(
   noOptions: NoOptionReader,
 ) {
   // The result is typed, not `any`.
-  const gross: number = (await family.read('t', 'hitlist')).entries[0]
+  const gross: number = read(await family.read('t', 'hitlist')).entries[0]
     .grossTime;
 
   // Optional options may be given or omitted.
@@ -83,24 +117,24 @@ async function _assertions(
   await family.read('t', 'callGraph');
 
   // The result type is the view's, not a union to narrow.
-  const hits = await family.read('t', 'hitlist');
+  const hits = read(await family.read('t', 'hitlist'));
   // @ts-expect-error hitlist entries carry no `statement`
   const _wrong: string = hits.entries[0].statement;
 
-  const count: number = (await noOptions.read('t', 'records')).count;
+  const count: number = read(await noOptions.read('t', 'records')).count;
 
   // The literal kind still discriminates.
   const kind: 'probe' = family.kind;
 
   // The listing carries its own options type.
   const listing: ITraceListing<ITraceEntry, { user?: string }> = family;
-  const entries = await listing.list({ user: 'SOMEONE' });
+  const entries = read(await listing.list({ user: 'SOMEONE' }));
 
   return { gross, count, kind, id: entries[0]?.id };
 }
 
 export type { Reader, WithViews, ListingOnly };
-export { _listingOnly, _assertions };
+export { _listingOnly, _listingAndName, _assertions };
 
 // ---------------------------------------------------------------------------
 // The published families, and who is NOT obliged to schedule.
@@ -151,7 +185,7 @@ const _profiler: IProfiler = {
   // so it proves nothing about whether the shape can actually be built.
   list: async (options?: { user?: string }) => {
     void options?.user;
-    return [
+    return answered([
       {
         id: 'ABCDEF0123456789ABCD',
         recordedAt: '2026-08-29T06:09:50Z',
@@ -170,7 +204,7 @@ const _profiler: IProfiler = {
         isAggregated: false,
         amdpFileSize: 0,
       },
-    ];
+    ]);
   },
   // An implementer must write this generically — a union parameter does NOT
   // satisfy it, and the compiler says so. That is the contract working: the
@@ -180,7 +214,7 @@ const _profiler: IProfiler = {
     traceId: string,
     view: K,
     ...args: ViewArgs<IAbapTraceViews, K>
-  ): Promise<ViewResult<IAbapTraceViews, K>> => {
+  ): Promise<IAdtResponse<ViewResult<IAbapTraceViews, K>>> => {
     void traceId;
     void view;
     void args;
@@ -188,50 +222,35 @@ const _profiler: IProfiler = {
     // signature, so this is the narrowest thing that satisfies it.
     return undefined as never;
   },
-  // The consumer-supplied reader. Satisfiable by an object literal, which an
-  // overload on `read` was not — the reason this is a second method.
-  readWith: async <K extends keyof IAbapTraceViews, T>(
-    parse: (data: unknown) => T,
-    traceId: string,
-    view: K,
-    ...args: ViewArgs<IAbapTraceViews, K>
-  ): Promise<T> => {
-    void traceId;
-    void view;
-    void args;
-    return parse('<trc:hitlist/>');
-  },
   // Deletion is part of the contract now, so an implementer owes it — a
   // profiler that only reads no longer satisfies `IProfiler`.
   delete: async (traceId: string) => {
     void traceId;
+    return answered(undefined);
   },
 };
 void _profiler;
 
 async function _profilerCalls(p: IProfiler) {
-  const rows = (await p.read('t1', 'hitlist')).entries;
+  const rows = read(await p.read('t1', 'hitlist')).entries;
   await p.read('t1', 'statements', {
     id: 7,
     withDetails: true,
     autoDrillDownThreshold: 20,
     withSystemEvents: false,
   });
-  const total = (await p.read('t1', 'dbAccesses')).accesses[0]?.accessTime
+  const total = read(await p.read('t1', 'dbAccesses')).accesses[0]?.accessTime
     ?.total;
   const kind: 'profiler' = p.kind;
 
-  // A consumer's own reader keeps its own type — no fallback to a raw
-  // response, and no obligation to accept ours.
-  const mine: { rows: number } = await p.readWith(
-    (data) => ({ rows: String(data).length }),
-    't1',
-    'hitlist',
-  );
+  // A consumer's own reading keeps its own type. It is chosen when the
+  // implementation is constructed — `readWith(parse, …)` at the call site is
+  // gone, and with it the second signature every implementer owed.
+  const mine = read(await p.read('t1', 'hitlist'));
 
-  // Deletion answers with nothing — a caller awaits it, and has no result to
-  // read.
-  const deleted: void = await p.delete('t1');
+  // Deletion answers with nothing to read — but it still answers, so a caller
+  // is made to ask whether it happened.
+  const deleted: void = read(await p.delete('t1'));
 
   // @ts-expect-error a cross-trace option is not a profiler option
   await p.list({ traceUser: 'A' });
@@ -243,8 +262,8 @@ void _profilerCalls;
 /**
  * An ATC-shaped runnable owes nothing to scheduling.
  *
- * If `ITraceScheduling` ever migrates onto `IAdtRunnable` or `IExecutor`, this
- * stops compiling — which is the guard, because the cost of that mistake is an
+ * If `ITraceScheduling` ever migrates onto `IAdtRunnable` or a profiler atom,
+ * this stops compiling — which is the guard, because the cost of that mistake is an
  * ATC run having to answer for trace parameters.
  */
 const _atc: IAdtRunnable<IAtcRunTarget, IAtcRunResult, IAtcRunOptions> = {
