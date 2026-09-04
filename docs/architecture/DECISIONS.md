@@ -1304,6 +1304,11 @@ open.
 The outcome is not a new type beside `IAdtResponse` — it is what `IAdtResponse`
 becomes. Two methods, and a concrete implementation supplies each:
 
+> **The `undefined` halves went in 31.0.0.** Each interface declares only its own
+> method now, so reaching either requires narrowing and a forgotten check is a
+> type error rather than a sentinel. The block below is the shape as proposed
+> here, kept for the reasoning.
+
 ```typescript
 interface IAdtSuccess<TResult extends IAdtResult<unknown>> {
   readonly ok: true;  getResult(): TResult;    getError(): undefined;

@@ -18,10 +18,11 @@
  *
  * Example:
  * ```typescript
- * export interface DomainBuilderConfig extends IAdtObjectConfig {
+ * export type DomainBuilderConfig = IAdtObjectConfig & {
  *   domainName: string;
  *   // ... domain-specific fields
- *   // packageName, description, transportRequest are inherited from IAdtObjectConfig
+ *   // packageName, description and transportRequest come from IAdtObjectConfig,
+ *   // composed rather than inherited — decision 23
  * }
  * ```
  */

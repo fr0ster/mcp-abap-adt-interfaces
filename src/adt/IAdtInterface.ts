@@ -28,7 +28,7 @@ export interface IDeleteInterfaceParams {
 // Builder configuration (camelCase)
 // Note: packageName is required for create operations (validated in builder methods)
 // description is required for create/validate operations
-export interface IInterfaceConfig extends IAdtObjectConfig {
+export type IInterfaceConfig = IAdtObjectConfig & {
   interfaceName: string;
   masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE), then EN
   packageName?: string; // Required for create operations, optional for others
@@ -37,4 +37,4 @@ export interface IInterfaceConfig extends IAdtObjectConfig {
   sourceCode?: string;
   sessionId?: string;
   onLock?: (lockHandle: string) => void;
-}
+};

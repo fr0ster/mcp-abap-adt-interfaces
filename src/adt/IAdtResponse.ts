@@ -174,13 +174,22 @@ export interface IAdtError {
 export interface IAdtSuccess<TValue> {
   readonly ok: true;
   getResult(): IAdtResult<TValue>;
-  getError(): undefined;
 }
+
+/*
+ * Each half declares only its own method, and that is the point.
+ *
+ * Until 31.0.0 a success also declared `getError(): undefined` and a failure
+ * `getResult(): undefined`, so both were callable on the union and answered a
+ * sentinel. A caller who forgot to check `ok` got `undefined` back and compiled.
+ * Now they do not: reaching either method requires narrowing first, which is the
+ * guarantee this shape exists for — a forgotten check is a type error, not a
+ * value that looks like an empty answer.
+ */
 
 /** The other half of {@link IAdtResponse}: a failure, and no result. */
 export interface IAdtFailure<TError extends IAdtError = IAdtError> {
   readonly ok: false;
-  getResult(): undefined;
   getError(): TError;
 }
 

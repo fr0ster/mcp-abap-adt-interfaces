@@ -12,7 +12,6 @@ import type { IAdtResponse } from '../adt/IAdtResponse';
 const answered = <T>(value: T): IAdtResponse<T> => ({
   ok: true,
   getResult: () => ({ value }),
-  getError: () => undefined,
 });
 
 /** A consumer's own readings of what abapGit answers. */

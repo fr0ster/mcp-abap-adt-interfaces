@@ -92,10 +92,10 @@ export type ClassUnitTestRunOptions = IClassUnitTestRunOptions;
  * hold a test class, so one is generated for it. Only the view itself is
  * CDS-specific.
  */
-export interface ICdsUnitTestConfig extends IUnitTestConfig {
+export type ICdsUnitTestConfig = IUnitTestConfig & {
   /** The CDS view under test. */
   cdsViewName?: string;
-}
+};
 
 /** The CDS variant adds nothing to a run's result that a contract can name. */
 /** Options for fetching a finished run's result document. */

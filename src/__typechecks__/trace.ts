@@ -50,7 +50,6 @@ type RequiredOptionReader = ITraceReading<IRequiredOptionViews>;
 const answered = <T>(value: T): IAdtResponse<T> => ({
   ok: true,
   getResult: () => ({ value }),
-  getError: () => undefined,
 });
 
 /**

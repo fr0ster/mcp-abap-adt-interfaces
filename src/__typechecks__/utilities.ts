@@ -47,7 +47,6 @@ import type {
 const succeeded = <T>(value: T): IAdtResponse<T> => ({
   ok: true,
   getResult: () => ({ value }),
-  getError: () => undefined,
 });
 
 /** One family alone, implemented by something that knows nothing of the others. */

@@ -90,7 +90,7 @@ export type ViewOptions<TViews, K extends keyof TViews> =
 /** Options are required when the view says so, and absent when it says `void`. */
 export type ViewArgs<TViews, K extends keyof TViews> =
   ViewOptions<TViews, K> extends void
-    ? [options?: undefined]
+    ? []
     : undefined extends ViewOptions<TViews, K>
       ? [options?: ViewOptions<TViews, K>]
       : [options: ViewOptions<TViews, K>];

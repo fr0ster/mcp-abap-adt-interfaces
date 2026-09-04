@@ -26,7 +26,7 @@ interface Config {
 
 /** The smallest thing satisfying the contract, so these stay about shape. */
 function answered<T>(value: T): IAdtResponse<T> {
-  return { ok: true, getResult: () => ({ value }), getError: () => undefined };
+  return { ok: true, getResult: () => ({ value }) };
 }
 
 // A handler that only updates satisfies IAdtUpdatable and nothing else.
