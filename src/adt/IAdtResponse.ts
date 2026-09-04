@@ -139,15 +139,6 @@ export interface IAdtError {
   };
 
   /**
-   * Whatever the transport threw, when it threw — a socket reset, a timeout.
-   *
-   * The transport only. An implementation's own failure to read an answer is not
-   * described by this contract (see {@link AdtFailureOrigin}), so nothing from a
-   * parser arrives here.
-   */
-  readonly cause?: unknown;
-
-  /**
    * The failure's own code, when the strategy names one.
    *
    * {@link AdtObjectErrorCodes} holds the constants. It is here because the

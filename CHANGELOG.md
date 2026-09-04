@@ -71,8 +71,13 @@ and left open, and this release acts on.
   inside an implementation, and a strategy is free to read any way it likes, or
   not to parse at all, so a category naming a step it may never take is one it
   cannot honour. What an implementation does when its own reading fails is its
-  business, and it may throw. `IAdtError.cause` is scoped to the transport with
-  it — nothing from a parser arrives there.
+  business, and it may throw.
+
+- **BREAKING: `IAdtError.cause` left with it.** It carried "whatever the
+  transport or a parser threw" — an internal thrown object, typed `unknown`,
+  which a consumer could not read type-safely and which the contract has no
+  business describing. What a failure says about itself is `origin`, `message`,
+  `code`, and the `response` and `request` it came from.
 
 - **BREAKING: `analyse` says "not a failure" with a token, not `undefined`.**
   `ADT_NO_FAILURE` is exported, and the signature is
