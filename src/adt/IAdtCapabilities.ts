@@ -196,10 +196,11 @@ export interface IAdtVersionable<TConfig> {
    * call (the implementations are stateless factories) — e.g.
    * `getVersions({ className: 'ZCL_X' })`.
    * An object with no version resource — SAP answers 404 or 406, or the type
-   * has no source at all — is a failure in the answer, carrying
-   * `AdtObjectErrorCodes.UNSUPPORTED_OPERATION`. Not an exception: a caller
-   * asking a type it did not choose is the normal case here, and a normal case
-   * belongs in the return type.
+   * has no source at all — is a failure in the answer, and the strategy names it
+   * in {@link IAdtError.code} as `AdtObjectErrorCodes.UNSUPPORTED_OPERATION`, so
+   * a consumer branches on it without a cast. Not an exception: a caller asking
+   * a type it did not choose is the normal case here, and a normal case belongs
+   * in the return type.
    */
   getVersions(
     config: Partial<TConfig>,

@@ -115,6 +115,30 @@ export interface IAdtError {
 
   /** Whatever the transport or a parser threw, when something did. */
   readonly cause?: unknown;
+
+  /**
+   * The failure's own code, when the strategy names one.
+   *
+   * {@link AdtObjectErrorCodes} holds the constants. It is here because the
+   * contract promises specific failures in specific places — a version resource
+   * a system does not expose is `UNSUPPORTED_OPERATION`, and a lock another user
+   * holds is `LOCK_FAILED` — and until 30.0.0 those promises were made by
+   * members that threw, so a consumer read the code off whatever was caught.
+   * With nothing throwing, a promise the failure contract cannot carry is a
+   * promise no consumer can keep without a cast.
+   *
+   * Optional, like `adtType` and `namespace` beside it: what a strategy chooses
+   * is how much of this to fill in, not whether to be it. A `brief` strategy may
+   * answer `origin` and `message` alone.
+   *
+   * ```typescript
+   * const answer = await versionable.getVersions({ className: 'ZCL_X' });
+   * if (!answer.ok && answer.getError().code === AdtObjectErrorCodes.UNSUPPORTED_OPERATION) {
+   *   // this type has no version resource — ask something else
+   * }
+   * ```
+   */
+  readonly code?: string;
 }
 
 /**

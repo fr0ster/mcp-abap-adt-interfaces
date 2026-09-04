@@ -7,65 +7,53 @@
  * Nothing here declares an operation — these are the pieces the atoms refer to:
  * {@link IAdtOperationOptions} carries the strategy a caller injects,
  * {@link IObjectVersion} is one entry of a version history, and
- * {@link AdtObjectErrorCodes} names the failures of the four members that still
- * throw.
+ * {@link AdtObjectErrorCodes} names failures a strategy can put in
+ * {@link IAdtError.code}.
  */
 
 import type { IAdtWireResponse } from '../connection/IAbapConnection';
 import type { IAdtError } from './IAdtResponse';
 
 /**
- * Error codes for the capability members that still signal failure by throwing.
+ * The codes a failure can name itself by.
  *
- * **The CRUD members no longer throw.** `create`, `read`, `readMetadata`,
- * `update`, `delete`, `validate`, `check` and `activate` answer `IAdtResponse`,
- * so a failure comes back rather than flying past, and it is read from the
- * contract:
+ * **Nothing in this package throws** since 30.0.0. Every member answers
+ * {@link IAdtResponse}, so a failure comes back rather than flying past, and it
+ * is read from the contract:
  *
  * ```typescript
  * const answer = await adtObject.read({ className: 'ZTEST' });
  *
  * if (answer.ok) {
- *   answer.getResult().value;    // the state
+ *   answer.getResult().value;    // what the endpoint produced
  * } else {
  *   const failure = answer.getError();
  *   failure.origin;              // 'connection' | 'refusal' | 'parse'
  *   failure.message;             // what SAP said, in SAP's words
+ *   failure.code;                // one of these, when the strategy named one
  *   failure.response;            // the answer it was read from, untouched
  * }
  * ```
  *
- * Note what is *not* in that example: a check for "not found". ADT answers a
- * request for a missing object with **200 and an empty body** rather than a 404,
- * so absence is not a distinct failure the library can report on its own
- * authority — a read-modify-write must treat it as one, since writing back what
- * it read erases the object, while a listing must treat it as an empty list.
- * That reading is supplied through {@link IAdtOperationOptions.analyse}.
+ * These are for the failures the contract promises in a specific place, where
+ * `origin` alone cannot tell two apart: a version resource a system does not
+ * expose is `UNSUPPORTED_OPERATION` rather than merely a refusal, and a lock
+ * another user holds is `LOCK_FAILED`. A consumer branches on the code without a
+ * cast, which until 30.0.0 they could not — the promise was made by members that
+ * threw, and the failure contract had nowhere to carry it.
  *
- * These codes therefore apply only to the members that have no failure half to
- * put a refusal in: `lock`, `unlock`, `getVersions` and `getVersionSource`.
+ * `code` is optional, and deliberately: what a strategy chooses is how much of a
+ * failure to fill in, not whether to be one. An implementation is free to name
+ * codes of its own beside these; this package ships no error class to narrow
+ * with, because a contract says what a thing is and shipping a class from it
+ * would make "use your own implementation" untrue for that piece.
  *
- * The code is read structurally, off whatever was thrown. This package exports
- * no error class to narrow with — a contract says what a thing is, and shipping
- * a class from it would make "use your own implementation" untrue for that
- * piece — so an implementation is free to throw its own type as long as it
- * carries `code`.
- *
- * ```typescript
- * import { AdtObjectErrorCodes } from '@mcp-abap-adt/interfaces';
- *
- * try {
- *   await adtObject.lock({ className: 'ZTEST' });
- * } catch (error: unknown) {
- *   const code = (error as { code?: string }).code;
- *   if (code === AdtObjectErrorCodes.LOCK_FAILED) {
- *     // held by someone else
- *   }
- * }
- * ```
- *
- * The remaining members' codes are kept for consumers still on the throwing
- * contract and will go when those call sites do.
+ * Note what is *not* among them: "not found". ADT answers a request for a
+ * missing object with **200 and an empty body** rather than a 404, so absence is
+ * not a failure this library can report on its own authority — a read-modify-write
+ * must treat it as one, since writing back what it read erases the object, while
+ * a listing must treat it as an empty list. That reading is supplied through
+ * {@link IAdtOperationOptions.analyse}.
  */
 export const AdtObjectErrorCodes = {
   /** Object not found (404) */

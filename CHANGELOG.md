@@ -48,6 +48,14 @@ composed and never inherited.
   trace scheduling and the executors all answered the transport envelope or their
   own type directly, so a consumer had nowhere to receive a failure but `catch`.
 
+- **`IAdtError` gains `code`.** The contract promises specific failures in
+  specific places — `UNSUPPORTED_OPERATION` from `getVersions` on a type with no
+  version resource, `LOCK_FAILED` from a lock another user holds — and until
+  those members stopped throwing, a consumer read the code off whatever was
+  caught. With nothing throwing, a promise the failure contract cannot carry is
+  one no consumer can keep without a cast. Optional, like `adtType` and
+  `namespace`: what a strategy chooses is how much of a failure to fill in.
+
 - **BREAKING: nothing in this package throws.** `lock`, `unlock`, `getVersions`
   and `getVersionSource` were the last four, exempted in 29.0.0 on the grounds
   that they "have no failure half". A lock refused because another user holds it

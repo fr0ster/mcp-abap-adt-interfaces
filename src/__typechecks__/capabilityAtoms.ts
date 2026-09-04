@@ -12,10 +12,13 @@
 import type {
   IAdtCreatable,
   IAdtDeletable,
+  IAdtLockable,
   IAdtReadable,
   IAdtUpdatable,
+  IAdtVersionable,
 } from '../adt/IAdtCapabilities';
-import type { IAdtResponse } from '../adt/IAdtResponse';
+import type { IAdtError, IAdtResponse } from '../adt/IAdtResponse';
+import { AdtObjectErrorCodes } from '../index';
 
 interface Config {
   name: string;
@@ -62,3 +65,32 @@ void _both;
 // @ts-expect-error IAdtCreatable<Config, string> is not IAdtCreatable<Config, void>
 const _mismatched: IAdtCreatable<Config, void> = _both;
 void _mismatched;
+
+/**
+ * The promised code is readable from the contract, without a cast.
+ *
+ * `getVersions` documents `UNSUPPORTED_OPERATION` for a type with no version
+ * resource. Until 30.0.0 that promise was made by a member that threw, so the
+ * only way to keep it was `(error as { code?: string }).code` — which is what
+ * this assertion exists to prevent coming back.
+ */
+async function _readsThePromisedCode(
+  versionable: IAdtVersionable<{ className: string }>,
+): Promise<'unsupported' | 'other' | 'fine'> {
+  const answer = await versionable.getVersions({ className: 'ZCL_X' });
+  if (answer.ok) return 'fine';
+  const failure: IAdtError = answer.getError();
+  return failure.code === AdtObjectErrorCodes.UNSUPPORTED_OPERATION
+    ? 'unsupported'
+    : 'other';
+}
+void _readsThePromisedCode;
+
+/** A lock answers; it does not throw. */
+async function _lockAnswers(
+  lockable: IAdtLockable<{ className: string }>,
+): Promise<string | undefined> {
+  const answer = await lockable.lock({ className: 'ZCL_X' });
+  return answer.ok ? answer.getResult().value : undefined;
+}
+void _lockAnswers;

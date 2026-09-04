@@ -149,8 +149,11 @@ export interface ITraceReading<
  * for its three views, and the `DELETE` it points at answers `200` — measured
  * on an on-prem system, 2026-08-30, on a trace produced by a profiled run.
  *
- * `void`, not a response: a caller has nothing to read from a deletion, and
- * handing back a raw body is the thing this family stopped doing in 23.0.0.
+ * The value is `void`: a caller has nothing to read from a deletion. The
+ * *answer* is not — it is {@link IAdtResponse} like everything else, so whether
+ * the deletion happened is asked of `ok`, not caught. Until 30.0.0 this member
+ * resolved with nothing and rejected on failure, and a consumer migrating from
+ * that contract replaces the `catch` with the check.
  *
  * **What deleting an id that is not there does has NOT been measured.** Only the
  * `200` above was: one existing trace, once. An earlier draft said a trace that
@@ -160,13 +163,15 @@ export interface ITraceReading<
  * Note what the HTTP definition does and does not give here. `DELETE` is
  * idempotent (RFC 9110 §9.2.2), but that is a statement about the **effect on
  * the server** — the resource ends up absent either way. It promises nothing
- * about the **status returned**, and the status is what decides whether this
- * promise resolves or rejects. So idempotence is true and useless to a caller.
+ * about the **status returned**, and the status is what a strategy reads to
+ * decide whether this is a failure. So idempotence is true and useless to a
+ * caller.
  *
- * What a caller needs to know is unmeasured: whether a second delete answers
- * `200` or `404`. `void` describes the resolved value and says nothing about
- * failure — a `404`, or any transport error, **rejects**. Until somebody
- * measures a repeat, code that must tolerate a missing id has to catch.
+ * What a caller needs to know is still unmeasured: whether a second delete
+ * answers `200` or `404`. What has changed is what to do about it — code that
+ * must tolerate a missing id reads `ok` and decides, instead of catching, and a
+ * consumer who wants a repeat delete treated as success supplies that reading
+ * through `analyse`.
  */
 export interface ITraceDeletion {
   delete(traceId: string): Promise<IAdtResponse<void>>;
