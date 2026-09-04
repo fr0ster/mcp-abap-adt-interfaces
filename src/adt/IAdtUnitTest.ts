@@ -98,16 +98,6 @@ export interface ICdsUnitTestConfig extends IUnitTestConfig {
 }
 
 /** The CDS variant adds nothing to a run's result that a contract can name. */
-/**
- * What `checkCdsTestDoubles` answers.
- *
- * A document, like its two siblings above: ADT returns the check result as XML
- * and decision 5 leaves parsing to the consumer. The type that stood here
- * carried a class state and a wire frame, both of which were the
- * implementation's rather than the contract's.
- */
-export type ICdsUnitTestResult = string;
-
 /** Options for fetching a finished run's result document. */
 export interface IUnitTestResultOptions {
   /** Ask ADT to embed navigation URIs for each reported item. */
@@ -130,7 +120,7 @@ export interface IUnitTestResultOptions {
  * answers a collection GET is unverified. An unproven method is exactly what
  * this contract exists not to promise.
  */
-export interface ITestRunInformation<TStatus = string, TResult = string> {
+export interface ITestRunInformation<TStatus, TResult> {
   /**
    * Poll a run.
    * @param runId the run to ask about
@@ -154,12 +144,10 @@ export interface ITestRunInformation<TStatus = string, TResult = string> {
  * Its own capability rather than part of running: it answers a question about
  * the view, and it is asked before there is anything to run.
  */
-export interface ICdsTestDoubleCheckable {
+export interface ICdsTestDoubleCheckable<TResult> {
   /**
    * Check whether a CDS view can be tested with test doubles.
    * @param cdsViewName the view to inspect
    */
-  checkCdsTestDoubles(
-    cdsViewName: string,
-  ): Promise<IAdtResponse<ICdsUnitTestResult>>;
+  checkCdsTestDoubles(cdsViewName: string): Promise<IAdtResponse<TResult>>;
 }

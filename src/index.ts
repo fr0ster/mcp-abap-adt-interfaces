@@ -7,15 +7,9 @@
 
 export type { HttpError, XmlNode } from './adt/AdtTypes';
 export type {
-  AbapGitStatus,
-  IAbapGitErrorLogEntry,
-  IAbapGitExternalRepoBranch,
   IAbapGitExternalRepoCredentials,
-  IAbapGitExternalRepoInfo,
   IAbapGitLinkArgs,
   IAbapGitPullArgs,
-  IAbapGitPullResult,
-  IAbapGitRepoStatus,
   IAbapGitUnlinkArgs,
   IAdtAbapGitClient,
   IAdtAbapGitClientOptions,
@@ -38,15 +32,10 @@ export type {
 } from './adt/IAdtAuthorizationField';
 export type {
   BehaviorDefinitionImplementationType,
-  CheckReporter,
   IBehaviorDefinitionConfig,
   IBehaviorDefinitionCreateParams,
   IBehaviorDefinitionValidationParams,
-  ICheckMessage,
-  ICheckRunResult,
-  ILockResult,
   IUpdateBehaviorDefinitionParams,
-  IValidationResult,
 } from './adt/IAdtBehaviorDefinition';
 export type {
   IBehaviorImplementationConfig,
@@ -104,26 +93,20 @@ export type {
   ICreateEnhancementParams,
   IDeleteEnhancementParams,
   IEnhancementConfig,
-  IEnhancementMetadata,
   IUpdateEnhancementParams,
   IValidateEnhancementParams,
 } from './adt/IAdtEnhancement';
 export type {
-  FeatureToggleState,
   ICreateFeatureToggleParams,
   IDeleteFeatureToggleParams,
   IFeatureToggleAttribute,
-  IFeatureToggleCheckStateResult,
-  IFeatureToggleClientLevel,
   IFeatureToggleConfig,
   IFeatureToggleHeader,
   IFeatureToggleObject,
   IFeatureTogglePlanning,
   IFeatureToggleReleasePlan,
   IFeatureToggleRollout,
-  IFeatureToggleRuntimeState,
   IFeatureToggleSource,
-  IFeatureToggleUserLevel,
   IToggleFeatureToggleParams,
 } from './adt/IAdtFeatureToggle';
 export type {
@@ -159,8 +142,6 @@ export type {
   IDeleteMessageClassParams,
   IMessageClassConfig,
   IMessageClassMessageConfig,
-  IParsedMessage,
-  IParsedMessageClass,
 } from './adt/IAdtMessageClass';
 export type {
   IMetadataExtensionConfig,
@@ -168,10 +149,7 @@ export type {
   IMetadataExtensionValidationParams,
 } from './adt/IAdtMetadataExtension';
 // ADT domain
-export type {
-  IAdtOperationOptions,
-  IObjectVersion,
-} from './adt/IAdtObject';
+export type { IAdtOperationOptions } from './adt/IAdtObject';
 export { AdtObjectErrorCodes } from './adt/IAdtObject';
 export type { IAdtObjectConfig } from './adt/IAdtObjectState';
 export type {
@@ -233,7 +211,6 @@ export type {
   AdtObjectTypeLower,
   AdtSourceObjectType,
   AdtSourceObjectTypeLower,
-  IAdtObjectHit,
   IGetDiscoveryParams,
   IGetSqlQueryParams,
   IGetTableContentsParams,
@@ -241,17 +218,9 @@ export type {
   IGetWhereUsedListParams,
   IGetWhereUsedParams,
   IGetWhereUsedScopeParams,
-  IInactiveObjectsResponse,
   IObjectReference,
-  IPackageContentItem,
-  IPackageHierarchyNode,
   ISearchObjectsParams,
-  ISearchResult,
   IVirtualFoldersPreselection,
-  IWhereUsedListResult,
-  IWhereUsedReference,
-  PackageHierarchyCodeFormat,
-  PackageHierarchySupportedType,
 } from './adt/IAdtShared';
 export type {
   ICreateStructureParams,
@@ -291,11 +260,6 @@ export type {
   IListTransportsParams,
   ITransportConfig,
   ITransportSearchConfiguration,
-  ITransportTree,
-  ITransportTreeLink,
-  ITransportTreeNode,
-  ITransportTreeRequest,
-  ITransportTreeTask,
 } from './adt/IAdtTransport';
 export { TRANSPORT_SEARCH_CONFIGURATIONS_URL } from './adt/IAdtTransport';
 export type {
@@ -303,7 +267,6 @@ export type {
   ClassUnitTestRunOptions,
   ICdsTestDoubleCheckable,
   ICdsUnitTestConfig,
-  ICdsUnitTestResult,
   IClassUnitTestDefinition,
   IClassUnitTestRunOptions,
   ITestRunInformation,
@@ -323,9 +286,6 @@ export type {
   IAdtRepositoryStructure,
   IGetNodeContentsOptions,
   IGetPackageContentsOptions,
-  IRepositoryNodeChild,
-  IRepositoryNodeContents,
-  IRepositoryObjectNode,
 } from './adt/IAdtUtilities';
 export type { AuthType as AuthTypeEnum } from './auth/AuthType';
 // Auth domain
@@ -395,44 +355,18 @@ export type {
   IRunnableWithProfiler,
   IRunnableWithProfiling,
 } from './execution/IAdtRunnable';
-export type {
-  INamedItem,
-  ITraceExecutions,
-  ITraceRequestEntry,
-  ITraceScheduling,
-} from './execution/ITraceScheduling';
+export type { ITraceScheduling } from './execution/ITraceScheduling';
 // Feeds domain
 export type { IFeedRepository } from './feeds/IFeedRepository';
 export type {
   IAbapTimestamp,
-  ICallStackEntry,
-  IFeedDescriptor,
-  IFeedEntry,
   IFeedQueryOptions,
-  IFeedVariant,
-  IGatewayErrorDetail,
-  IGatewayErrorEntry,
-  IGatewayException,
-  ISourceCodeLine,
-  ISystemMessageEntry,
 } from './feeds/types';
 // Headers domain
 export * from './Headers';
 // Logging domain
 export type { ILogger } from './logging/ILogger';
 export { LogLevel } from './logging/LogLevel';
-export type {
-  IAbapTraceAccessTime,
-  IAbapTraceDbAccess,
-  IAbapTraceDbAccesses,
-  IAbapTraceEntry,
-  IAbapTraceHitList,
-  IAbapTraceHitListEntry,
-  IAbapTraceStatement,
-  IAbapTraceStatements,
-  ITraceProgramRef,
-  ITraceTiming,
-} from './runtime/IAbapTrace';
 export type {
   IApplicationLog,
   IGetApplicationLogObjectOptions,
@@ -447,8 +381,6 @@ export type {
   IAtcFindings,
   IAtcObjectRef,
   IAtcRunOptions,
-  IAtcRunResult,
-  IAtcRunStatus,
   IAtcRunStatusReadable,
   IAtcRunTarget,
 } from './runtime/IAtcRun';
@@ -464,7 +396,6 @@ export type {
 } from './runtime/IDdicActivation';
 export type { IGatewayErrorLog } from './runtime/IGatewayErrorLog';
 export type {
-  IAbapTraceViews,
   IProfiler,
   IProfilerListOptions,
   IProfilerTraceDbAccessesOptions,

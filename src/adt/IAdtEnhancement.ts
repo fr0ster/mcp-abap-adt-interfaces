@@ -73,14 +73,3 @@ export interface IEnhancementConfig {
 
 // Metadata type — promoted verbatim from adt-clients
 // src/core/enhancement/types.ts (publicly exported, consumer-facing).
-export interface IEnhancementMetadata {
-  name: string;
-  type: EnhancementType;
-  description?: string;
-  packageName?: string;
-  responsible?: string;
-  masterSystem?: string;
-  version?: string;
-  enhancementSpot?: string;
-  badiDefinition?: string;
-}

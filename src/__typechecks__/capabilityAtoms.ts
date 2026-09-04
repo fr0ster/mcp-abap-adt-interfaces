@@ -74,8 +74,14 @@ void _mismatched;
  * only way to keep it was `(error as { code?: string }).code` — which is what
  * this assertion exists to prevent coming back.
  */
+/** A consumer's own version entry — the contract declares none since 31.0.0. */
+interface MyVersion {
+  version: string;
+  contentUri: string;
+}
+
 async function _readsThePromisedCode(
-  versionable: IAdtVersionable<{ className: string }>,
+  versionable: IAdtVersionable<{ className: string }, MyVersion[], string>,
 ): Promise<'unsupported' | 'other' | 'fine'> {
   const answer = await versionable.getVersions({ className: 'ZCL_X' });
   if (answer.ok) return 'fine';

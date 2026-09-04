@@ -1,16 +1,23 @@
 import type {
-  IAbapTraceDbAccesses,
-  IAbapTraceEntry,
-  IAbapTraceHitList,
-  IAbapTraceStatements,
-} from './IAbapTrace';
-import type {
   ITraceDeletion,
+  ITraceEntry,
   ITraceFamily,
   ITraceListing,
   ITraceReading,
   ITraceView,
 } from './ITrace';
+
+/**
+ * The profiler: what a run left behind, and what a caller passes to ask for it.
+ *
+ * `IProfiler` is a **composition of atoms**, and it stayed — a consumer needs it
+ * to type a profiler and to implement one, and making each of them spell the
+ * intersection by hand is the bloat decision 24 is against, not the bloat it is
+ * about. What left in 31.0.0 are the concrete readings it used to name:
+ * `IAbapTraceEntry`, `IAbapTraceViews` and the view shapes. They arrive as type
+ * parameters now, with **no defaults**, exactly as {@link IClassExecutor} and
+ * {@link ICrossTrace} take theirs.
+ */
 
 export interface IProfilerListOptions {
   user?: string;
@@ -55,40 +62,21 @@ export interface IProfilerTraceDbAccessesOptions {
 }
 
 /**
- * The three views an ABAP trace offers, each with the options it accepts.
+ * A profiler, composed.
  *
- * The feed confirms them independently: every trace entry carries a link per
- * view, and the `statements` link advertises exactly the query parameters
- * {@link IProfilerTraceStatementsOptions} already published.
+ * `TEntry` is what its listing answers per trace; `TViews` maps each view name
+ * to the reading that view performs. Both are the implementation's — this
+ * package says a profiler lists, reads and deletes, and says nothing about what
+ * a hit list looks like.
+ *
+ * ```typescript
+ * type MyProfiler = IProfiler<MyTraceEntry, { hitlist: ITraceView<MyHitList> }>;
+ * ```
  */
-export interface IAbapTraceViews {
-  hitlist: ITraceView<
-    IAbapTraceHitList,
-    IProfilerTraceHitListOptions | undefined
-  >;
-  statements: ITraceView<
-    IAbapTraceStatements,
-    IProfilerTraceStatementsOptions | undefined
-  >;
-  dbAccesses: ITraceView<
-    IAbapTraceDbAccesses,
-    IProfilerTraceDbAccessesOptions | undefined
-  >;
-}
-
-/**
- * The profiler: what traces exist, and what is inside one.
- *
- * Same name consumers import today; what changed is what it means. Everything
- * about *configuring* a measurement left — see `ITraceScheduling`, which the
- * executors compose in, because a request nobody fulfils is litter and its life
- * is bounded by the run.
- *
- * `getHitList` / `getStatements` / `getDbAccesses` are gone as separate members:
- * they were one operation with three names, and `read(traceId, view)` returns
- * the view's own type rather than a raw response every caller re-parses.
- */
-export type IProfiler = ITraceFamily<'profiler'> &
-  ITraceListing<IAbapTraceEntry, IProfilerListOptions> &
-  ITraceReading<IAbapTraceViews> &
+export type IProfiler<
+  TEntry extends ITraceEntry,
+  TViews extends { [K in keyof TViews]: ITraceView<unknown, unknown> },
+> = ITraceFamily<'profiler'> &
+  ITraceListing<TEntry, IProfilerListOptions> &
+  ITraceReading<TViews> &
   ITraceDeletion;

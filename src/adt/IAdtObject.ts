@@ -6,7 +6,7 @@
  * object can do is now stated by the atoms it declares in `IAdtCapabilities.ts`.
  * Nothing here declares an operation — these are the pieces the atoms refer to:
  * {@link IAdtOperationOptions} carries the strategy a caller injects,
- * {@link IObjectVersion} is one entry of a version history, and
+ * a version history's entries are the implementation's since 31.0.0, and
  * {@link AdtObjectErrorCodes} names failures a strategy can put in
  * {@link IAdtError.code}.
  */
@@ -165,23 +165,4 @@ export interface IAdtOperationOptions {
    * @see withLongPolling - Use long polling for waiting object readiness
    */
   timeout?: number;
-}
-
-/** One entry in an object's version history (from the ADT versions Atom feed). */
-export interface IObjectVersion {
-  /** Version number, e.g. '00000'. */
-  versionId: string;
-  /** The user who created the version (atom:author/name), if present. */
-  author?: string;
-  /** ISO timestamp of the version (atom:updated), if present. */
-  updatedAt?: string;
-  /** Feed title, e.g. 'Version List of ZCL_X (CLAS)', if present. */
-  title?: string;
-  /** Opaque, complete URI to fetch this version's source (atom:content@src). */
-  contentUri: string;
-  /** Transport request id this version was recorded under, if any (from the
-   *  entry's transport-request link, e.g. 'DS4K901917'). */
-  transportRequest?: string;
-  /** Short text / description of that transport request, if any. */
-  transportDescription?: string;
 }

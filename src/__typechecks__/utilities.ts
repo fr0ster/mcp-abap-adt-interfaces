@@ -5,6 +5,30 @@
 // here rather than assumed: a contract nobody can implement is the failure
 // decision 11 names.
 
+/**
+ * A consumer's own readings. Since 31.0.0 the contract declares no result
+ * shapes, so a file proving the contract is implementable has to bring its own —
+ * which is the assertion, not an inconvenience.
+ */
+interface MyItem {
+  name: string;
+  type: string;
+}
+interface MyNode {
+  objects: MyItem[];
+  childNodes: { objectType: string; nodeId: string }[];
+}
+interface MyHit {
+  name: string;
+  type: string;
+}
+interface MyWhereUsed {
+  references: MyHit[];
+}
+interface MyTypes {
+  types: string[];
+}
+
 import type {
   IAdtDataPreview,
   IAdtDiscovery,
@@ -17,10 +41,6 @@ import type {
   IGetNodeContentsOptions,
   IGetSqlQueryParams,
   IGetTableContentsParams,
-  IPackageContentItem,
-  IPackageHierarchyNode,
-  IRepositoryNodeContents,
-  ISearchResult,
 } from '../index';
 
 /** What a consumer's implementation returns when it succeeded. */
@@ -43,10 +63,10 @@ class MyDataPreview implements IAdtDataPreview {
 }
 
 /** The whole surface is the intersection — spelled, not named. */
-type AllUtilities = IAdtInformationSystem &
-  IAdtRepositoryStructure &
-  IAdtPackageBrowsing &
-  IAdtGroupLifecycle &
+type AllUtilities = IAdtInformationSystem<MyHit[], MyWhereUsed, MyTypes> &
+  IAdtRepositoryStructure<MyNode> &
+  IAdtPackageBrowsing<MyItem[]> &
+  IAdtGroupLifecycle<string> &
   IAdtDataPreview &
   IAdtDiscovery &
   IAdtObjectAccess;
@@ -71,13 +91,13 @@ preview.search({ query: 'ZCL_X' });
  * Both directions are asserted, because "it compiled when I tried it" is not a
  * thing anyone can re-run.
  */
-class NodeReaderWithExtras implements IAdtRepositoryStructure {
+class NodeReaderWithExtras implements IAdtRepositoryStructure<MyNode> {
   async fetchNodeStructure(
     _parentType: string,
     _parentName: string,
     _options?: IGetNodeContentsOptions,
     _trace?: boolean,
-  ): Promise<IAdtResponse<IRepositoryNodeContents>> {
+  ): Promise<IAdtResponse<MyNode>> {
     return succeeded({ objects: [], childNodes: [] });
   }
   async getObjectStructure(
@@ -88,8 +108,8 @@ class NodeReaderWithExtras implements IAdtRepositoryStructure {
   }
 }
 
-declare const nodes: IAdtRepositoryStructure;
-// @ts-expect-error the contract takes three arguments; a bare node id is not the third
+declare const nodes: IAdtRepositoryStructure<MyNode>;
+// @ts-expect-error the contract takes an options object; a bare node id is not it
 nodes.fetchNodeStructure('DEVC/K', 'ZPKG', '000000');
 
 /**
@@ -98,14 +118,11 @@ nodes.fetchNodeStructure('DEVC/K', 'ZPKG', '000000');
  * `getPackageContentsList` and `getPackageHierarchy` could not offer: a caller
  * got whichever shape the method name had decided, and the document was gone.
  */
-class TreeBrowsing implements IAdtPackageBrowsing<IPackageHierarchyNode> {
+class TreeBrowsing implements IAdtPackageBrowsing<MyNode> {
   async getPackageContents(
     _packageName: string,
-  ): Promise<IAdtResponse<IPackageHierarchyNode>> {
-    return succeeded({
-      name: 'ZPKG',
-      type: 'DEVC/K',
-    } as unknown as IPackageHierarchyNode);
+  ): Promise<IAdtResponse<MyNode>> {
+    return succeeded({ objects: [], childNodes: [] });
   }
 }
 
@@ -117,8 +134,8 @@ class RawBrowsing implements IAdtPackageBrowsing<string> {
 }
 
 /** Naming no strategy answers what the list member answered before. */
-declare const browsing: IAdtPackageBrowsing;
-const listed: Promise<IAdtResponse<IPackageContentItem[]>> =
+declare const browsing: IAdtPackageBrowsing<MyItem[]>;
+const listed: Promise<IAdtResponse<MyItem[]>> =
   browsing.getPackageContents('ZPKG');
 
 /**
@@ -130,7 +147,7 @@ const listed: Promise<IAdtResponse<IPackageContentItem[]>> =
  * left to be discovered by the next consumer.
  */
 async function idOfType(
-  structure: IAdtRepositoryStructure,
+  structure: IAdtRepositoryStructure<MyNode>,
   wanted: string,
 ): Promise<string | undefined> {
   const answer = await structure.fetchNodeStructure('PROG/P', 'ZMY_PROGRAM');
@@ -141,7 +158,9 @@ async function idOfType(
   }
   return answer
     .getResult()
-    .value.childNodes.find((c) => c.objectType === wanted)?.nodeId;
+    .value.childNodes.find(
+      (c: MyNode['childNodes'][number]) => c.objectType === wanted,
+    )?.nodeId;
 }
 
 /**
@@ -149,10 +168,10 @@ async function idOfType(
  * caller. `mcp-abap-adt` reads `status` and hands the ADT document to a model —
  * that need is served here, with a contract, instead of by a second raw member.
  */
-declare const info: IAdtInformationSystem;
+declare const info: IAdtInformationSystem<MyHit[], MyWhereUsed, MyTypes>;
 
 /** Naming no strategy: the parsed hits, as before. */
-const hits: Promise<IAdtResponse<ISearchResult[]>> = info.search({
+const hits: Promise<IAdtResponse<MyHit[]>> = info.search({
   query: 'ZCL_*',
 });
 
@@ -160,12 +179,12 @@ const hits: Promise<IAdtResponse<ISearchResult[]>> = info.search({
 interface RawHits {
   xml: string;
 }
-declare const rawInfo: IAdtInformationSystem<RawHits>;
+declare const rawInfo: IAdtInformationSystem<RawHits, MyWhereUsed, MyTypes>;
 const raw: Promise<IAdtResponse<RawHits>> = rawInfo.search({ query: 'ZCL_*' });
 
 /** The choice is the implementation's, so the wrong shape cannot be asked for. */
-// @ts-expect-error this implementation answers RawHits, not ISearchResult[]
-const wrong: Promise<IAdtResponse<ISearchResult[]>> = rawInfo.search({
+// @ts-expect-error this implementation answers RawHits, not MyHit[]
+const wrong: Promise<IAdtResponse<MyHit[]>> = rawInfo.search({
   query: 'ZCL_*',
 });
 

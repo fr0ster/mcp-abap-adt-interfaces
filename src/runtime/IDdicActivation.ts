@@ -1,5 +1,4 @@
 import type { IAdtResponse } from '../adt/IAdtResponse';
-import type { IAdtWireResponse } from '../connection/IAbapConnection';
 
 export interface IGetActivationGraphOptions {
   objectName?: string;
@@ -7,7 +6,7 @@ export interface IGetActivationGraphOptions {
   logName?: string;
 }
 
-export interface IDdicActivation<TGraph = string> {
+export interface IDdicActivation<TGraph> {
   /** Which runtime resource this is, for a consumer narrowing a union of them. */
   readonly kind: 'ddicActivation';
 

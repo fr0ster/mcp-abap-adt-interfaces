@@ -6,20 +6,15 @@
  */
 
 import type { IAdtResponse } from '../adt/IAdtResponse';
-import type {
-  IFeedDescriptor,
-  IFeedEntry,
-  IFeedQueryOptions,
-  IFeedVariant,
-  IGatewayErrorDetail,
-  IGatewayErrorEntry,
-  ISystemMessageEntry,
-} from './types';
+import type { IFeedQueryOptions } from './types';
 
 export interface IFeedRepository<
-  TFeeds = IFeedDescriptor[],
-  TVariants = IFeedVariant[],
-  TEntries = IFeedEntry[],
+  TFeeds,
+  TVariants,
+  TEntries,
+  TSystemMessages,
+  TGatewayErrors,
+  TGatewayErrorDetail,
 > {
   list(): Promise<IAdtResponse<TFeeds>>;
   /**
@@ -41,11 +36,11 @@ export interface IFeedRepository<
   dumps(options?: IFeedQueryOptions): Promise<IAdtResponse<TEntries>>;
   systemMessages(
     options?: IFeedQueryOptions,
-  ): Promise<IAdtResponse<ISystemMessageEntry[]>>;
+  ): Promise<IAdtResponse<TSystemMessages>>;
   gatewayErrors(
     options?: IFeedQueryOptions,
-  ): Promise<IAdtResponse<IGatewayErrorEntry[]>>;
+  ): Promise<IAdtResponse<TGatewayErrors>>;
   gatewayErrorDetail(
     feedUrl: string,
-  ): Promise<IAdtResponse<IGatewayErrorDetail>>;
+  ): Promise<IAdtResponse<TGatewayErrorDetail>>;
 }

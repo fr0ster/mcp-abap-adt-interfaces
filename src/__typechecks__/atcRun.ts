@@ -6,8 +6,6 @@ import type {
   AtcObjectType,
   IAtcFindings,
   IAtcRunOptions,
-  IAtcRunResult,
-  IAtcRunStatus,
   IAtcRunStatusReadable,
   IAtcRunTarget,
 } from '../runtime/IAtcRun';
@@ -22,22 +20,31 @@ const answered = <T>(value: T): IAdtResponse<T> => ({
 // The shape a handler must satisfy: the runnable atom plus the two readers,
 // spelled as an intersection because one getter has this set. A named
 // composite would be a third name over types that already have one.
-type AtcHandler = IAdtRunnable<IAtcRunTarget, IAtcRunResult, IAtcRunOptions> &
-  IAtcRunStatusReadable &
-  IAtcFindings;
+/** A consumer's own readings of what a run answers. */
+interface MyRunResult {
+  worklistId: string;
+  runId?: string;
+}
+interface MyStatus {
+  finished: boolean;
+}
+
+type AtcHandler = IAdtRunnable<IAtcRunTarget, MyRunResult, IAtcRunOptions> &
+  IAtcRunStatusReadable<MyStatus> &
+  IAtcFindings<string>;
 
 const _handler: AtcHandler = {
   run: async (
     target: IAtcRunTarget,
     options?: IAtcRunOptions,
-  ): Promise<IAdtResponse<IAtcRunResult>> => {
+  ): Promise<IAdtResponse<MyRunResult>> => {
     void target.objects[0].objectType;
     void options?.wait;
-    return answered({ waited: false, worklistId: 'W', runId: 'R' });
+    return answered({ worklistId: 'W', runId: 'R' });
   },
-  getRunStatus: async (runId: string): Promise<IAdtResponse<IAtcRunStatus>> => {
+  getRunStatus: async (runId: string): Promise<IAdtResponse<MyStatus>> => {
     void runId;
-    return answered({ status: 'finished', isFinished: true });
+    return answered({ finished: true });
   },
   getFindings: async (worklistId: string): Promise<IAdtResponse<string>> => {
     void worklistId;
@@ -61,20 +68,11 @@ void _handler.run(
 const _empty: IAtcRunTarget = { objects: [] };
 void _empty;
 
-// The result is discriminated on `waited`, and each branch carries only its
-// own fields. Reading `runId` off the waiting branch must not compile.
-declare const result: IAtcRunResult;
-if (result.waited) {
-  void result.findingStats;
-  // @ts-expect-error — a waiting run answers with no run id
-  void result.runId;
-} else {
-  void result.runId;
-  // @ts-expect-error — a non-waiting run answers with an empty body
-  void result.findingStats;
-}
-// `worklistId` is on BOTH branches, because it is what getFindings takes.
-void result.worklistId;
+// The shape a run answers left this package in 31.0.0, and with it the
+// assertions about its discriminated `waited` branch — they belong beside the
+// implementation that builds it. What is asserted here is what stayed: the
+// target a caller passes, the object types a URI can be built for, and that the
+// runnable composes with the two readers.
 
 // Every member of the union is a type this client can build a URI for. The
 // two ABAP Cloud refuses to hold are absent, and adding either later breaks
@@ -94,7 +92,7 @@ void _uris;
 const _program: AtcObjectType = 'program';
 void _program;
 
-// A status may arrive without the worklist link, and must still be usable —
-// this is the state polling exists for and the one nobody has captured.
-const _polling: IAtcRunStatus = { status: 'running', isFinished: false };
+// A consumer's own status is what the reader answers, and the contract says
+// nothing about its fields — which is the point of it having left.
+const _polling: MyStatus = { finished: false };
 void _polling;

@@ -1,5 +1,8 @@
 // Compile-only assertions. If these stop compiling, the types regressed.
 //
+// The result shapes left this package in 31.0.0, so the illustration below
+// brings its own — which is what any consumer now does.
+//
 // The first draft of this contract had two independently-optional methods and a
 // comment claiming a caller could not reach a result without being told an error
 // exists. The comment was not true — nothing narrowed, an implementation could
@@ -14,13 +17,17 @@ import type {
   IAdtResponse,
   IAdtResult,
   IAdtSuccess,
-  ISearchResult,
 } from '../index';
 
-declare const answer: IAdtResponse<ISearchResult[]>;
+interface MyHit {
+  name: string;
+  type: string;
+}
+
+declare const answer: IAdtResponse<MyHit[]>;
 
 /** Narrowing works, and the result is not `| undefined` on the happy side. */
-export function readHits(): ISearchResult[] {
+export function readHits(): MyHit[] {
   if (answer.ok) {
     // `.value` because a result is a contract too, symmetric with IAdtError: the
     // strategy chooses how much of it to fill in.
@@ -41,7 +48,7 @@ export function readFailure(): string {
 
 /** Reaching the result without asking is refused. */
 // @ts-expect-error getResult() is `undefined` on the failure half of the union
-export const unchecked: IAdtResult<ISearchResult[]> = answer.getResult();
+export const unchecked: IAdtResult<MyHit[]> = answer.getResult();
 
 /** So is reaching the error without asking. */
 // @ts-expect-error getError() is `undefined` on the success half
@@ -58,11 +65,11 @@ export declare const promisesNothing: IAdtResponse;
  * be one — including the error, which is why `IAdtError` is a shape and not a
  * class shipped from here.
  */
-export class TheirSuccess implements IAdtSuccess<ISearchResult[]> {
+export class TheirSuccess implements IAdtSuccess<MyHit[]> {
   readonly ok = true as const;
-  getResult(): IAdtResult<ISearchResult[]> {
+  getResult(): IAdtResult<MyHit[]> {
     // The value is the member's own result contract. A `brief` strategy does not
-    // half-fill this one — `ISearchResult` requires `description`, so it cannot
+    // half-fill this one — `MyHit` requires `description`, so it cannot
     // be half-filled. It narrows `T` instead, and `T` follows the strategy the
     // implementation was constructed with.
     return { value: [] };
@@ -86,8 +93,8 @@ export class TheirFailure implements IAdtFailure {
 }
 
 /** Both halves satisfy the union they belong to. */
-export const asResponse: IAdtResponse<ISearchResult[]> = new TheirSuccess();
-export const asFailure: IAdtResponse<ISearchResult[]> = new TheirFailure();
+export const asResponse: IAdtResponse<MyHit[]> = new TheirSuccess();
+export const asFailure: IAdtResponse<MyHit[]> = new TheirFailure();
 
 /** An origin outside the three is refused — they are the ones with remedies. */
 // @ts-expect-error 'timeout' is not an AdtFailureOrigin
@@ -99,7 +106,7 @@ export const silent: IAdtError = { origin: 'connection' };
 
 /** A result without its value is not one, for the same reason a failure needs a message. */
 // @ts-expect-error value is required
-export const emptyResult: IAdtResult<ISearchResult[]> = {};
+export const emptyResult: IAdtResult<MyHit[]> = {};
 
 /**
  * An implementation may enrich either half and say so in the type.
@@ -112,14 +119,14 @@ interface ThrottledError extends IAdtError {
   readonly retryAfter: number;
 }
 
-declare const throttled: IAdtResponse<ISearchResult[], ThrottledError>;
+declare const throttled: IAdtResponse<MyHit[], ThrottledError>;
 
 export function backOff(): number {
   return throttled.ok ? 0 : throttled.getError().retryAfter;
 }
 
 /** And it is still the base contract, so shared code reads it unchanged. */
-export function anyFailure(a: IAdtResponse<ISearchResult[]>): string {
+export function anyFailure(a: IAdtResponse<MyHit[]>): string {
   return a.ok ? '' : a.getError().message;
 }
 export const throttledIsOne: typeof anyFailure = anyFailure;

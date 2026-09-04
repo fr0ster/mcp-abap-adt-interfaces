@@ -28,9 +28,8 @@
  * to the compiler, so a consumer never learns from the type that a failure path
  * exists.
  */
-import type { IAdtOperationOptions, IObjectVersion } from './IAdtObject';
+import type { IAdtOperationOptions } from './IAdtObject';
 import type { IAdtResponse } from './IAdtResponse';
-import type { IAdtObjectHit, ISearchObjectsParams } from './IAdtShared';
 
 /**
  * Bring an object into existence.
@@ -190,7 +189,7 @@ export interface IAdtLockable<TConfig> {
   ): Promise<IAdtResponse<void>>;
 }
 
-export interface IAdtVersionable<TConfig> {
+export interface IAdtVersionable<TConfig, TVersions, TSource> {
   /**
    * List the version history of this object's source. Identity is passed per
    * call (the implementations are stateless factories) — e.g.
@@ -202,9 +201,7 @@ export interface IAdtVersionable<TConfig> {
    * a type it did not choose is the normal case here, and a normal case belongs
    * in the return type.
    */
-  getVersions(
-    config: Partial<TConfig>,
-  ): Promise<IAdtResponse<IObjectVersion[]>>;
+  getVersions(config: Partial<TConfig>): Promise<IAdtResponse<TVersions>>;
 
   /**
    * Fetch the source code of a specific version.
@@ -213,7 +210,7 @@ export interface IAdtVersionable<TConfig> {
    * Answers like its pair above: a version resource that cannot be read is a
    * failure in the answer.
    */
-  getVersionSource(contentUri: string): Promise<IAdtResponse<string>>;
+  getVersionSource(contentUri: string): Promise<IAdtResponse<TSource>>;
 }
 
 /**

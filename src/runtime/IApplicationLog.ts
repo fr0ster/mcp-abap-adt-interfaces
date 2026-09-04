@@ -1,5 +1,4 @@
 import type { IAdtResponse } from '../adt/IAdtResponse';
-import type { IAdtWireResponse } from '../connection/IAbapConnection';
 
 export interface IGetApplicationLogObjectOptions {
   corrNr?: string;
@@ -15,11 +14,7 @@ export interface IGetApplicationLogSourceOptions {
   version?: string;
 }
 
-export interface IApplicationLog<
-  TObject = string,
-  TSource = string,
-  TValidation = string,
-> {
+export interface IApplicationLog<TObject, TSource, TValidation> {
   /** Which runtime resource this is, for a consumer narrowing a union of them. */
   readonly kind: 'applicationLog';
 
