@@ -172,7 +172,7 @@ export interface ITraceReading<
  * must tolerate a missing id reads `ok` and decides, instead of catching.
  *
  * **This member takes no options, so there is no per-call `analyse` here.**
- * `IAdtOperationOptions` is carried by eight members on the capability atoms,
+ * `IAdtOperationOptions` is carried by nine members on the capability atoms,
  * where a caller overrules
  * the verdict for one request; a consumer who wants a repeat delete counted as
  * success everywhere states that in the error strategy their implementation is

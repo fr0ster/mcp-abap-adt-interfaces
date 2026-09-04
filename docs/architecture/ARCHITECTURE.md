@@ -89,7 +89,7 @@ readings, and neither is the library's to impose.
 
 | axis | shape | supplied |
 |---|---|---|
-| error | `(verdict, answer?) => IAdtError \| undefined` | to the implementation at construction, and — on the eight members that take `IAdtOperationOptions` — overruled per call through `analyse` |
+| error | `(verdict, answer?) => IAdtError \| undefined` | to the implementation at construction, and — on the nine members that take `IAdtOperationOptions` — overruled per call through `analyse` |
 | result | `IResultStrategy<T>` = `(answer: IAdtWireResponse) => T` | to the implementation at construction; the member's result type follows it |
 
 Both are handed the whole answer — status, headers, body — because a reading may
@@ -98,11 +98,11 @@ need any of it.
 **The two axes are not equally visible in the contract, and that is worth saying
 plainly.** The result axis is: a member's result type is a type parameter of its
 interface, so what a given implementation answers is written in its type. The
-error axis is not. `IAdtOperationOptions.analyse` reaches exactly eight members —
-`create`, `read`, `update`, `delete`, `validate`, `check`, `activate` and
-`readTransport`, all on the capability atoms. The other 89 take no options at
-all; `ITraceDeletion.delete(traceId)` is the plain case, one argument and no
-seam.
+error axis is not. `IAdtOperationOptions.analyse` reaches exactly nine members —
+`create`, `read`, `readMetadata`, `update`, `delete`, `validate`, `check`,
+`activate` and `readTransport`, all on the capability atoms. The other 88 take no
+options at all; `ITraceDeletion.delete(traceId)` is the plain case, one argument
+and no seam.
 
 For those, the reading is the implementation's, chosen when it is constructed,
 and this package does not name that constructor — `@mcp-abap-adt/adt-clients`
@@ -230,7 +230,7 @@ implementation package:
 |---|---|
 | what an answer becomes | an `IResultStrategy`, at construction |
 | what counts as a failure, everywhere | the error strategy the implementation is constructed with |
-| what counts as a failure, for one call | `analyse`, on the eight capability members that take `IAdtOperationOptions` |
+| what counts as a failure, for one call | `analyse`, on the nine capability members that take `IAdtOperationOptions` |
 | the headers a request carries | your own `IAdtContentTypes` |
 | how a request is made at all | your own `IAbapConnection` |
 | a whole family | your own implementation of those atoms |
