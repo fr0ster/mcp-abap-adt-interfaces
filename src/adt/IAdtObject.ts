@@ -17,7 +17,9 @@ import type { AdtNoFailure, IAdtError } from './IAdtResponse';
 /**
  * The codes a failure can name itself by.
  *
- * **Nothing in this package throws** since 30.0.0. Every member answers
+ * **No member of this contract throws** since 30.0.0 — which is about what the
+ * server's answer becomes, not about what an implementation does when its own
+ * reading fails. Every member answers
  * {@link IAdtResponse}, so a failure comes back rather than flying past, and it
  * is read from the contract:
  *

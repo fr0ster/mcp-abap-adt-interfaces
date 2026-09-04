@@ -13,7 +13,7 @@
  * if (answer.ok) {
  *   answer.getResult().value;    // whatever this implementation reads
  * } else {
- *   answer.getError().origin;    // connection, refusal, parse
+ *   answer.getError().origin;    // connection, refusal
  *   answer.getError().message;   // what SAP said, when SAP said anything
  * }
  * ```
@@ -98,7 +98,7 @@ export type AdtFailureOrigin =
  * replace the strategy and it goes with it.
  */
 export interface IAdtError {
-  /** Which of the three this is. */
+  /** Which of the two this is. */
   readonly origin: AdtFailureOrigin;
 
   /**

@@ -215,6 +215,10 @@ composed and never inherited.
 
 ### Documentation
 
+- The runtime-bearing exports are 51 now, not 50: `ADT_NO_FAILURE` joins the 43
+  string constants beside the 6 maps of codes and 2 enums. Counted from the
+  emitted `.d.ts`, as every number in these documents now is.
+
 - **`docs/architecture/ARCHITECTURE.md` is new.** The repository had `DECISIONS.md`
   — why each choice was made — and a README inventory of what is exported, and
   nothing that described the shape: what an answer is, the two axes a consumer
