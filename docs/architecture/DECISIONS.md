@@ -1776,10 +1776,15 @@ symbols to 353.
 
 **Including the parts they were built from.** A review found the nested shapes
 still exported after their parents left — the feature-toggle levels, the
-gateway-error internals, the whole ABAP-trace family. `IProfiler` went with them:
-a **named composition** of atoms with an implementation's readings is that
-implementation's, while the atoms it was made of, and the options a caller passes,
-are the contract.
+gateway-error internals, the whole ABAP-trace family.
+
+**A named composition is not a result shape.** `IProfiler` was removed with them
+and put back: it is `ITraceFamily & ITraceListing & ITraceReading &
+ITraceDeletion`, and a consumer needs it both to type a profiler and to implement
+one. Publishing it costs one symbol; removing it costs every consumer the same
+intersection, spelled by hand and re-derived when an atom changes. It takes its
+readings as parameters — `IProfiler<TEntry, TViews>` — like `IClassExecutor` and
+`ICrossTrace`. **The line is the shapes, not the compositions.**
 
 **The defaults left with them**, and that is the same rule rather than a second
 one: a default is a claim about what a reading produces, so it belongs where the

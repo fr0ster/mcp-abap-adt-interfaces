@@ -404,6 +404,7 @@ export type {
 } from './runtime/IDdicActivation';
 export type { IGatewayErrorLog } from './runtime/IGatewayErrorLog';
 export type {
+  IProfiler,
   IProfilerListOptions,
   IProfilerTraceDbAccessesOptions,
   IProfilerTraceHitListOptions,

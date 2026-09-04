@@ -5,6 +5,8 @@
 // written to produce.
 
 import type { IAdtResponse } from '../adt/IAdtResponse';
+
+type Assert<T extends true> = T;
 import type {
   ITraceDeletion,
   ITraceEntry,
@@ -146,7 +148,7 @@ export { _listingOnly, _listingAndName, _assertions };
 
 import type { IAdtRunnable } from '../execution/IAdtRunnable';
 import type { IAtcRunOptions, IAtcRunTarget } from '../runtime/IAtcRun';
-import type { IProfilerListOptions } from '../runtime/IProfiler';
+import type { IProfiler, IProfilerListOptions } from '../runtime/IProfiler';
 
 interface MyTraceEntry extends ITraceEntry {
   user: string;
@@ -158,10 +160,23 @@ interface MyViews {
   hitlist: ITraceView<MyHitList>;
 }
 
-type MyProfiler = ITraceFamily<'profiler'> &
+/**
+ * The published composition, instantiated with this file's own readings.
+ *
+ * `IProfiler` stayed in 31.0.0 while the shapes it used to name left: a consumer
+ * needs the composition to type a profiler and to implement one, and spelling
+ * the intersection by hand in every consumer is what publishing it prevents.
+ */
+type MyProfiler = IProfiler<MyTraceEntry, MyViews>;
+
+/** And it is the intersection it claims to be, spelled out. */
+type Spelled = ITraceFamily<'profiler'> &
   ITraceListing<MyTraceEntry, IProfilerListOptions> &
   ITraceReading<MyViews> &
   ITraceDeletion;
+type _CompositionIsWhatItSays = Assert<
+  MyProfiler extends Spelled ? (Spelled extends MyProfiler ? true : false) : false
+>;
 
 const _profiler: MyProfiler = {
   kind: 'profiler',

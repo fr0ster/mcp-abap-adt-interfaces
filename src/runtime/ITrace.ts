@@ -189,8 +189,9 @@ export interface ITraceDeletion {
  * Nothing is extended in here. Until 30.0.0 this carried `ITraceListing` along
  * with the name, so a family that only lists and one that also reads could not
  * be told apart by their types — inheritance decides for the composer what
- * belongs together. `IProfiler` and `ICrossTrace` are compositions of this with
- * listing, reading and deletion, spelled where they are used.
+ * belongs together. `IProfiler` and `ICrossTrace` are published compositions of
+ * this with listing, reading and deletion — the composition is a contract, and
+ * the readings it is instantiated with are the implementation's.
  */
 export interface ITraceFamily<TKind extends string> {
   /** Literal, so it still discriminates when several families share a shape. */

@@ -1,17 +1,22 @@
+import type {
+  ITraceDeletion,
+  ITraceEntry,
+  ITraceFamily,
+  ITraceListing,
+  ITraceReading,
+  ITraceView,
+} from './ITrace';
+
 /**
- * What a profiler run is asked for — the options, and nothing else.
+ * The profiler: what a run left behind, and what a caller passes to ask for it.
  *
- * `IProfiler` itself was a **named composition** naming concrete readings:
- * `ITraceFamily<'profiler'> & ITraceListing<IAbapTraceEntry, …> &
- * ITraceReading<IAbapTraceViews> & ITraceDeletion`. The composition and the
- * shapes in it left in 31.0.0 — a composition of atoms with an implementation's
- * readings is that implementation's, and `adt-clients` declares it. The atoms it
- * was made of stayed, in `ITrace.ts`, along with the view machinery a caller
- * needs to implement `read`.
- *
- * What is below is the request side: what a caller passes when scheduling or
- * reading a trace. Decision 24 — the contract carries what is needed to use it
- * or replace it.
+ * `IProfiler` is a **composition of atoms**, and it stayed — a consumer needs it
+ * to type a profiler and to implement one, and making each of them spell the
+ * intersection by hand is the bloat decision 24 is against, not the bloat it is
+ * about. What left in 31.0.0 are the concrete readings it used to name:
+ * `IAbapTraceEntry`, `IAbapTraceViews` and the view shapes. They arrive as type
+ * parameters now, with **no defaults**, exactly as {@link IClassExecutor} and
+ * {@link ICrossTrace} take theirs.
  */
 
 export interface IProfilerListOptions {
@@ -55,3 +60,23 @@ export interface IProfilerTraceStatementsOptions {
 export interface IProfilerTraceDbAccessesOptions {
   withSystemEvents?: boolean;
 }
+
+/**
+ * A profiler, composed.
+ *
+ * `TEntry` is what its listing answers per trace; `TViews` maps each view name
+ * to the reading that view performs. Both are the implementation's — this
+ * package says a profiler lists, reads and deletes, and says nothing about what
+ * a hit list looks like.
+ *
+ * ```typescript
+ * type MyProfiler = IProfiler<MyTraceEntry, { hitlist: ITraceView<MyHitList> }>;
+ * ```
+ */
+export type IProfiler<
+  TEntry extends ITraceEntry,
+  TViews extends { [K in keyof TViews]: ITraceView<unknown, unknown> },
+> = ITraceFamily<'profiler'> &
+  ITraceListing<TEntry, IProfilerListOptions> &
+  ITraceReading<TViews> &
+  ITraceDeletion;
