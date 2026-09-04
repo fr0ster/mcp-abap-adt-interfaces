@@ -1,21 +1,27 @@
 /**
- * Capability atoms — the methods of IAdtObject, partitioned so each method
- * belongs to exactly one small interface. See
- * docs/superpowers/specs/2026-07-20-capability-interfaces-design.md.
+ * Capability atoms — one small interface per operation, and nothing above them.
  *
- * The atoms are the definitions; `IAdtObject` is assembled from them below.
- * A handler declares the atoms it actually honours, so a consumer reading the
- * type learns what the object can do rather than what the fattest object can do.
+ * There is no composite. `IAdtObject`, `IAdtCrud`, `IAdtModifiable` and
+ * `IAdtSourceObject` were removed in 29.0.0 because they forced one result type
+ * on members that answer different things: a create does not answer what a read
+ * answers, and a type saying they do was saying something untrue about ADT. A
+ * handler declares the atoms it honours, so a consumer reading it learns what
+ * that object can do and what comes back, rather than what the fattest object
+ * could do.
+ *
+ * **Each atom names its own result.** `IAdtCreatable<TConfig, TCreated>`,
+ * `IAdtUpdatable<TConfig, TUpdated>`, and so on. `IAdtReadable` carries two —
+ * source and metadata — because it is two endpoints.
  *
  * The grain comes from ADT itself: a lock and its unlock are one operation seen
  * from two ends, and a version list is useless without the source behind an
- * entry. The handlers in @mcp-abap-adt/adt-clients bear both out — each pair is
- * honoured or refused whole.
+ * entry, so each pair is honoured or refused whole. `update` and `delete` were
+ * taken for a third such pair until 15.0.0 and are not one: nothing in ADT ties
+ * changing an object to removing it.
  *
- * `update` and `delete` were taken for a third such pair until 15.0.0. They are
- * not: nothing in ADT ties changing an object to removing it, so they are now
- * separate atoms and a handler that supports one can say so without claiming
- * the other.
+ * `lock`, `unlock`, `getVersions` and `getVersionSource` still throw. They answer
+ * a lock handle, nothing, a version list and a source string, so they have no
+ * failure half to put a refusal in.
  */
 import type { IAdtOperationOptions, IObjectVersion } from './IAdtObject';
 import type { IAdtResponse } from './IAdtResponse';
@@ -24,7 +30,7 @@ import type { IAdtObjectHit, ISearchObjectsParams } from './IAdtShared';
 /**
  * Bring an object into existence.
  *
- * Separate from IAdtModifiable because creation and mutation do not travel
+ * Separate from the mutation atoms because creation and mutation do not travel
  * together: a unit-test run is created and never updated.
  */
 export interface IAdtCreatable<TConfig, TCreated> {

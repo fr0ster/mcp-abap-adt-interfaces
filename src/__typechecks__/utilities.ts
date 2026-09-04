@@ -14,8 +14,6 @@ import type {
   IAdtPackageBrowsing,
   IAdtRepositoryStructure,
   IAdtResponse,
-  IAdtResult,
-  IAdtWireResponse,
   IGetSqlQueryParams,
   IGetTableContentsParams,
   IRepositoryNodeContents,

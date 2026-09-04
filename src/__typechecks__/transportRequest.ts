@@ -5,7 +5,7 @@
 // something written entirely outside the package fits too, and that a caller
 // holding the contract can reach everything the handler is for.
 
-import type { IAdtResponse, IAdtResult } from '../adt/IAdtResponse';
+import type { IAdtResponse } from '../adt/IAdtResponse';
 import type {
   IAdtRequest,
   IListTransportsOptions,

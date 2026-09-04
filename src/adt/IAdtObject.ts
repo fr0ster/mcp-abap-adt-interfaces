@@ -9,7 +9,7 @@
  */
 
 import type { IAdtWireResponse } from '../connection/IAbapConnection';
-import type { IAdtError, IAdtResult } from './IAdtResponse';
+import type { IAdtError } from './IAdtResponse';
 
 /**
  * Error codes for the `IAdtObject` members that still signal failure by throwing.

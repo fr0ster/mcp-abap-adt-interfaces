@@ -96,7 +96,7 @@
 
 import type { INamedItem } from '../execution/ITraceScheduling';
 import type { IReadOptions } from '../shared/IReadOptions';
-import type { IAdtResponse, IAdtResult } from './IAdtResponse';
+import type { IAdtResponse } from './IAdtResponse';
 import type {
   AdtObjectType,
   AdtSourceObjectType,

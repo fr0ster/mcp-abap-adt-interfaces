@@ -156,7 +156,7 @@ export interface ITransportTree {
  * capability guard with nothing to compare the manifest against, because the
  * declared type *was* the implementation.
  *
- * The CRUD half is `IAdtCrud` with the transport's own config and state; the two
+ * The CRUD half is the four atoms with the transport's own config; the two
  * methods below are the transport's alone, and neither has an atom because
  * nothing else lists a collection this way.
  */
