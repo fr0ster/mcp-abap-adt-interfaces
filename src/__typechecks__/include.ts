@@ -11,31 +11,30 @@ import type {
   ICreateIncludeParams,
   IDeleteIncludeParams,
   IIncludeConfig,
-  IIncludeState,
   IUpdateIncludeSourceParams,
 } from '../adt/IAdtInclude';
 import type { IProgramConfig } from '../adt/IAdtProgram';
 
 /** A consumer's own include handler, spelled out rather than cast. */
 interface IConsumerIncludeHandler {
-  create(params: ICreateIncludeParams): Promise<IIncludeState>;
-  updateSource(params: IUpdateIncludeSourceParams): Promise<IIncludeState>;
-  delete(params: IDeleteIncludeParams): Promise<IIncludeState>;
+  create(params: ICreateIncludeParams): Promise<string>;
+  updateSource(params: IUpdateIncludeSourceParams): Promise<string>;
+  delete(params: IDeleteIncludeParams): Promise<string>;
 }
 
 const _handler: IConsumerIncludeHandler = {
   create: async (params) => {
     void params.includeName;
     void params.packageName;
-    return { errors: [] } as IIncludeState;
+    return '';
   },
   updateSource: async (params) => {
     void params.sourceCode;
-    return { errors: [] } as IIncludeState;
+    return '';
   },
   delete: async (params) => {
     void params.transportRequest;
-    return { errors: [] } as IIncludeState;
+    return '';
   },
 };
 void _handler;

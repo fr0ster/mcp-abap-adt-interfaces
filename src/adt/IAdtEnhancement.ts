@@ -2,8 +2,6 @@
  * Enhancement ADT operation parameter interfaces (snake_case, low-level)
  */
 
-import type { IAdtObjectState } from './IAdtObjectState';
-
 export type EnhancementType =
   | 'enhoxh'
   | 'enhoxhb'
@@ -59,7 +57,7 @@ export interface IValidateEnhancementParams {
 
 /**
  * AdtEnhancement configuration (camelCase)
- * Used by high-level IAdtObject implementation
+ * Used by the implementation behind the enhancement's capability atoms
  */
 export interface IEnhancementConfig {
   enhancementName: string;
@@ -71,15 +69,6 @@ export interface IEnhancementConfig {
   sourceCode?: string;
   enhancementSpot?: string;
   badiDefinition?: string;
-}
-
-/**
- * AdtEnhancement state
- * Extends base IAdtObjectState with enhancement-specific fields
- */
-export interface IEnhancementState extends IAdtObjectState {
-  enhancementType?: EnhancementType;
-  sourceCode?: string;
 }
 
 // Metadata type — promoted verbatim from adt-clients

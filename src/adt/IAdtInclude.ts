@@ -14,8 +14,6 @@
  * system will accept the request.
  */
 
-import type { IAdtObjectState } from './IAdtObjectState';
-
 export interface ICreateIncludeParams {
   includeName: string;
   description?: string;
@@ -58,10 +56,4 @@ export interface IIncludeConfig {
   sourceCode?: string;
   sessionId?: string;
   onLock?: (lockHandle: string) => void;
-}
-
-export interface IIncludeState extends IAdtObjectState {
-  // All operation results are in IAdtObjectState:
-  // validationResponse, createResult, lockHandle, updateResult, checkResult,
-  // unlockResult, activateResult, deleteResult, readResult, transportResult
 }

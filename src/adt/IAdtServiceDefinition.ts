@@ -2,9 +2,6 @@
  * Service Definition ADT operation parameter interfaces (snake_case, low-level)
  */
 
-import type { IAdtWireResponse } from '../connection/IAbapConnection';
-import type { IAdtObjectState } from './IAdtObjectState';
-
 export interface ICreateServiceDefinitionParams {
   service_definition_name: string;
   description?: string;
@@ -34,11 +31,4 @@ export interface IServiceDefinitionConfig {
   transportRequest?: string; // Only optional parameter
   description?: string; // Required for create/validate operations, optional for others
   sourceCode?: string; // Service definition source code (CDS service definition syntax)
-}
-
-export interface IServiceDefinitionState extends IAdtObjectState {
-  readSourceResult?: IAdtWireResponse;
-  // All operation results are in IAdtObjectState:
-  // validationResponse, createResult, lockHandle, updateResult, checkResult,
-  // unlockResult, activateResult, deleteResult, readResult, transportResult
 }

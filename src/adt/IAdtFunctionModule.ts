@@ -2,8 +2,6 @@
  * Function Module ADT operation parameter interfaces (snake_case, low-level)
  */
 
-import type { IAdtObjectState } from './IAdtObjectState';
-
 export interface ICreateFunctionModuleParams {
   functionGroupName: string;
   functionModuleName: string;
@@ -41,11 +39,4 @@ export interface IFunctionModuleConfig {
   masterSystem?: string; // SAP system ID (three characters) — required on on-premise
   responsible?: string; // User responsible for the object
   onLock?: (lockHandle: string) => void;
-}
-
-export interface IFunctionModuleState extends IAdtObjectState {
-  // All operation results are in IAdtObjectState:
-  // validationResponse, createResult, lockHandle, updateResult, checkResult,
-  // unlockResult, activateResult, deleteResult, readResult, transportResult
-  // FunctionModule-specific fields can be added here if needed
 }

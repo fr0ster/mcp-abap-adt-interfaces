@@ -5,49 +5,46 @@
 // something written entirely outside the package fits too, and that a caller
 // holding the contract can reach everything the handler is for.
 
-import type { IAdtResponse, IAdtResult } from '../adt/IAdtResponse';
+import type { IAdtResponse } from '../adt/IAdtResponse';
 import type {
   IAdtRequest,
   IListTransportsOptions,
   ITransportConfig,
-  ITransportState,
   ITransportTree,
 } from '../index';
 
 /** A success, built by hand — these proofs are about the shape, not the helper. */
-function answered<T>(value: T): IAdtResponse<IAdtResult<T>> {
+function answered<T>(value: T): IAdtResponse<T> {
   return { ok: true, getResult: () => ({ value }), getError: () => undefined };
 }
 
 /** A consumer's own handler. Nothing here comes from the implementation. */
 class MyOwnRequests implements IAdtRequest {
-  async create(
-    config: ITransportConfig,
-  ): Promise<IAdtResponse<IAdtResult<ITransportState>>> {
-    return answered({ transportNumber: config.description });
+  async create(config: ITransportConfig): Promise<IAdtResponse<string>> {
+    return answered(config.description);
   }
   async read(
     _config: Partial<ITransportConfig>,
-  ): Promise<IAdtResponse<IAdtResult<ITransportState | undefined>>> {
-    return answered(undefined);
+  ): Promise<IAdtResponse<string>> {
+    return answered('');
   }
   async readMetadata(
     _config: Partial<ITransportConfig>,
-  ): Promise<IAdtResponse<IAdtResult<ITransportState>>> {
-    return answered({});
+  ): Promise<IAdtResponse<string>> {
+    return answered('');
   }
   async update(
     _config: Partial<ITransportConfig>,
-  ): Promise<IAdtResponse<IAdtResult<ITransportState>>> {
-    return answered({});
+  ): Promise<IAdtResponse<void>> {
+    return answered(undefined);
   }
   async delete(
     _config: Partial<ITransportConfig>,
-  ): Promise<IAdtResponse<IAdtResult<ITransportState>>> {
-    return answered({});
+  ): Promise<IAdtResponse<void>> {
+    return answered(undefined);
   }
-  async list(_options?: IListTransportsOptions): Promise<ITransportState> {
-    return {};
+  async list(_options?: IListTransportsOptions): Promise<ITransportTree> {
+    return { attributes: {}, requests: [] };
   }
   async listNodes(options?: IListTransportsOptions): Promise<ITransportTree>;
   async listNodes<T>(
@@ -81,10 +78,9 @@ const mine: Promise<MyShape> = requests.listNodes(
  * The CRUD half is reachable through the contract, not only the class — and it
  * answers `IAdtResponse`, so a caller is made to check before reading.
  */
-const created: Promise<IAdtResponse<IAdtResult<ITransportState>>> =
-  requests.create({
-    description: 'x',
-  });
+const created: Promise<IAdtResponse<string>> = requests.create({
+  description: 'x',
+});
 
 /** A parser returning the wrong shape is refused. */
 // @ts-expect-error the parser yields MyShape, not ITransportTree

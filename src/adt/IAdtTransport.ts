@@ -2,9 +2,12 @@
  * Transport ADT operation parameter interfaces (snake_case, low-level)
  */
 
-import type { IAdtWireResponse } from '../connection/IAbapConnection';
-import type { IAdtCrud } from './IAdtCapabilities';
-import type { IAdtObjectState } from './IAdtObjectState';
+import type {
+  IAdtCreatable,
+  IAdtDeletable,
+  IAdtReadable,
+  IAdtUpdatable,
+} from './IAdtCapabilities';
 
 export interface ICreateTransportParams {
   transport_type?: string;
@@ -64,12 +67,6 @@ export interface ITransportConfig {
 }
 
 // Transport state
-export interface ITransportState extends IAdtObjectState {
-  transportNumber?: string;
-  taskNumber?: string;
-  listResult?: IAdtWireResponse;
-}
-
 /**
  * One container a request was nested under — `tm:workbench`, `tm:target`,
  * `tm:modifiable` and whatever else a system groups by.
@@ -159,19 +156,22 @@ export interface ITransportTree {
  * capability guard with nothing to compare the manifest against, because the
  * declared type *was* the implementation.
  *
- * The CRUD half is `IAdtCrud` with the transport's own config and state; the two
+ * The CRUD half is the four atoms with the transport's own config; the two
  * methods below are the transport's alone, and neither has an atom because
  * nothing else lists a collection this way.
  */
 export interface IAdtRequest
-  extends IAdtCrud<ITransportConfig, ITransportState> {
+  extends IAdtCreatable<ITransportConfig, string>,
+    IAdtReadable<ITransportConfig, string, string>,
+    IAdtUpdatable<ITransportConfig, void>,
+    IAdtDeletable<ITransportConfig, void> {
   /**
    * The saved-configuration search, as state.
    *
    * `configUri` is required by the layer beneath — see `IListTransportsParams`,
    * where the measurement is. This resolves it; that one does not.
    */
-  list(options?: IListTransportsOptions): Promise<ITransportState>;
+  list(options?: IListTransportsOptions): Promise<ITransportTree>;
 
   /** The tree the server sends, parsed by this package. */
   listNodes(options?: IListTransportsOptions): Promise<ITransportTree>;

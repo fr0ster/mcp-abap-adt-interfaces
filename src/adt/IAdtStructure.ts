@@ -2,8 +2,6 @@
  * Structure ADT operation parameter interfaces (snake_case, low-level)
  */
 
-import type { IAdtObjectState } from './IAdtObjectState';
-
 export interface ICreateStructureParams {
   structureName: string;
   description: string;
@@ -56,11 +54,4 @@ export interface IStructureConfig {
   fields?: IStructureField[];
   includes?: IStructureInclude[];
   onLock?: (lockHandle: string) => void;
-}
-
-export interface IStructureState extends IAdtObjectState {
-  // All operation results are in IAdtObjectState:
-  // validationResponse, createResult, lockHandle, updateResult, checkResult,
-  // unlockResult, activateResult, deleteResult, readResult, transportResult
-  // Structure-specific fields can be added here if needed
 }

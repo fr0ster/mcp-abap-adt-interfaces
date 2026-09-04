@@ -2,10 +2,6 @@
  * Unit Test ADT operation parameter interfaces (snake_case, low-level)
  */
 
-import type { IAdtWireResponse } from '../connection/IAbapConnection';
-import type { IClassState } from './IAdtClass';
-import type { IAdtObjectState } from './IAdtObjectState';
-
 export interface IUnitTestScope {
   own_tests?: boolean;
   foreign_tests?: boolean;
@@ -56,9 +52,6 @@ export interface IUnitTestConfig {
   transportRequest?: string;
 }
 
-/** Result of managing a unit test's container class and include. */
-export interface IUnitTestState extends IAdtObjectState {}
-
 // Unit test definition types (local to adt-clients)
 export interface IClassUnitTestDefinition {
   containerClass: string;
@@ -102,10 +95,16 @@ export interface ICdsUnitTestConfig extends IUnitTestConfig {
   cdsViewName?: string;
 }
 
-export interface ICdsUnitTestState extends IUnitTestState {
-  testClassState?: IClassState;
-  cdsCheckResponse?: IAdtWireResponse;
-}
+/** The CDS variant adds nothing to a run's result that a contract can name. */
+/**
+ * What `checkCdsTestDoubles` answers.
+ *
+ * A document, like its two siblings above: ADT returns the check result as XML
+ * and decision 5 leaves parsing to the consumer. The type that stood here
+ * carried a class state and a wire frame, both of which were the
+ * implementation's rather than the contract's.
+ */
+export type ICdsUnitTestResult = string;
 
 /** Options for fetching a finished run's result document. */
 export interface IUnitTestResultOptions {
@@ -135,16 +134,10 @@ export interface ITestRunInformation {
    * @param runId the run to ask about
    * @param withLongPolling let ADT hold the request until the run progresses
    */
-  getStatus(
-    runId: string,
-    withLongPolling?: boolean,
-  ): Promise<IAdtWireResponse>;
+  getStatus(runId: string, withLongPolling?: boolean): Promise<string>;
 
   /** Fetch the result document of a finished run. */
-  getResult(
-    runId: string,
-    options?: IUnitTestResultOptions,
-  ): Promise<IAdtWireResponse>;
+  getResult(runId: string, options?: IUnitTestResultOptions): Promise<string>;
 }
 
 /**
@@ -158,5 +151,5 @@ export interface ICdsTestDoubleCheckable {
    * Check whether a CDS view can be tested with test doubles.
    * @param cdsViewName the view to inspect
    */
-  checkCdsTestDoubles(cdsViewName: string): Promise<ICdsUnitTestState>;
+  checkCdsTestDoubles(cdsViewName: string): Promise<ICdsUnitTestResult>;
 }

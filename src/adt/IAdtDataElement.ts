@@ -2,8 +2,6 @@
  * Data Element ADT operation parameter interfaces (snake_case, low-level)
  */
 
-import type { IAdtObjectState } from './IAdtObjectState';
-
 export type DataElementTypeKind =
   | 'domain'
   | 'predefinedAbapType'
@@ -104,8 +102,4 @@ export interface IDataElementConfig {
   searchHelp?: string;
   searchHelpParameter?: string;
   setGetParameter?: string;
-}
-
-export interface IDataElementState extends IAdtObjectState {
-  // DataElement-specific state can be added here if needed
 }

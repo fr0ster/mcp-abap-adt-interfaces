@@ -2,8 +2,6 @@
  * Package ADT operation parameter interfaces (snake_case, low-level)
  */
 
-import type { IAdtObjectState } from './IAdtObjectState';
-
 export interface ICreatePackageParams {
   package_name: string;
   description?: string;
@@ -63,5 +61,3 @@ export interface IPackageConfig {
   recordChanges?: boolean;
   onLock?: (lockHandle: string) => void;
 }
-
-export interface IPackageState extends IAdtObjectState {}

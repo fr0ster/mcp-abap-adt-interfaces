@@ -4,8 +4,6 @@
  * CDS views, AMDP table functions, and other DDL sources.
  */
 
-import type { IAdtObjectState } from './IAdtObjectState';
-
 export interface ICreateDdlParams {
   ddl_name: string;
   ddl_source?: string;
@@ -43,5 +41,3 @@ export interface IDdlConfig {
   sessionId?: string;
   onLock?: (lockHandle: string) => void;
 }
-
-export interface IDdlState extends IAdtObjectState {}

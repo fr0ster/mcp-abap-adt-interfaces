@@ -2,8 +2,6 @@
  * ScalarFunctionImplementation (DSFI/SFI) ADT operation parameter interfaces (low-level)
  */
 
-import type { IAdtObjectState } from './IAdtObjectState';
-
 export type ScalarFunctionEngine = 'sqlEngine' | 'amdpEngine';
 
 export interface ICreateScalarFunctionImplementationParams {
@@ -38,8 +36,4 @@ export interface IScalarFunctionImplementationConfig {
   transportRequest?: string;
   description?: string;
   sourceCode?: string;
-}
-
-export interface IScalarFunctionImplementationState extends IAdtObjectState {
-  validationSupported?: boolean;
 }

@@ -2,9 +2,6 @@
  * Class ADT operation parameter interfaces (snake_case, low-level)
  */
 
-import type { IAdtWireResponse as AxiosResponse } from '../connection/IAbapConnection';
-import type { IAdtObjectState } from './IAdtObjectState';
-
 export interface ICreateClassParams {
   class_name: string;
   description?: string;
@@ -49,20 +46,9 @@ export interface IClassConfig {
   classTemplate?: string;
 }
 
-export interface IClassState extends IAdtObjectState {
-  // All operation results are in IAdtObjectState:
-  // validationResponse, createResult, lockHandle, updateResult, checkResult,
-  // unlockResult, activateResult, deleteResult, readResult, transportResult
-  // Class-specific fields can be added here if needed
-  testClassCode?: string;
-  testActivateResult?: AxiosResponse;
-  testLockHandle?: string;
-  testClassesResult?: AxiosResponse;
-}
-
 // Class-includes config types — promoted verbatim from adt-clients
 // src/core/class/AdtLocal{TestClass,Types,Definitions,Macros}.ts
-// (publicly exported, IAdtObject configs).
+// (publicly exported; the `TConfig` of the atoms a class handler declares).
 export interface ILocalTestClassConfig {
   className: string;
   /**

@@ -7,7 +7,91 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [29.0.0] - 2026-09-03
+## [29.0.0] - 2026-09-04
+
+Two passes, and the second is why this is one release rather than two: 29.0.0 was
+never published — its tag was cut and then deleted once the first pass turned out
+to have left the envelope in place. A consumer therefore crosses from 28.0.0 to
+this in a single step.
+
+### Changed
+
+- **BREAKING: `IAdtResponse` takes the value, not a wrapper around it.** It was
+  `<TResult extends IAdtResult<unknown>, TError>`, so every member wrote
+  `IAdtResponse<IAdtResult<X>>` — two wrappers where one was meant — and the
+  contract displayed `unknown` to anyone reading it.
+
+  ```typescript
+  IAdtResponse<TValue, TError extends IAdtError = IAdtError>
+    = IAdtSuccess<TValue> | IAdtFailure<TError>
+  ```
+
+  `IAdtResult` has not gone anywhere: it is what `getResult()` answers, and it is
+  what keeps `getResult().value` typed all the way through without a cast. It
+  simply stopped being written at every call site. `unknown` now appears once in
+  the file, on `IAdtError.cause`, where the value genuinely is anything caught.
+
+- **BREAKING: each capability atom names what its own member answers.** The
+  atoms took one type for every member, which said something untrue about ADT —
+  a create does not answer what a read answers.
+
+  ```typescript
+  IAdtCreatable<TConfig, TCreated>
+  IAdtReadable<TConfig, TSource, TMetadata>
+  IAdtUpdatable<TConfig, TUpdated>
+  IAdtDeletable<TConfig, TDeleted>
+  IAdtValidatable<TConfig, TValidated>
+  IAdtCheckable<TConfig, TChecked>
+  IAdtActivatable<TConfig, TActivated>
+  IAdtTransportAware<TConfig, TTransport>
+  ```
+
+  `IAdtReadable` carries two because it is two endpoints — source and metadata.
+
+- **BREAKING: fourteen members answer their document instead of the transport
+  envelope.** Twelve in `IAdtUtilities` — `getSqlQuery`, `getTableContents`,
+  `discovery`, `readObjectSource`, `readObjectMetadata`, `getObjectStructure`,
+  `getInclude`, `checkDeletionGroup`, `deleteObjectsGroup`,
+  `activateObjectsGroup`, `getWhereUsedScope`, `getVirtualFoldersContents` — and
+  `getStatus` / `getResult` in `IAdtUnitTest`. `IAdtWireResponse` told a caller
+  only that a request happened; parsing the document is the consumer's
+  (decision 5).
+
+### Removed
+
+- **BREAKING: the wide composites.** `IAdtCrud`, `IAdtModifiable`, `IAdtObject`
+  and `IAdtSourceObject` are gone. A handler declares the atoms it honours, which
+  is decision 3 applied rather than restated. The three that leaned on them —
+  `IAdtRequest`, `IAdtServiceBinding`, `IFeatureToggle` — now list their atoms and
+  say what each answers.
+
+- **BREAKING: the state bags.** Thirty-two `*State` interfaces and their base
+  `IAdtObjectState`. They were ten optional `IAdtWireResponse` fields, nine of
+  them `undefined` on any given call, from which a caller could type nothing out;
+  twelve of the thirty-two added no field of their own at all.
+
+  They existed to hand back every step of a chain. A member now answers what its
+  own endpoint produced, and a failure carries the request that produced it — so
+  "which of the seven" is answered by `IAdtError.request` rather than by nine
+  empty fields beside a tenth.
+
+  **Nothing was moved.** A state is a shape an implementation builds;
+  `@mcp-abap-adt/adt-clients` declares its own, and a contracts package shipping
+  one makes "use your own implementation" untrue for that piece — the same reason
+  `AdtOperationError` left.
+
+- **`AxiosResponse` no longer appears anywhere.** Two files aliased
+  `IAdtWireResponse` under that name, so a contract was naming a transport
+  library. Both are gone with the fields that used them.
+
+### Unchanged, deliberately
+
+- `IAdtError.response` and the `answer` handed to `IAdtOperationOptions.analyse`
+  are still `IAdtWireResponse`, and are the only two left. They are the raw
+  document a caller needs in order to know what SAP actually said, which is the
+  requirement this redesign started from. Removing them would remove the point.
+
+### The first pass
 
 ### Changed
 

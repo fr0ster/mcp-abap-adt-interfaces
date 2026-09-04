@@ -1,5 +1,3 @@
-import type { IAdtObjectState } from './IAdtObjectState';
-
 export interface ICreateMessageClassParams {
   name: string;
   description: string;
@@ -12,7 +10,7 @@ export interface IDeleteMessageClassParams {
   transport_request?: string;
 }
 
-// Nested shapes referenced by IMessageClassState/IMessageClassMessageState
+// Nested shapes a message-class read answers with
 // (promoted from adt-clients src/core/messageClass/xml.ts — minimal closure
 // needed to compile the Config/State types below)
 export interface IParsedMessage {
@@ -50,11 +48,6 @@ export interface IMessageClassConfig {
 }
 
 // State returned from operations
-export interface IMessageClassState extends IAdtObjectState {
-  /** Parsed message class returned after read() */
-  messageClass?: IParsedMessageClass;
-}
-
 // ── Individual message config/state ───────────────────────────────────────────
 
 /** Configuration for operating on a single message within a message class. */
@@ -71,10 +64,4 @@ export interface IMessageClassMessageConfig {
   description?: string;
   /** Transport request — sent as &corrNr= on the parent-class PUT for create/update/delete (transportable packages) */
   transportRequest?: string;
-}
-
-/** State returned from operations on a single message. */
-export interface IMessageClassMessageState extends IAdtObjectState {
-  /** The individual message extracted from the parent class */
-  message?: IParsedMessage;
 }

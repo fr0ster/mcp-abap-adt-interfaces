@@ -2,8 +2,6 @@
  * Table Type ADT operation parameter interfaces (snake_case, low-level)
  */
 
-import type { IAdtObjectState } from './IAdtObjectState';
-
 export type TableTypeRowKind =
   | 'dictionaryType'
   | 'predefinedAbapType'
@@ -95,11 +93,4 @@ export interface ITableTypeConfig {
     | 'notSpecified';
   primaryKeyKind?: 'unique' | 'nonUnique' | 'notSpecified';
   description?: string; // Required for create/validate operations, optional for others
-}
-
-export interface ITableTypeState extends IAdtObjectState {
-  // All operation results are in IAdtObjectState:
-  // validationResponse, createResult, lockHandle, updateResult, checkResult,
-  // unlockResult, activateResult, deleteResult, readResult, transportResult
-  // TableType-specific fields can be added here if needed
 }

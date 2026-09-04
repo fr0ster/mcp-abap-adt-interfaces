@@ -1,27 +1,21 @@
 /**
- * High-level ADT Object Operations Interface
+ * Operation options, version entries and error codes shared by the capability
+ * atoms.
  *
- * Defines the interface for high-level CRUD operations on ADT objects.
- * This interface is implemented by Adt{Entity} classes (e.g., AdtClass, AdtDomain).
- *
- * Unlike Builders which provide low-level method chaining, this interface
- * provides high-level operation chains with automatic error handling and cleanup.
+ * The wide `IAdtObject` this file was named for was removed in 29.0.0; what an
+ * object can do is now stated by the atoms it declares in `IAdtCapabilities.ts`.
+ * Nothing here declares an operation — these are the pieces the atoms refer to:
+ * {@link IAdtOperationOptions} carries the strategy a caller injects,
+ * {@link IObjectVersion} is one entry of a version history, and
+ * {@link AdtObjectErrorCodes} names the failures of the four members that still
+ * throw.
  */
 
 import type { IAdtWireResponse } from '../connection/IAbapConnection';
-import type {
-  IAdtActivatable,
-  IAdtCheckable,
-  IAdtCrud,
-  IAdtLockable,
-  IAdtTransportAware,
-  IAdtValidatable,
-  IAdtVersionable,
-} from './IAdtCapabilities';
 import type { IAdtError } from './IAdtResponse';
 
 /**
- * Error codes for the `IAdtObject` members that still signal failure by throwing.
+ * Error codes for the capability members that still signal failure by throwing.
  *
  * **The CRUD members no longer throw.** `create`, `read`, `readMetadata`,
  * `update`, `delete`, `validate`, `check` and `activate` answer `IAdtResponse`,
@@ -203,26 +197,3 @@ export interface IObjectVersion {
   /** Short text / description of that transport request, if any. */
   transportDescription?: string;
 }
-
-/**
- * High-level ADT Object Operations Interface
- *
- * Provides simplified CRUD operations with automatic operation chains,
- * error handling, and resource cleanup.
- *
- * @template TConfig - Configuration type for the object (e.g., ClassBuilderConfig)
- * @template TReadResult - Result type for read operations (defaults to TConfig)
- *
- * @deprecated Since 11.3.0. Handlers now declare their honest capability set
- * (see IAdtComposites and the capability atoms). `IAdtObject` remains as the
- * full-capability composite for backward compatibility and will be removed in a
- * later major. New code should depend on the specific capability it needs.
- */
-export interface IAdtObject<TConfig, TReadResult = TConfig>
-  extends IAdtCrud<TConfig, TReadResult>,
-    IAdtValidatable<TConfig, TReadResult>,
-    IAdtCheckable<TConfig, TReadResult>,
-    IAdtActivatable<TConfig, TReadResult>,
-    IAdtLockable<TConfig, TReadResult>,
-    IAdtVersionable<TConfig>,
-    IAdtTransportAware<TConfig, TReadResult> {}

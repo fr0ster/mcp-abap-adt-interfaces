@@ -2,8 +2,6 @@
  * Transformation ADT operation parameter interfaces (low-level)
  */
 
-import type { IAdtObjectState } from './IAdtObjectState';
-
 export type TransformationType = 'SimpleTransformation' | 'XSLTProgram';
 
 export interface ICreateTransformationParams {
@@ -39,5 +37,5 @@ export interface ITransformationConfig {
   sourceCode?: string;
 }
 
-// Uses standard IAdtObjectState fields: readResult, metadataResult, transportResult, etc.
-export interface ITransformationState extends IAdtObjectState {}
+// The state types were removed in 29.0.0: each member answers what its own
+// endpoint produced, and a failure carries the request that produced it.

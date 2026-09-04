@@ -1,15 +1,17 @@
 import type {
   IAdtActivatable,
   IAdtCheckable,
-  IAdtCrud,
+  IAdtCreatable,
+  IAdtDeletable,
+  IAdtReadable,
   IAdtTransportAware,
+  IAdtUpdatable,
   IAdtValidatable,
 } from '../adt/IAdtCapabilities';
 import type { IAdtOperationOptions } from '../adt/IAdtObject';
 import type {
   IDeleteServiceBindingParams,
   IServiceBindingConfig,
-  IServiceBindingState,
   ServiceBindingVariant,
 } from '../adt/IAdtServiceBinding';
 import type { IAdtWireResponse } from '../connection/IAbapConnection';
@@ -117,7 +119,7 @@ export type ICreateAndGenerateServiceBindingParamsLegacy =
 /**
  * A service binding, and what ADT gives one.
  *
- * Until this release it extended `IAdtObject`, the full set, and so promised
+ * Until 17.0.0 it extended the wide composite, the full set, and so promised
  * version history and a lock. It has neither: the handler's `getVersions`,
  * `getVersionSource`, `lock` and `unlock` all threw, and `getService()` hands
  * out the same object, so it promised them twice over. The atoms below are what
@@ -125,11 +127,14 @@ export type ICreateAndGenerateServiceBindingParamsLegacy =
  * classifying a service.
  */
 export interface IAdtServiceBinding
-  extends IAdtCrud<IServiceBindingConfig, IServiceBindingState>,
-    IAdtValidatable<IServiceBindingConfig, IServiceBindingState>,
-    IAdtCheckable<IServiceBindingConfig, IServiceBindingState>,
-    IAdtActivatable<IServiceBindingConfig, IServiceBindingState>,
-    IAdtTransportAware<IServiceBindingConfig, IServiceBindingState> {
+  extends IAdtCreatable<IServiceBindingConfig, void>,
+    IAdtReadable<IServiceBindingConfig, string, string>,
+    IAdtUpdatable<IServiceBindingConfig, void>,
+    IAdtDeletable<IServiceBindingConfig, void>,
+    IAdtValidatable<IServiceBindingConfig, string>,
+    IAdtCheckable<IServiceBindingConfig, string>,
+    IAdtActivatable<IServiceBindingConfig, string>,
+    IAdtTransportAware<IServiceBindingConfig, string> {
   getServiceBindingTypes(): Promise<IAdtWireResponse>;
   validateServiceBinding(
     params: IValidateServiceBindingParams,
@@ -182,7 +187,7 @@ export interface IAdtServiceBinding
 }
 
 /**
- * The same lie in a second place, until this release: this was `IAdtObject` over the
+ * The same lie in a second place, until 17.0.0: this was the wide composite over the
  * binding's config, so a consumer naming it got version history and a lock that
  * do not exist. It now points at {@link IAdtServiceBinding}.
  *

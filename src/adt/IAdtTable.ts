@@ -2,8 +2,6 @@
  * Table ADT operation parameter interfaces (snake_case, low-level)
  */
 
-import type { IAdtObjectState } from './IAdtObjectState';
-
 export interface ICreateTableParams {
   table_name: string;
   package_name: string;
@@ -36,11 +34,4 @@ export interface ITableConfig {
   transportRequest?: string; // Only optional parameter
   ddlCode?: string;
   description?: string; // Required for create/validate operations, optional for others
-}
-
-export interface ITableState extends IAdtObjectState {
-  // All operation results are in IAdtObjectState:
-  // validationResponse, createResult, lockHandle, updateResult, checkResult,
-  // unlockResult, activateResult, deleteResult, readResult, transportResult
-  // Table-specific fields can be added here if needed
 }

@@ -5,11 +5,13 @@
 import type {
   IAdtActivatable,
   IAdtCheckable,
-  IAdtCrud,
+  IAdtCreatable,
+  IAdtDeletable,
   IAdtLockable,
+  IAdtReadable,
+  IAdtUpdatable,
   IAdtValidatable,
 } from './IAdtCapabilities';
-import type { IAdtObjectState } from './IAdtObjectState';
 
 export type FeatureToggleState = 'on' | 'off' | 'undefined';
 
@@ -122,48 +124,45 @@ export interface IFeatureToggleConfig {
   onLock?: (lockHandle: string) => void;
 }
 
-export interface IFeatureToggleState extends IAdtObjectState {
-  runtimeState?: IFeatureToggleRuntimeState;
-  checkStateResult?: IFeatureToggleCheckStateResult;
-  sourceResult?: IFeatureToggleSource;
-}
-
 /**
  * A feature toggle, and what ADT gives one.
  *
- * Until this release it extended `IAdtObject`, the full set, and so promised
+ * Until 17.0.0 it extended the wide composite, the full set, and so promised
  * version history and a transport of its own. It has neither: the handler's
  * `getVersions`, `getVersionSource` and `readTransport` all threw. The atoms
  * below are what remains, named positively, plus the operations that are the
  * point of a toggle — switching it and asking what it is doing right now.
  */
 export interface IFeatureToggleObject
-  extends IAdtCrud<IFeatureToggleConfig, IFeatureToggleState>,
-    IAdtValidatable<IFeatureToggleConfig, IFeatureToggleState>,
-    IAdtCheckable<IFeatureToggleConfig, IFeatureToggleState>,
-    IAdtActivatable<IFeatureToggleConfig, IFeatureToggleState>,
-    IAdtLockable<IFeatureToggleConfig, IFeatureToggleState> {
+  extends IAdtCreatable<IFeatureToggleConfig, void>,
+    IAdtReadable<IFeatureToggleConfig, string, string>,
+    IAdtUpdatable<IFeatureToggleConfig, void>,
+    IAdtDeletable<IFeatureToggleConfig, void>,
+    IAdtValidatable<IFeatureToggleConfig, IFeatureToggleRuntimeState>,
+    IAdtCheckable<IFeatureToggleConfig, IFeatureToggleRuntimeState>,
+    IAdtActivatable<IFeatureToggleConfig, IFeatureToggleRuntimeState>,
+    IAdtLockable<IFeatureToggleConfig> {
   switchOn(
     config: Partial<IFeatureToggleConfig>,
     opts: { transportRequest: string; userSpecific?: boolean },
-  ): Promise<IFeatureToggleState>;
+  ): Promise<IFeatureToggleRuntimeState>;
 
   switchOff(
     config: Partial<IFeatureToggleConfig>,
     opts: { transportRequest: string; userSpecific?: boolean },
-  ): Promise<IFeatureToggleState>;
+  ): Promise<IFeatureToggleRuntimeState>;
 
   getRuntimeState(
     config: Partial<IFeatureToggleConfig>,
-  ): Promise<IFeatureToggleState>;
+  ): Promise<IFeatureToggleRuntimeState>;
 
   checkState(
     config: Partial<IFeatureToggleConfig>,
     opts?: { userSpecific?: boolean },
-  ): Promise<IFeatureToggleState>;
+  ): Promise<IFeatureToggleRuntimeState>;
 
   readSource(
     config: Partial<IFeatureToggleConfig>,
     version?: 'active' | 'inactive',
-  ): Promise<IFeatureToggleState>;
+  ): Promise<IFeatureToggleRuntimeState>;
 }
