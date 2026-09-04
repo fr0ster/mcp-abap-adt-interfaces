@@ -457,7 +457,7 @@ This package is responsible for:
 - `SapAuthType` - Authentication type: `"basic" | "jwt"`
 
 ### Service Domain (`service/`)
-- `IAdtServiceBinding<R>` - what a service binding has that nothing else does: the type catalogue, generation, the two OData readings, publication and classification. The aliases `IAdtService` and `AdtServiceBindingType` were removed in 30.0.0 — two names for one type
+- `IAdtServiceBinding<R>` - what a service binding has that nothing else does: the type catalogue, generation, the two OData readings, publication and classification. The aliases `IAdtService`, `AdtServiceBindingType` and `IAdtServiceOperationOptions` were removed in 30.0.0 — one type, one name
   - **CRUD is the atoms, composed beside it.** Until 30.0.0 this extended eight of them *and* declared `createServiceBinding`, `readServiceBinding`, `updateServiceBinding`, `deleteServiceBinding`, `checkServiceBinding`, `activateServiceBinding`, `validateServiceBinding` and `transportCheckServiceBinding` next to them — the same operations on the same endpoints, twice, with the second set answering the transport envelope. A caller who needs both writes `IAdtServiceBinding & IAdtCreatable<IServiceBindingConfig, void> & …`
   - `R` is the readings, keyed rather than positional (`IServiceBindingResults`, defaulting to `IServiceBindingDocuments`): five distinct answers would otherwise be five type parameters, and the fourth unnameable without spelling the first three
   - `createAndGenerateServiceBinding()` answers **one** value; it handed back six envelopes, one per request it made along the way, until 30.0.0

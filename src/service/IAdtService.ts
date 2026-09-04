@@ -8,7 +8,6 @@ import type {
   IAdtUpdatable,
   IAdtValidatable,
 } from '../adt/IAdtCapabilities';
-import type { IAdtOperationOptions } from '../adt/IAdtObject';
 import type { IAdtResponse } from '../adt/IAdtResponse';
 import type {
   IDeleteServiceBindingParams,
@@ -215,9 +214,3 @@ export interface IAdtServiceBinding<
     params: IClassifyServiceBindingParams,
   ): Promise<IAdtResponse<R['classification']>>;
 }
-
-export type AdtServiceBindingType = IAdtServiceBinding;
-
-// Backward compatibility aliases
-export type IAdtService = IAdtServiceBinding;
-export type IAdtServiceOperationOptions = IAdtOperationOptions;

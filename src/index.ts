@@ -498,11 +498,8 @@ export type { ISapConfig } from './sap/ISapConfig';
 export type { SapAuthType, SapConnectionType } from './sap/SapAuthType';
 // Service domain
 export type {
-  AdtServiceBindingType,
   IActivateServiceBindingParams,
-  IAdtService,
   IAdtServiceBinding,
-  IAdtServiceOperationOptions,
   ICheckServiceBindingParams,
   IClassifyServiceBindingParams,
   ICreateAndGenerateServiceBindingParams,

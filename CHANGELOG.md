@@ -107,8 +107,11 @@ composed and never inherited.
   a legitimate implementation of what it does — asserted in
   `src/__typechecks__/runnableSplit.ts`.
 
-- **BREAKING: `IAdtService` and `AdtServiceBindingType`**, two aliases for
-  `IAdtServiceBinding`. Import that.
+- **BREAKING: `IAdtService`, `AdtServiceBindingType` and
+  `IAdtServiceOperationOptions`.** The first two were aliases for
+  `IAdtServiceBinding`, the third for `IAdtOperationOptions` — import those. One
+  type, one name: an alias is a second name a consumer has to learn and a second
+  thing every reader has to check is the same thing.
 
 ### Migration from 29.0.0
 
@@ -125,6 +128,8 @@ composed and never inherited.
 | `try { await obj.lock(cfg) } catch` | `const a = await obj.lock(cfg); if (!a.ok) …` |
 | `class X implements IAdtServiceBinding` with `create` inherited | `implements IAdtServiceBinding & IAdtCreatable<IServiceBindingConfig, void>` |
 | `IDebugger`, `IMemorySnapshots`, `IAdtBatch` | not published here; take the implementation's own types from `adt-clients` |
+| `IAdtService`, `AdtServiceBindingType` | `IAdtServiceBinding` |
+| `IAdtServiceOperationOptions` | `IAdtOperationOptions` |
 | `implements IExecutor<T, R, PO, GO, GR>` | `IAdtRunnable<T, R> & IRunnableWithProfiler<T, R, PO> & IRunnableWithProfiling<T, GR, GO>` |
 
 ## [29.0.0] - 2026-09-04
