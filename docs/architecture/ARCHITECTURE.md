@@ -137,7 +137,7 @@ later release, not a gap this one hides.
 ### Where a strategy is supplied
 
 **Into the implementation, once** (decision 22). A member's result type is a type
-parameter of its interface, defaulting to the shape it answered before:
+parameter of its interface, and the interface names no shape for it:
 
 ```typescript
 interface IAdtPackageBrowsing<TContents> {
