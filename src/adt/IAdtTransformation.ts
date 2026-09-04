@@ -37,4 +37,5 @@ export interface ITransformationConfig {
   sourceCode?: string;
 }
 
-// Uses standard IAdtObjectState fields: readResult, metadataResult, transportResult, etc.
+// The state types were removed in 29.0.0: each member answers what its own
+// endpoint produced, and a failure carries the request that produced it.

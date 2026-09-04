@@ -48,7 +48,7 @@ export interface IClassConfig {
 
 // Class-includes config types — promoted verbatim from adt-clients
 // src/core/class/AdtLocal{TestClass,Types,Definitions,Macros}.ts
-// (publicly exported, IAdtObject configs).
+// (publicly exported; the `TConfig` of the atoms a class handler declares).
 export interface ILocalTestClassConfig {
   className: string;
   /**

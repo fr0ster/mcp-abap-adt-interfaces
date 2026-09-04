@@ -57,7 +57,7 @@ export interface IValidateEnhancementParams {
 
 /**
  * AdtEnhancement configuration (camelCase)
- * Used by high-level IAdtObject implementation
+ * Used by the implementation behind the enhancement's capability atoms
  */
 export interface IEnhancementConfig {
   enhancementName: string;

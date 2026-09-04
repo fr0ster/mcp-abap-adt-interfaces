@@ -1,8 +1,9 @@
 /**
- * High-level ADT Object Operations Interface
+ * Operation options, version entries and error codes shared by the capability
+ * atoms.
  *
- * Defines the interface for high-level CRUD operations on ADT objects.
- * This interface is implemented by Adt{Entity} classes (e.g., AdtClass, AdtDomain).
+ * The wide `IAdtObject` this file was named for was removed in 29.0.0; what an
+ * object can do is now stated by the atoms it declares in `IAdtCapabilities.ts`.
  *
  * Unlike Builders which provide low-level method chaining, this interface
  * provides high-level operation chains with automatic error handling and cleanup.
@@ -12,7 +13,7 @@ import type { IAdtWireResponse } from '../connection/IAbapConnection';
 import type { IAdtError } from './IAdtResponse';
 
 /**
- * Error codes for the `IAdtObject` members that still signal failure by throwing.
+ * Error codes for the capability members that still signal failure by throwing.
  *
  * **The CRUD members no longer throw.** `create`, `read`, `readMetadata`,
  * `update`, `delete`, `validate`, `check` and `activate` answer `IAdtResponse`,
