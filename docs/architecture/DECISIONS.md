@@ -1851,6 +1851,14 @@ because nothing but the strategy makes those.
 contract; this is that rule applied to the failure half, which had been the half
 still asking for fields.
 
+**Parameterising the options is half of it.** A member that takes
+`IAdtOperationOptions<E>` and answers `IAdtResponse<T>` drops `E` on the way
+out, and the caller is back to casting — the first version of this did exactly
+that, and the check written for it declared its answer by hand rather than
+asking a member, so it passed while the promise did not hold. All nine
+capability members are parameterised, and the check calls them.
+
 **How to catch a violation.** A new optional field on `IAdtError` that serves one
-kind of caller. A member whose options are not parameterised, so a strategy's
-type stops at the call site.
+kind of caller. A member whose options are not parameterised, or whose return is
+not — so a strategy's type stops at the call site. A type-level check that
+declares the answer instead of obtaining it from a member.

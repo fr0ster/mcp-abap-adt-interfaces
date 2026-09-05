@@ -29,7 +29,7 @@
  * exists.
  */
 import type { IAdtOperationOptions } from './IAdtObject';
-import type { IAdtResponse } from './IAdtResponse';
+import type { IAdtError, IAdtResponse } from './IAdtResponse';
 
 /**
  * Bring an object into existence.
@@ -46,10 +46,10 @@ export interface IAdtCreatable<TConfig, TCreated> {
    * @param options - Create options (activation, cleanup, source code)
    * @returns Created object configuration
    */
-  create(
+  create<E extends IAdtError = IAdtError>(
     config: TConfig,
-    options?: IAdtOperationOptions,
-  ): Promise<IAdtResponse<TCreated>>;
+    options?: IAdtOperationOptions<E>,
+  ): Promise<IAdtResponse<TCreated, E>>;
 }
 
 /** Obtain a representation of an object — its source, or the metadata about it. */
@@ -66,11 +66,11 @@ export interface IAdtReadable<TConfig, TSource, TMetadata> {
    *                                  Useful after create/activate operations to wait until object is ready
    * @returns Object configuration or source code, or undefined if not found
    */
-  read(
+  read<E extends IAdtError = IAdtError>(
     config: Partial<TConfig>,
     version?: 'active' | 'inactive',
-    options?: { withLongPolling?: boolean } & IAdtOperationOptions,
-  ): Promise<IAdtResponse<TSource>>;
+    options?: { withLongPolling?: boolean } & IAdtOperationOptions<E>,
+  ): Promise<IAdtResponse<TSource, E>>;
 
   /**
    * Read object metadata (object characteristics: package, responsible, description, etc.)
@@ -84,13 +84,13 @@ export interface IAdtReadable<TConfig, TSource, TMetadata> {
    * @param options.version - 'active' or 'inactive' (default: 'active')
    * @returns State with metadata result
    */
-  readMetadata(
+  readMetadata<E extends IAdtError = IAdtError>(
     config: Partial<TConfig>,
     options?: {
       withLongPolling?: boolean;
       version?: 'active' | 'inactive';
-    } & IAdtOperationOptions,
-  ): Promise<IAdtResponse<TMetadata>>;
+    } & IAdtOperationOptions<E>,
+  ): Promise<IAdtResponse<TMetadata, E>>;
 }
 
 export interface IAdtUpdatable<TConfig, TUpdated> {
@@ -102,10 +102,10 @@ export interface IAdtUpdatable<TConfig, TUpdated> {
    * @param options - Update options (activation, cleanup, lock handle)
    * @returns Updated object configuration
    */
-  update(
+  update<E extends IAdtError = IAdtError>(
     config: Partial<TConfig>,
-    options?: IAdtOperationOptions,
-  ): Promise<IAdtResponse<TUpdated>>;
+    options?: IAdtOperationOptions<E>,
+  ): Promise<IAdtResponse<TUpdated, E>>;
 }
 
 export interface IAdtDeletable<TConfig, TDeleted> {
@@ -116,10 +116,10 @@ export interface IAdtDeletable<TConfig, TDeleted> {
    * @param config - Object identification
    * @returns State with delete result
    */
-  delete(
+  delete<E extends IAdtError = IAdtError>(
     config: Partial<TConfig>,
-    options?: IAdtOperationOptions,
-  ): Promise<IAdtResponse<TDeleted>>;
+    options?: IAdtOperationOptions<E>,
+  ): Promise<IAdtResponse<TDeleted, E>>;
 }
 
 export interface IAdtValidatable<TConfig, TValidated> {
@@ -128,10 +128,10 @@ export interface IAdtValidatable<TConfig, TValidated> {
    * @param config - Object configuration
    * @returns State with validation result
    */
-  validate(
+  validate<E extends IAdtError = IAdtError>(
     config: Partial<TConfig>,
-    options?: IAdtOperationOptions,
-  ): Promise<IAdtResponse<TValidated>>;
+    options?: IAdtOperationOptions<E>,
+  ): Promise<IAdtResponse<TValidated, E>>;
 }
 
 export interface IAdtCheckable<TConfig, TChecked> {
@@ -141,11 +141,11 @@ export interface IAdtCheckable<TConfig, TChecked> {
    * @param status - Optional status to check ('active', 'inactive', 'deletion')
    * @returns State with check result
    */
-  check(
+  check<E extends IAdtError = IAdtError>(
     config: Partial<TConfig>,
     status?: string,
-    options?: IAdtOperationOptions,
-  ): Promise<IAdtResponse<TChecked>>;
+    options?: IAdtOperationOptions<E>,
+  ): Promise<IAdtResponse<TChecked, E>>;
 }
 
 export interface IAdtActivatable<TConfig, TActivated> {
@@ -154,10 +154,10 @@ export interface IAdtActivatable<TConfig, TActivated> {
    * @param config - Object identification
    * @returns State with activation result
    */
-  activate(
+  activate<E extends IAdtError = IAdtError>(
     config: Partial<TConfig>,
-    options?: IAdtOperationOptions,
-  ): Promise<IAdtResponse<TActivated>>;
+    options?: IAdtOperationOptions<E>,
+  ): Promise<IAdtResponse<TActivated, E>>;
 }
 
 export interface IAdtLockable<TConfig> {
@@ -232,8 +232,8 @@ export interface IAdtTransportAware<TConfig, TTransport> {
    *                                  Useful after create/activate operations to wait until object is ready
    * @returns State with transport result
    */
-  readTransport(
+  readTransport<E extends IAdtError = IAdtError>(
     config: Partial<TConfig>,
-    options?: { withLongPolling?: boolean } & IAdtOperationOptions,
-  ): Promise<IAdtResponse<TTransport>>;
+    options?: { withLongPolling?: boolean } & IAdtOperationOptions<E>,
+  ): Promise<IAdtResponse<TTransport, E>>;
 }

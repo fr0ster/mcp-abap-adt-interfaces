@@ -22,8 +22,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   return to `IAdtError`, which narrowed anything richer at the call site.
   Decision 25.
 
-  Additive: `E` defaults to `IAdtError`, so `IAdtOperationOptions` written
-  without an argument means exactly what it did.
+  **And the nine capability members carry it.** `create`, `read`,
+  `readMetadata`, `update`, `delete`, `validate`, `check`, `activate` and
+  `readTransport` are
+  each parameterised, because the options alone were not enough: a member that
+  took `IAdtOperationOptions<E>` and answered `IAdtResponse<T>` dropped `E` on
+  the way out, and the example below did not compile. Caught in review of #69.
+
+  Additive: `E` defaults to `IAdtError`, so an interface written without an
+  argument means exactly what it did, and a call without a strategy answers the
+  plain contract. An implementation stays an ordinary object literal — the
+  inference comes from the contextual return type — as long as whatever builds
+  its answers is parameterised too.
 
   ```typescript
   interface IT100Failure extends IAdtError {

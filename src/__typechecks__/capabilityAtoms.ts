@@ -25,7 +25,13 @@ interface Config {
 }
 
 /** The smallest thing satisfying the contract, so these stay about shape. */
-function answered<T>(value: T): IAdtResponse<T> {
+// Parameterised in the failure type as well, because the members are: since
+// decision 25 a member answers the failure its `analyse` named, and an
+// implementation has to be able to say so. The success half never mentions `E`,
+// so this needs no cast — it is the same object either way.
+function answered<T, E extends IAdtError = IAdtError>(
+  value: T,
+): IAdtResponse<T, E> {
   return { ok: true, getResult: () => ({ value }) };
 }
 

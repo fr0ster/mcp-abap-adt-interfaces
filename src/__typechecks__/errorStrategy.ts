@@ -8,9 +8,12 @@
 
 import type {
   AdtNoFailure,
+  IAdtActivatable,
+  IAdtCreatable,
   IAdtError,
   IAdtOperationOptions,
-  IAdtResponse,
+  IAdtReadable,
+  IAdtUpdatable,
   IAdtWireResponse,
   IAnalyse,
 } from '../index';
@@ -102,34 +105,55 @@ const richOptions: IAdtOperationOptions<IT100Failure> = { analyse: t100 };
 void richOptions;
 
 /**
- * And out the other end: the failure half is the consumer's type, so their own
- * field is reachable with no cast and no guard. A `.t100` that stops compiling
- * here is the regression this file exists to catch.
+ * And out the other end — **through a real member**, which is the whole point.
+ *
+ * An earlier version of this check declared the answer by hand as
+ * `IAdtResponse<string, IT100Failure>` and asserted `.t100` on it. That proved
+ * only that the union works, which was never in doubt, and it passed while the
+ * capability members still took a non-generic `IAdtOperationOptions` — so the
+ * example in the PR did not compile and the check said nothing. Caught in
+ * review. The members are parameterised now, and this asks one of them.
  */
-declare const answer: IAdtResponse<string, IT100Failure>;
-if (!answer.ok) {
-  const key: { msgid: string; msgno: string } = answer.getError().t100;
-  void key;
-  // The contract's own fields are still there — this extends, never replaces.
-  const origin: 'connection' | 'refusal' = answer.getError().origin;
-  void origin;
+declare const activatable: IAdtActivatable<{ name: string }, string>;
+declare const creatable: IAdtCreatable<{ name: string }, string>;
+declare const updatable: IAdtUpdatable<{ name: string }, string>;
+declare const readable: IAdtReadable<{ name: string }, string, string>;
+
+/** Wrapped in a function: these are compile-only, and nothing here runs. */
+async function _theFailureIsTheCallers(): Promise<void> {
+  const activated = await activatable.activate(
+    { name: 'ZCL_X' },
+    { analyse: t100 },
+  );
+  if (!activated.ok) {
+    // No cast, no guard: `E` was inferred from the strategy handed to the call.
+    const key: { msgid: string; msgno: string } = activated.getError().t100;
+    void key;
+    // The contract's own fields are still there — this extends, never replaces.
+    const origin: 'connection' | 'refusal' = activated.getError().origin;
+    void origin;
+  }
+
+  // The other members carry it too, not just the one that was asked about.
+  const created = await creatable.create({ name: 'ZCL_X' }, { analyse: t100 });
+  if (!created.ok) void created.getError().t100;
+
+  const updated = await updatable.update({ name: 'ZCL_X' }, { analyse: t100 });
+  if (!updated.ok) void updated.getError().t100;
+
+  const read = await readable.read({ name: 'ZCL_X' }, 'active', {
+    analyse: t100,
+  });
+  if (!read.ok) void read.getError().t100;
+
+  // And a member called without a strategy answers the plain contract, which is
+  // what keeps every existing call site compiling.
+  const plain = await activatable.activate({ name: 'ZCL_X' });
+  if (!plain.ok) {
+    const failure: IAdtError = plain.getError();
+    void failure;
+    // @ts-expect-error nobody named a richer failure, so there is no `t100`
+    void plain.getError().t100;
+  }
 }
-
-/**
- * Written without an argument it means exactly what it did, which is what makes
- * the change additive: every existing strategy still satisfies it.
- */
-const plainOptions: IAdtOperationOptions = { analyse: strictAboutEmpty };
-void plainOptions;
-
-/**
- * The asymmetry that stays: the verdict handed *in* is the library's own,
- * built before any strategy is consulted, so a strategy is never handed a
- * failure of a type only it can make.
- */
-const readsThePlainVerdict: IAnalyse<IT100Failure> = (verdict) => {
-  const incoming: IAdtError | AdtNoFailure = verdict;
-  void incoming;
-  return ADT_NO_FAILURE;
-};
-void readsThePlainVerdict;
+void _theFailureIsTheCallers;
