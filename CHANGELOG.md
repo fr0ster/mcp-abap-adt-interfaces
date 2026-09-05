@@ -7,6 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`IAnalyse<E>`** — the error strategy, as a named type. It was an inline
+  function signature inside `IAdtOperationOptions`, so nothing could refer to it
+  and every implementation restated it.
+
+### Changed
+
+- **`IAdtOperationOptions<E extends IAdtError = IAdtError>`** carries the failure
+  type its `analyse` names, so a consumer's own failure reaches `getError()`
+  without a cast. `IAdtFailure<TError>` has been parameterised since the union
+  existed and the parameter arrived nowhere: the options pinned `analyse`'s
+  return to `IAdtError`, which narrowed anything richer at the call site.
+  Decision 25.
+
+  Additive: `E` defaults to `IAdtError`, so `IAdtOperationOptions` written
+  without an argument means exactly what it did.
+
+  ```typescript
+  interface IT100Failure extends IAdtError {
+    readonly t100: { msgid: string; msgno: string };
+  }
+  const t100: IAnalyse<IT100Failure> = (verdict, answer) => …;
+
+  const answer = await client.getClass().activate(config, { analyse: t100 });
+  if (!answer.ok) answer.getError().t100;   // typed, no cast
+  ```
+
+  The alternative was a field per case on `IAdtError` — a message id here, a
+  severity there — and SAP does put message identifiers in every
+  `<exc:exception>`. They are in `response.data` already; what was missing was a
+  way for a caller to say what their own failure looks like.
+
+- **`deleteOnFailure` is documented `@default true`.** It was `false`. A create
+  that fails after the object exists leaves a name taken, and that is the one
+  state a delete cannot always recover: the deletion check resolves an object
+  through its package and reports one that never got there as absent. What a
+  rollback removes is something the same call made moments earlier, so there is
+  nothing of the caller's to lose. Pass `false` for the old behaviour.
+
+  A documentation change here; the behaviour is the implementation's, and
+  `@mcp-abap-adt/adt-clients` makes it in the same cycle.
+
 ## [31.0.0] - 2026-09-04
 
 30.0.0 made the shape of an answer the consumer's, injected into the

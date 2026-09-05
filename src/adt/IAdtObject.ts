@@ -83,20 +83,54 @@ export const AdtObjectErrorCodes = {
 } as const;
 
 /**
+ * The caller's own reading of what counts as a failure.
+ *
+ * Handed the default's verdict **and** the answer it was reached from, so it can
+ * overrule in either direction: name a failure the default let through, or clear
+ * one it raised. Answering {@link ADT_NO_FAILURE} means "not a failure here" — a
+ * token rather than `undefined`, so that the absence of a strategy and a
+ * strategy's verdict of "fine" are not the same value.
+ *
+ * **It names its own failure type.** `IAdtFailure<TError extends IAdtError>` has
+ * carried the parameter since the failure half existed, and it never arrived
+ * anywhere, because the options pinned this return to `IAdtError`. A consumer
+ * whose strategy answered something richer got it back narrowed and had to cast
+ * at the call site — which is the one thing a parameterised failure exists to
+ * prevent.
+ *
+ * The alternative was a field per case on `IAdtError`: a message id here, a
+ * severity there, a job handle next time. A contract that grows a field for
+ * every caller's special case is worse than one that lets a caller say what
+ * their own failure is, and a consumer knows perfectly well which strategy they
+ * injected.
+ *
+ * ```typescript
+ * interface IT100Failure extends IAdtError {
+ *   readonly t100: { msgid: string; msgno: string };
+ * }
+ * const t100: IAnalyse<IT100Failure> = (verdict, answer) => …;
+ *
+ * const answer = await client.getClass().activate(config, { analyse: t100 });
+ * if (!answer.ok) answer.getError().t100;   // typed, no cast
+ * ```
+ *
+ * The verdict handed in stays `IAdtError`: it is the library's own, built before
+ * any strategy is consulted. Only what comes back is the caller's.
+ */
+export type IAnalyse<E extends IAdtError = IAdtError> = (
+  verdict: IAdtError | AdtNoFailure,
+  answer?: IAdtWireResponse,
+) => E | AdtNoFailure;
+
+/**
  * Options for ADT operations (create and update)
  * Unified interface for both create and update operations
  */
-export interface IAdtOperationOptions {
+export interface IAdtOperationOptions<E extends IAdtError = IAdtError> {
   /**
-   * The caller's own reading of what counts as a failure.
+   * {@link IAnalyse} — the caller's own reading of what counts as a failure.
    *
-   * Handed the default's verdict **and** the answer it was reached from, so it
-   * can overrule in either direction: name a failure the default let through, or
-   * clear one it raised. Answering {@link ADT_NO_FAILURE} means "not a failure
-   * here" — a token rather than `undefined`, so that the absence of a strategy
-   * and a strategy's verdict of "fine" are not the same value.
-   *
-   * This exists because no single reading serves every caller. ADT answers a
+   * It exists because no single reading serves every caller. ADT answers a
    * request for a missing object with 200 and an empty body, and those same
    * bytes are a failure to a read-modify-write — writing back what it read
    * erases the object — and an empty list to a listing. Neither reading can be
@@ -106,10 +140,7 @@ export interface IAdtOperationOptions {
    * decides is the message severity in the document, which is why the raw answer
    * is passed rather than a summary of it.
    */
-  analyse?: (
-    verdict: IAdtError | AdtNoFailure,
-    answer?: IAdtWireResponse,
-  ) => IAdtError | AdtNoFailure;
+  analyse?: IAnalyse<E>;
 
   /**
    * Activate object after creation (for create operations)
@@ -124,8 +155,23 @@ export interface IAdtOperationOptions {
   activateOnUpdate?: boolean;
 
   /**
-   * Delete object if operation fails
-   * @default false
+   * Remove what this call created, when a later step in the same call fails.
+   *
+   * @default true
+   *
+   * It was `false`, and the default changed because a create that fails after
+   * the object exists leaves a name taken — the one state a delete cannot
+   * always recover, since the deletion check resolves an object through its
+   * package and reports one that never got there as absent. The caller asked
+   * for a created-and-written object rather than for whatever the failure left,
+   * and what gets removed is something the same call made moments earlier, so
+   * there is nothing of the caller's to lose.
+   *
+   * Pass `false` to keep the half-made object — to inspect it, or because the
+   * chain will be resumed.
+   *
+   * Where a create is a single request there is nothing after it to fail, so
+   * this can never fire.
    */
   deleteOnFailure?: boolean;
 

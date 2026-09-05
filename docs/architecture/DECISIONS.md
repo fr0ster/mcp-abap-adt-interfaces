@@ -1809,3 +1809,48 @@ signature".
 **How to catch a violation.** A type declared here that no member signature needs
 in order to be called or implemented. A required field whose value comes from the
 request rather than the answer.
+
+## 25. A failure names its own type; the contract does not grow a field per case
+
+**The problem.** A consumer reading ADT's own message identifiers wanted them off
+a failure. SAP puts them there — every `<exc:exception>` carries
+`T100KEY-ID`/`T100KEY-NO` in its `<properties>`, and an activation checklist
+carries a `<t100Key>` — and `IAdtError` has nowhere to put them. The obvious move
+was to add a field.
+
+**Why not.** The next caller wants a severity, the one after wants a job handle,
+and each is right about their own case. A contract that grows a field per special
+case ends up describing every caller's situation badly. And the information is
+already in the answer: `response.data` is the document, whole.
+
+**The decision.** The failure half is parameterised and the parameter flows.
+`IAdtFailure<TError extends IAdtError>` had carried it since the union existed,
+and it arrived nowhere, because `IAdtOperationOptions.analyse` pinned its return
+to `IAdtError`. So a consumer's richer failure came back narrowed and they cast —
+the one thing a parameterised failure exists to prevent.
+
+`IAnalyse<E>` is the strategy, `IAdtOperationOptions<E>` carries `E` from it to
+`getError()`, and the caller declares whatever their own failure is:
+
+```typescript
+interface IT100Failure extends IAdtError {
+  readonly t100: { msgid: string; msgno: string };
+}
+const t100: IAnalyse<IT100Failure> = (verdict, answer) => …;
+
+const answer = await client.getClass().activate(config, { analyse: t100 });
+if (!answer.ok) answer.getError().t100;   // typed, no cast
+```
+
+**The asymmetry that stays.** The verdict handed *in* is `IAdtError` — the
+library's own, built before any strategy is consulted. Only what comes back is
+the caller's. A strategy cannot be handed a failure of a type it invented,
+because nothing but the strategy makes those.
+
+**Read with decision 20.** Choice is offered by injection, never by more
+contract; this is that rule applied to the failure half, which had been the half
+still asking for fields.
+
+**How to catch a violation.** A new optional field on `IAdtError` that serves one
+kind of caller. A member whose options are not parameterised, so a strategy's
+type stops at the call site.
