@@ -10,7 +10,9 @@ import type {
   AdtNoFailure,
   IAdtError,
   IAdtOperationOptions,
+  IAdtResponse,
   IAdtWireResponse,
+  IAnalyse,
 } from '../index';
 import { ADT_NO_FAILURE } from '../index';
 
@@ -63,3 +65,71 @@ export const _errorStrategyAssertions = [
   refused?.(ADT_NO_FAILURE),
   _isFine(ADT_NO_FAILURE),
 ] as const;
+
+// ── The failure a strategy names is the failure a caller reads ──────────────
+//
+// `IAdtFailure<TError extends IAdtError>` carried the parameter since the union
+// existed, and it arrived nowhere: the options pinned `analyse`'s return to
+// `IAdtError`, so a strategy answering something richer was narrowed at the
+// call site. These assert it flows — and that it flows *without* the contract
+// growing a field for anybody's special case. Decision 25.
+
+/** What a consumer who branches on SAP's message identifiers would declare. */
+interface IT100Failure extends IAdtError {
+  readonly t100: { readonly msgid: string; readonly msgno: string };
+}
+
+/**
+ * The identifiers are in the document already — every `<exc:exception>` carries
+ * `T100KEY-ID` and `T100KEY-NO` in its `<properties>` — so the strategy reads
+ * them out of the answer it was handed. Nothing about this is in the contract.
+ */
+const t100: IAnalyse<IT100Failure> = (verdict, answer) => {
+  if (verdict !== ADT_NO_FAILURE) return verdict as IT100Failure;
+  const document = String(answer?.data ?? '');
+  const key = /<entry key="T100KEY-ID">([^<]*)<\/entry>/.exec(document);
+  const no = /<entry key="T100KEY-NO">([^<]*)<\/entry>/.exec(document);
+  if (!(key && no)) return ADT_NO_FAILURE;
+  return {
+    origin: 'refusal',
+    message: 'refused',
+    t100: { msgid: key[1], msgno: no[1] },
+  };
+};
+
+/** A member's options carry it, which is the link that was missing. */
+const richOptions: IAdtOperationOptions<IT100Failure> = { analyse: t100 };
+void richOptions;
+
+/**
+ * And out the other end: the failure half is the consumer's type, so their own
+ * field is reachable with no cast and no guard. A `.t100` that stops compiling
+ * here is the regression this file exists to catch.
+ */
+declare const answer: IAdtResponse<string, IT100Failure>;
+if (!answer.ok) {
+  const key: { msgid: string; msgno: string } = answer.getError().t100;
+  void key;
+  // The contract's own fields are still there — this extends, never replaces.
+  const origin: 'connection' | 'refusal' = answer.getError().origin;
+  void origin;
+}
+
+/**
+ * Written without an argument it means exactly what it did, which is what makes
+ * the change additive: every existing strategy still satisfies it.
+ */
+const plainOptions: IAdtOperationOptions = { analyse: strictAboutEmpty };
+void plainOptions;
+
+/**
+ * The asymmetry that stays: the verdict handed *in* is the library's own,
+ * built before any strategy is consulted, so a strategy is never handed a
+ * failure of a type only it can make.
+ */
+const readsThePlainVerdict: IAnalyse<IT100Failure> = (verdict) => {
+  const incoming: IAdtError | AdtNoFailure = verdict;
+  void incoming;
+  return ADT_NO_FAILURE;
+};
+void readsThePlainVerdict;
