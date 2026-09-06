@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [34.0.0] - 2026-09-06
+
+**A contract names an endpoint and a shape; it does not compose steps.** Three
+option fields asked the caller what a member should do *after* its request, and
+that is the implementation's business — which is what the design said from the
+start, before members grew into chains.
+
 ### Removed
 
 - **BREAKING: `activateOnCreate`, `activateOnUpdate` and `deleteOnFailure`** on
