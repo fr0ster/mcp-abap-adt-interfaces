@@ -39,6 +39,12 @@ now, and only the server can answer it.
   went in — that file exists to make "additive" a checked claim rather than a
   sentence in this changelog, and here it correctly refused.
 
+- **`IAdtDeletable.delete` no longer claims to check first.** Its documentation
+  said "Performs deletion check before deleting", which stopped being true when
+  implementations became one request per member. A caller reading the contract
+  was told a guarantee the code had dropped. It now says what it does — the
+  deletion, and only that — and points at `checkDeletion` for the other half.
+
 ### Documentation
 
 - **`README.md`** — the atom list carries the third type parameter and both
@@ -49,14 +55,6 @@ now, and only the server can answer it.
   — `IAdtOperationOptions` reaches ten members now, not nine. The count is load
   bearing: it is how the error axis says which members a caller can overrule per
   call, and a stale one understates the seam.
-
-### Changed
-
-- **`IAdtDeletable.delete` no longer claims to check first.** Its documentation
-  said "Performs deletion check before deleting", which stopped being true when
-  implementations became one request per member. A caller reading the contract
-  was told a guarantee the code had dropped. It now says what it does — the
-  deletion, and only that — and points at `checkDeletion` for the other half.
 
 ## [34.0.0] - 2026-09-06
 
