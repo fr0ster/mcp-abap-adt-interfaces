@@ -30,6 +30,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   type belonging to a particular object. Every parameter type stayed — those are
   what a caller cannot make the call without.
 
+- **BREAKING: `IServiceBindingResults`.** The readings, keyed for the aggregate
+  that has gone. With nothing parameterised by it, it named five answers nobody
+  asks for; a consumer's readings are their own and the atoms take them one at a
+  time. Caught in review, along with the `IAdtResponse` import the removal left
+  unused.
+
 ## [32.0.0] - 2026-09-06
 
 **A failure says what the caller made it say.** 31.0.0 gave the error contract

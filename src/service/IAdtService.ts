@@ -1,4 +1,3 @@
-import type { IAdtResponse } from '../adt/IAdtResponse';
 import type { ServiceBindingVariant } from '../adt/IAdtServiceBinding';
 
 export type ServiceBindingType = 'ODATA' | 'INA' | 'SQL';
@@ -101,30 +100,12 @@ export type ICreateAndGenerateServiceBindingParams =
 export type ICreateAndGenerateServiceBindingParamsLegacy =
   ICreateAndGenerateServiceBindingParams;
 
-/**
- * A service binding, and what ADT gives one.
- *
- * Until 17.0.0 it extended the wide composite, the full set, and so promised
- * version history and a lock. It has neither: the handler's `getVersions`,
- * `getVersionSource`, `lock` and `unlock` all threw, and `getService()` hands
- * out the same object, so it promised them twice over. The atoms below are what
- * remains, plus the binding's own operations — generating, publishing and
- * classifying a service.
+/*
+ * `IServiceBindingResults` was here — the readings keyed for the aggregate that
+ * has just gone. Nothing parameterises anything any more, so it named five
+ * answers nobody asks for. A consumer's readings are their own, and the atoms
+ * take them one at a time.
  */
-/**
- * One key per distinct answer this contract has, not one per member.
- *
- * Five separate type parameters would make the fourth unnameable without
- * spelling the first three; a record names them, and a consumer overriding one
- * reading writes the key rather than counting positions.
- */
-export interface IServiceBindingResults {
-  bindingTypes: unknown;
-  generation: unknown;
-  odata: unknown;
-  publication: unknown;
-  classification: unknown;
-}
 
 /*
  * `IAdtServiceBinding` was here: a per-object aggregate declaring eight members.

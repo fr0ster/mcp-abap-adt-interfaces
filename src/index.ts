@@ -438,7 +438,6 @@ export type {
   IGenerateServiceBindingParams,
   IGetServiceBindingODataParams,
   IPublishODataV2Params,
-  IServiceBindingResults,
   ITransportCheckServiceBindingParams,
   IUnpublishODataV2Params,
   IValidateServiceBindingParams,

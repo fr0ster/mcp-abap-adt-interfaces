@@ -56,7 +56,7 @@ This package contains all interfaces organized by domain:
 - **`feeds/`** - Feed access interfaces (IFeedRepository, feed entries, system messages, gateway errors)
 - **`runtime/`** - Runtime analysis domain interfaces (profiler, traces, dumps, logs, ATC, system messages, gateway errors)
 - **`sap/`** - SAP-specific configuration (SapConfig, SapAuthType)
-- **`service/`** - Business service lifecycle contracts (`IAdtServiceBinding`, service binding params)
+- **`service/`** - Business service lifecycle contracts (parameters and variants; service binding params)
 - **`storage/`** - Storage interfaces (session storage, state)
 - **`logging/`** - Logging interfaces (ILogger, LogLevel enum)
 - **`validation/`** - Validation interfaces
@@ -460,10 +460,18 @@ This package is responsible for:
 - `SapAuthType` - Authentication type: `"basic" | "jwt"`
 
 ### Service Domain (`service/`)
-- `IAdtServiceBinding<R>` - what a service binding has that nothing else does: the type catalogue, generation, the two OData readings, publication and classification. The aliases `IAdtService`, `AdtServiceBindingType` and `IAdtServiceOperationOptions` were removed in 30.0.0 — one type, one name
-  - **CRUD is the atoms, composed beside it.** Until 30.0.0 this extended eight of them *and* declared `createServiceBinding`, `readServiceBinding`, `updateServiceBinding`, `deleteServiceBinding`, `checkServiceBinding`, `activateServiceBinding`, `validateServiceBinding` and `transportCheckServiceBinding` next to them — the same operations on the same endpoints, twice, with the second set answering the transport envelope. A caller who needs both writes `IAdtServiceBinding & IAdtCreatable<IServiceBindingConfig, void> & …`
-  - `R` is the readings, keyed rather than positional (`IServiceBindingResults`): five distinct answers would otherwise be five type parameters, and the fourth unnameable without spelling the first three. **No default** — `IServiceBindingDocuments` was one, and both the record and the default left in 31.0.0 to the implementation that reads them
-  - `createAndGenerateServiceBinding()` answers **one** value; it handed back six envelopes, one per request it made along the way, until 30.0.0
+- **A service binding has no interface of its own, and that is deliberate.** It
+  is the capability atoms, composed — a consumer spells the half they need and
+  TypeScript matches it structurally:
+
+  ```typescript
+  type PublishingOnly = IAdtUpdatable<IServiceBindingConfig, void>;
+  ```
+
+  Publishing *is* an update: `desiredPublicationState` is a field of the config,
+  not a method name. `IAdtServiceBinding<R>` and `IServiceBindingResults` were
+  removed — the last per-object aggregate in the package, and half of what it
+  declared had no implementation left.
 - Parameter/enum types:
   - `ServiceBindingVariant` — `'ODATA_V2_UI' | 'ODATA_V2_WEB_API' | 'ODATA_V4_UI' | 'ODATA_V4_WEB_API'`
   - `SERVICE_BINDING_VARIANT_MAP` — maps variant to `{ bindingType, bindingVersion, bindingCategory, serviceType }`

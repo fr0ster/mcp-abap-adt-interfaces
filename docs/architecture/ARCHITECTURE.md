@@ -161,8 +161,14 @@ callers use it, and it moves the result's meaning from the contract to the call
 site.
 
 Where an interface has more than three distinct answers the parameters travel
-together as a record — `IAdtServiceBinding<R extends IServiceBindingResults>` —
-because `IAdtService<A, B, C, D, E>` is a signature nobody can call.
+together as a record — `ICrossTrace<R extends ICrossTraceResults>` — because
+`ICrossTrace<A, B, C, D, E>` is a signature nobody can call: the fourth is
+unnameable without spelling the first three, and a consumer overriding one
+reading would be counting positions.
+
+The example used to be `IAdtServiceBinding`, which is gone: it was the only
+interface in this package tied to one object type, and a binding is the
+capability atoms composed, like every other object.
 
 **What a strategy is not given** is anything the implementation did on the way.
 Preliminary requests — fetching a node id, a scope document, a token — are its
