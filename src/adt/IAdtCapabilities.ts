@@ -67,18 +67,31 @@ export interface IAdtCreatable<TConfig, TCreated> {
 }
 
 /** Obtain a representation of an object — its source, or the metadata about it. */
-export interface IAdtReadable<TConfig, TSource, TMetadata> {
+/**
+ * The object has a **source** — an ABAP text, a DDL, a JSON body — at its own
+ * `source/main`, and it can be read.
+ *
+ * One member, because the atom names one resource. It used to name two, and its
+ * own documentation confessed what that cost: *"For objects without source code
+ * (Domain, DataElement), this returns metadata XML"* and *"readMetadata may
+ * delegate to read() as read() already returns metadata"*. Eight types were
+ * measured doing exactly that — `read` and `readMetadata` issuing the identical
+ * request — which is one endpoint behind two members, the thing decision 16
+ * exists to prevent.
+ *
+ * A domain has no source. It composes {@link IAdtMetadataReadable} and nothing
+ * else, and that omission is the statement.
+ */
+export interface IAdtReadable<TConfig, TSource> {
   /**
-   * Read object (source code or XML that describes the object)
-   * For objects without source code (Domain, DataElement), this returns metadata XML.
-   * For objects with source code (Class, Interface, Program), this returns source code.
+   * Read the object's source.
    *
    * @param config - Object identification (name, etc.)
    * @param version - 'active' or 'inactive'
-   * @param options - Optional read options
-   * @param options.withLongPolling - If true, adds ?withLongPolling=true to wait for object to become available
-   *                                  Useful after create/activate operations to wait until object is ready
-   * @returns Object configuration or source code, or undefined if not found
+   * @param options - `withLongPolling` waits for the object to become
+   *                  available, which is what a read straight after a create or
+   *                  an activation needs; `analyse` for the verdict
+   * @returns whatever this implementation's reading makes of the answer
    */
   read<E extends IAdtError>(
     config: Partial<TConfig>,
@@ -92,18 +105,24 @@ export interface IAdtReadable<TConfig, TSource, TMetadata> {
     version?: 'active' | 'inactive',
     options?: { withLongPolling?: boolean } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TSource>>;
+}
 
+/**
+ * The object has a **document of its own** — the `adtcore` XML describing it:
+ * package, responsible, description, its type's own fields — and it can be read.
+ *
+ * Almost everything has one; a few things are only this. A domain, a data
+ * element, a package and a table type *are* their document, and for them this
+ * is the whole of reading.
+ */
+export interface IAdtMetadataReadable<TConfig, TMetadata> {
   /**
-   * Read object metadata (object characteristics: package, responsible, description, etc.)
-   * For objects with source code (Class, Interface, Program), this reads metadata separately from source code.
-   * For objects without source code (Domain, DataElement), this may delegate to read() as read() already returns metadata.
+   * Read the object's own document.
    *
    * @param config - Object identification (name, etc.)
-   * @param options - Optional read options
-   * @param options.withLongPolling - If true, adds ?withLongPolling=true to wait for object to become available
-   *                                  Useful after create/activate operations to wait until object is ready
-   * @param options.version - 'active' or 'inactive' (default: 'active')
-   * @returns State with metadata result
+   * @param options - `withLongPolling` and `version` as for
+   *                  {@link IAdtReadable.read}; `analyse` for the verdict
+   * @returns whatever this implementation's reading makes of the answer
    */
   readMetadata<E extends IAdtError>(
     config: Partial<TConfig>,
@@ -121,9 +140,17 @@ export interface IAdtReadable<TConfig, TSource, TMetadata> {
   ): Promise<IAdtResponse<TMetadata>>;
 }
 
+/**
+ * The object's **source** can be written.
+ *
+ * `update` writes the source and only the source, which is what makes the name
+ * mean the same thing on every type. A domain has no source to write; it
+ * composes {@link IAdtMetadataUpdatable} instead, and the member it offers says
+ * what it writes.
+ */
 export interface IAdtUpdatable<TConfig, TUpdated> {
   /**
-   * Update the object — **the write, and nothing around it.**
+   * Write the object's source — **the write, and nothing around it.**
    *
    * This used to say "with full operation chain: lock, check(inactive),
    * update, unlock, check, activate (optional)". It is one request, and the
@@ -146,6 +173,43 @@ export interface IAdtUpdatable<TConfig, TUpdated> {
     config: Partial<TConfig>,
     options?: IAdtOperationOptions,
   ): Promise<IAdtResponse<TUpdated>>;
+}
+
+/**
+ * The object's **own document** can be written.
+ *
+ * Three types offer this beside {@link IAdtUpdatable}, because they have two
+ * writable resources and ADT keeps them apart: a function include, a scalar
+ * function implementation and a feature toggle each answer a document at their
+ * own URL and a source at `source/main`. Eight more offer *only* this — a
+ * domain, a data element, a package, a table type and their neighbours are
+ * their document, and writing them is writing it.
+ *
+ * The same rule as reading, and for the same reason: the member is named for
+ * the resource it addresses, so a caller never has to know which kind of object
+ * it is holding to know what `update` will write.
+ */
+export interface IAdtMetadataUpdatable<TConfig, TMetadataUpdated> {
+  /**
+   * Write the object's own document.
+   *
+   * One request, and the lock handle is passed as given — see
+   * {@link IAdtUpdatable.update}, which this mirrors in everything but the
+   * resource it addresses.
+   *
+   * @param config - Object configuration with updates
+   * @param options - `xmlContent` for the body, `lockHandle` for the lock the
+   *                  caller took, `analyse` for the verdict
+   * @returns whatever this implementation's reading makes of the answer
+   */
+  updateMetadata<E extends IAdtError>(
+    config: Partial<TConfig>,
+    options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TMetadataUpdated, E>>;
+  updateMetadata(
+    config: Partial<TConfig>,
+    options?: IAdtOperationOptions,
+  ): Promise<IAdtResponse<TMetadataUpdated>>;
 }
 
 export interface IAdtDeletable<TConfig, TDeleted, TChecked = string> {

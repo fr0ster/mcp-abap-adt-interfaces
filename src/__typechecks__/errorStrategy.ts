@@ -11,6 +11,7 @@ import type {
   IAdtActivatable,
   IAdtCreatable,
   IAdtError,
+  IAdtMetadataReadable,
   IAdtOperationOptions,
   IAdtReadable,
   IAdtUpdatable,
@@ -117,7 +118,8 @@ void richOptions;
 declare const activatable: IAdtActivatable<{ name: string }, string>;
 declare const creatable: IAdtCreatable<{ name: string }, string>;
 declare const updatable: IAdtUpdatable<{ name: string }, string>;
-declare const readable: IAdtReadable<{ name: string }, string, string>;
+declare const readable: IAdtReadable<{ name: string }, string> &
+  IAdtMetadataReadable<{ name: string }, string>;
 
 /** Wrapped in a function: these are compile-only, and nothing here runs. */
 async function _theFailureIsTheCallers(): Promise<void> {

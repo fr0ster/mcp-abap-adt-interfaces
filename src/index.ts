@@ -47,6 +47,8 @@ export type {
   IAdtCreatable,
   IAdtDeletable,
   IAdtLockable,
+  IAdtMetadataReadable,
+  IAdtMetadataUpdatable,
   IAdtReadable,
   IAdtTransportAware,
   IAdtUpdatable,

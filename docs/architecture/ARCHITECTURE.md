@@ -108,7 +108,7 @@ readings, and neither is the library's to impose.
 
 | axis | shape | supplied |
 |---|---|---|
-| error | `(verdict, answer?) => IAdtError \| AdtNoFailure` | to the implementation at construction, and — on the ten members that take `IAdtOperationOptions` — overruled per call through `analyse` |
+| error | `(verdict, answer?) => IAdtError \| AdtNoFailure` | to the implementation at construction, and — on the eleven members that take `IAdtOperationOptions` — overruled per call through `analyse` |
 | result | `IResultStrategy<T>` = `(answer: IAdtWireResponse) => T` | to the implementation at construction; the member's result type follows it |
 
 Both are handed the whole answer — status, headers, body — because a reading may
@@ -117,9 +117,10 @@ need any of it.
 **The two axes are not equally visible in the contract, and that is worth saying
 plainly.** The result axis is: a member's result type is a type parameter of its
 interface, so what a given implementation answers is written in its type. The
-error axis is not. `IAdtOperationOptions.analyse` reaches exactly ten members —
-`create`, `read`, `readMetadata`, `update`, `delete`, `checkDeletion`,
-`validate`, `check`, `activate` and `readTransport`, all on the capability atoms.
+error axis is not. `IAdtOperationOptions.analyse` reaches exactly eleven members —
+`create`, `read`, `readMetadata`, `update`, `updateMetadata`, `delete`,
+`checkDeletion`, `validate`, `check`, `activate` and `readTransport`, all on the
+capability atoms.
 The other 88 take no options at all; `ITraceDeletion.delete(traceId)` is the plain case, one argument
 and no seam.
 
