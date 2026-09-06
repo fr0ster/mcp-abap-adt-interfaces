@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [32.0.0] - 2026-09-06
+
+**A failure says what the caller made it say.** 31.0.0 gave the error contract
+one job — describe the server — and left the other half of the question open:
+what a caller does when the server says something the contract has no field for.
+The answer is not more fields. Decision 25.
+
 ### Added
 
 - **`IAnalyse<E>`** — the error strategy, as a named type. It was an inline
@@ -22,18 +29,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   return to `IAdtError`, which narrowed anything richer at the call site.
   Decision 25.
 
-  **And the nine capability members carry it.** `create`, `read`,
-  `readMetadata`, `update`, `delete`, `validate`, `check`, `activate` and
-  `readTransport` are
-  each parameterised, because the options alone were not enough: a member that
-  took `IAdtOperationOptions<E>` and answered `IAdtResponse<T>` dropped `E` on
-  the way out, and the example below did not compile. Caught in review of #69.
+  **And the nine capability members carry it**, as two call signatures each: the
+  parameterised one, which requires the strategy that earns it, and the plain
+  one. `create`, `read`, `readMetadata`, `update`, `delete`, `validate`,
+  `check`, `activate` and `readTransport`.
 
-  Additive: `E` defaults to `IAdtError`, so an interface written without an
-  argument means exactly what it did, and a call without a strategy answers the
-  plain contract. An implementation stays an ordinary object literal — the
-  inference comes from the contextual return type — as long as whatever builds
-  its answers is parameterised too.
+  Both halves came out of review. The options alone were not enough — a member
+  that took `IAdtOperationOptions<E>` and answered `IAdtResponse<T>` dropped `E`
+  on the way out, so the example below did not compile. And one generic
+  signature was not enough either: `activate<IT100Failure>(config)` with no
+  `analyse` type-checked and promised a failure the runtime had no way to
+  produce, since without a strategy the member answers what its own default
+  read. Naming `E` now requires handing over the thing that makes it.
+
+  The parameterised signature is declared first, deliberately:
+  `IAnalyse<IT100Failure>` is assignable to `IAnalyse<IAdtError>` by return-type
+  covariance, so the plain signature would otherwise swallow a call that does
+  supply a strategy and hand back the narrow type.
+
+  `IAdtOperationOptions<IT100Failure>` with no strategy in it stays writable —
+  making `analyse` conditionally required is not expressible — and it does not
+  matter, because the member is the gate.
 
   ```typescript
   interface IT100Failure extends IAdtError {
@@ -49,6 +65,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   severity there — and SAP does put message identifiers in every
   `<exc:exception>`. They are in `response.data` already; what was missing was a
   way for a caller to say what their own failure looks like.
+
+### Breaking
+
+- **A member with two call signatures gives an implementation no single one to
+  be contextually typed from.** An implementation whose parameter was inferred
+  now needs annotating, or `noImplicitAny` answers `TS7006` — a downstream build
+  can fail with no change to its own code, which is what makes this a major
+  rather than a minor.
+
+  What does *not* break, and is checked rather than claimed: a class written
+  against 31.0.0 with no type parameter anywhere still satisfies the atoms, and
+  a caller that passes no strategy still gets `IAdtError`. Both live in
+  `src/__typechecks__/downstreamStillCompiles.ts` and fail the build if that
+  stops being true.
+
+  ```typescript
+  // before: inferred from the single signature
+  create: async (config) => answered(config.name),
+  // after: annotated
+  create: async (config: Config) => answered(config.name),
+  ```
 
 - **`deleteOnFailure` is documented `@default true`.** It was `false`. A create
   that fails after the object exists leaves a name taken, and that is the one
