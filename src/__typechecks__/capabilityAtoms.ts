@@ -13,6 +13,8 @@ import type {
   IAdtCreatable,
   IAdtDeletable,
   IAdtLockable,
+  IAdtMetadataReadable,
+  IAdtMetadataUpdatable,
   IAdtReadable,
   IAdtUpdatable,
   IAdtVersionable,
@@ -71,7 +73,8 @@ void _checkAnswersItsOwn;
 // and a read answering its source are different types, and the contract says so
 // rather than forcing one shape on both.
 const _both: IAdtCreatable<Config, string> &
-  IAdtReadable<Config, string, string> = {
+  IAdtReadable<Config, string> &
+  IAdtMetadataReadable<Config, string> = {
   // Annotated, where before it was inferred: a member with two call signatures
   // gives an implementation no single one to be contextually typed from. That
   // is the cost of the overloads, and it is one type annotation.
@@ -121,3 +124,33 @@ async function _lockAnswers(
   return answer.ok ? answer.getResult().value : undefined;
 }
 void _lockAnswers;
+
+// A type that is only its own document. A domain has no source: it composes the
+// metadata atoms and nothing else, and the compiler holds it to exactly that.
+const _documentOnly: IAdtMetadataReadable<Config, string> &
+  IAdtMetadataUpdatable<Config, void> = {
+  readMetadata: async () => answered('<doma:domain/>'),
+  updateMetadata: async () => answered(undefined),
+};
+void _documentOnly;
+
+// @ts-expect-error IAdtReadable requires read(); a document-only type has none.
+const _documentOnlyAsReadable: IAdtReadable<Config, string> = _documentOnly;
+void _documentOnlyAsReadable;
+
+// @ts-expect-error IAdtUpdatable requires update(); a document-only type has none.
+const _documentOnlyAsUpdatable: IAdtUpdatable<Config, void> = _documentOnly;
+void _documentOnlyAsUpdatable;
+
+// And the reverse: reading a source is not reading a document. The two atoms
+// name two resources, so neither stands in for the other — which is the whole
+// of the split. Eight types were measured issuing the *same request* from
+// `read` and `readMetadata` while one atom demanded both.
+const _sourceOnly: IAdtReadable<Config, string> = {
+  read: async () => answered('CLASS zcl_x DEFINITION.'),
+};
+void _sourceOnly;
+
+// @ts-expect-error IAdtMetadataReadable requires readMetadata(); this has none.
+const _sourceOnlyAsMetadata: IAdtMetadataReadable<Config, string> = _sourceOnly;
+void _sourceOnlyAsMetadata;

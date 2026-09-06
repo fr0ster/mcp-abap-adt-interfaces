@@ -181,10 +181,12 @@ import {
   LogLevel
 } from '@mcp-abap-adt/interfaces';
 
-// Example: Read with long polling
-const domain = await adtDomain.read(
+// Example: Read with long polling.
+// A domain is `IAdtMetadataReadable` and nothing else — it has no source, so
+// `readMetadata` is the whole of reading it. A class, which has both, would use
+// `read` here for its source and `readMetadata` for its own document.
+const domain = await adtDomain.readMetadata(
   { domainName: 'Z_TEST' },
-  'active',
   { withLongPolling: true } // Wait until object is available
 );
 
@@ -262,8 +264,10 @@ This package is responsible for:
 - **Capability atoms** (`adt/IAdtCapabilities.ts`, since 11.2.0) — one small interface per operation, and **nothing above them**. A handler declares the atoms it honours, so a consumer reading it learns what that object can do and what comes back:
   - Since 29.0.0 these members answer `Promise<IAdtResponse<TValue>>` instead of throwing, and **each atom names what its own member returns** — a create does not answer what a read answers, and one type for all of them said something untrue about ADT. Since 30.0.0 **nothing in this package throws**: `lock`, `unlock`, `getVersions` and `getVersionSource` were the last four exempt, on the grounds that they have no failure half, and a lock refused because another user holds it is a 403
   - `IAdtCreatable<TConfig, TCreated>` — `create`
-  - `IAdtReadable<TConfig, TSource, TMetadata>` — `read`, `readMetadata`; two values because it is two endpoints
-  - `IAdtUpdatable<TConfig, TUpdated>` — `update` (since 15.0.0)
+  - `IAdtReadable<TConfig, TSource>` — `read`. The object's **source** at its own `source/main`
+  - `IAdtMetadataReadable<TConfig, TMetadata>` — `readMetadata`. The object's **own document**. Split from `IAdtReadable` in 36.0.0: one atom demanding both members made eight types answer `read` and `readMetadata` with the *identical request*, which is one endpoint behind two members. Its own JSDoc had admitted it — *"for objects without source code this returns metadata XML"* — and a domain now composes this atom alone, which is the statement
+  - `IAdtUpdatable<TConfig, TUpdated>` — `update`. Writes the **source** (since 15.0.0)
+  - `IAdtMetadataUpdatable<TConfig, TMetadataUpdated>` — `updateMetadata`. Writes the object's **own document** (36.0.0). The same split as reading, for the same reason: a member is named for the resource it addresses, so a caller never has to know which kind of object it holds to know what `update` will write. Three types compose both — a function include, a scalar function implementation and a feature toggle each have two writable resources — and eight compose only this one
   - `IAdtDeletable<TConfig, TDeleted, TChecked>` — `delete`, `checkDeletion` (since 15.0.0; the check joined it in 35.0.0). Two members because they are two requests, one atom because they are one operation: almost everything created can be removed, and what varies is the *moment* — something still references it, a transport holds it, another user holds its lock. Only the server knows, so anything that can be deleted can be asked whether it can be deleted now
   - `IAdtValidatable<TConfig, TValidated>` — `validate`
   - `IAdtCheckable<TConfig, TChecked>` — `check`
@@ -277,7 +281,7 @@ This package is responsible for:
   - `ITestRunInformation` and `ICdsTestDoubleCheckable` (`adt/IAdtUnitTest.ts`, since 16.0.0) — asking about a run by its id, and asking whether a CDS view can be tested with doubles. Both were part of `IAdtTestRunnable` until 16.0.0; neither is running.
   - Since 29.0.0 there is no composite at all. `IAdtObject`, `IAdtCrud`, `IAdtModifiable` and `IAdtSourceObject` were removed: they forced one result type on members that answer different things. `src/__typechecks__/capabilityAtoms.ts` proves what replaces them — each atom is independently satisfiable, one cannot stand in for another, and `IAdtCreatable<Config, string>` is not `IAdtCreatable<Config, void>`.
   - The grain follows ADT, not taste: `lock`/`unlock`, `getVersions`/`getVersionSource` and `checkDeletion`/`delete` are honoured or refused as pairs, because each is one operation seen from two ends. `update` and `delete` were taken for a third such pair until 15.0.0 and are separate atoms since — nothing in ADT ties changing an object to removing it, and a handler that supports one can now say so without claiming the other.
-  - Since 17.0.0 **no interface in this package declares a capability the object does not have**, and since 30.0.0 **no contract extends another at all** (decision 23). `IFeatureToggleObject` no longer inherits the atoms it satisfies: a consumer spells the composition they need, so an implementation that only switches a toggle is a legitimate one instead of owing eight members it does not have. `IAdtServiceBinding` went further and is gone — a binding has no interface of its own at all, which is where that reasoning ends up when followed: if a consumer spells what they need, the aggregate has nothing left to do. That is asserted rather than believed: a guard in `@mcp-abap-adt/adt-clients` compares all 37 factory return types against the 10 atoms in both directions, and calls every declared method to check it issues the request its capability names.
+  - Since 17.0.0 **no interface in this package declares a capability the object does not have**, and since 30.0.0 **no contract extends another at all** (decision 23). `IFeatureToggleObject` no longer inherits the atoms it satisfies: a consumer spells the composition they need, so an implementation that only switches a toggle is a legitimate one instead of owing eight members it does not have. `IAdtServiceBinding` went further and is gone — a binding has no interface of its own at all, which is where that reasoning ends up when followed: if a consumer spells what they need, the aggregate has nothing left to do. That is asserted rather than believed: a guard in `@mcp-abap-adt/adt-clients` compares all 37 factory return types against the 12 atoms in both directions, and calls every declared method to check it issues the request its capability names.
   - There is no atom for "everything but versions" — a capability vocabulary states what an object supports, never what it lacks. A handler that is the full set minus `IAdtVersionable` lists the atoms it does honour (see the [15.0.0 CHANGELOG entry](CHANGELOG.md) for why the earlier `IAdtNonVersionedObject` composite was removed).
 - `IAdtOperationOptions` - Unified options for create and update operations
   - Fields: `analyse`, `sourceCode`, `xmlContent`, `lockHandle`, `timeout` — the

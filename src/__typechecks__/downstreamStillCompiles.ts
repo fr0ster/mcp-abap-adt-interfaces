@@ -23,6 +23,7 @@ import type {
   IAdtActivatable,
   IAdtCreatable,
   IAdtDeletable,
+  IAdtMetadataReadable,
   IAdtOperationOptions,
   IAdtReadable,
   IAdtResponse,
@@ -42,7 +43,8 @@ const ok = <T>(value: T): IAdtResponse<T> => ({
 class WrittenBefore
   implements
     IAdtCreatable<Config, string>,
-    IAdtReadable<Config, string, string>,
+    IAdtReadable<Config, string>,
+    IAdtMetadataReadable<Config, string>,
     IAdtUpdatable<Config, string>,
     IAdtDeletable<Config, void, string>,
     IAdtActivatable<Config, string>

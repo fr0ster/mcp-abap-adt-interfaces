@@ -7,6 +7,73 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [36.0.0] - 2026-09-06
+
+**A member is named for the resource it addresses.** An ADT object has up to two
+of them — a *source* at its own `source/main`, and its *own document*, the
+`adtcore` XML that describes it — and which of the two a type has is a property
+of that type, not something a contract may assume.
+
+`IAdtReadable` assumed it, and said so in its own documentation: *"For objects
+without source code (Domain, DataElement), this returns metadata XML"* and
+*"readMetadata may delegate to read() as read() already returns metadata"*. That
+is one atom demanding two members from objects that have one resource, and it
+produced exactly what decision 16 forbids — **eight types were measured issuing
+the identical request from `read` and `readMetadata`**: authorization field, data
+element, domain, feature toggle, function group, package, table type and message
+class, with a behavior implementation making it nine.
+
+### Changed
+
+- **BREAKING: `IAdtReadable` is split.**
+
+  ```typescript
+  IAdtReadable<TConfig, TSource>            // read         — the source
+  IAdtMetadataReadable<TConfig, TMetadata>  // readMetadata — the object's document
+  ```
+
+  A type composes what it has. A class has both; a domain composes
+  `IAdtMetadataReadable` alone, and that omission is the statement — the same
+  rule as everywhere else in this package.
+
+- **BREAKING: the same split on the writing side.**
+
+  ```typescript
+  IAdtUpdatable<TConfig, TUpdated>                  // update         — writes the source
+  IAdtMetadataUpdatable<TConfig, TMetadataUpdated>  // updateMetadata — writes the document
+  ```
+
+  `update` now means the same thing on every type: it writes the source. Three
+  types compose both atoms, because ADT gives them two writable resources — a
+  function include, a scalar function implementation and a feature toggle each
+  answer a document at their own URL and a source at `source/main`. Eight compose
+  only the metadata one.
+
+  The grid this closes is `{source, document} × {read, write}`, and each cell is
+  one atom with one member.
+
+- `capabilityAtoms.ts` states it as compile-time fact: a document-only type
+  satisfies neither `IAdtReadable` nor `IAdtUpdatable`, a source-only type does
+  not satisfy `IAdtMetadataReadable`, and neither stands in for the other.
+
+### Documentation
+
+- `README.md` carries the four atoms and why the split happened; the atom count
+  is 12, and its long-polling example reads a **domain** — which is
+  document-only, so the example now calls `readMetadata` rather than a `read`
+  the type no longer has.
+- The header JSDoc of `IAdtCapabilities.ts` said `IAdtReadable` carries source
+  and metadata "because it is two endpoints". It shipped in the published
+  `.d.ts`, where a consumer reads it, and it now describes the pairs.
+- `docs/architecture/ARCHITECTURE.md` (three places) and the note in
+  `src/runtime/ITrace.ts` say eleven members take `IAdtOperationOptions`, not
+  nine or ten — `updateMetadata` is the eleventh.
+- `docs/architecture/DECISIONS.md` counted nine utility members answering a
+  parsed shape with no strategy. It is eight: `getInactiveObjects` left that list
+  in adt-clients 18.0.0, and *how* it left is the measurement worth recording —
+  it makes one request, so a strategy can type it, while the package and
+  where-used members each make several and assemble one shape from all of them.
+
 ## [35.0.0] - 2026-09-06
 
 **Anything that can be deleted can be asked whether it can be deleted.** Not

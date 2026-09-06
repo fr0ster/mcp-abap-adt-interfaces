@@ -15,6 +15,7 @@ import type {
   IAdtActivatable,
   IAdtCreatable,
   IAdtDeletable,
+  IAdtMetadataReadable,
   IAdtReadable,
   IAdtResponse,
   IAdtUpdatable,
@@ -31,7 +32,8 @@ const answered = <T>(value: T): IAdtResponse<T> => ({
  * named by the package. Nothing here is binding-specific except the config.
  */
 type WholeBinding = IAdtCreatable<IServiceBindingConfig, void> &
-  IAdtReadable<IServiceBindingConfig, string, string> &
+  IAdtReadable<IServiceBindingConfig, string> &
+  IAdtMetadataReadable<IServiceBindingConfig, string> &
   IAdtUpdatable<IServiceBindingConfig, void> &
   IAdtDeletable<IServiceBindingConfig, void> &
   IAdtActivatable<IServiceBindingConfig, string>;
