@@ -142,38 +142,23 @@ export interface IAdtOperationOptions<E extends IAdtError = IAdtError> {
    */
   analyse?: IAnalyse<E>;
 
-  /**
-   * Activate object after creation (for create operations)
-   * @default false
+  /*
+   * `activateOnCreate`, `activateOnUpdate` and `deleteOnFailure` were here.
+   *
+   * All three asked the caller what a member should do **after** its request:
+   * activate as well, or undo what it made when a later step failed. That is a
+   * dependency on steps, and steps are the implementation's — a contract names
+   * the endpoint a member answers and the shape it answers with, and how many
+   * requests an implementation makes to get there is nobody else's question.
+   *
+   * They existed because members had grown into chains: an `update` that locked,
+   * checked, wrote, unlocked, checked again and could activate. Every one of
+   * those is a member of its own — `lock`, `check`, `unlock`, `activate` are all
+   * declared here — so a caller composes them in the order they want, and a
+   * member that is one request has nothing to activate afterwards and nothing to
+   * roll back.
    */
-  activateOnCreate?: boolean;
 
-  /**
-   * Activate object after update (for update operations)
-   * @default false
-   */
-  activateOnUpdate?: boolean;
-
-  /**
-   * Remove what this call created, when a later step in the same call fails.
-   *
-   * @default true
-   *
-   * It was `false`, and the default changed because a create that fails after
-   * the object exists leaves a name taken — the one state a delete cannot
-   * always recover, since the deletion check resolves an object through its
-   * package and reports one that never got there as absent. The caller asked
-   * for a created-and-written object rather than for whatever the failure left,
-   * and what gets removed is something the same call made moments earlier, so
-   * there is nothing of the caller's to lose.
-   *
-   * Pass `false` to keep the half-made object — to inspect it, or because the
-   * chain will be resumed.
-   *
-   * Where a create is a single request there is nothing after it to fail, so
-   * this can never fire.
-   */
-  deleteOnFailure?: boolean;
 
   /**
    * Source code to use for update

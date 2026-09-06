@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- **BREAKING: `activateOnCreate`, `activateOnUpdate` and `deleteOnFailure`** on
+  `IAdtOperationOptions`.
+
+  All three asked the caller what a member should do **after** its request:
+  activate as well, or undo what it made when a later step failed. That is a
+  dependency on steps, and steps are the implementation's. A contract names the
+  endpoint a member answers and the shape it answers with; how many requests an
+  implementation makes to get there is nobody else's question.
+
+  They existed because members had grown into chains — an `update` that locked,
+  checked, wrote, unlocked, checked again and could activate. Every one of those
+  is a member in its own right: `lock`, `check`, `unlock` and `activate` are all
+  declared here. A caller composes them in the order they want, and a member that
+  is one request has nothing to activate afterwards and nothing to roll back.
+
+  **Migration.** Call the members. `create(config, { activateOnCreate: true })`
+  becomes `create(config)` then `activate(config)`; `update` becomes `lock`,
+  `update`, `unlock`. What you lose is a library method that decided the order
+  for you; what you gain is knowing which request failed when one does.
+
 ## [33.0.0] - 2026-09-06
 
 **The last interface tied to one object type leaves.** 31.0.0 removed the result
