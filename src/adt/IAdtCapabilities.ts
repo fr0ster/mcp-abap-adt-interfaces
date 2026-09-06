@@ -28,8 +28,8 @@
  * to the compiler, so a consumer never learns from the type that a failure path
  * exists.
  */
-import type { IAdtOperationOptions } from './IAdtObject';
-import type { IAdtResponse } from './IAdtResponse';
+import type { IAdtOperationOptions, IAnalyse } from './IAdtObject';
+import type { IAdtError, IAdtResponse } from './IAdtResponse';
 
 /**
  * Bring an object into existence.
@@ -46,6 +46,10 @@ export interface IAdtCreatable<TConfig, TCreated> {
    * @param options - Create options (activation, cleanup, source code)
    * @returns Created object configuration
    */
+  create<E extends IAdtError>(
+    config: TConfig,
+    options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TCreated, E>>;
   create(
     config: TConfig,
     options?: IAdtOperationOptions,
@@ -66,6 +70,13 @@ export interface IAdtReadable<TConfig, TSource, TMetadata> {
    *                                  Useful after create/activate operations to wait until object is ready
    * @returns Object configuration or source code, or undefined if not found
    */
+  read<E extends IAdtError>(
+    config: Partial<TConfig>,
+    version: 'active' | 'inactive' | undefined,
+    options: { withLongPolling?: boolean } & IAdtOperationOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
+  ): Promise<IAdtResponse<TSource, E>>;
   read(
     config: Partial<TConfig>,
     version?: 'active' | 'inactive',
@@ -84,6 +95,13 @@ export interface IAdtReadable<TConfig, TSource, TMetadata> {
    * @param options.version - 'active' or 'inactive' (default: 'active')
    * @returns State with metadata result
    */
+  readMetadata<E extends IAdtError>(
+    config: Partial<TConfig>,
+    options: {
+      withLongPolling?: boolean;
+      version?: 'active' | 'inactive';
+    } & IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TMetadata, E>>;
   readMetadata(
     config: Partial<TConfig>,
     options?: {
@@ -102,6 +120,10 @@ export interface IAdtUpdatable<TConfig, TUpdated> {
    * @param options - Update options (activation, cleanup, lock handle)
    * @returns Updated object configuration
    */
+  update<E extends IAdtError>(
+    config: Partial<TConfig>,
+    options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TUpdated, E>>;
   update(
     config: Partial<TConfig>,
     options?: IAdtOperationOptions,
@@ -116,6 +138,10 @@ export interface IAdtDeletable<TConfig, TDeleted> {
    * @param config - Object identification
    * @returns State with delete result
    */
+  delete<E extends IAdtError>(
+    config: Partial<TConfig>,
+    options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TDeleted, E>>;
   delete(
     config: Partial<TConfig>,
     options?: IAdtOperationOptions,
@@ -128,6 +154,10 @@ export interface IAdtValidatable<TConfig, TValidated> {
    * @param config - Object configuration
    * @returns State with validation result
    */
+  validate<E extends IAdtError>(
+    config: Partial<TConfig>,
+    options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TValidated, E>>;
   validate(
     config: Partial<TConfig>,
     options?: IAdtOperationOptions,
@@ -141,6 +171,11 @@ export interface IAdtCheckable<TConfig, TChecked> {
    * @param status - Optional status to check ('active', 'inactive', 'deletion')
    * @returns State with check result
    */
+  check<E extends IAdtError>(
+    config: Partial<TConfig>,
+    status: string | undefined,
+    options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TChecked, E>>;
   check(
     config: Partial<TConfig>,
     status?: string,
@@ -154,6 +189,10 @@ export interface IAdtActivatable<TConfig, TActivated> {
    * @param config - Object identification
    * @returns State with activation result
    */
+  activate<E extends IAdtError>(
+    config: Partial<TConfig>,
+    options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TActivated, E>>;
   activate(
     config: Partial<TConfig>,
     options?: IAdtOperationOptions,
@@ -232,6 +271,12 @@ export interface IAdtTransportAware<TConfig, TTransport> {
    *                                  Useful after create/activate operations to wait until object is ready
    * @returns State with transport result
    */
+  readTransport<E extends IAdtError>(
+    config: Partial<TConfig>,
+    options: { withLongPolling?: boolean } & IAdtOperationOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
+  ): Promise<IAdtResponse<TTransport, E>>;
   readTransport(
     config: Partial<TConfig>,
     options?: { withLongPolling?: boolean } & IAdtOperationOptions,

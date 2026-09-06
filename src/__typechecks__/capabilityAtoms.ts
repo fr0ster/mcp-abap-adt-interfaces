@@ -25,7 +25,13 @@ interface Config {
 }
 
 /** The smallest thing satisfying the contract, so these stay about shape. */
-function answered<T>(value: T): IAdtResponse<T> {
+// Parameterised in the failure type as well, because the members are: since
+// decision 25 a member answers the failure its `analyse` named, and an
+// implementation has to be able to say so. The success half never mentions `E`,
+// so this needs no cast — it is the same object either way.
+function answered<T, E extends IAdtError = IAdtError>(
+  value: T,
+): IAdtResponse<T, E> {
   return { ok: true, getResult: () => ({ value }) };
 }
 
@@ -54,7 +60,10 @@ void _deleteOnlyAsUpdatable;
 // rather than forcing one shape on both.
 const _both: IAdtCreatable<Config, string> &
   IAdtReadable<Config, string, string> = {
-  create: async (config) => answered(config.name),
+  // Annotated, where before it was inferred: a member with two call signatures
+  // gives an implementation no single one to be contextually typed from. That
+  // is the cost of the overloads, and it is one type annotation.
+  create: async (config: Config) => answered(config.name),
   read: async () => answered('CLASS zcl_x DEFINITION.'),
   readMetadata: async () => answered('<adtcore:objectReference/>'),
 };
