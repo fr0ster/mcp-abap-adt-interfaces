@@ -24,10 +24,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   declared here. A caller composes them in the order they want, and a member that
   is one request has nothing to activate afterwards and nothing to roll back.
 
-  **Migration.** Call the members. `create(config, { activateOnCreate: true })`
-  becomes `create(config)` then `activate(config)`; `update` becomes `lock`,
-  `update`, `unlock`. What you lose is a library method that decided the order
-  for you; what you gain is knowing which request failed when one does.
+  **Migration.** Call the members.
+  `create(config, { activateOnCreate: true })` becomes `create(config)`, then —
+  for an object created empty, such as a class — `lock`, `update` with the
+  source, `unlock`, and then `activate`. Where the create endpoint carries the
+  source itself (a DDL source, a table, a program) the write step is not needed.
+
+  What you lose is a library method that decided the order for you; what you gain
+  is knowing which of the six requests failed when one does.
 
 ## [33.0.0] - 2026-09-06
 

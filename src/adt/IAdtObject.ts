@@ -160,26 +160,42 @@ export interface IAdtOperationOptions<E extends IAdtError = IAdtError> {
    */
 
   /**
-   * Source code to use for update
-   * Used in create operations for update after create, and in update operations
+   * The body of this member’s request, where its endpoint takes one.
+   *
+   * For an update that is the source being written. For a create it depends on
+   * the object: a DDL source, a table and a program are created *from* their
+   * source, so it is the POST body; a class or an interface is created empty and
+   * its source is written afterwards, by `update`, so passing it to their
+   * `create` does nothing.
+   *
+   * It used to say "used in create operations for update after create" — that
+   * described a create that wrote the source itself in a second request. A
+   * member is one request now, so where the endpoint does not carry source,
+   * writing it is a separate call the caller makes.
    */
   sourceCode?: string;
 
   /**
-   * XML content to use for update
-   * Used for objects that use XML format (e.g., Domain, DataElement)
-   * Used in create operations for update after create, and in update operations
+   * The body of this member’s request, for the objects whose editor content is
+   * XML rather than source — a domain, a data element, a package, an
+   * authorization field.
+   *
+   * Same rule as {@link IAdtOperationOptions.sourceCode}: it is the body of the
+   * one request the member makes, where that endpoint takes one.
    */
   xmlContent?: string;
 
   /**
-   * Lock handle to use for low-level update operations
-   * If provided, the update method will skip lock, check, and unlock operations
-   * and perform only the core update operation. Useful when you want to manage
-   * lock/unlock manually or when performing updates in a custom workflow.
+   * The lock handle to put on the write request.
    *
-   * When lockHandle is provided, the update method assumes the object is already locked
-   * and will only perform the update operation without any additional checks or unlocks.
+   * Nothing more. It used to say the update "will skip lock, check and unlock
+   * operations" when provided, which implied that without one those still
+   * happen — they did, and they no longer do: a member is one request and the
+   * lock is the caller’s, taken with `lock` and released with `unlock`.
+   *
+   * **Leaving it out is not refused here.** Whether a write without a lock is
+   * allowed is ADT’s judgement, and ADT answers it; a library that refused
+   * first would be standing in front of the server with an opinion of its own.
    */
   lockHandle?: string;
 

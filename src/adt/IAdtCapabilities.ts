@@ -49,8 +49,11 @@ export interface IAdtCreatable<TConfig, TCreated> {
    * not before.
    *
    * @param config - Object configuration
-   * @param options - `sourceCode`/`xmlContent` for the body, `analyse` for what
-   *                  counts as a failure
+   * @param options - `analyse` for what counts as a failure, and
+   *                  `sourceCode`/`xmlContent` **only where this object's create
+   *                  endpoint carries a body**: a DDL source, a table and a
+   *                  program are created from their source; a class is created
+   *                  empty and written to afterwards, by `update`
    * @returns whatever this implementation’s reading makes of the answer
    */
   create<E extends IAdtError>(
