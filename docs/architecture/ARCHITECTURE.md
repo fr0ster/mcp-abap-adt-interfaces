@@ -261,7 +261,7 @@ implementation package:
 |---|---|
 | what an answer becomes | an `IResultStrategy`, at construction |
 | what counts as a failure, everywhere | the error strategy the implementation is constructed with |
-| what counts as a failure, for one call | `analyse`, on the nine capability members that take `IAdtOperationOptions` |
+| what counts as a failure, for one call | `analyse`, on the eleven capability members that take `IAdtOperationOptions` |
 | the headers a request carries | your own `IAdtContentTypes` |
 | how a request is made at all | your own `IAbapConnection` |
 | a whole family | your own implementation of those atoms |

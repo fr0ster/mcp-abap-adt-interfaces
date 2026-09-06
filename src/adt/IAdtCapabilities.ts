@@ -9,9 +9,13 @@
  * that object can do and what comes back, rather than what the fattest object
  * could do.
  *
- * **Each atom names its own result.** `IAdtCreatable<TConfig, TCreated>`,
- * `IAdtUpdatable<TConfig, TUpdated>`, and so on. `IAdtReadable` carries two —
- * source and metadata — because it is two endpoints.
+ * **Each atom names its own result, and one resource.**
+ * `IAdtCreatable<TConfig, TCreated>`, `IAdtUpdatable<TConfig, TUpdated>`, and so
+ * on. Reading and writing come in pairs — `IAdtReadable`/`IAdtMetadataReadable`
+ * and `IAdtUpdatable`/`IAdtMetadataUpdatable` — because an object has up to two
+ * resources, a source and its own document, and which it has is a property of
+ * the type. One atom carrying both made eight of them answer `read` and
+ * `readMetadata` with the identical request; they were split in 36.0.0.
  *
  * The grain comes from ADT itself: a lock and its unlock are one operation seen
  * from two ends, and a version list is useless without the source behind an

@@ -59,9 +59,20 @@ class, with a behavior implementation making it nine.
 ### Documentation
 
 - `README.md` carries the four atoms and why the split happened; the atom count
-  is 12. `docs/architecture/ARCHITECTURE.md` and the note in
+  is 12, and its long-polling example reads a **domain** — which is
+  document-only, so the example now calls `readMetadata` rather than a `read`
+  the type no longer has.
+- The header JSDoc of `IAdtCapabilities.ts` said `IAdtReadable` carries source
+  and metadata "because it is two endpoints". It shipped in the published
+  `.d.ts`, where a consumer reads it, and it now describes the pairs.
+- `docs/architecture/ARCHITECTURE.md` (three places) and the note in
   `src/runtime/ITrace.ts` say eleven members take `IAdtOperationOptions`, not
-  ten — `updateMetadata` is the eleventh.
+  nine or ten — `updateMetadata` is the eleventh.
+- `docs/architecture/DECISIONS.md` counted nine utility members answering a
+  parsed shape with no strategy. It is eight: `getInactiveObjects` left that list
+  in adt-clients 18.0.0, and *how* it left is the measurement worth recording —
+  it makes one request, so a strategy can type it, while the package and
+  where-used members each make several and assemble one shape from all of them.
 
 ## [35.0.0] - 2026-09-06
 

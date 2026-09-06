@@ -181,10 +181,12 @@ import {
   LogLevel
 } from '@mcp-abap-adt/interfaces';
 
-// Example: Read with long polling
-const domain = await adtDomain.read(
+// Example: Read with long polling.
+// A domain is `IAdtMetadataReadable` and nothing else — it has no source, so
+// `readMetadata` is the whole of reading it. A class, which has both, would use
+// `read` here for its source and `readMetadata` for its own document.
+const domain = await adtDomain.readMetadata(
   { domainName: 'Z_TEST' },
-  'active',
   { withLongPolling: true } // Wait until object is available
 );
 

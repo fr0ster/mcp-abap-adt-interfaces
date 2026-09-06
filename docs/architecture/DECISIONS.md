@@ -897,10 +897,15 @@ contract that describes a convenience has made it mandatory.
 to in the request the member issues. If it is computed into another field, it
 belongs to the implementation that computes it.
 
-**Open, and named rather than assumed.** Nine members still answer a parsed shape
-with no strategy — `search`, `getAllTypes`, `fetchNodeStructure`,
-`getPackageContentsList`, `getPackageHierarchy`, `getInactiveObjects`,
-`getIncludesList`, `listFunctionModules`, `listFunctionGroupIncludes`. If
+**Open, and named rather than assumed.** Eight members still answer a parsed
+shape with no strategy — `search`, `getAllTypes`, `fetchNodeStructure`,
+`getPackageContentsList`, `getPackageHierarchy`, `getIncludesList`,
+`listFunctionModules`, `listFunctionGroupIncludes`. `getInactiveObjects` left
+that list in adt-clients 18.0.0, and how it left is the measurement that matters
+here: it makes **one** request, so an `IResultStrategy` — which is handed one
+answer — could type it. The three package and where-used members make several
+and assemble one shape from all of them, which no strategy of that shape can
+express; whether they should be reachable another way is the part still open. If
 "document by default, parsed by strategy" is the general rule rather than the
 answer where two members contended for one endpoint, all nine reverse — and
 `IRepositoryNodeContents`, shipped in 27.0.0, becomes a strategy's return type
