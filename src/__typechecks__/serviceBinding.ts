@@ -1,19 +1,24 @@
 // Compile-only assertions. If these stop compiling, the types regressed.
 //
-// The service binding is where the duplication was worst: the contract extended
-// eight capability atoms and declared eight more members doing the same things
-// on the same endpoints, answering the transport envelope. What is asserted here
-// is what replaced that — the atoms alone for CRUD, composed rather than
-// inherited, and one member per thing that has no atom.
+// The service binding was the last object type with an aggregate interface of
+// its own. It declared eight members: four that no implementation has any more
+// — `getODataV2ServiceBinding`, `getODataV4ServiceBinding`, `publishODataV2`,
+// `unpublishODataV2`, because a protocol is a parameter and not a method name —
+// and four that were a chain step exposed to callers, two operations glued
+// together by an `And`, and two nothing called.
+//
+// What is asserted here is what replaced it: **nothing**. A binding is described
+// by the atoms, composed; a consumer names the half they need, structurally,
+// without any type belonging to a particular object.
 
 import type {
   IAdtActivatable,
   IAdtCreatable,
+  IAdtDeletable,
   IAdtReadable,
   IAdtResponse,
-  IAdtServiceBinding,
+  IAdtUpdatable,
   IServiceBindingConfig,
-  IServiceBindingResults,
 } from '../index';
 
 const answered = <T>(value: T): IAdtResponse<T> => ({
@@ -22,70 +27,43 @@ const answered = <T>(value: T): IAdtResponse<T> => ({
 });
 
 /**
- * What a caller who needs the whole surface writes.
- *
- * Spelled, not named: a consumer that only publishes bindings takes the half it
- * needs, and an implementation that only publishes is a legitimate one.
+ * What a caller who needs the whole surface writes — spelled from atoms, not
+ * named by the package. Nothing here is binding-specific except the config.
  */
-type WholeBinding = IAdtServiceBinding<MyReadings> &
-  IAdtCreatable<IServiceBindingConfig, void> &
+type WholeBinding = IAdtCreatable<IServiceBindingConfig, void> &
   IAdtReadable<IServiceBindingConfig, string, string> &
+  IAdtUpdatable<IServiceBindingConfig, void> &
+  IAdtDeletable<IServiceBindingConfig, void> &
   IAdtActivatable<IServiceBindingConfig, string>;
 
-/** The publishing half alone, which the old shape could not express. */
-type PublishingOnly = Pick<IAdtServiceBinding<MyReadings>, 'publishODataV2'>;
+/**
+ * And the half of it somebody actually needs. Publishing a binding is an update
+ * — `desiredPublicationState` is a field of its config — so the caller who only
+ * publishes takes `IAdtUpdatable` and nothing else, and an implementation that
+ * only publishes is a legitimate one.
+ */
+type PublishingOnly = IAdtUpdatable<IServiceBindingConfig, void>;
 
 const _publisher: PublishingOnly = {
-  // this implementation reads a publication as nothing to read
-  publishODataV2: async () => answered(undefined),
+  update: async () => answered(undefined),
 };
 void _publisher;
 
-/** A consumer's own readings, chosen once, keyed rather than positional. */
+/** A consumer's own reading of what a create answers, named by them. */
 interface IBindingSummary {
-  name: string;
-  published: boolean;
+  readonly name: string;
+  readonly published: boolean;
 }
 
-/** Composed, not extended — the rule this package holds itself to. */
-type MyReadings = IServiceBindingResults & {
-  bindingTypes: string[];
-  generation: IBindingSummary;
-  odata: string;
-  publication: undefined;
-  classification: string;
-};
+declare const mine: IAdtCreatable<IServiceBindingConfig, IBindingSummary>;
 
-declare const mine: IAdtServiceBinding<MyReadings>;
-
-async function _mineAnswers() {
-  const types = await mine.getServiceBindingTypes();
-  const generated = await mine.createAndGenerateServiceBinding({
-    name: 'ZSB',
-    package: 'ZLOCAL',
-  } as never);
-
-  if (!types.ok || !generated.ok) return undefined;
-
-  const names: string[] = types.getResult().value;
-  const summary: IBindingSummary = generated.getResult().value;
-  return { names, summary };
+async function _mineAnswers(): Promise<IBindingSummary | undefined> {
+  const created = await mine.create({} as IServiceBindingConfig);
+  if (!created.ok) return undefined;
+  // The create answers one value — the caller's, not a stack of envelopes from
+  // every request the implementation made on the way.
+  return created.getResult().value;
 }
 void _mineAnswers;
 
-/**
- * The chain answers one value.
- *
- * It made six requests and handed back six envelopes until 30.0.0. What an
- * implementation does on the way to an answer is its own business, and reaches
- * a caller only if it fails.
- */
-declare const binding: IAdtServiceBinding<MyReadings>;
-const _oneValue: Promise<IAdtResponse<IBindingSummary>> =
-  binding.createAndGenerateServiceBinding({} as never);
-void _oneValue;
-
-// @ts-expect-error createServiceBinding was one endpoint under two names; the atom is the survivor
-void binding.createServiceBinding;
-
-export type { WholeBinding, PublishingOnly, MyReadings };
+export type { WholeBinding, PublishingOnly, IBindingSummary };

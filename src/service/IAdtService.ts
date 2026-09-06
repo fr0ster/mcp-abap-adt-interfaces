@@ -126,65 +126,22 @@ export interface IServiceBindingResults {
   classification: unknown;
 }
 
-/**
- * A service binding.
+/*
+ * `IAdtServiceBinding` was here: a per-object aggregate declaring eight members.
  *
- * **The eight duplicates are gone.** Until 30.0.0 this interface extended the
- * capability atoms *and* declared `createServiceBinding`, `readServiceBinding`,
- * `updateServiceBinding`, `deleteServiceBinding`, `checkServiceBinding`,
- * `activateServiceBinding`, `validateServiceBinding` and
- * `transportCheckServiceBinding` beside them — the same operations on the same
- * endpoints, twice, distinguished only by the second set answering the transport
- * envelope. That is decision 16 exactly, and it is why nothing could reach those
- * endpoints with a reading of its own: `create` and `createServiceBinding` were
- * one request under two names. The atoms are the survivors.
+ * It is gone, and it is the last of its kind — no other object type ever had
+ * one. It arrived in `bd5926f` with a one-line message and no reasoning, and
+ * 31.0.0 did not reach it: that sweep took out result *shapes*, and a
+ * method-bearing interface was not in its scope. So it was never kept on
+ * purpose; it was never looked at.
  *
- * What remains below has no atom, because nothing else does it: the type
- * catalogue, generation, the OData readings, publication and classification.
+ * Four of its members no longer exist in any implementation —
+ * `getODataV2ServiceBinding`, `getODataV4ServiceBinding`, `publishODataV2` and
+ * `unpublishODataV2` — because a protocol is a parameter, not a method name.
+ * The other four are a chain step exposed to callers, two operations glued into
+ * one by an `And` in the name, and two members nothing calls.
+ *
+ * What a consumer needs to *call* a binding stayed: every parameter type above,
+ * and the capability atoms, which compose. What an implementation hands back is
+ * its own business, and a consumer names it structurally from the atoms.
  */
-export interface IAdtServiceBinding<R extends IServiceBindingResults> {
-  /** The binding types this system offers. */
-  getServiceBindingTypes(): Promise<IAdtResponse<R['bindingTypes']>>;
-
-  /** Generate the service the binding exposes. */
-  generateServiceBinding(
-    params: IGenerateServiceBindingParams,
-  ): Promise<IAdtResponse<R['generation']>>;
-
-  /**
-   * Create the binding and generate its service.
-   *
-   * A chain rather than a second reading, which is why it survives decision 16 —
-   * and it answers **one** value. Until 30.0.0 it handed back six envelopes, one
-   * per request it had made along the way; what an implementation does on the
-   * way to an answer is its own business, and reaches a caller only if it fails.
-   */
-  createAndGenerateServiceBinding(
-    params: ICreateAndGenerateServiceBindingParams,
-  ): Promise<IAdtResponse<R['generation']>>;
-
-  /** The binding read as OData v2. */
-  getODataV2ServiceBinding(
-    params: IGetServiceBindingODataParams,
-  ): Promise<IAdtResponse<R['odata']>>;
-
-  /** The binding read as OData v4. */
-  getODataV4ServiceBinding(
-    params: IGetServiceBindingODataParams,
-  ): Promise<IAdtResponse<R['odata']>>;
-
-  /** Publish an OData v2 binding. */
-  publishODataV2(
-    params: IPublishODataV2Params,
-  ): Promise<IAdtResponse<R['publication']>>;
-
-  /** Withdraw a published OData v2 binding. */
-  unpublishODataV2(
-    params: IUnpublishODataV2Params,
-  ): Promise<IAdtResponse<R['publication']>>;
-
-  /** Classify the binding. */
-  classifyServiceBinding(
-    params: IClassifyServiceBindingParams,
-  ): Promise<IAdtResponse<R['classification']>>;
-}

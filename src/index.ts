@@ -431,7 +431,6 @@ export type { SapAuthType, SapConnectionType } from './sap/SapAuthType';
 // Service domain
 export type {
   IActivateServiceBindingParams,
-  IAdtServiceBinding,
   ICheckServiceBindingParams,
   IClassifyServiceBindingParams,
   ICreateAndGenerateServiceBindingParams,

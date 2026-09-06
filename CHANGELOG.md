@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- **BREAKING: `IAdtServiceBinding`** — the last per-object aggregate interface in
+  the package, and the only one any object type ever had.
+
+  Four of its eight members no longer exist in any implementation:
+  `getODataV2ServiceBinding`, `getODataV4ServiceBinding`, `publishODataV2` and
+  `unpublishODataV2`. A protocol is a parameter, not a method name, and those
+  four collapsed into one read and one update. The other four were a chain step
+  exposed to callers (`generateServiceBinding`, called from one place),
+  two operations glued together by an `And`
+  (`createAndGenerateServiceBinding`), and two nothing calls
+  (`classifyServiceBinding`, `getServiceBindingTypes`).
+
+  It was not kept on purpose. It arrived in `bd5926f` with a one-line message
+  and no reasoning, and 31.0.0 did not reach it — that sweep removed result
+  *shapes*, and a method-bearing interface was outside its scope.
+
+  **Nothing replaces it.** A binding is described by the capability atoms,
+  composed; a consumer names the half they need structurally, which needs no
+  type belonging to a particular object. Every parameter type stayed — those are
+  what a caller cannot make the call without.
+
 ## [32.0.0] - 2026-09-06
 
 **A failure says what the caller made it say.** 31.0.0 gave the error contract
