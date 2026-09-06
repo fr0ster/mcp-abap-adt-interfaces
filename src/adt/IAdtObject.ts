@@ -142,60 +142,60 @@ export interface IAdtOperationOptions<E extends IAdtError = IAdtError> {
    */
   analyse?: IAnalyse<E>;
 
-  /**
-   * Activate object after creation (for create operations)
-   * @default false
+  /*
+   * `activateOnCreate`, `activateOnUpdate` and `deleteOnFailure` were here.
+   *
+   * All three asked the caller what a member should do **after** its request:
+   * activate as well, or undo what it made when a later step failed. That is a
+   * dependency on steps, and steps are the implementation's — a contract names
+   * the endpoint a member answers and the shape it answers with, and how many
+   * requests an implementation makes to get there is nobody else's question.
+   *
+   * They existed because members had grown into chains: an `update` that locked,
+   * checked, wrote, unlocked, checked again and could activate. Every one of
+   * those is a member of its own — `lock`, `check`, `unlock`, `activate` are all
+   * declared here — so a caller composes them in the order they want, and a
+   * member that is one request has nothing to activate afterwards and nothing to
+   * roll back.
    */
-  activateOnCreate?: boolean;
 
   /**
-   * Activate object after update (for update operations)
-   * @default false
-   */
-  activateOnUpdate?: boolean;
-
-  /**
-   * Remove what this call created, when a later step in the same call fails.
+   * The body of this member’s request, where its endpoint takes one.
    *
-   * @default true
+   * For an update that is the source being written. For a create it depends on
+   * the object: a DDL source, a table and a program are created *from* their
+   * source, so it is the POST body; a class or an interface is created empty and
+   * its source is written afterwards, by `update`, so passing it to their
+   * `create` does nothing.
    *
-   * It was `false`, and the default changed because a create that fails after
-   * the object exists leaves a name taken — the one state a delete cannot
-   * always recover, since the deletion check resolves an object through its
-   * package and reports one that never got there as absent. The caller asked
-   * for a created-and-written object rather than for whatever the failure left,
-   * and what gets removed is something the same call made moments earlier, so
-   * there is nothing of the caller's to lose.
-   *
-   * Pass `false` to keep the half-made object — to inspect it, or because the
-   * chain will be resumed.
-   *
-   * Where a create is a single request there is nothing after it to fail, so
-   * this can never fire.
-   */
-  deleteOnFailure?: boolean;
-
-  /**
-   * Source code to use for update
-   * Used in create operations for update after create, and in update operations
+   * It used to say "used in create operations for update after create" — that
+   * described a create that wrote the source itself in a second request. A
+   * member is one request now, so where the endpoint does not carry source,
+   * writing it is a separate call the caller makes.
    */
   sourceCode?: string;
 
   /**
-   * XML content to use for update
-   * Used for objects that use XML format (e.g., Domain, DataElement)
-   * Used in create operations for update after create, and in update operations
+   * The body of this member’s request, for the objects whose editor content is
+   * XML rather than source — a domain, a data element, a package, an
+   * authorization field.
+   *
+   * Same rule as {@link IAdtOperationOptions.sourceCode}: it is the body of the
+   * one request the member makes, where that endpoint takes one.
    */
   xmlContent?: string;
 
   /**
-   * Lock handle to use for low-level update operations
-   * If provided, the update method will skip lock, check, and unlock operations
-   * and perform only the core update operation. Useful when you want to manage
-   * lock/unlock manually or when performing updates in a custom workflow.
+   * The lock handle to put on the write request.
    *
-   * When lockHandle is provided, the update method assumes the object is already locked
-   * and will only perform the update operation without any additional checks or unlocks.
+   * Nothing more. It used to say the update "will skip lock, check and unlock
+   * operations" when provided, which implied that without one those still
+   * happen — they did, and they no longer do: a member is one request and the
+   * lock is the caller’s, taken with `lock` and released with `unlock`.
+   *
+   * **Leaving it out is not refused here.** Whether a write without a lock is
+   * allowed is ADT’s judgement, and ADT answers it; a library that refused
+   * first would be standing in front of the server with an opinion of its own.
    */
   lockHandle?: string;
 

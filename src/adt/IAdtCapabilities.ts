@@ -39,12 +39,22 @@ import type { IAdtError, IAdtResponse } from './IAdtResponse';
  */
 export interface IAdtCreatable<TConfig, TCreated> {
   /**
-   * Create object with full operation chain:
-   * validate → create → check → lock → check(inactive) → update → unlock → check → activate (optional)
+   * Create the object — **the POST, and nothing after it.**
+   *
+   * This used to say "with full operation chain: validate, create, check,
+   * lock, check(inactive), update, unlock, activate". It is one request.
+   * Validating a name, checking the result, locking, writing source and
+   * activating are members of their own, and a caller composes them in the
+   * order they want: which of six requests failed is knowable that way and was
+   * not before.
    *
    * @param config - Object configuration
-   * @param options - Create options (activation, cleanup, source code)
-   * @returns Created object configuration
+   * @param options - `analyse` for what counts as a failure, and
+   *                  `sourceCode`/`xmlContent` **only where this object's create
+   *                  endpoint carries a body**: a DDL source, a table and a
+   *                  program are created from their source; a class is created
+   *                  empty and written to afterwards, by `update`
+   * @returns whatever this implementation’s reading makes of the answer
    */
   create<E extends IAdtError>(
     config: TConfig,
@@ -113,12 +123,20 @@ export interface IAdtReadable<TConfig, TSource, TMetadata> {
 
 export interface IAdtUpdatable<TConfig, TUpdated> {
   /**
-   * Update object with full operation chain:
-   * lock → check(inactive) → update → unlock → check → activate (optional)
+   * Update the object — **the write, and nothing around it.**
+   *
+   * This used to say "with full operation chain: lock, check(inactive),
+   * update, unlock, check, activate (optional)". It is one request, and the
+   * lock is the caller’s: `lock` and `unlock` are members, `lockHandle` goes
+   * in the options, and how long a lock is held is a policy no library can
+   * choose for every caller of a shared connection.
+   *
+   * Sending no lock handle is not refused here. ADT judges that, and answers it.
    *
    * @param config - Object configuration with updates
-   * @param options - Update options (activation, cleanup, lock handle)
-   * @returns Updated object configuration
+   * @param options - `sourceCode`/`xmlContent` for the body, `lockHandle` for
+   *                  the lock the caller took, `analyse` for the verdict
+   * @returns whatever this implementation’s reading makes of the answer
    */
   update<E extends IAdtError>(
     config: Partial<TConfig>,
