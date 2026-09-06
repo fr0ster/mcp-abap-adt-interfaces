@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [33.0.0] - 2026-09-06
+
+**The last interface tied to one object type leaves.** 31.0.0 removed the result
+shapes and 32.0.0 gave the failure half its parameter; what stayed behind was one
+aggregate that neither sweep was looking for. No object type has an interface of
+its own now — a consumer spells the composition they need from the atoms, and
+TypeScript matches it structurally.
+
 ### Removed
 
 - **BREAKING: `IAdtServiceBinding`** — the last per-object aggregate interface in
