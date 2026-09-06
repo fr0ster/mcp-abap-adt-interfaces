@@ -39,6 +39,19 @@ now, and only the server can answer it.
   went in — that file exists to make "additive" a checked claim rather than a
   sentence in this changelog, and here it correctly refused.
 
+### Documentation
+
+- **`README.md`** — the atom list carries the third type parameter and both
+  members, and the "grain follows ADT" paragraph names `checkDeletion`/`delete`
+  beside `lock`/`unlock` and the version pair: each is one operation seen from
+  two ends.
+- **`docs/architecture/ARCHITECTURE.md`** and the note in `src/runtime/ITrace.ts`
+  — `IAdtOperationOptions` reaches ten members now, not nine. The count is load
+  bearing: it is how the error axis says which members a caller can overrule per
+  call, and a stale one understates the seam.
+
+### Changed
+
 - **`IAdtDeletable.delete` no longer claims to check first.** Its documentation
   said "Performs deletion check before deleting", which stopped being true when
   implementations became one request per member. A caller reading the contract
