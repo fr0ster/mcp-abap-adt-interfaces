@@ -157,3 +157,41 @@ async function _theFailureIsTheCallers(): Promise<void> {
   }
 }
 void _theFailureIsTheCallers;
+
+// ── A generic cannot be claimed without the strategy that earns it ──────────
+//
+// `activate<IT100Failure>(config)` used to compile: the type argument promised
+// a failure the runtime had no way to produce, because without an `analyse`
+// the member answers whatever its own default reads — an `IAdtError`. Reading
+// `.t100` off that compiles and finds nothing there. Caught in review.
+//
+// Two call signatures now, the strategy-bearing one first: a caller who names
+// `E` must hand over the thing that makes it.
+
+async function _aTypeArgumentWithoutAStrategy(): Promise<void> {
+  // @ts-expect-error naming the failure type requires the strategy that answers it
+  await activatable.activate<IT100Failure>({ name: 'ZCL_X' });
+
+  // `IAdtOperationOptions<IT100Failure>` with no strategy in it is still a
+  // writable type — `analyse` is optional, and making it conditionally required
+  // is not expressible. It does not matter, because the member is the gate: an
+  // options object that names a failure type without carrying the thing that
+  // produces it does not select the parameterised signature, so the answer is
+  // the plain contract and `.t100` is not there to read.
+  const named: IAdtOperationOptions<IT100Failure> = {};
+  const answered = await activatable.activate({ name: 'ZCL_X' }, named);
+  if (!answered.ok) {
+    const failure: IAdtError = answered.getError();
+    void failure;
+    // @ts-expect-error the type argument bought nothing without a strategy
+    void answered.getError().t100;
+  }
+
+  // What is allowed is the honest pair.
+  const honest = await activatable.activate(
+    { name: 'ZCL_X' },
+    { analyse: t100 },
+  );
+  if (!honest.ok) void honest.getError().t100;
+}
+void _aTypeArgumentWithoutAStrategy;

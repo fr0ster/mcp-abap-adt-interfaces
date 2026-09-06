@@ -1858,7 +1858,15 @@ that, and the check written for it declared its answer by hand rather than
 asking a member, so it passed while the promise did not hold. All nine
 capability members are parameterised, and the check calls them.
 
+**A type argument has to be earned.** One generic signature per member is not
+enough: `activate<IT100Failure>(config)` with no strategy type-checks and
+promises a failure nothing will produce, because the member falls back to its own
+default reading and answers an `IAdtError`. Reading the richer field compiles and
+finds nothing. So each member has two call signatures — the parameterised one
+requires `analyse`, and the plain one is what everything else gets.
+
 **How to catch a violation.** A new optional field on `IAdtError` that serves one
 kind of caller. A member whose options are not parameterised, or whose return is
-not — so a strategy's type stops at the call site. A type-level check that
-declares the answer instead of obtaining it from a member.
+not — so a strategy's type stops at the call site. A member whose parameterised
+signature does not require the strategy. A type-level check that declares the
+answer instead of obtaining it from a member.

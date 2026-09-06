@@ -60,7 +60,10 @@ void _deleteOnlyAsUpdatable;
 // rather than forcing one shape on both.
 const _both: IAdtCreatable<Config, string> &
   IAdtReadable<Config, string, string> = {
-  create: async (config) => answered(config.name),
+  // Annotated, where before it was inferred: a member with two call signatures
+  // gives an implementation no single one to be contextually typed from. That
+  // is the cost of the overloads, and it is one type annotation.
+  create: async (config: Config) => answered(config.name),
   read: async () => answered('CLASS zcl_x DEFINITION.'),
   readMetadata: async () => answered('<adtcore:objectReference/>'),
 };
