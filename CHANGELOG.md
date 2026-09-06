@@ -7,6 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [35.0.0] - 2026-09-06
+
+**Anything that can be deleted can be asked whether it can be deleted.** Not
+because every object type has a check resource of its own, but because the
+question is part of deleting: almost everything created can be removed, and what
+varies is the *moment* — something still references it, a transport holds it,
+another user has it locked. Every one of those is a fact about the server right
+now, and only the server can answer it.
+
+### Changed
+
+- **BREAKING: `IAdtDeletable` carries `checkDeletion`**, and gains a third type
+  parameter for what that answer reads as:
+  `IAdtDeletable<TConfig, TDeleted, TChecked = string>`.
+
+  ```typescript
+  const approved = await handler.checkDeletion(config);
+  if (!approved.ok) throw new Error(approved.getError().message);
+  await handler.delete(config);
+  ```
+
+  It is not an atom of its own. An atom would say the check is a separate
+  capability a type may or may not have, and that is the wrong reading: what
+  depends on the server is the *answer*, never whether the question applies.
+  Composing atoms is how a type says what it supports, and a type that supports
+  deleting supports being asked about it.
+
+  **This breaks every implementation of the atom**, which
+  `src/__typechecks__/downstreamStillCompiles.ts` reported the moment the member
+  went in — that file exists to make "additive" a checked claim rather than a
+  sentence in this changelog, and here it correctly refused.
+
+- **`IAdtDeletable.delete` no longer claims to check first.** Its documentation
+  said "Performs deletion check before deleting", which stopped being true when
+  implementations became one request per member. A caller reading the contract
+  was told a guarantee the code had dropped. It now says what it does — the
+  deletion, and only that — and points at `checkDeletion` for the other half.
+
 ## [34.0.0] - 2026-09-06
 
 **A contract names an endpoint and a shape; it does not compose steps.** Three

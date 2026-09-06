@@ -46,14 +46,26 @@ const _updateOnlyAsDeletable: IAdtDeletable<Config, void> = _updateOnly;
 void _updateOnlyAsDeletable;
 
 // And the reverse.
-const _deleteOnly: IAdtDeletable<Config, void> = {
+// Deleting and asking whether it can be deleted are one capability: almost
+// anything created can be deleted, and what varies is whether it can be deleted
+// *now* — which only the server knows. So `IAdtDeletable` carries both, and an
+// implementation that offers one offers the other.
+const _deleteOnly: IAdtDeletable<Config, void, string> = {
   delete: async () => answered(undefined),
+  checkDeletion: async () => answered('<del:checkResponse/>'),
 };
 void _deleteOnly;
 
 // @ts-expect-error IAdtUpdatable requires update(); this object has none.
 const _deleteOnlyAsUpdatable: IAdtUpdatable<Config, void> = _deleteOnly;
 void _deleteOnlyAsUpdatable;
+
+// The check answers its own value, not the deletion's. They read different
+// documents — `del:isDeletable` against `del:isDeleted` — and the third type
+// parameter is what keeps a contract from saying they are interchangeable.
+const _checkAnswersItsOwn: Promise<IAdtResponse<string>> =
+  _deleteOnly.checkDeletion({ name: 'Z' });
+void _checkAnswersItsOwn;
 
 // Each member's value is its own. A create answering the created object's name
 // and a read answering its source are different types, and the contract says so
