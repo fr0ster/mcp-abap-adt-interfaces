@@ -159,7 +159,6 @@ export interface IAdtOperationOptions<E extends IAdtError = IAdtError> {
    * roll back.
    */
 
-
   /**
    * Source code to use for update
    * Used in create operations for update after create, and in update operations
