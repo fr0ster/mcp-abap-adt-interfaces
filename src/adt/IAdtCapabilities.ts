@@ -148,13 +148,23 @@ export interface IAdtUpdatable<TConfig, TUpdated> {
   ): Promise<IAdtResponse<TUpdated>>;
 }
 
-export interface IAdtDeletable<TConfig, TDeleted> {
+export interface IAdtDeletable<TConfig, TDeleted, TChecked = string> {
   /**
-   * Delete object
-   * Performs deletion check before deleting.
+   * Delete the object. One request, and it is the deletion.
+   *
+   * **It does not ask first.** {@link IAdtDeletable.checkDeletion} is the
+   * question, and it is a separate request answering a separate thing — "is
+   * anything still pointing at this?" An implementation that ran it inside this
+   * member gave a caller no way to skip it and no way to read what it said, so
+   * the two stand side by side and the caller orders them.
+   *
+   * Deleting without asking is allowed: the server answers its own refusal. What
+   * a caller gives up is the *reason* — the check's document names what still
+   * references the object, and the deletion's does not.
    *
    * @param config - Object identification
-   * @returns State with delete result
+   * @param options - `analyse` for the verdict
+   * @returns whatever this implementation's reading makes of the answer
    */
   delete<E extends IAdtError>(
     config: Partial<TConfig>,
@@ -164,6 +174,36 @@ export interface IAdtDeletable<TConfig, TDeleted> {
     config: Partial<TConfig>,
     options?: IAdtOperationOptions,
   ): Promise<IAdtResponse<TDeleted>>;
+
+  /**
+   * Ask whether the object can be deleted *now*.
+   *
+   * Almost anything that was created can be deleted; what varies is the moment.
+   * Something still references it, a transport holds it, it is locked by another
+   * user — and every one of those is a fact about the server at this instant,
+   * not about the object's kind. Only the server knows, so the member's whole
+   * job is to ask it.
+   *
+   * That is why it lives here rather than in an atom of its own: it is not a
+   * separate capability, it is the question that belongs to deleting. A type
+   * that can be deleted can be asked whether it can be deleted right now.
+   *
+   * One request, like every other member, and the answer is a document rather
+   * than a status — ADT reports a refusal inside a 200. The shipped `analyse`
+   * reads it; a caller who wants another reading passes their own.
+   *
+   * @param config - Object identification
+   * @param options - `analyse` for the verdict
+   * @returns whatever this implementation's reading makes of the answer
+   */
+  checkDeletion<E extends IAdtError>(
+    config: Partial<TConfig>,
+    options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TChecked, E>>;
+  checkDeletion(
+    config: Partial<TConfig>,
+    options?: IAdtOperationOptions,
+  ): Promise<IAdtResponse<TChecked>>;
 }
 
 export interface IAdtValidatable<TConfig, TValidated> {

@@ -10,7 +10,14 @@
 // signatures per member — the strategy-bearing one, then the plain one — and a
 // method written against 31.0.0 satisfies the pair. These are that fact, kept
 // honest: what follows is what a consumer's class looked like before any of
-// this, unchanged.
+// this — *plus* whatever a later version genuinely required of it.
+//
+// 35.0.0 added one such requirement, and this file is where that showed. Any
+// object that can be deleted can be asked whether it can be deleted, so
+// `IAdtDeletable` carries `checkDeletion` and every implementation answers it.
+// `WrittenBefore` gained the member below, and the compile error that forced it
+// is the whole reason this file exists: "additive" is a claim about somebody
+// else's code, and this one was not additive.
 
 import type {
   IAdtActivatable,
@@ -37,7 +44,7 @@ class WrittenBefore
     IAdtCreatable<Config, string>,
     IAdtReadable<Config, string, string>,
     IAdtUpdatable<Config, string>,
-    IAdtDeletable<Config, void>,
+    IAdtDeletable<Config, void, string>,
     IAdtActivatable<Config, string>
 {
   async create(
@@ -87,6 +94,15 @@ class WrittenBefore
     void config;
     void options;
     return ok(undefined);
+  }
+
+  async checkDeletion(
+    config: Partial<Config>,
+    options?: IAdtOperationOptions,
+  ): Promise<IAdtResponse<string>> {
+    void config;
+    void options;
+    return ok('<del:checkResponse/>');
   }
 
   async activate(
