@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [38.1.0] - 2026-09-08
+
+**Two controls a connection already had, and a consumer could not reach.**
+
 ### Added
 
 - **`ICriticalSection` and `IRequestProfiling`** — two connection capability
