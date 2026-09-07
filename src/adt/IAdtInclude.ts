@@ -22,7 +22,6 @@ export interface ICreateIncludeParams {
   masterSystem?: string;
   responsible?: string;
   masterLanguage?: string;
-  sourceCode?: string;
   activate?: boolean;
 }
 

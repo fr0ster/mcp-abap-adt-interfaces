@@ -6,7 +6,6 @@ export interface ICreateTableParams {
   table_name: string;
   package_name: string;
   transport_request?: string;
-  ddl_code?: string;
   masterSystem?: string;
   responsible?: string;
   masterLanguage?: string;

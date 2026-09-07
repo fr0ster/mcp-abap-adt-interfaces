@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **BREAKING: `create` takes no source.** `IAdtCreatable.create` used to accept
+  `sourceCode` and document an exception — "a DDL source, a table and a program
+  are created *from* their source, so it is the POST body". The exception is not
+  real. Measured across all 27 create implementations in
+  `@mcp-abap-adt/adt-clients`: every one posts a metadata document and none
+  carries source. A DDL posts `ddl:ddlSource`, a table `blue:blueSource`, a
+  program its program metadata; the text appears in none of the three bodies.
+
+  The cost was silence. Classes created with full bodies answered ok at every
+  step, activated, and came back as ADT's empty skeleton — the symptom arriving
+  much later, when the object failed to do its job.
+
+  ```typescript
+  // before — compiled, ran, answered ok, wrote nothing
+  await classes.create({ className, packageName }, { sourceCode });
+
+  // now — a create makes the object, and the source is a separate write
+  await classes.create({ className, packageName });
+  const handle = (await classes.lock({ className })).getResult().value;
+  await classes.update({ className }, { sourceCode, lockHandle: handle });
+  ```
+
+  The config is `Omit<TConfig, 'sourceCode'> & { sourceCode?: never }` and the
+  options are {@link IAdtCreateOptions}. The `never` is not decoration:
+  `Omit` alone is refused only for an object literal, so a config *variable*
+  carrying the field stayed assignable and compiled — which is the shape real
+  code takes, since one config is built and passed to create, update and delete
+  alike.
+
+- **`IAdtCreateOptions` is exported from the package entrypoint**, where the
+  contract that names it can be imported from.
+
+
 ## [37.0.1] - 2026-09-07
 
 ### Fixed

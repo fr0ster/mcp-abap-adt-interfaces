@@ -160,13 +160,22 @@ export interface IAdtOperationOptions<E extends IAdtError = IAdtError> {
    */
 
   /**
-   * The body of this member’s request, where its endpoint takes one.
+   * The source this member writes. **An update's, and only an update's.**
    *
-   * For an update that is the source being written. For a create it depends on
-   * the object: a DDL source, a table and a program are created *from* their
-   * source, so it is the POST body; a class or an interface is created empty and
-   * its source is written afterwards, by `update`, so passing it to their
-   * `create` does nothing.
+   * This used to name an exception — "a DDL source, a table and a program are
+   * created *from* their source, so it is the POST body" — and the exception is
+   * not real. Measured across all 27 create implementations in
+   * `@mcp-abap-adt/adt-clients`: every one of them posts a metadata document
+   * and none carries source. A DDL posts `ddl:ddlSource`, a table posts
+   * `blue:blueSource`, a program posts its program metadata; the text appears
+   * in none of the three bodies.
+   *
+   * The cost of the wrong exception was silence. Five classes created with full
+   * bodies on E19 answered ok at every step, activated, and came back as ADT's
+   * empty skeleton — the only symptom arriving later, when the entry point
+   * refused to run because it did not implement the interface its source
+   * declared. `create` no longer accepts this field, so that call now fails to
+   * compile instead (see {@link IAdtCreateOptions}).
    *
    * It used to say "used in create operations for update after create" — that
    * described a create that wrote the source itself in a second request. A
@@ -216,3 +225,29 @@ export interface IAdtOperationOptions<E extends IAdtError = IAdtError> {
    */
   timeout?: number;
 }
+
+/**
+ * What `create` accepts: {@link IAdtOperationOptions} without the source.
+ *
+ * A create is the POST that brings the object into existence, and no create
+ * endpoint carries source — checked against all 27 implementations in
+ * `@mcp-abap-adt/adt-clients`, including the three this contract used to name
+ * as exceptions. Writing source is a PUT to `source/main` under a lock, which
+ * `create` neither holds nor can obtain.
+ *
+ * So the field is gone from the member rather than documented as ignored.
+ * Accepting a value that cannot be honoured is worse than refusing it: the call
+ * compiles, runs, answers ok, and leaves an empty object behind, and the
+ * failure surfaces somewhere else entirely.
+ *
+ * **`Omit` alone does not refuse it.** Excess-property checking applies to
+ * object literals and nothing else, so `create(config, opts)` where `opts` is a
+ * variable of type {@link IAdtOperationOptions} carrying `sourceCode` is
+ * structurally assignable and compiles — which is the shape real consumer code
+ * takes. `sourceCode?: never` is what makes the refusal hold for a variable as
+ * well as a literal.
+ */
+export type IAdtCreateOptions<E extends IAdtError = IAdtError> = Omit<
+  IAdtOperationOptions<E>,
+  'sourceCode'
+> & { sourceCode?: never };

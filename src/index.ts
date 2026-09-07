@@ -151,7 +151,11 @@ export type {
   IMetadataExtensionValidationParams,
 } from './adt/IAdtMetadataExtension';
 // ADT domain
-export type { IAdtOperationOptions, IAnalyse } from './adt/IAdtObject';
+export type {
+  IAdtCreateOptions,
+  IAdtOperationOptions,
+  IAnalyse,
+} from './adt/IAdtObject';
 export { AdtObjectErrorCodes } from './adt/IAdtObject';
 export type { IAdtObjectConfig } from './adt/IAdtObjectState';
 export type {

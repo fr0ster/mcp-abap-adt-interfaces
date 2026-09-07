@@ -12,7 +12,6 @@ export interface ICreateProgramParams {
   masterLanguage?: string;
   programType?: string;
   application?: string;
-  sourceCode?: string;
   activate?: boolean;
 }
 
