@@ -102,10 +102,10 @@ export interface IDeferredResponseConnection {
 }
 
 /**
- * A connection that can be told not to interrupt itself.
+ * A connection whose ordinary per-request deadline can be suspended.
  *
- * A `lock` → write → `unlock` sequence must run to completion. Aborting one of
- * its requests part way ends nothing on the server — the server ends an ABAP
+ * A `lock` → write → `unlock` sequence wants to run to completion. Aborting one
+ * of its requests part way ends nothing on the server — the server ends an ABAP
  * session on its own idle timeout, which this side cannot see — it ends what
  * this side *knows*: whether the write was applied becomes unanswerable, and
  * the handle `unlock` needs is lost while the lock lives on in that session.
@@ -116,17 +116,24 @@ export interface IDeferredResponseConnection {
  * addresses and the ABAP one beneath it holding the enqueue locks — and the
  * abort replaces the first while stranding the second.
  *
- * An implementation raises its effective per-request deadline while inside a
- * section, and sections nest: the ceiling lifts on the outermost `begin` and
- * ordinary deadlines resume after the matching `end`.
+ * **What this promises, exactly.** Inside a section the connection's ordinary
+ * per-request deadline does not apply. It does **not** promise that no request
+ * can ever be cut short: an implementation is free to keep a far larger ceiling
+ * — `@mcp-abap-adt/connection` raises it to `SAP_TIMEOUT_CRITICAL`, ten minutes
+ * by default — and a socket, a proxy or the process itself ends a request
+ * whatever a contract says. The guarantee is that the short deadline is out of
+ * the way, not that time is.
  *
- * Separate from {@link ISessionLifecycleAware} because it is a different
+ * Sections nest: the ceiling lifts on the outermost `begin` and ordinary
+ * deadlines resume after the matching `end`.
+ *
+ * Separate from {@link ISessionLifecycleAware} because it answers a different
  * question: that one is *whose session is this*, this one is *may this request
  * be cut short*. A batch recorder honours the first and has nothing to protect.
  */
-export interface IUninterruptibleWork {
+export interface ICriticalSection {
   /**
-   * Enter a section whose requests must not be cut short.
+   * Enter a section in which the ordinary per-request deadline is suspended.
    *
    * Nests. Every call needs its own {@link endCriticalSection}, and the usual
    * shape is a `try`/`finally` so a throw inside the window still ends it.

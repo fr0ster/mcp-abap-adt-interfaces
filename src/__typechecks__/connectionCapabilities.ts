@@ -7,6 +7,8 @@ import type {
 import {
   ADT_SESSION_ERROR,
   type AdtSessionErrorCode,
+  type ICriticalSection,
+  type IRequestProfiling,
   type ISessionLifecycleAware,
 } from '../connection/IConnectionCapabilities';
 
@@ -94,3 +96,55 @@ if (theirGuard(_narrowed)) {
 // @ts-expect-error the flag is `true`, not `boolean`: "sometimes deferred" is not a state.
 const _sometimes: IDeferredResponseConnection = { responsesAreDeferred: false };
 void _sometimes;
+
+// **The two per-connection controls, and that they stay separate.**
+//
+// Both name methods `@mcp-abap-adt/connection` already has and no consumer
+// could reach: `AbapConnection` is `IAbapConnection`, so the only way to them
+// was a cast to the concrete class.
+
+/** A connection that protects a lock window, and nothing more. */
+declare const _guarded: IAbapConnection & ICriticalSection;
+
+export function _lockWindow(work: () => Promise<void>): Promise<void> {
+  _guarded.beginCriticalSection();
+  return work().finally(() => {
+    _guarded.endCriticalSection();
+  });
+}
+
+/** A connection that can be told what to ask for, or to stop asking. */
+declare const _measured: IAbapConnection & IRequestProfiling;
+
+export function _quieten(): string | null {
+  const was = _measured.getProfilingRequest();
+  _measured.setProfilingRequest(null);
+  return was;
+}
+
+/** The atoms compose, and none of them implies another. */
+declare const _everything: IAbapConnection &
+  ISessionLifecycleAware &
+  ICriticalSection &
+  IRequestProfiling;
+void _everything;
+
+declare const _plain: IAbapConnection;
+
+void (() => {
+  // @ts-expect-error a plain connection protects nothing: the atom is additive
+  _plain.beginCriticalSection();
+});
+
+void (() => {
+  // @ts-expect-error nor does it carry the profiling default
+  _plain.getProfilingRequest();
+});
+
+// Protecting a window says nothing about asking for timings.
+declare const _sectionOnly: IAbapConnection & ICriticalSection;
+
+void (() => {
+  // @ts-expect-error the atoms are separate on purpose
+  _sectionOnly.setProfilingRequest('server-time');
+});

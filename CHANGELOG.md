@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **`IUninterruptibleWork` and `IRequestProfiling`** — two connection capability
+- **`ICriticalSection` and `IRequestProfiling`** — two connection capability
   atoms for controls a connection already has and a consumer could not reach.
 
   `@mcp-abap-adt/connection` has `beginCriticalSection()` / `endCriticalSection()`
@@ -20,11 +20,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   class — which is the thing this package exists to make unnecessary.
 
   ```typescript
-  declare const conn: IAbapConnection & IUninterruptibleWork;
+  declare const conn: IAbapConnection & ICriticalSection;
 
   conn.beginCriticalSection();
   try {
-    await write();      // its deadline is lifted; the window runs to completion
+    await write();      // the ordinary per-request deadline does not apply here
   } finally {
     conn.endCriticalSection();
   }
@@ -35,8 +35,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   connection, a batch recorder and a test stub remain legitimate connections
   without either.
 
-  **Why the first one matters, measured.** A `lock` → write → `unlock` sequence
-  must run to completion. Aborting one of its requests part way ends nothing on
+  **What the first one promises.** Inside a section the connection's ordinary
+  per-request deadline does not apply. It does *not* promise that no request can
+  be cut short: an implementation may keep a far larger ceiling —
+  `@mcp-abap-adt/connection` raises it to `SAP_TIMEOUT_CRITICAL`, ten minutes by
+  default — and a socket or the process ends a request whatever a contract says.
+  The short deadline is what gets out of the way.
+
+  **Why that matters, measured.** A `lock` → write → `unlock` sequence wants to
+  run to completion. Aborting one of its requests part way ends nothing on
   the server — it ends what this side *knows*: whether the write applied becomes
   unanswerable and the handle `unlock` needs is lost while the lock lives on. On
   a BTP trial, a `POST …/deletion/delete` abandoned at 45 s was followed by
