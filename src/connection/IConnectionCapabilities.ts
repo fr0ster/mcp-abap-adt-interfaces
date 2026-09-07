@@ -49,14 +49,67 @@ export interface ISessionLifecycleAware {
    *
    * Resolves rather than throws, and **always settles**: whatever it could not
    * finish is the connection's own state, not the caller's problem. A repeat
-   * call performs whatever is still owed, so a caller that wants the connection
-   * fully released simply calls it again.
+   * call performs whatever is still owed.
+   *
+   * **Calling it again does not wait for the goodbye either**, which is what
+   * {@link flushGoodbye} is for. A caller about to reconnect wants both, in
+   * this order:
+   *
+   * ```typescript
+   * await conn.disconnect();
+   * await conn.flushGoodbye();
+   * await conn.connect();
+   * ```
+   *
+   * Without the middle line the next session opens while the previous one's
+   * goodbye is still being assembled, and the server keeps both. With it, the
+   * goodbye is given up to the budget to finish first.
    *
    * In-flight requests are NOT waited for. They continue as their caller
    * arranged and nothing is aborted; their results can no longer affect this
    * connection.
    */
   disconnect(): Promise<void>;
+
+  /**
+   * Wait for the goodbye {@link disconnect} sent, within a budget.
+   *
+   * `disconnect()` dispatches the logoff and does not await it, deliberately: a
+   * goodbye carries no request timeout, and a server that never answers must
+   * not hold a teardown open. That is right for teardown and wrong for the one
+   * caller who reconnects — `disconnect()` then `connect()` opens the next
+   * session while the previous one's goodbye is still being assembled, and the
+   * server keeps both.
+   *
+   * Measured on E19 through `@mcp-abap-adt/adt-clients`, whose harness recycled
+   * the session after each test: a new ABAP session every one to two seconds
+   * for the length of a run, none released, each living to its own thirty
+   * minute idle timeout. Turning the recycling off left one session for the
+   * whole run, which is what the harness intended all along.
+   *
+   * **Bounded, and it resolves rather than throws.** The reason not to await
+   * inside `disconnect()` applies here too, so the wait has a budget and gives
+   * up quietly: "the goodbye has not arrived yet" is not a failure of whatever
+   * the caller does next. A goodbye that failed is likewise not the caller's
+   * problem — it is absorbed, not rethrown.
+   *
+   * **So a return is not a confirmation, and not even of dispatch.** Waiting out
+   * the budget resolves the same way as the goodbye finishing, and at that
+   * point the request may not have reached the wire at all — the promise it
+   * waits on covers assembling and sending, not just answering.
+   *
+   * The guarantee is exactly this: **the caller gives the goodbye up to the
+   * budget to finish before carrying on.** If it finishes in time there is no
+   * overlap with the next `connect()`. If it does not, the caller proceeds and
+   * the goodbye stays outstanding for as long as it takes — the budget bounds
+   * the waiting, not the overlap. Whether the server then releases the session
+   * is the server's affair, exactly as it is for `disconnect()`.
+   *
+   * Returns immediately when nothing was dispatched.
+   *
+   * @param timeoutMs how long to wait; an implementation chooses its default.
+   */
+  flushGoodbye(timeoutMs?: number): Promise<void>;
 
   /** Whether a caller may start work. False throughout a pending teardown. */
   isConnected(): boolean;

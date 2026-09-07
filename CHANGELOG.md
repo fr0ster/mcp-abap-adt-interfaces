@@ -7,6 +7,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **BREAKING: `ISessionLifecycleAware` gains `flushGoodbye(timeoutMs?)`.**
+
+  It is the other half of `disconnect()`, and `disconnect()`'s own
+  documentation is corrected with it: it used to say that a caller wanting the
+  connection fully released "simply calls it again", and a repeat call does not
+  wait for the goodbye either. That member dispatches the logoff and does not
+  await it, deliberately — a goodbye carries no request timeout, and a
+  server that never answers must not hold a teardown open. Right for a teardown,
+  wrong for the one caller who reconnects: `disconnect()` then `connect()` opens
+  the next session while the previous one's goodbye is still being assembled,
+  and the server keeps both.
+
+  Measured on E19 through `@mcp-abap-adt/adt-clients`, whose harness recycled the
+  session after each test: **a new ABAP session every one to two seconds for the
+  length of a run, none released**, each living to its own thirty-minute idle
+  timeout. Turning the recycling off left one session for the whole run, which
+  is what the harness intended all along.
+
+  ```typescript
+  await conn.disconnect();
+  await conn.flushGoodbye();   // give the goodbye its budget to finish first
+  await conn.connect();
+  ```
+
+  **A return is not a confirmation, and not even of dispatch.** Waiting out the
+  budget resolves the same way as the goodbye finishing, and at that point the
+  request may not have reached the wire at all. The guarantee is narrow and
+  exact: **the caller gives the goodbye up to the budget to finish before
+  carrying on.** If it finishes in time there is no overlap with the next
+  `connect()`; if it does not, the caller proceeds and the goodbye stays
+  outstanding for as long as it takes. The budget bounds the waiting, not the
+  overlap.
+
+  Bounded and quiet: the wait has a budget and gives up by resolving, because
+  "the goodbye has not arrived yet" is not a failure of whatever the caller does
+  next, and a goodbye that failed is not the caller's problem either.
+
+  **Breaking because it is a required member of an atom that implementations
+  already declare.** It goes there rather than into an atom of its own because
+  it is the same responsibility as `disconnect()`, not a separate capability: a
+  connection that owns its session owns both halves of ending one.
+  `@mcp-abap-adt/connection` has the implementation in
+  [#45](https://github.com/fr0ster/mcp-abap-connection/pull/45).
+
+
 ## [38.1.0] - 2026-09-08
 
 **Two controls a connection already had, and a consumer could not reach.**

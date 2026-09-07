@@ -37,6 +37,10 @@ void _sessionless;
 const _full: IAbapConnection & ISessionLifecycleAware = {
   ..._sessionless,
   disconnect: async () => {},
+  // The other half of `disconnect`: it dispatches the goodbye, this waits for
+  // it. A connection that owns its session owns both, which is why the member
+  // is on the atom rather than beside it.
+  flushGoodbye: async () => {},
   isConnected: () => true,
   getSessionIdentity: () => 'SAP_SESSIONID_T_100=S1',
 };
@@ -147,4 +151,15 @@ declare const _sectionOnly: IAbapConnection & ICriticalSection;
 void (() => {
   // @ts-expect-error the atoms are separate on purpose
   _sectionOnly.setProfilingRequest('server-time');
+});
+
+// The budget is the caller's to pass or to leave alone.
+void (async () => {
+  await _full.flushGoodbye();
+  await _full.flushGoodbye(1_000);
+});
+
+void (() => {
+  // @ts-expect-error a plain connection has no session to say goodbye to
+  _sessionless.flushGoodbye();
 });
