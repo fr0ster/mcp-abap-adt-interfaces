@@ -29,14 +29,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   ```typescript
   await conn.disconnect();
-  await conn.flushGoodbye();   // the goodbye is on the wire before the next connect
+  await conn.flushGoodbye();   // bounds the overlap with the next connect
   await conn.connect();
   ```
 
-  A return is not a confirmation: it says the goodbye was sent and either
-  answered or waited out. Whether the server released the session is the
-  server's affair, as it already is for `disconnect()`. What this buys is
-  ordering, which is what the measurement was about.
+  **A return is not a confirmation, and not even of dispatch.** Waiting out the
+  budget resolves the same way as the goodbye finishing, and at that point the
+  request may not have reached the wire at all. The guarantee is narrow and
+  exact: it waits for the goodbye to finish, for at most the budget given.
+  Inside the budget the overlap with the next `connect()` is closed; past it the
+  overlap is still possible, and what the caller bought is a bound on it rather
+  than its absence.
 
   Bounded and quiet: the wait has a budget and gives up by resolving, because
   "the goodbye has not arrived yet" is not a failure of whatever the caller does

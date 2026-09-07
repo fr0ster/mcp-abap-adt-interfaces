@@ -62,7 +62,8 @@ export interface ISessionLifecycleAware {
    * ```
    *
    * Without the middle line the next session opens while the previous one's
-   * goodbye is still being assembled, and the server keeps both.
+   * goodbye is still being assembled, and the server keeps both. With it, that
+   * overlap is bounded by the budget rather than by nothing.
    *
    * In-flight requests are NOT waited for. They continue as their caller
    * arranged and nothing is aborted; their results can no longer affect this
@@ -92,11 +93,17 @@ export interface ISessionLifecycleAware {
    * the caller does next. A goodbye that failed is likewise not the caller's
    * problem — it is absorbed, not rethrown.
    *
-   * **So a return is not a confirmation.** It says the goodbye was sent and
-   * either answered or waited out; whether the server has actually released the
-   * session is the server's affair, exactly as it is for `disconnect()`. What
-   * this buys is ordering — the goodbye is on the wire before the next
-   * `connect()` — and ordering is what the measurement above was about.
+   * **So a return is not a confirmation, and not even of dispatch.** Waiting out
+   * the budget resolves the same way as the goodbye finishing, and at that
+   * point the request may not have reached the wire at all — the promise it
+   * waits on covers assembling and sending, not just answering.
+   *
+   * The guarantee is exactly this: it waits for the goodbye to finish, for at
+   * most the budget given. Inside the budget the overlap with the next
+   * `connect()` is closed; past it, the overlap is still possible and the
+   * caller has bought a bound on it rather than its absence. Whether the server
+   * then releases the session is the server's affair, exactly as it is for
+   * `disconnect()`.
    *
    * Returns immediately when nothing was dispatched.
    *
