@@ -334,7 +334,9 @@ export type { ICalmRequestOptions } from './connection/ICalmRequestOptions';
 export type {
   AdtSessionErrorCode,
   IDeferredResponseConnection,
+  IRequestProfiling,
   ISessionLifecycleAware,
+  IUninterruptibleWork,
 } from './connection/IConnectionCapabilities';
 export { ADT_SESSION_ERROR } from './connection/IConnectionCapabilities';
 export type {
