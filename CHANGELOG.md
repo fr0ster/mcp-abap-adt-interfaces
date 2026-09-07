@@ -7,6 +7,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`ICriticalSection` and `IRequestProfiling`** — two connection capability
+  atoms for controls a connection already has and a consumer could not reach.
+
+  `@mcp-abap-adt/connection` has `beginCriticalSection()` / `endCriticalSection()`
+  and, as of its work on
+  [#46](https://github.com/fr0ster/mcp-abap-connection/issues/46),
+  `setProfilingRequest()` / `getProfilingRequest()`. `AbapConnection` is
+  `IAbapConnection`, so both were reachable only by casting to the concrete
+  class — which is the thing this package exists to make unnecessary.
+
+  ```typescript
+  declare const conn: IAbapConnection & ICriticalSection;
+
+  conn.beginCriticalSection();
+  try {
+    await write();      // the ordinary per-request deadline does not apply here
+  } finally {
+    conn.endCriticalSection();
+  }
+  ```
+
+  Additive, like every atom here: `IAbapConnection` is unchanged, an
+  implementation adds the one it honours, and a consumer narrows to it. An RFC
+  connection, a batch recorder and a test stub remain legitimate connections
+  without either.
+
+  **What the first one promises.** Inside a section the connection's ordinary
+  per-request deadline does not apply. It does *not* promise that no request can
+  be cut short: an implementation may keep a far larger ceiling —
+  `@mcp-abap-adt/connection` raises it to `SAP_TIMEOUT_CRITICAL`, ten minutes by
+  default — and a socket or the process ends a request whatever a contract says.
+  The short deadline is what gets out of the way.
+
+  **Why that matters, measured.** A `lock` → write → `unlock` sequence wants to
+  run to completion. Aborting one of its requests part way ends nothing on
+  the server — it ends what this side *knows*: whether the write applied becomes
+  unanswerable and the handle `unlock` needs is lost while the lock lives on. On
+  a BTP trial, a `POST …/deletion/delete` abandoned at 45 s was followed by
+  `400 … Session Timed Out or Not Found` carrying a **new** session cookie. Over
+  HTTP a session is two layers, the ICF one the cookie addresses and the ABAP
+  one beneath it holding the enqueue locks; the abort replaces the first and
+  strands the second.
+
+  **Why the second is a default rather than a per-request setting.** A single
+  request already overrides `X-sap-adt-profiling` through `headers` on the
+  request options. The atom is for the connection-wide default, including
+  turning it off with `null`.
+
+
 ## [38.0.0] - 2026-09-07
 
 **A create makes the object; the source is a separate write.**

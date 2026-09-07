@@ -100,3 +100,76 @@ export interface IDeferredResponseConnection {
   /** Always `true`. "Sometimes deferred" is not a state a caller could act on. */
   readonly responsesAreDeferred: true;
 }
+
+/**
+ * A connection whose ordinary per-request deadline can be suspended.
+ *
+ * A `lock` → write → `unlock` sequence wants to run to completion. Aborting one
+ * of its requests part way ends nothing on the server — the server ends an ABAP
+ * session on its own idle timeout, which this side cannot see — it ends what
+ * this side *knows*: whether the write was applied becomes unanswerable, and
+ * the handle `unlock` needs is lost while the lock lives on in that session.
+ *
+ * Measured on a BTP trial: a `POST /sap/bc/adt/deletion/delete` abandoned at
+ * 45 s was followed by `400 … Session Timed Out or Not Found` carrying a *new*
+ * session cookie. Over HTTP a session is two layers — the ICF one the cookie
+ * addresses and the ABAP one beneath it holding the enqueue locks — and the
+ * abort replaces the first while stranding the second.
+ *
+ * **What this promises, exactly.** Inside a section the connection's ordinary
+ * per-request deadline does not apply. It does **not** promise that no request
+ * can ever be cut short: an implementation is free to keep a far larger ceiling
+ * — `@mcp-abap-adt/connection` raises it to `SAP_TIMEOUT_CRITICAL`, ten minutes
+ * by default — and a socket, a proxy or the process itself ends a request
+ * whatever a contract says. The guarantee is that the short deadline is out of
+ * the way, not that time is.
+ *
+ * Sections nest: the ceiling lifts on the outermost `begin` and ordinary
+ * deadlines resume after the matching `end`.
+ *
+ * Separate from {@link ISessionLifecycleAware} because it answers a different
+ * question: that one is *whose session is this*, this one is *may this request
+ * be cut short*. A batch recorder honours the first and has nothing to protect.
+ */
+export interface ICriticalSection {
+  /**
+   * Enter a section in which the ordinary per-request deadline is suspended.
+   *
+   * Nests. Every call needs its own {@link endCriticalSection}, and the usual
+   * shape is a `try`/`finally` so a throw inside the window still ends it.
+   */
+  beginCriticalSection(): void;
+
+  /** Leave it. Ordinary deadlines resume when the outermost section ends. */
+  endCriticalSection(): void;
+}
+
+/**
+ * A connection that can be told what to ask the server to report about itself.
+ *
+ * `X-sap-adt-profiling` asks the server for its own processing time, and
+ * Eclipse sends it on every request. It is a per-connection default: a single
+ * request overrides it through `headers` on the request options, which every
+ * connection already accepts, so this atom exists for the *default* and not for
+ * the one-off.
+ *
+ * `null` asks for nothing. The value is a string rather than an enum because
+ * what a server accepts there is the server's business and grows without this
+ * package: `'server-time'` is what Eclipse asks for and is the sensible
+ * default.
+ *
+ * Worth stating: an implementation is not expected to read the answer back.
+ * The measurement is for whoever is looking at the wire, and being able to turn
+ * it off matters more than being able to consume it.
+ */
+export interface IRequestProfiling {
+  /**
+   * What to ask for on every request from now on, or `null` to ask nothing.
+   *
+   * @param what the `X-sap-adt-profiling` value; `'server-time'` is Eclipse's.
+   */
+  setProfilingRequest(what: string | null): void;
+
+  /** What this connection is currently asking for. */
+  getProfilingRequest(): string | null;
+}
