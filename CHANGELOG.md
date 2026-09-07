@@ -11,8 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **BREAKING: `ISessionLifecycleAware` gains `flushGoodbye(timeoutMs?)`.**
 
-  It is the other half of `disconnect()`. That member dispatches the logoff and
-  does not await it, deliberately — a goodbye carries no request timeout, and a
+  It is the other half of `disconnect()`, and `disconnect()`'s own
+  documentation is corrected with it: it used to say that a caller wanting the
+  connection fully released "simply calls it again", and a repeat call does not
+  wait for the goodbye either. That member dispatches the logoff and does not
+  await it, deliberately — a goodbye carries no request timeout, and a
   server that never answers must not hold a teardown open. Right for a teardown,
   wrong for the one caller who reconnects: `disconnect()` then `connect()` opens
   the next session while the previous one's goodbye is still being assembled,
@@ -26,9 +29,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   ```typescript
   await conn.disconnect();
-  await conn.flushGoodbye();   // the old session is released before the next one opens
+  await conn.flushGoodbye();   // the goodbye is on the wire before the next connect
   await conn.connect();
   ```
+
+  A return is not a confirmation: it says the goodbye was sent and either
+  answered or waited out. Whether the server released the session is the
+  server's affair, as it already is for `disconnect()`. What this buys is
+  ordering, which is what the measurement was about.
 
   Bounded and quiet: the wait has a budget and gives up by resolving, because
   "the goodbye has not arrived yet" is not a failure of whatever the caller does

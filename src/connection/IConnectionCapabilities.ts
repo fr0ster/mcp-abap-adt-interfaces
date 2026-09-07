@@ -49,8 +49,20 @@ export interface ISessionLifecycleAware {
    *
    * Resolves rather than throws, and **always settles**: whatever it could not
    * finish is the connection's own state, not the caller's problem. A repeat
-   * call performs whatever is still owed, so a caller that wants the connection
-   * fully released simply calls it again.
+   * call performs whatever is still owed.
+   *
+   * **Calling it again does not wait for the goodbye either**, which is what
+   * {@link flushGoodbye} is for. A caller about to reconnect wants both, in
+   * this order:
+   *
+   * ```typescript
+   * await conn.disconnect();
+   * await conn.flushGoodbye();
+   * await conn.connect();
+   * ```
+   *
+   * Without the middle line the next session opens while the previous one's
+   * goodbye is still being assembled, and the server keeps both.
    *
    * In-flight requests are NOT waited for. They continue as their caller
    * arranged and nothing is aborted; their results can no longer affect this
@@ -79,6 +91,12 @@ export interface ISessionLifecycleAware {
    * up quietly: "the goodbye has not arrived yet" is not a failure of whatever
    * the caller does next. A goodbye that failed is likewise not the caller's
    * problem — it is absorbed, not rethrown.
+   *
+   * **So a return is not a confirmation.** It says the goodbye was sent and
+   * either answered or waited out; whether the server has actually released the
+   * session is the server's affair, exactly as it is for `disconnect()`. What
+   * this buys is ordering — the goodbye is on the wire before the next
+   * `connect()` — and ordering is what the measurement above was about.
    *
    * Returns immediately when nothing was dispatched.
    *
