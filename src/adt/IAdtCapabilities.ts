@@ -73,11 +73,11 @@ export interface IAdtCreatable<TConfig, TCreated> {
    * @returns whatever this implementation’s reading makes of the answer
    */
   create<E extends IAdtError>(
-    config: Omit<TConfig, 'sourceCode'>,
+    config: Omit<TConfig, 'sourceCode'> & { sourceCode?: never },
     options: IAdtCreateOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TCreated, E>>;
   create(
-    config: Omit<TConfig, 'sourceCode'>,
+    config: Omit<TConfig, 'sourceCode'> & { sourceCode?: never },
     options?: IAdtCreateOptions,
   ): Promise<IAdtResponse<TCreated>>;
 }

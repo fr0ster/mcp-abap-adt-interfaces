@@ -19,6 +19,7 @@ import type {
   IAdtUpdatable,
   IAdtVersionable,
 } from '../adt/IAdtCapabilities';
+import type { IAdtOperationOptions } from '../adt/IAdtObject';
 import type { IAdtError, IAdtResponse } from '../adt/IAdtResponse';
 import { AdtObjectErrorCodes } from '../index';
 
@@ -186,3 +187,35 @@ void _demandingUpdate.update({
   bindingName: 'ZAC_SRVB01',
   serviceType: 'odatav4',
 });
+
+// **A create takes no source — and the refusal must survive a variable.**
+//
+// `Omit<TConfig, 'sourceCode'>` alone does not do it. Excess-property checking
+// applies to object literals and to nothing else, so a config *variable* that
+// carries `sourceCode` stays structurally assignable and compiles, which is the
+// shape real consumer code takes: a config is built once and passed to create,
+// update and delete alike. Both assertions below compiled before
+// `sourceCode?: never` was added, which is why they are here rather than in a
+// literal-shaped example.
+interface SourcedConfig {
+  className: string;
+  sourceCode?: string;
+}
+
+declare const creatable: IAdtCreatable<SourcedConfig, void>;
+declare const sourcedConfig: SourcedConfig;
+declare const writeOptions: IAdtOperationOptions;
+
+// @ts-expect-error a create cannot carry the object's source: no create
+// endpoint has a body for it, and a value that cannot be honoured is worse
+// accepted than refused
+void creatable.create(sourcedConfig);
+
+// @ts-expect-error the same, through the options — `IAdtOperationOptions` has
+// `sourceCode` and `IAdtCreateOptions` refuses it
+void creatable.create({ className: 'ZC' }, writeOptions);
+
+// The create that does compile: identity and metadata, no source. The source is
+// `update`'s, after `lock`.
+void creatable.create({ className: 'ZC' });
+void creatable.create({ className: 'ZC' }, { timeout: 45_000 });

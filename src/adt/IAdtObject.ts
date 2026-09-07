@@ -239,8 +239,15 @@ export interface IAdtOperationOptions<E extends IAdtError = IAdtError> {
  * Accepting a value that cannot be honoured is worse than refusing it: the call
  * compiles, runs, answers ok, and leaves an empty object behind, and the
  * failure surfaces somewhere else entirely.
+ *
+ * **`Omit` alone does not refuse it.** Excess-property checking applies to
+ * object literals and nothing else, so `create(config, opts)` where `opts` is a
+ * variable of type {@link IAdtOperationOptions} carrying `sourceCode` is
+ * structurally assignable and compiles — which is the shape real consumer code
+ * takes. `sourceCode?: never` is what makes the refusal hold for a variable as
+ * well as a literal.
  */
 export type IAdtCreateOptions<E extends IAdtError = IAdtError> = Omit<
   IAdtOperationOptions<E>,
   'sourceCode'
->;
+> & { sourceCode?: never };
