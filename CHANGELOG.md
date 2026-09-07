@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [37.0.0] - 2026-09-07
+
+**An atom identifies an object; a write is not an identifier.**
+
+### Changed
+
+- **BREAKING: `IAdtUpdatable` and `IAdtMetadataUpdatable` take `TConfig` as
+  given**, not `Partial<TConfig>`.
+
+  The identifier-oriented atoms wrap their config in `Partial`, and are right
+  to: `read({ className })` has no business demanding a package. `IAdtCreatable`
+  never did — a create must say what to make. The two write atoms sat on the
+  wrong side of that line. A service binding's `update` is its publication
+  job, and it needs the protocol that selects the endpoint — but with `Partial`
+  inside the atom, no implementation could say so. The call compiled without it
+  and threw before reaching the wire, which is a requirement stated where the
+  caller cannot see it.
+
+  ```typescript
+  // an implementation that really is all-optional says so itself
+  IAdtUpdatable<Partial<IClassConfig>, string>
+  // and one that needs something says that
+  IAdtUpdatable<IServiceBindingPublicationConfig, string>
+  ```
+
+  The other atoms keep `Partial`: they name an object, and naming it is all they
+  ask.
+
+- **`IAdtUpdatable`'s documentation no longer says every update writes a
+  source.** A service binding has neither a source nor a document to PUT — its
+  update is a job that changes the object's state — and the atom cannot claim
+  otherwise for every implementation.
+
 ## [36.0.0] - 2026-09-06
 
 **A member is named for the resource it addresses.** An ADT object has up to two

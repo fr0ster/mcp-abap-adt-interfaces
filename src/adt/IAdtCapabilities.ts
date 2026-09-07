@@ -147,10 +147,26 @@ export interface IAdtMetadataReadable<TConfig, TMetadata> {
 /**
  * The object's **source** can be written.
  *
- * `update` writes the source and only the source, which is what makes the name
- * mean the same thing on every type. A domain has no source to write; it
- * composes {@link IAdtMetadataUpdatable} instead, and the member it offers says
- * what it writes.
+ * **`TConfig` is taken as given, not wrapped in `Partial`.** The atoms that
+ * *identify* an object — `read`, `delete`, `activate`, `lock` and the rest —
+ * wrap it, and are right to: `read({ className })` has no business demanding a
+ * package. {@link IAdtCreatable} never did, because a create must say what to
+ * make, and a write is no more an identifier than a create is. A service
+ * binding's publication needs the protocol that selects its endpoint, and an
+ * atom that decided optionality on the implementation's behalf made that
+ * requirement unsayable. Implementations pass `Partial<IClassConfig>` where
+ * everything really is optional, and their own shape where it is not.
+ *
+ * `update` writes the source, which is what makes the name mean the same thing
+ * across the types that have one. A domain has no source to write; it composes
+ * {@link IAdtMetadataUpdatable} instead, and the member it offers says what it
+ * writes.
+ *
+ * **One object is neither.** A service binding has no source and no document to
+ * PUT: its `update` is a publication job, `POST …/publishjobs`, which changes
+ * the object's state rather than its content. It is still `update` — writing an
+ * object's state is what the member is for — but "the source and only the
+ * source" would be a claim this atom cannot make for every implementation.
  */
 export interface IAdtUpdatable<TConfig, TUpdated> {
   /**
@@ -170,11 +186,11 @@ export interface IAdtUpdatable<TConfig, TUpdated> {
    * @returns whatever this implementation’s reading makes of the answer
    */
   update<E extends IAdtError>(
-    config: Partial<TConfig>,
+    config: TConfig,
     options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TUpdated, E>>;
   update(
-    config: Partial<TConfig>,
+    config: TConfig,
     options?: IAdtOperationOptions,
   ): Promise<IAdtResponse<TUpdated>>;
 }
@@ -207,11 +223,11 @@ export interface IAdtMetadataUpdatable<TConfig, TMetadataUpdated> {
    * @returns whatever this implementation's reading makes of the answer
    */
   updateMetadata<E extends IAdtError>(
-    config: Partial<TConfig>,
+    config: TConfig,
     options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TMetadataUpdated, E>>;
   updateMetadata(
-    config: Partial<TConfig>,
+    config: TConfig,
     options?: IAdtOperationOptions,
   ): Promise<IAdtResponse<TMetadataUpdated>>;
 }
