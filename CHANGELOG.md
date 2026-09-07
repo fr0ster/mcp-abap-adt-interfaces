@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [39.0.0] - 2026-09-08
+
+**Ending a session has two halves, and the contract now has both.**
+
 ### Changed
 
 - **BREAKING: `ISessionLifecycleAware` gains `flushGoodbye(timeoutMs?)`.**
