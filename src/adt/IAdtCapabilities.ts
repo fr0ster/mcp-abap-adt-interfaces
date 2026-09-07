@@ -32,7 +32,11 @@
  * to the compiler, so a consumer never learns from the type that a failure path
  * exists.
  */
-import type { IAdtOperationOptions, IAnalyse } from './IAdtObject';
+import type {
+  IAdtCreateOptions,
+  IAdtOperationOptions,
+  IAnalyse,
+} from './IAdtObject';
 import type { IAdtError, IAdtResponse } from './IAdtResponse';
 
 /**
@@ -52,21 +56,29 @@ export interface IAdtCreatable<TConfig, TCreated> {
    * order they want: which of six requests failed is knowable that way and was
    * not before.
    *
-   * @param config - Object configuration
-   * @param options - `analyse` for what counts as a failure, and
-   *                  `sourceCode`/`xmlContent` **only where this object's create
-   *                  endpoint carries a body**: a DDL source, a table and a
-   *                  program are created from their source; a class is created
-   *                  empty and written to afterwards, by `update`
+   * **It does not take the object's source.** This used to say `sourceCode`
+   * applied "where this object's create endpoint carries a body: a DDL source,
+   * a table and a program are created from their source". None of the three
+   * is: measured across all 27 create implementations in
+   * `@mcp-abap-adt/adt-clients`, every one posts a metadata document and not
+   * one carries source. So the field is off the member — `config` without it,
+   * and {@link IAdtCreateOptions} in place of the write options — because a
+   * value that cannot be honoured is worse accepted than refused. Passing it
+   * used to compile, run, answer ok and leave an empty object behind.
+   *
+   * The source is `update`'s, after `lock`.
+   *
+   * @param config - Object configuration, source excluded
+   * @param options - `analyse` for what counts as a failure
    * @returns whatever this implementation’s reading makes of the answer
    */
   create<E extends IAdtError>(
-    config: TConfig,
-    options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
+    config: Omit<TConfig, 'sourceCode'>,
+    options: IAdtCreateOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TCreated, E>>;
   create(
-    config: TConfig,
-    options?: IAdtOperationOptions,
+    config: Omit<TConfig, 'sourceCode'>,
+    options?: IAdtCreateOptions,
   ): Promise<IAdtResponse<TCreated>>;
 }
 
