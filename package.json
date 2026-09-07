@@ -1,6 +1,6 @@
 {
   "name": "@mcp-abap-adt/interfaces",
-  "version": "37.0.1",
+  "version": "38.0.0",
   "description": "Shared interfaces for MCP ABAP ADT packages",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
