@@ -170,7 +170,14 @@ export interface IAdtMetadataReadable<TConfig, TMetadata> {
  */
 export interface IAdtUpdatable<TConfig, TUpdated> {
   /**
-   * Write the object's source — **the write, and nothing around it.**
+   * Write what the object has — **the write, and nothing around it.**
+   *
+   * For the types that have a source, that is the source. A service binding has
+   * neither a source nor a document to PUT: its `update` is a publication job,
+   * `POST …/publishjobs`, which changes the object's state. Writing an object's
+   * state is what this member is for, so "writes the source" is a claim the
+   * hover text cannot make for every implementation — and the hover is where a
+   * consumer reads the contract.
    *
    * This used to say "with full operation chain: lock, check(inactive),
    * update, unlock, check, activate (optional)". It is one request, and the
@@ -180,7 +187,9 @@ export interface IAdtUpdatable<TConfig, TUpdated> {
    *
    * Sending no lock handle is not refused here. ADT judges that, and answers it.
    *
-   * @param config - Object configuration with updates
+   * @param config - taken as given, so an implementation that needs a field can
+   *                 require it — a publication needs the protocol that selects
+   *                 its endpoint
    * @param options - `sourceCode`/`xmlContent` for the body, `lockHandle` for
    *                  the lock the caller took, `analyse` for the verdict
    * @returns whatever this implementation’s reading makes of the answer

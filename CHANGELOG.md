@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **`IAdtUpdatable.update`'s own doc comment no longer says it writes the
+  source.** 37.0.0 corrected the interface-level block and left the member's,
+  which is the one an editor shows on hover — so a consumer looking at the
+  method still read "Write the object's source" while the atom above it
+  explained that a service binding's update is a publication job. The member
+  says what it writes, and its `@param config` says why the config is taken as
+  given.
+
 ## [37.0.0] - 2026-09-07
 
 **An atom identifies an object; a write is not an identifier.**
