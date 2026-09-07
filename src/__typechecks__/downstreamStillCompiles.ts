@@ -45,7 +45,7 @@ class WrittenBefore
     IAdtCreatable<Config, string>,
     IAdtReadable<Config, string>,
     IAdtMetadataReadable<Config, string>,
-    IAdtUpdatable<Config, string>,
+    IAdtUpdatable<Partial<Config>, string>,
     IAdtDeletable<Config, void, string>,
     IAdtActivatable<Config, string>
 {

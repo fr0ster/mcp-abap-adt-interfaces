@@ -34,7 +34,7 @@ const answered = <T>(value: T): IAdtResponse<T> => ({
 type WholeBinding = IAdtCreatable<IServiceBindingConfig, void> &
   IAdtReadable<IServiceBindingConfig, string> &
   IAdtMetadataReadable<IServiceBindingConfig, string> &
-  IAdtUpdatable<IServiceBindingConfig, void> &
+  IAdtUpdatable<Partial<IServiceBindingConfig>, void> &
   IAdtDeletable<IServiceBindingConfig, void> &
   IAdtActivatable<IServiceBindingConfig, string>;
 
@@ -44,7 +44,7 @@ type WholeBinding = IAdtCreatable<IServiceBindingConfig, void> &
  * publishes takes `IAdtUpdatable` and nothing else, and an implementation that
  * only publishes is a legitimate one.
  */
-type PublishingOnly = IAdtUpdatable<IServiceBindingConfig, void>;
+type PublishingOnly = IAdtUpdatable<Partial<IServiceBindingConfig>, void>;
 
 const _publisher: PublishingOnly = {
   update: async () => answered(undefined),

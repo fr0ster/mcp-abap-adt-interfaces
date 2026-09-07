@@ -38,7 +38,7 @@ function answered<T, E extends IAdtError = IAdtError>(
 }
 
 // A handler that only updates satisfies IAdtUpdatable and nothing else.
-const _updateOnly: IAdtUpdatable<Config, void> = {
+const _updateOnly: IAdtUpdatable<Partial<Config>, void> = {
   update: async () => answered(undefined),
 };
 void _updateOnly;
@@ -59,7 +59,10 @@ const _deleteOnly: IAdtDeletable<Config, void, string> = {
 void _deleteOnly;
 
 // @ts-expect-error IAdtUpdatable requires update(); this object has none.
-const _deleteOnlyAsUpdatable: IAdtUpdatable<Config, void> = _deleteOnly;
+const _deleteOnlyAsUpdatable: IAdtUpdatable<
+  Partial<Config>,
+  void
+> = _deleteOnly;
 void _deleteOnlyAsUpdatable;
 
 // The check answers its own value, not the deletion's. They read different
@@ -128,7 +131,7 @@ void _lockAnswers;
 // A type that is only its own document. A domain has no source: it composes the
 // metadata atoms and nothing else, and the compiler holds it to exactly that.
 const _documentOnly: IAdtMetadataReadable<Config, string> &
-  IAdtMetadataUpdatable<Config, void> = {
+  IAdtMetadataUpdatable<Partial<Config>, void> = {
   readMetadata: async () => answered('<doma:domain/>'),
   updateMetadata: async () => answered(undefined),
 };
@@ -139,7 +142,10 @@ const _documentOnlyAsReadable: IAdtReadable<Config, string> = _documentOnly;
 void _documentOnlyAsReadable;
 
 // @ts-expect-error IAdtUpdatable requires update(); a document-only type has none.
-const _documentOnlyAsUpdatable: IAdtUpdatable<Config, void> = _documentOnly;
+const _documentOnlyAsUpdatable: IAdtUpdatable<
+  Partial<Config>,
+  void
+> = _documentOnly;
 void _documentOnlyAsUpdatable;
 
 // And the reverse: reading a source is not reading a document. The two atoms
@@ -154,3 +160,29 @@ void _sourceOnly;
 // @ts-expect-error IAdtMetadataReadable requires readMetadata(); this has none.
 const _sourceOnlyAsMetadata: IAdtMetadataReadable<Config, string> = _sourceOnly;
 void _sourceOnlyAsMetadata;
+
+// **A write can demand what it needs, and the demand survives the atom.**
+// `IAdtUpdatable` used to wrap its config in `Partial`, which meant no
+// implementation could require a field: a service binding's publication needs
+// the protocol that selects its endpoint, and the call compiled without it and
+// threw before the wire. Held here because the property is about the atom, not
+// about bindings.
+interface PublicationConfig {
+  bindingName: string;
+  serviceType: 'odatav2' | 'odatav4';
+}
+
+const _demandingUpdate: IAdtUpdatable<PublicationConfig, void> = {
+  update: async () => answered(undefined),
+};
+void _demandingUpdate;
+
+// @ts-expect-error the config says both are required, and the atom no longer
+// makes them optional on the implementation's behalf
+void _demandingUpdate.update({ bindingName: 'ZAC_SRVB01' });
+
+// And with both, it compiles.
+void _demandingUpdate.update({
+  bindingName: 'ZAC_SRVB01',
+  serviceType: 'odatav4',
+});
