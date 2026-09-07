@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [37.0.1] - 2026-09-07
+
 ### Fixed
 
 - **`IAdtUpdatable.update`'s own doc comment no longer says it writes the
