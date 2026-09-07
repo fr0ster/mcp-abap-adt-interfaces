@@ -16,9 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **BREAKING: `IAdtUpdatable` and `IAdtMetadataUpdatable` take `TConfig` as
   given**, not `Partial<TConfig>`.
 
-  Every atom wrapped its config in `Partial`, and for the ones that *identify*
-  an object that is right: `read({ className })` has no business demanding a
-  package. A write is different. A service binding's `update` is its publication
+  The identifier-oriented atoms wrap their config in `Partial`, and are right
+  to: `read({ className })` has no business demanding a package. `IAdtCreatable`
+  never did — a create must say what to make. The two write atoms sat on the
+  wrong side of that line. A service binding's `update` is its publication
   job, and it needs the protocol that selects the endpoint — but with `Partial`
   inside the atom, no implementation could say so. The call compiled without it
   and threw before reaching the wire, which is a requirement stated where the

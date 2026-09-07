@@ -43,13 +43,39 @@ type WholeBinding = IAdtCreatable<IServiceBindingConfig, void> &
  * — `desiredPublicationState` is a field of its config — so the caller who only
  * publishes takes `IAdtUpdatable` and nothing else, and an implementation that
  * only publishes is a legitimate one.
+ *
+ * The config is spelled with the three fields a publication cannot proceed
+ * without, because since 37.0.0 the atom no longer flattens them: which object,
+ * which state, and the protocol that selects the endpoint. This is the same
+ * type `@mcp-abap-adt/adt-clients` calls `IServiceBindingPublicationConfig`.
  */
-type PublishingOnly = IAdtUpdatable<Partial<IServiceBindingConfig>, void>;
+type PublishingOnly = IAdtUpdatable<
+  Partial<IServiceBindingConfig> &
+    Required<
+      Pick<
+        IServiceBindingConfig,
+        'bindingName' | 'desiredPublicationState' | 'serviceType'
+      >
+    >,
+  void
+>;
 
 const _publisher: PublishingOnly = {
   update: async () => answered(undefined),
 };
 void _publisher;
+
+// @ts-expect-error a publication with no protocol has no endpoint to post to
+void _publisher.update({
+  bindingName: 'ZAC_SRVB01',
+  desiredPublicationState: 'published',
+});
+
+void _publisher.update({
+  bindingName: 'ZAC_SRVB01',
+  desiredPublicationState: 'published',
+  serviceType: 'odatav4',
+});
 
 /** A consumer's own reading of what a create answers, named by them. */
 interface IBindingSummary {

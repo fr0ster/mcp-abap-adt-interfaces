@@ -474,11 +474,23 @@ This package is responsible for:
   TypeScript matches it structurally:
 
   ```typescript
-  type PublishingOnly = IAdtUpdatable<IServiceBindingConfig, void>;
+  type PublishingOnly = IAdtUpdatable<
+    Partial<IServiceBindingConfig> &
+      Required<
+        Pick<
+          IServiceBindingConfig,
+          'bindingName' | 'desiredPublicationState' | 'serviceType'
+        >
+      >,
+    void
+  >;
   ```
 
   Publishing *is* an update: `desiredPublicationState` is a field of the config,
-  not a method name. `IAdtServiceBinding<R>` and `IServiceBindingResults` were
+  not a method name. And since 37.0.0 the atom takes that config as given, so
+  the three fields a publication cannot proceed without — which object, which
+  state, and the protocol that selects the endpoint — are required at the call
+  site instead of being flattened to optional on the way through. `IAdtServiceBinding<R>` and `IServiceBindingResults` were
   removed — the last per-object aggregate in the package, and half of what it
   declared had no implementation left.
 - Parameter/enum types:

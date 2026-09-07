@@ -147,14 +147,15 @@ export interface IAdtMetadataReadable<TConfig, TMetadata> {
 /**
  * The object's **source** can be written.
  *
- * **`TConfig` is taken as given, not wrapped in `Partial`.** The other atoms
- * identify an object — `read({ className })` has no business demanding a
- * package — so they make every field optional and are right to. A write is not
- * an identifier: a service binding's publication needs the protocol that
- * selects its endpoint, and an atom that decided optionality on every type's
- * behalf made that requirement unsayable. Implementations pass
- * `Partial<IClassConfig>` where everything really is optional, and their own
- * shape where it is not.
+ * **`TConfig` is taken as given, not wrapped in `Partial`.** The atoms that
+ * *identify* an object — `read`, `delete`, `activate`, `lock` and the rest —
+ * wrap it, and are right to: `read({ className })` has no business demanding a
+ * package. {@link IAdtCreatable} never did, because a create must say what to
+ * make, and a write is no more an identifier than a create is. A service
+ * binding's publication needs the protocol that selects its endpoint, and an
+ * atom that decided optionality on the implementation's behalf made that
+ * requirement unsayable. Implementations pass `Partial<IClassConfig>` where
+ * everything really is optional, and their own shape where it is not.
  *
  * `update` writes the source, which is what makes the name mean the same thing
  * across the types that have one. A domain has no source to write; it composes
