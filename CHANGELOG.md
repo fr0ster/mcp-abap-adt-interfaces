@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [39.0.1] - 2026-09-08
+
+**Documentation only — the published package carried 39.0.0's README.**
+
+39.0.0 and 38.1.0 added three atoms to the contract and shipped without
+telling anyone in the README. Since npm serves the README from the tarball,
+a consumer reading the package page saw the pre-38.1.0 description of what
+this package offers. No declaration changed; this release exists to put the
+documentation where consumers actually read it.
+
+### Documentation
+
+- `ICriticalSection`, `IRequestProfiling` (38.1.0) and `flushGoodbye` on
+  `ISessionLifecycleAware` (39.0.0) are now described in the README, each
+  with what a consumer must do about it.
+- The `IRenewableCredential` guard is shown as an example, because the
+  narrowing is what makes the optional atoms usable at all.
+
 ## [39.0.0] - 2026-09-08
 
 **Ending a session has two halves, and the contract now has both.**
