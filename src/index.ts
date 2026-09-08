@@ -297,6 +297,13 @@ export type {
 } from './adt/IAdtUtilities';
 export type { AuthType as AuthTypeEnum } from './auth/AuthType';
 // Auth domain
+export type {
+  AssertionContext,
+  AssertionReplayKey,
+  IAssertionReplayStore,
+  IAssertionValidator,
+  ValidatedAssertion,
+} from './auth/IAssertionValidator';
 export type { IAuthorizationConfig } from './auth/IAuthorizationConfig';
 export type {
   AuthorizationOutcome,
