@@ -48,28 +48,39 @@ const succeeded = <T>(value: T): IAdtResponse<T> => ({
   getResult: () => ({ value }),
 });
 
+/** One reading per endpoint, and each one this implementation's own. */
+interface MyRow {
+  readonly cells: readonly string[];
+}
+
 /** One family alone, implemented by something that knows nothing of the others. */
-class MyDataPreview implements IAdtDataPreview {
+class MyDataPreview implements IAdtDataPreview<string, string[], MyRow[]> {
   async getSqlQuery(_p: IGetSqlQueryParams): Promise<IAdtResponse<string>> {
     return succeeded('');
   }
-  async getTableColumns(_name: string): Promise<IAdtResponse<string>> {
-    return succeeded('');
+  async getTableColumns(_name: string): Promise<IAdtResponse<string[]>> {
+    return succeeded(['MANDT']);
   }
   async getTableContents(
     _p: IGetTableContentsParams,
-  ): Promise<IAdtResponse<string>> {
-    return succeeded('');
+  ): Promise<IAdtResponse<MyRow[]>> {
+    return succeeded([]);
   }
 }
 
 /** The whole surface is the intersection — spelled, not named. */
-type AllUtilities = IAdtInformationSystem<MyHit[], MyWhereUsed, MyTypes> &
-  IAdtRepositoryStructure<MyNode> &
-  IAdtGroupLifecycle<string> &
-  IAdtDataPreview &
-  IAdtDiscovery &
-  IAdtObjectAccess;
+type AllUtilities = IAdtInformationSystem<
+  MyHit[],
+  MyWhereUsed,
+  string,
+  string,
+  MyTypes
+> &
+  IAdtRepositoryStructure<MyNode, string> &
+  IAdtGroupLifecycle<string, string, string, string, string, string> &
+  IAdtDataPreview<string, string[], MyRow[]> &
+  IAdtDiscovery<string> &
+  IAdtObjectAccess<string, string, string>;
 
 declare const utils: AllUtilities;
 
@@ -85,7 +96,7 @@ const rows = utils.getTableContents({
 const inactive = utils.getInactiveObjects();
 
 /** A caller holding one family reaches only that one. */
-declare const preview: IAdtDataPreview;
+declare const preview: IAdtDataPreview<string, string[], MyRow[]>;
 // @ts-expect-error search belongs to the information system, not data preview
 preview.search({ query: 'ZCL_X' });
 
@@ -96,7 +107,7 @@ preview.search({ query: 'ZCL_X' });
  * Both directions are asserted, because "it compiled when I tried it" is not a
  * thing anyone can re-run.
  */
-class NodeReaderWithExtras implements IAdtRepositoryStructure<MyNode> {
+class NodeReaderWithExtras implements IAdtRepositoryStructure<MyNode, string> {
   async fetchNodeStructure(
     _parentType: string,
     _parentName: string,
@@ -113,7 +124,7 @@ class NodeReaderWithExtras implements IAdtRepositoryStructure<MyNode> {
   }
 }
 
-declare const nodes: IAdtRepositoryStructure<MyNode>;
+declare const nodes: IAdtRepositoryStructure<MyNode, string>;
 // @ts-expect-error the contract takes an options object; a bare node id is not it
 nodes.fetchNodeStructure('DEVC/K', 'ZPKG', '000000');
 
@@ -126,7 +137,7 @@ nodes.fetchNodeStructure('DEVC/K', 'ZPKG', '000000');
  * left to be discovered by the next consumer.
  */
 async function idOfType(
-  structure: IAdtRepositoryStructure<MyNode>,
+  structure: IAdtRepositoryStructure<MyNode, string>,
   wanted: string,
 ): Promise<string | undefined> {
   const answer = await structure.fetchNodeStructure('PROG/P', 'ZMY_PROGRAM');
@@ -147,7 +158,13 @@ async function idOfType(
  * caller. `mcp-abap-adt` reads `status` and hands the ADT document to a model —
  * that need is served here, with a contract, instead of by a second raw member.
  */
-declare const info: IAdtInformationSystem<MyHit[], MyWhereUsed, MyTypes>;
+declare const info: IAdtInformationSystem<
+  MyHit[],
+  MyWhereUsed,
+  string,
+  string,
+  MyTypes
+>;
 
 /** Naming no strategy: the parsed hits, as before. */
 const hits: Promise<IAdtResponse<MyHit[]>> = info.search({
@@ -158,7 +175,13 @@ const hits: Promise<IAdtResponse<MyHit[]>> = info.search({
 interface RawHits {
   xml: string;
 }
-declare const rawInfo: IAdtInformationSystem<RawHits, MyWhereUsed, MyTypes>;
+declare const rawInfo: IAdtInformationSystem<
+  RawHits,
+  MyWhereUsed,
+  string,
+  string,
+  MyTypes
+>;
 const raw: Promise<IAdtResponse<RawHits>> = rawInfo.search({ query: 'ZCL_*' });
 
 /** The choice is the implementation's, so the wrong shape cannot be asked for. */
