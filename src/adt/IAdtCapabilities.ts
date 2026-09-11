@@ -416,13 +416,19 @@ export interface IAdtVersionable<TConfig, TVersions, TSource> {
 }
 
 /**
- * `IAdtObjectSearch` was here until 30.0.0.
+ * `IAdtSearchable` was here until 30.0.0.
  *
  * Searching is not something an object does to itself, and the question already
  * had a home: {@link IAdtInformationSystem.search}, over
  * `/repository/informationsystem/search`. Declaring it here as well made one
  * endpoint two members across two files — decision 16 — and gave a consumer two
  * places to look for one answer.
+ *
+ * Not to be confused with `IAdtObjectSearch`, which 40.0.0 added in
+ * `IAdtUtilities.ts`. That one is the information system's own member, split
+ * out of the bundle so an implementation can offer the search without offering
+ * the where-used pair. Same subject, different layer — which is why it did not
+ * reuse this name.
  */
 
 export interface IAdtTransportAware<TConfig, TTransport> {
