@@ -41,22 +41,10 @@ export interface IUpdateTableTypeParams {
   tabletype_name: string;
   description?: string;
   row_type_name: string;
-  row_type_kind?:
-    | 'dictionaryType'
-    | 'predefinedAbapType'
-    | 'refToPredefinedAbapType'
-    | 'refToDictionaryType'
-    | 'refToClassOrInterfaceType'
-    | 'rangeTypeOnPredefinedType'
-    | 'rangeTypeOnDataelement';
-  access_type?: 'standard' | 'sorted' | 'hashed' | 'index' | 'notSpecified';
-  primary_key_definition?:
-    | 'standard'
-    | 'rowType'
-    | 'keyComponents'
-    | 'empty'
-    | 'notSpecified';
-  primary_key_kind?: 'unique' | 'nonUnique' | 'notSpecified';
+  row_type_kind?: TableTypeRowKind;
+  access_type?: TableTypeAccessType;
+  primary_key_definition?: TableTypePrimaryKeyDefinition;
+  primary_key_kind?: TableTypePrimaryKeyKind;
   transport_request?: string;
   activate?: boolean;
 }

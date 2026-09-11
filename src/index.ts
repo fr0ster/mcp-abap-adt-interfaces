@@ -141,7 +141,6 @@ export type {
 } from './adt/IAdtInterface';
 export type {
   ICreateMessageClassParams,
-  IDeleteMessageClassParams,
   IMessageClassConfig,
   IMessageClassMessageConfig,
 } from './adt/IAdtMessageClass';
@@ -162,7 +161,6 @@ export type {
   ICreatePackageParams,
   IDeletePackageParams,
   IPackageConfig,
-  IReadPackageParams,
   IUpdatePackageParams,
 } from './adt/IAdtPackage';
 export type {
@@ -270,8 +268,6 @@ export type {
 } from './adt/IAdtTransport';
 export { TRANSPORT_SEARCH_CONFIGURATIONS_URL } from './adt/IAdtTransport';
 export type {
-  ClassUnitTestDefinition,
-  ClassUnitTestRunOptions,
   ICdsTestDoubleCheckable,
   ICdsUnitTestConfig,
   IClassUnitTestDefinition,

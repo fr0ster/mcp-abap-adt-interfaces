@@ -5,11 +5,6 @@ export interface ICreateMessageClassParams {
   transport_request?: string;
   master_language?: string;
 }
-export interface IDeleteMessageClassParams {
-  name: string;
-  transport_request?: string;
-}
-
 // Nested shapes a message-class read answers with
 // (promoted from adt-clients src/core/messageClass/xml.ts — minimal closure
 // needed to compile the Config/State types below)
