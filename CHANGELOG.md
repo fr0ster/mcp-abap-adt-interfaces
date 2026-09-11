@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [42.0.0] - 2026-09-11
+
+**BREAKING — the last two joins `adt-clients` 19.0.0 has to undo.**
+
+Same rule as 40.0.0 and 41.0.0: one member, one endpoint call. This one was cut
+after sweeping the consumer for *every* remaining join rather than waiting for
+the next build failure — three releases for one consumer major is two too many,
+and this is meant to be the last.
+
+### Added
+
+- `document?: string` on `IFunctionGroupConfig`. The function-group update
+  locked the group, fetched its document, patched the description into it, PUT
+  the result and unlocked — four requests in one member, with the lock window
+  and the merge both decided there. The same field has been on `IDomainConfig`,
+  `IPackageConfig`, `IDataElementConfig`, `ITableTypeConfig` and
+  `ITransportConfig` since 40.0.0, and means the same thing: the fields beside
+  it describe a create, and a field left out of the document is not preserved.
+- `getTableColumns(tableName)` on `IAdtDataPreview` —
+  `/datapreview/ddic/{name}/metadata`, one request. It exists because
+  `getTableContents` no longer makes it.
+
+### Changed
+
+- `getTableContents` posts the statement it is given. It used to read the
+  entity's metadata first and build `SELECT T~A, T~B FROM T` out of every column
+  it found — two requests, and a statement the caller could not reach.
+  `IGetTableContentsParams` gains `sql_query?: string` for it.
+
+### Why these two and not more
+
+Every other join left in `adt-clients` is invisible to this package: the
+lock-write-unlock chains, the abapGit pull, the ATC run and the two profiling
+runners are either absent from the contract or alone in their own atom, so the
+implementation stops offering them and no declaration moves.
+
 ## [41.0.0] - 2026-09-11
 
 **BREAKING — `IAdtObjectAccess` drops three walks.**

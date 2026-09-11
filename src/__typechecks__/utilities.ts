@@ -54,6 +54,9 @@ class MyDataPreview implements IAdtDataPreview {
   async getSqlQuery(_p: IGetSqlQueryParams): Promise<IAdtResponse<string>> {
     return succeeded('');
   }
+  async getTableColumns(_name: string): Promise<IAdtResponse<string>> {
+    return succeeded('');
+  }
   async getTableContents(
     _p: IGetTableContentsParams,
   ): Promise<IAdtResponse<string>> {

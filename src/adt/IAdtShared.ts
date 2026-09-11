@@ -95,6 +95,17 @@ export interface IGetSqlQueryParams {
 export interface IGetTableContentsParams {
   table_name: string;
   max_rows?: number;
+  /**
+   * The statement to run against `/datapreview/ddic`.
+   *
+   * **The column list is the caller's since 42.0.0.** This member used to read
+   * `/datapreview/ddic/{name}/metadata` first, build
+   * `SELECT T~A, T~B FROM T` out of every column it found, and post that — two
+   * requests in one member, and a statement nobody outside could change. Read
+   * the columns with `getTableColumns` and write the statement you want, or
+   * write one that names no columns at all.
+   */
+  sql_query?: string;
 }
 
 /**
