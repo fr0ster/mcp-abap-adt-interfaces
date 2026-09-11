@@ -400,20 +400,19 @@ export interface IAdtObjectAccess {
   /** A standalone include. */
   getInclude(includeName: string): Promise<IAdtResponse<string>>;
 
-  /** The includes an object is built from. */
-  getIncludesList(
-    objectName: string,
-    objectType: 'PROG/P' | 'PROG/I' | 'FUGR' | 'CLAS/OC',
-    timeout?: number,
-  ): Promise<IAdtResponse<string[]>>;
-
-  /** The function modules of a group. */
-  listFunctionModules(
-    functionGroupName: string,
-  ): Promise<IAdtResponse<string[]>>;
-
-  /** The includes of a function group. */
-  listFunctionGroupIncludes(
-    functionGroupName: string,
-  ): Promise<IAdtResponse<string[]>>;
+  /*
+   * `getIncludesList`, `listFunctionModules` and `listFunctionGroupIncludes`
+   * were here until 41.0.0.
+   *
+   * Each was a walk: read the object's node structure, find the child type's
+   * node id, read that node. Two requests, so no `IResultStrategy` could ever
+   * be given for one — a strategy takes a single answer — and the shape of the
+   * list was fixed at `string[]` for everyone.
+   *
+   * `fetchNodeStructure` in {@link IAdtRepositoryStructure} is the step they
+   * were built from. It is one request, it has a reading, and a caller composes
+   * the two calls in the order and the shape they want.
+   *
+   * The five members above stay: each is one request, or none at all.
+   */
 }
