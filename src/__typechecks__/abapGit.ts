@@ -33,14 +33,21 @@ const _client: Pick<MyClient, 'listRepos'> = {
 };
 void _client;
 
-/** The progress callback reports this implementation's status, not ours. */
+/**
+ * A pull is started, not awaited.
+ *
+ * The link comes from `listRepos`, and what happens after the POST — how long
+ * to poll `getRepo`, whether to give up, what to do then — is written by the
+ * caller, because it is about their application rather than about ADT.
+ */
 declare const client: MyClient;
 void client.pull({
   package: 'ZPKG',
-  onProgress: (status: MyRepo | undefined) => {
-    void status?.branch;
-  },
+  pullLink: '/sap/bc/adt/abapgit/repos/K/pull',
 });
+
+// @ts-expect-error a pull cannot be started without the link it posts to
+void client.pull({ package: 'ZPKG' });
 
 /** Request arguments stayed: a caller cannot call without them. */
 const _link: IAbapGitLinkArgs = {} as IAbapGitLinkArgs;

@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [43.0.0] - 2026-09-11
+
+**BREAKING — a pull is started, not awaited.**
+
+The last join `adt-clients` 19.0.0 has to undo, and the reason it is cut now
+rather than next time: leaving it would make anyone using abapGit pull migrate
+twice, once for everything else and once for this.
+
+### Changed
+
+- **`pull` is one POST, to `args.pullLink`.** It made four requests: it listed
+  the repositories to find the link, posted, polled the repository until its
+  status left `R`, and read the error log if the status said to. The caller
+  writes those steps — `listRepos` once, keep the link, post, then poll
+  `getRepo` on their own terms.
+- **`IAbapGitPullArgs` loses its type parameter** and the four fields that
+  configured the wait: `pollIntervalMs`, `maxPollDurationMs`, `signal` and
+  `onProgress`. They existed only to parameterise a loop that is no longer
+  here, and `onProgress` existed only because the iterations happened out of
+  the caller's sight — they hold each status now, because they asked for it.
+
+  `signal` is worth naming separately: it aborted the client's own `sleep`, and
+  never the server's job. A caller who leaves their loop now sees that in their
+  own code rather than in a comment here.
+- **`IAbapGitPullArgs` gains `pullLink: string`**, required. It is the href
+  `listRepos` reports, and it is what the member used to spend a request looking
+  up — including for a caller who already had it.
+
 ## [42.0.0] - 2026-09-11
 
 **BREAKING — the last two joins `adt-clients` 19.0.0 has to undo.**
