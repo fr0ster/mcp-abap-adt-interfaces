@@ -141,15 +141,15 @@ later release, not a gap this one hides.
 parameter of its interface, and the interface names no shape for it:
 
 ```typescript
-interface IAdtPackageBrowsing<TContents> {
-  getPackageContents(name: string): Promise<IAdtResponse<TContents>>;
+interface IAdtObjectSearch<TSearch> {
+  search(criteria: ISearchObjectsParams): Promise<IAdtResponse<TSearch>>;
 }
 
 // one implementation's reading            // another's
-const items: IAdtPackageBrowsing<PackageItem[]>
-const raw: IAdtPackageBrowsing<string>
-await items.getPackageContents('Z1');      await raw.getPackageContents('Z1');
-//   → PackageItem[], declared there       //   → the document, untouched
+const hits: IAdtObjectSearch<SearchHit[]>
+const raw: IAdtObjectSearch<string>
+await hits.search({ query: 'Z*' });        await raw.search({ query: 'Z*' });
+//   → SearchHit[], declared there         //   → the document, untouched
 ```
 
 **No default, and no shape named here.** 31.0.0 took both out: the shapes went to
@@ -226,7 +226,7 @@ distinction decides which rules above apply.
 
 | directory | what it holds |
 |---|---|
-| `adt/` (40 files) | the capability atoms (`IAdtCreatable`, `IAdtReadable`, …), one file per ADT object type with its config and low-level params, the cross-cutting utilities (`IAdtInformationSystem`, `IAdtRepositoryStructure`, `IAdtPackageBrowsing`, `IAdtGroupLifecycle`, `IAdtDataPreview`, `IAdtDiscovery`, `IAdtObjectAccess`), transport, abapGit, client options, content types |
+| `adt/` (40 files) | the capability atoms (`IAdtCreatable`, `IAdtReadable`, …), one file per ADT object type with its config and low-level params, the cross-cutting utilities (`IAdtInformationSystem` and the four atoms it composes, `IAdtRepositoryStructure`, `IAdtGroupLifecycle`, `IAdtDataPreview`, `IAdtDiscovery`, `IAdtObjectAccess`), transport, abapGit, client options, content types |
 | `runtime/` (12) | what a system says about itself after the fact — profiler and traces, dumps, ATC, application log, DDIC activation, gateway errors, system messages |
 | `service/` (1) | the service binding: what it has that the atoms do not cover |
 | `feeds/` (2) | the ADT feed repository |
