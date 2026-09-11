@@ -4,18 +4,27 @@
 
 import type { IAdtResponse } from './IAdtResponse';
 
+/**
+ * Which tests a run covers.
+ *
+ * Named rather than inlined so a caller can hold one before they call — an
+ * anonymous shape inside `IClassUnitTestRunOptions` could be passed but never
+ * declared, which is the difference between a contract and a convenience.
+ */
 export interface IUnitTestScope {
-  own_tests?: boolean;
-  foreign_tests?: boolean;
-  add_foreign_tests_as_preview?: boolean;
+  ownTests?: boolean;
+  foreignTests?: boolean;
+  addForeignTestsAsPreview?: boolean;
 }
 
+/** Which risk levels a run accepts. */
 export interface IUnitTestRiskLevel {
   harmless?: boolean;
   dangerous?: boolean;
   critical?: boolean;
 }
 
+/** Which durations a run accepts. */
 export interface IUnitTestDuration {
   short?: boolean;
   medium?: boolean;
@@ -63,26 +72,10 @@ export interface IClassUnitTestDefinition {
 export interface IClassUnitTestRunOptions {
   title?: string;
   context?: string;
-  scope?: {
-    ownTests?: boolean;
-    foreignTests?: boolean;
-    addForeignTestsAsPreview?: boolean;
-  };
-  riskLevel?: {
-    harmless?: boolean;
-    dangerous?: boolean;
-    critical?: boolean;
-  };
-  duration?: {
-    short?: boolean;
-    medium?: boolean;
-    long?: boolean;
-  };
+  scope?: IUnitTestScope;
+  riskLevel?: IUnitTestRiskLevel;
+  duration?: IUnitTestDuration;
 }
-
-// Re-export with aliases for backward compatibility
-export type ClassUnitTestDefinition = IClassUnitTestDefinition;
-export type ClassUnitTestRunOptions = IClassUnitTestRunOptions;
 
 /**
  * A unit test against a CDS view.

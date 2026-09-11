@@ -7,6 +7,70 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [43.0.0] - 2026-09-11
+
+**BREAKING — a pull is started, not awaited.**
+
+The last join `adt-clients` 19.0.0 has to undo, and the reason it is cut now
+rather than next time: leaving it would make anyone using abapGit pull migrate
+twice, once for everything else and once for this.
+
+### Changed
+
+- **`pull` is one POST, to `args.pullLink`.** It made four requests: it listed
+  the repositories to find the link, posted, polled the repository until its
+  status left `R`, and read the error log if the status said to. The caller
+  writes those steps — `listRepos` once, keep the link, post, then poll
+  `getRepo` on their own terms.
+- **`IAbapGitPullArgs` loses its type parameter** and the four fields that
+  configured the wait: `pollIntervalMs`, `maxPollDurationMs`, `signal` and
+  `onProgress`. They existed only to parameterise a loop that is no longer
+  here, and `onProgress` existed only because the iterations happened out of
+  the caller's sight — they hold each status now, because they asked for it.
+
+  `signal` is worth naming separately: it aborted the client's own `sleep`, and
+  never the server's job. A caller who leaves their loop now sees that in their
+  own code rather than in a comment here.
+- **`IAdtPackageBrowsing` and `IGetPackageContentsOptions` are removed.**
+  `getPackageContents` was a walk — one node-structure request per object type,
+  plus a descent into subpackages — so `IResultStrategy`, which takes a single
+  answer, could never be given for it. `fetchNodeStructure` in
+  `IAdtRepositoryStructure` is the step it was built from: one request, one
+  reading, one level, and the caller walks. Nothing implemented the atom after
+  `adt-clients` 19.0.0, and a declaration nothing can satisfy under this
+  package's own rule is not worth keeping.
+- **`IAbapGitPullArgs` gains `pullLink: string`**, required. It is the href
+  `listRepos` reports, and it is what the member used to spend a request looking
+  up — including for a caller who already had it.
+
+### Removed — declarations nothing referenced
+
+Swept across this package, `adt-clients`, the MCP server and the connector:
+every exported name mentioned nowhere but its own declaration and the barrel.
+
+- `IReadPackageParams` — no member reads a package by params.
+- `IDeleteMessageClassParams` — the delete takes its two arguments positionally.
+- `ClassUnitTestDefinition` and `ClassUnitTestRunOptions` — prefix-less aliases
+  of `IClassUnitTestDefinition` and `IClassUnitTestRunOptions`, a second name
+  for one thing.
+
+### Fixed — named types that named nothing
+
+Nine exported types were declared and then **duplicated inline** by the fields
+that should have used them, so the named half was dead and the two could drift
+apart without the compiler noticing.
+
+- `TableTypeRowKind`, `TableTypeAccessType`, `TableTypePrimaryKeyDefinition`
+  and `TableTypePrimaryKeyKind` now type the fields of `IUpdateTableTypeParams`,
+  which is where those four fields live — `ICreateTableTypeParams` carries a
+  name, a package and the authorship, and none of them.
+- `DataElementTypeKind` types `type_kind` in both data-element params.
+- `IUnitTestScope`, `IUnitTestRiskLevel` and `IUnitTestDuration` were declared
+  in snake_case while `IClassUnitTestRunOptions` inlined the same three shapes
+  in camelCase. They carry the camelCase fields now and the options reference
+  them, so a caller can hold a scope before they call — which an anonymous
+  shape inside an interface never allowed.
+
 ## [42.0.0] - 2026-09-11
 
 **BREAKING — the last two joins `adt-clients` 19.0.0 has to undo.**

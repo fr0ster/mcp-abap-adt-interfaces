@@ -14,7 +14,6 @@
  * |---|---|
  * | `/repository/informationsystem/*` | {@link IAdtInformationSystem} |
  * | `/repository/nodestructure`, `/repository/objectstructure` | {@link IAdtRepositoryStructure} |
- * | `/packages/*` with the node structure it walks | {@link IAdtPackageBrowsing} |
  * | `/activation`, `/deletion` | {@link IAdtGroupLifecycle} |
  * | `/datapreview/*` | {@link IAdtDataPreview} |
  * | `/discovery` | {@link IAdtDiscovery} |
@@ -53,10 +52,6 @@
  * second capability. A parser that counts signatures reports 26 and is not
  * wrong about anything except the word.
  *
- * Three more were removed rather than shipped: `searchObjects`, `getWhereUsed`
- * and `getPackageContents` each had their contract sitting beside them —
- * `search`, `getWhereUsedList`, `getPackageContentsList` — so the raw member was
- * the envelope leaking into an atom, not a capability anyone needed.
  *
  * Six were removed because nobody calls them — `getTypeInfo`, `getTransaction`,
  * `getBdef`, `getEnhancements`, `getEnhancementSpot`, `getEnhancementImpl`. Every
@@ -247,10 +242,9 @@ export interface IAdtRepositoryStructure<TNode> {
    * decision 1 forbids.
    *
    * **What this is for.** The node structure asked for as itself — a class's
-   * includes, a program's parts, a node walked by hand. What a package holds is
-   * asked of {@link IAdtPackageBrowsing}; that an implementation may come
-   * through this same resource to answer it is invisible from outside, as it
-   * should be.
+   * includes, a program's parts, a package's contents, a node walked by hand.
+   * It answers one level; walking further is the caller's, one call per level,
+   * because a member that walked could never be given a reading.
    */
   fetchNodeStructure(
     parentType: string,
@@ -263,40 +257,6 @@ export interface IAdtRepositoryStructure<TNode> {
     objectType: string,
     objectName: string,
   ): Promise<IAdtResponse<string>>;
-}
-
-/**
- * What a package holds.
- *
- * Its own atom rather than part of {@link IAdtRepositoryStructure}: a package is
- * a container ADT gives its own resource, and reading what is in one is a
- * question about that container — **not** about the tree an implementation
- * happens to walk to answer it. Which requests it issues, and to which resource,
- * is its business.
- *
- * **One member.** Until 30.0.0 there were two — one answering a flat list of
- * items, the other a tree — so one question had two answers, and which one a
- * caller got was decided by the method name rather than by the caller. What the
- * answer becomes is now an {@link IResultStrategy}, injected into the
- * implementation once: a flat list, a tree, names and type codes alone, or the
- * document untouched. `TContents` is that reading, and the shapes it names are
- * the implementation's — 31.0.0 took the last of them out of this package.
- *
- * **No `maxDepth`, no `includeSubpackages`.** Those described a walk the library
- * performed on the caller's behalf across many requests. A member answers one
- * read; a consumer holding a result with sub-package references walks them
- * itself, which is what every consumer of the old tree did anyway.
- */
-export interface IAdtPackageBrowsing<TContents> {
-  getPackageContents(
-    packageName: string,
-    options?: IGetPackageContentsOptions,
-  ): Promise<IAdtResponse<TContents>>;
-}
-
-/** What the request itself takes; `maxDepth` is deliberately not among them. */
-export interface IGetPackageContentsOptions {
-  withShortDescriptions?: boolean;
 }
 
 /**

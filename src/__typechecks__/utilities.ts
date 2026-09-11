@@ -35,7 +35,6 @@ import type {
   IAdtGroupLifecycle,
   IAdtInformationSystem,
   IAdtObjectAccess,
-  IAdtPackageBrowsing,
   IAdtRepositoryStructure,
   IAdtResponse,
   IGetNodeContentsOptions,
@@ -67,7 +66,6 @@ class MyDataPreview implements IAdtDataPreview {
 /** The whole surface is the intersection — spelled, not named. */
 type AllUtilities = IAdtInformationSystem<MyHit[], MyWhereUsed, MyTypes> &
   IAdtRepositoryStructure<MyNode> &
-  IAdtPackageBrowsing<MyItem[]> &
   IAdtGroupLifecycle<string> &
   IAdtDataPreview &
   IAdtDiscovery &
@@ -77,7 +75,6 @@ declare const utils: AllUtilities;
 
 /** A caller holding the intersection reaches every family. */
 const found = utils.search({ query: 'ZCL_X' });
-const contents = utils.getPackageContents('ZPKG');
 // The statement is the caller's. Omitting it does not compile, which is how a
 // caller written against the pre-42.0.0 member learns they have work to do.
 const columns = utils.getTableColumns('T000');
@@ -119,32 +116,6 @@ class NodeReaderWithExtras implements IAdtRepositoryStructure<MyNode> {
 declare const nodes: IAdtRepositoryStructure<MyNode>;
 // @ts-expect-error the contract takes an options object; a bare node id is not it
 nodes.fetchNodeStructure('DEVC/K', 'ZPKG', '000000');
-
-/**
- * One question, four readings, and the reading is the implementation's — chosen
- * when it was constructed, not at the call. This is what the two members
- * `getPackageContentsList` and `getPackageHierarchy` could not offer: a caller
- * got whichever shape the method name had decided, and the document was gone.
- */
-class TreeBrowsing implements IAdtPackageBrowsing<MyNode> {
-  async getPackageContents(
-    _packageName: string,
-  ): Promise<IAdtResponse<MyNode>> {
-    return succeeded({ objects: [], childNodes: [] });
-  }
-}
-
-/** The backup consumer's reading, which 29.0.0 could not express at all. */
-class RawBrowsing implements IAdtPackageBrowsing<string> {
-  async getPackageContents(): Promise<IAdtResponse<string>> {
-    return succeeded('<asx:abap/>');
-  }
-}
-
-/** Naming no strategy answers what the list member answered before. */
-declare const browsing: IAdtPackageBrowsing<MyItem[]>;
-const listed: Promise<IAdtResponse<MyItem[]>> =
-  browsing.getPackageContents('ZPKG');
 
 /**
  * The question 26.2.0's shape could not answer.
@@ -204,12 +175,8 @@ export {
   idOfType,
   MyDataPreview,
   NodeReaderWithExtras,
-  RawBrowsing,
-  TreeBrowsing,
   found,
-  contents,
   columns,
-  listed,
   rows,
   inactive,
   hits,

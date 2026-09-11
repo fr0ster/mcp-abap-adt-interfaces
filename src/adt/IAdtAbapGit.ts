@@ -8,27 +8,27 @@ export interface IAbapGitLinkArgs {
   transportRequest?: string;
 }
 
-export interface IAbapGitPullArgs<TStatus> {
+/**
+ * What starting a pull needs.
+ *
+ * **No waiting since 43.0.0.** `pollIntervalMs`, `maxPollDurationMs`, `signal`
+ * and `onProgress` were here, and `pull` polled the repository until its status
+ * left `R`. That is a wait on an asynchronous server job, and a wait is the
+ * caller's: how long to allow, how often to ask, whether to give up and what to
+ * do then are decisions about their application, not about ADT. They ask
+ * `getRepo` in their own loop.
+ *
+ * `pullLink` is the href the pull is posted to, which `listRepos` reports. The
+ * member used to list the repositories itself to find it — a second request,
+ * and a lookup the caller could not skip when they already had the link.
+ */
+export interface IAbapGitPullArgs {
   package: string;
+  pullLink: string;
   branchName?: string;
   remoteUser?: string;
   remotePassword?: string;
   transportRequest?: string;
-  pollIntervalMs?: number;
-  maxPollDurationMs?: number;
-  signal?: AbortSignal;
-  /**
-   * Reported while the pull runs, with whatever the implementation shapes a
-   * repository status into. The shape is the implementation's since 31.0.0, so
-   * it arrives as a type parameter rather than as a type this package declares.
-   *
-   * `NonNullable` where the client passes its `getRepo` reading: that member
-   * answers `Repo | undefined` because a package may have no repository, and a
-   * progress report exists only while one is being pulled. Handing the callback
-   * an `undefined` it can never receive would make every consumer branch on an
-   * impossible case.
-   */
-  onProgress?: (status: NonNullable<TStatus>) => void;
 }
 
 export interface IAbapGitUnlinkArgs {
@@ -54,7 +54,14 @@ export interface IAdtAbapGitClient<
   TExternalRepo,
 > {
   link(args: IAbapGitLinkArgs): Promise<IAdtResponse<void>>;
-  pull(args: IAbapGitPullArgs<TRepo>): Promise<IAdtResponse<TPull>>;
+  /**
+   * Start a pull — one POST to `args.pullLink`.
+   *
+   * It does not wait, and it does not look the link up. The caller lists the
+   * repositories once, keeps the link, posts, then polls `getRepo` on their own
+   * terms and reads `getErrorLog` if the status says to.
+   */
+  pull(args: IAbapGitPullArgs): Promise<IAdtResponse<TPull>>;
   unlink(args: IAbapGitUnlinkArgs): Promise<IAdtResponse<void>>;
   listRepos(): Promise<IAdtResponse<TRepos>>;
   getRepo(packageName: string): Promise<IAdtResponse<TRepo>>;

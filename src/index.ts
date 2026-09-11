@@ -141,7 +141,6 @@ export type {
 } from './adt/IAdtInterface';
 export type {
   ICreateMessageClassParams,
-  IDeleteMessageClassParams,
   IMessageClassConfig,
   IMessageClassMessageConfig,
 } from './adt/IAdtMessageClass';
@@ -162,7 +161,6 @@ export type {
   ICreatePackageParams,
   IDeletePackageParams,
   IPackageConfig,
-  IReadPackageParams,
   IUpdatePackageParams,
 } from './adt/IAdtPackage';
 export type {
@@ -270,8 +268,6 @@ export type {
 } from './adt/IAdtTransport';
 export { TRANSPORT_SEARCH_CONFIGURATIONS_URL } from './adt/IAdtTransport';
 export type {
-  ClassUnitTestDefinition,
-  ClassUnitTestRunOptions,
   ICdsTestDoubleCheckable,
   ICdsUnitTestConfig,
   IClassUnitTestDefinition,
@@ -290,13 +286,11 @@ export type {
   IAdtInformationSystem,
   IAdtObjectAccess,
   IAdtObjectSearch,
-  IAdtPackageBrowsing,
   IAdtRepositoryStructure,
   IAdtTypeCatalogue,
   IAdtVirtualFolders,
   IAdtWhereUsed,
   IGetNodeContentsOptions,
-  IGetPackageContentsOptions,
 } from './adt/IAdtUtilities';
 export type { AuthType as AuthTypeEnum } from './auth/AuthType';
 // Auth domain
