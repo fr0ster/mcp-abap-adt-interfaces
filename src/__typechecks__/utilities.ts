@@ -78,7 +78,13 @@ declare const utils: AllUtilities;
 /** A caller holding the intersection reaches every family. */
 const found = utils.search({ query: 'ZCL_X' });
 const contents = utils.getPackageContents('ZPKG');
-const rows = utils.getTableContents({ table_name: 'T000' });
+// The statement is the caller's. Omitting it does not compile, which is how a
+// caller written against the pre-42.0.0 member learns they have work to do.
+const columns = utils.getTableColumns('T000');
+const rows = utils.getTableContents({
+  table_name: 'T000',
+  sql_query: 'SELECT T000~MANDT FROM T000',
+});
 const inactive = utils.getInactiveObjects();
 
 /** A caller holding one family reaches only that one. */
@@ -202,6 +208,7 @@ export {
   TreeBrowsing,
   found,
   contents,
+  columns,
   listed,
   rows,
   inactive,

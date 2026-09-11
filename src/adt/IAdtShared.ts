@@ -104,8 +104,13 @@ export interface IGetTableContentsParams {
    * requests in one member, and a statement nobody outside could change. Read
    * the columns with `getTableColumns` and write the statement you want, or
    * write one that names no columns at all.
+   *
+   * **Required, and that is the point.** Optional here would compile for every
+   * caller still written against the old member, and fail at runtime with no
+   * statement to post. A major release is where a migration becomes a type
+   * error instead of a surprise.
    */
-  sql_query?: string;
+  sql_query: string;
 }
 
 /**

@@ -34,7 +34,10 @@ and this is meant to be the last.
 - `getTableContents` posts the statement it is given. It used to read the
   entity's metadata first and build `SELECT T~A, T~B FROM T` out of every column
   it found — two requests, and a statement the caller could not reach.
-  `IGetTableContentsParams` gains `sql_query?: string` for it.
+  `IGetTableContentsParams` gains `sql_query: string` for it — **required**,
+  because optional would compile for every caller still written against the old
+  member and leave them with no statement to post. A major release is where a
+  migration becomes a type error instead of a surprise.
 
 ### Why these two and not more
 
