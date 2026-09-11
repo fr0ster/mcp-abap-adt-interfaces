@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [41.0.0] - 2026-09-11
+
+**BREAKING — `IAdtObjectAccess` drops three walks.**
+
+Same rule as 40.0.0: one member, one endpoint call.
+
+### Removed
+
+- `getIncludesList`, `listFunctionModules` and `listFunctionGroupIncludes` from
+  `IAdtObjectAccess`. Each was a walk — read the object's node structure, find
+  the child type's node id, read that node. Two requests, so no
+  `IResultStrategy` could be given for one, and the shape was fixed at
+  `string[]` for every implementation and every caller.
+
+  `fetchNodeStructure` in `IAdtRepositoryStructure` is the step they were built
+  from: one request, one reading, and the caller composes the two calls in the
+  order and the shape they want.
+
+- `IGetWhereUsedListParams`, kept for one release in 40.0.0 so `adt-clients`
+  could finish its own splitting. It has.
+
+### Unchanged
+
+The five members that stay in `IAdtObjectAccess` — `readObjectSource`,
+`readObjectMetadata`, `supportsSourceCode`, `getObjectSourceUri` and
+`getInclude` — are each one request or none, so the atom needed no split this
+time: it loses members and keeps its shape.
+
 ## [40.0.0] - 2026-09-11
 
 **BREAKING — the information system is four atoms, and an update carries a
