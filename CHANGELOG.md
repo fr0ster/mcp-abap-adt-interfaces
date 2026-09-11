@@ -39,7 +39,9 @@ twice, once for everything else and once for this.
   reading, one level, and the caller walks. Nothing implemented the atom after
   `adt-clients` 19.0.0, and a declaration nothing can satisfy under this
   package's own rule is not worth keeping.
-- **`IAbapGitPullArgs` gains `pullLink: string`**, required.
+- **`IAbapGitPullArgs` gains `pullLink: string`**, required. It is the href
+  `listRepos` reports, and it is what the member used to spend a request looking
+  up — including for a caller who already had it.
 
 ### Removed — declarations nothing referenced
 
@@ -59,16 +61,15 @@ that should have used them, so the named half was dead and the two could drift
 apart without the compiler noticing.
 
 - `TableTypeRowKind`, `TableTypeAccessType`, `TableTypePrimaryKeyDefinition`
-  and `TableTypePrimaryKeyKind` now type the fields of `ICreateTableTypeParams`
-  and `IUpdateTableTypeParams`.
+  and `TableTypePrimaryKeyKind` now type the fields of `IUpdateTableTypeParams`,
+  which is where those four fields live — `ICreateTableTypeParams` carries a
+  name, a package and the authorship, and none of them.
 - `DataElementTypeKind` types `type_kind` in both data-element params.
 - `IUnitTestScope`, `IUnitTestRiskLevel` and `IUnitTestDuration` were declared
   in snake_case while `IClassUnitTestRunOptions` inlined the same three shapes
   in camelCase. They carry the camelCase fields now and the options reference
   them, so a caller can hold a scope before they call — which an anonymous
-  shape inside an interface never allowed. It is the href
-  `listRepos` reports, and it is what the member used to spend a request looking
-  up — including for a caller who already had it.
+  shape inside an interface never allowed.
 
 ## [42.0.0] - 2026-09-11
 

@@ -77,7 +77,6 @@ export interface IClassUnitTestRunOptions {
   duration?: IUnitTestDuration;
 }
 
-// Re-export with aliases for backward compatibility
 /**
  * A unit test against a CDS view.
  *
