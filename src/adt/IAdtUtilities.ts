@@ -351,6 +351,22 @@ export interface IAdtDataPreview {
   getSqlQuery(params: IGetSqlQueryParams): Promise<IAdtResponse<string>>;
 
   /** The rows of one table. */
+  /**
+   * The columns a DDIC entity has — `/datapreview/ddic/{name}/metadata`.
+   *
+   * One request. It exists because the member below no longer makes it: the
+   * statement is the caller's, and this is where they learn what they may name
+   * in it.
+   */
+  getTableColumns(tableName: string): Promise<IAdtResponse<string>>;
+
+  /**
+   * Rows from a DDIC entity — `/datapreview/ddic`.
+   *
+   * One request: the statement in `params.sql_query` is posted as given. Until
+   * 42.0.0 this read the entity's metadata first and built the statement from
+   * every column it found, which is a choice the caller could not reach.
+   */
   getTableContents(
     params: IGetTableContentsParams,
   ): Promise<IAdtResponse<string>>;
