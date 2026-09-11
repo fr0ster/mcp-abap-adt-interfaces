@@ -31,6 +31,14 @@ twice, once for everything else and once for this.
   `signal` is worth naming separately: it aborted the client's own `sleep`, and
   never the server's job. A caller who leaves their loop now sees that in their
   own code rather than in a comment here.
+- **`IAdtPackageBrowsing` and `IGetPackageContentsOptions` are removed.**
+  `getPackageContents` was a walk — one node-structure request per object type,
+  plus a descent into subpackages — so `IResultStrategy`, which takes a single
+  answer, could never be given for it. `fetchNodeStructure` in
+  `IAdtRepositoryStructure` is the step it was built from: one request, one
+  reading, one level, and the caller walks. Nothing implemented the atom after
+  `adt-clients` 19.0.0, and a declaration nothing can satisfy under this
+  package's own rule is not worth keeping.
 - **`IAbapGitPullArgs` gains `pullLink: string`**, required. It is the href
   `listRepos` reports, and it is what the member used to spend a request looking
   up — including for a caller who already had it.

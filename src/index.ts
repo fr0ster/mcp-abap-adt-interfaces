@@ -290,13 +290,11 @@ export type {
   IAdtInformationSystem,
   IAdtObjectAccess,
   IAdtObjectSearch,
-  IAdtPackageBrowsing,
   IAdtRepositoryStructure,
   IAdtTypeCatalogue,
   IAdtVirtualFolders,
   IAdtWhereUsed,
   IGetNodeContentsOptions,
-  IGetPackageContentsOptions,
 } from './adt/IAdtUtilities';
 export type { AuthType as AuthTypeEnum } from './auth/AuthType';
 // Auth domain
