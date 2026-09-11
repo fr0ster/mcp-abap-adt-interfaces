@@ -103,7 +103,7 @@ import type {
   IGetSqlQueryParams,
   IGetTableContentsParams,
   IGetVirtualFoldersContentsParams,
-  IGetWhereUsedListParams,
+  IGetWhereUsedParams,
   IGetWhereUsedScopeParams,
   IObjectReference,
   ISearchObjectsParams,
@@ -113,8 +113,34 @@ import type {
  * `/sap/bc/adt/repository/informationsystem/*` — everything ADT answers about
  * *where* something is: what exists, what uses it, and what the repository will
  * show under a filter.
+ *
+ * **Four endpoints, so four atoms.** This was one interface until 40.0.0, and
+ * bundling them meant an implementation that offered three of the four could
+ * declare none of them. That is what happened: a where-used member that issued
+ * *two* requests — the scope, then the search — left `adt-clients` under the
+ * one-member-one-endpoint rule, and taking it out of a bundle would have
+ * dropped `search` and the scope members with it, which are single requests and
+ * staying.
+ *
+ * The composite below still exists and still means what it meant, so an
+ * implementation offering all four writes one name.
  */
-export interface IAdtInformationSystem<TSearch, TWhereUsed, TTypes> {
+export interface IAdtInformationSystem<TSearch, TWhereUsed, TTypes>
+  extends IAdtObjectSearch<TSearch>,
+    IAdtWhereUsed<TWhereUsed>,
+    IAdtVirtualFolders,
+    IAdtTypeCatalogue<TTypes> {}
+
+/**
+ * `/informationsystem/search` — objects matching a query.
+ *
+ * **Not `IAdtSearchable`.** That name was removed in 30.0.0 and meant something
+ * else: an atom a per-object handler declared, which was wrong because
+ * searching is not something an object does to itself. This is the information
+ * system's own member, split out of the bundle so an implementation can offer
+ * it without offering the where-used pair.
+ */
+export interface IAdtObjectSearch<TSearch> {
   /**
    * Objects matching a query.
    *
@@ -132,11 +158,21 @@ export interface IAdtInformationSystem<TSearch, TWhereUsed, TTypes> {
    * use it.
    */
   search(criteria: ISearchObjectsParams): Promise<IAdtResponse<TSearch>>;
+}
 
-  /** Where an object is used, parsed into references. */
-  getWhereUsedList(
-    params: IGetWhereUsedListParams,
-  ): Promise<IAdtResponse<TWhereUsed>>;
+/**
+ * `/informationsystem/usageReferences` and its `scope` sub-resource.
+ *
+ * **Two requests, two members, and the caller joins them.** A run that wants a
+ * narrowed scope fetches the scope document, edits it, and passes it to the
+ * search. There is no member that does all three: the order, and what to do
+ * when the `scope` sub-resource is absent — some systems answer it `404` — are
+ * decisions that belong to whoever is asking, not to a client that would have
+ * to guess a fallback.
+ */
+export interface IAdtWhereUsed<TWhereUsed> {
+  /** Where an object is used. One request. */
+  getWhereUsed(params: IGetWhereUsedParams): Promise<IAdtResponse<TWhereUsed>>;
 
   /** The scope document a where-used run is filtered by. */
   getWhereUsedScope(
@@ -156,12 +192,18 @@ export interface IAdtInformationSystem<TSearch, TWhereUsed, TTypes> {
       disable?: string[];
     },
   ): string;
+}
 
+/** `/informationsystem/virtualfolders` — the repository as folders. */
+export interface IAdtVirtualFolders {
   /** The repository as folders, under a preselection. */
   getVirtualFoldersContents(
     params: IGetVirtualFoldersContentsParams,
   ): Promise<IAdtResponse<string>>;
+}
 
+/** `/informationsystem/objecttypes` — the types this system knows. */
+export interface IAdtTypeCatalogue<TTypes> {
   /**
    * The object types this system knows.
    *

@@ -7,6 +7,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [40.0.0] - 2026-09-11
+
+**BREAKING — the information system is four atoms, and an update carries a
+document.**
+
+Both changes come from one rule `adt-clients` is adopting in its 19.0.0: one
+member, one endpoint call. A member that sends two requests has already chosen
+an order and a fallback for its caller, and cannot be given a result strategy —
+`IResultStrategy` takes one answer.
+
+### Changed
+
+- **`IAdtInformationSystem` is now a composite of four atoms**:
+  `IAdtObjectSearch`, `IAdtWhereUsed`, `IAdtVirtualFolders` and
+  `IAdtTypeCatalogue`. The composite keeps its name and its meaning, so an
+  implementation offering all four is unaffected.
+- **`getWhereUsedList` is replaced by `getWhereUsed`** in `IAdtWhereUsed`. The
+  old member fetched the scope document, edited it and then searched — two
+  requests, plus a silent fallback to an unscoped search when the `scope`
+  sub-resource answered `404`, which some systems do. The caller now writes
+  those steps: `getWhereUsedScope`, `modifyWhereUsedScope` (no request), then
+  `getWhereUsed`. What to do about a missing scope resource is theirs to decide,
+  which is why it can no longer be decided here.
+
+  This is why the split was needed rather than the whole atom dropped: `search`
+  and both scope members are single requests and are staying, so an
+  implementation losing only the walker had to keep declaring them.
+
+### Added
+
+- **`document?: string` on `IDomainConfig`, `IPackageConfig`,
+  `IDataElementConfig`, `ITableTypeConfig` and `ITransportConfig`.** An update is
+  a write. The five DDIC-shaped updates used to fetch the current document,
+  patch the named fields into it and PUT the result — two requests in one
+  member, and a merge whose rules nobody outside could change. A caller now
+  reads the document, edits it, and passes it here. The fields beside it
+  describe a create; on an update they are not sent, and a field left out of the
+  document is not preserved, because nothing was read to preserve it from.
+
+### Still here, deliberately
+
+`IGetWhereUsedListParams` is kept for one release. Nothing in this package
+declares it any more, but `adt-clients` still compiles against it until its own
+chain-splitting lands. It goes in the next major.
+
 ## [39.0.1] - 2026-09-08
 
 **Documentation only — the published package carried 39.0.0's README.**

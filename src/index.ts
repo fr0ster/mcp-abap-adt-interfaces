@@ -290,8 +290,12 @@ export type {
   IAdtGroupLifecycle,
   IAdtInformationSystem,
   IAdtObjectAccess,
+  IAdtObjectSearch,
   IAdtPackageBrowsing,
   IAdtRepositoryStructure,
+  IAdtTypeCatalogue,
+  IAdtVirtualFolders,
+  IAdtWhereUsed,
   IGetNodeContentsOptions,
   IGetPackageContentsOptions,
 } from './adt/IAdtUtilities';
