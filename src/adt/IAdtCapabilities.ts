@@ -416,7 +416,7 @@ export interface IAdtVersionable<TConfig, TVersions, TSource> {
 }
 
 /**
- * `IAdtSearchable` was here until 30.0.0.
+ * `IAdtObjectSearch` was here until 30.0.0.
  *
  * Searching is not something an object does to itself, and the question already
  * had a home: {@link IAdtInformationSystem.search}, over
