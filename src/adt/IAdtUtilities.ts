@@ -120,10 +120,15 @@ import type {
  * The composite below still exists and still means what it meant, so an
  * implementation offering all four writes one name.
  */
-export interface IAdtInformationSystem<TSearch, TWhereUsed, TTypes>
-  extends IAdtObjectSearch<TSearch>,
-    IAdtWhereUsed<TWhereUsed>,
-    IAdtVirtualFolders,
+export interface IAdtInformationSystem<
+  TSearch,
+  TWhereUsed,
+  TScope,
+  TFolders,
+  TTypes,
+> extends IAdtObjectSearch<TSearch>,
+    IAdtWhereUsed<TWhereUsed, TScope>,
+    IAdtVirtualFolders<TFolders>,
     IAdtTypeCatalogue<TTypes> {}
 
 /**
@@ -165,14 +170,14 @@ export interface IAdtObjectSearch<TSearch> {
  * decisions that belong to whoever is asking, not to a client that would have
  * to guess a fallback.
  */
-export interface IAdtWhereUsed<TWhereUsed> {
+export interface IAdtWhereUsed<TWhereUsed, TScope> {
   /** Where an object is used. One request. */
   getWhereUsed(params: IGetWhereUsedParams): Promise<IAdtResponse<TWhereUsed>>;
 
   /** The scope document a where-used run is filtered by. */
   getWhereUsedScope(
     params: IGetWhereUsedScopeParams,
-  ): Promise<IAdtResponse<string>>;
+  ): Promise<IAdtResponse<TScope>>;
 
   /**
    * That scope document, edited. Issues no request — it rewrites the XML the
@@ -190,11 +195,11 @@ export interface IAdtWhereUsed<TWhereUsed> {
 }
 
 /** `/informationsystem/virtualfolders` — the repository as folders. */
-export interface IAdtVirtualFolders {
+export interface IAdtVirtualFolders<TFolders> {
   /** The repository as folders, under a preselection. */
   getVirtualFoldersContents(
     params: IGetVirtualFoldersContentsParams,
-  ): Promise<IAdtResponse<string>>;
+  ): Promise<IAdtResponse<TFolders>>;
 }
 
 /** `/informationsystem/objecttypes` — the types this system knows. */
@@ -218,7 +223,7 @@ export interface IAdtTypeCatalogue<TTypes> {
  * `/sap/bc/adt/repository/nodestructure` and `/objectstructure` — the tree, and
  * one object's place in it.
  */
-export interface IAdtRepositoryStructure<TNode> {
+export interface IAdtRepositoryStructure<TNode, TObjectStructure> {
   /**
    * Children of a node: the objects it holds, and the nodes below it.
    *
@@ -256,7 +261,7 @@ export interface IAdtRepositoryStructure<TNode> {
   getObjectStructure(
     objectType: string,
     objectName: string,
-  ): Promise<IAdtResponse<string>>;
+  ): Promise<IAdtResponse<TObjectStructure>>;
 }
 
 /**
@@ -275,12 +280,35 @@ export interface IGetNodeContentsOptions {
  * `/sap/bc/adt/activation` and `/sap/bc/adt/deletion` — operations ADT takes on
  * a set of objects at once, rather than on one.
  */
-export interface IAdtGroupLifecycle<TInactive> {
+export interface IAdtGroupLifecycle<
+  TInactive,
+  TActivation,
+  TRun,
+  TResults,
+  TDeletionCheck,
+  TDeletion,
+> {
   /** Activate several objects in one request. */
   activateObjectsGroup(
     objects: IObjectReference[],
     preauditRequested?: boolean,
-  ): Promise<IAdtResponse<string>>;
+  ): Promise<IAdtResponse<TActivation>>;
+
+  /**
+   * What an activation run is doing — `/activation/runs/{runId}`.
+   *
+   * One request. `withLongPolling` reaches the wire — the server holds the
+   * request open rather than answering at once — so it is a parameter, not a
+   * reading (decision 17). Which value of `runs:status` ends a wait is the
+   * caller's to decide, and how long to wait is theirs to write.
+   */
+  getActivationRun(
+    runId: string,
+    options?: { withLongPolling?: boolean },
+  ): Promise<IAdtResponse<TRun>>;
+
+  /** What that run produced — `/activation/results/{runId}`. */
+  getActivationResults(runId: string): Promise<IAdtResponse<TResults>>;
 
   /**
    * What is inactive right now.
@@ -296,19 +324,19 @@ export interface IAdtGroupLifecycle<TInactive> {
   /** Whether a set can be deleted, asked before deleting it. */
   checkDeletionGroup(
     objects: IObjectReference[],
-  ): Promise<IAdtResponse<string>>;
+  ): Promise<IAdtResponse<TDeletionCheck>>;
 
   /** Delete several objects in one request. */
   deleteObjectsGroup(
     objects: IObjectReference[],
     transportRequest?: string,
-  ): Promise<IAdtResponse<string>>;
+  ): Promise<IAdtResponse<TDeletion>>;
 }
 
 /** `/sap/bc/adt/datapreview/*` — reading data rather than definitions. */
-export interface IAdtDataPreview {
+export interface IAdtDataPreview<TQuery, TColumns, TContents> {
   /** A freestyle SQL query. */
-  getSqlQuery(params: IGetSqlQueryParams): Promise<IAdtResponse<string>>;
+  getSqlQuery(params: IGetSqlQueryParams): Promise<IAdtResponse<TQuery>>;
 
   /** The rows of one table. */
   /**
@@ -318,7 +346,7 @@ export interface IAdtDataPreview {
    * statement is the caller's, and this is where they learn what they may name
    * in it.
    */
-  getTableColumns(tableName: string): Promise<IAdtResponse<string>>;
+  getTableColumns(tableName: string): Promise<IAdtResponse<TColumns>>;
 
   /**
    * Rows from a DDIC entity — `/datapreview/ddic`.
@@ -329,12 +357,12 @@ export interface IAdtDataPreview {
    */
   getTableContents(
     params: IGetTableContentsParams,
-  ): Promise<IAdtResponse<string>>;
+  ): Promise<IAdtResponse<TContents>>;
 }
 
 /** `/sap/bc/adt/discovery` — what this system says it serves. */
-export interface IAdtDiscovery {
-  discovery(params?: IGetDiscoveryParams): Promise<IAdtResponse<string>>;
+export interface IAdtDiscovery<TDiscovery> {
+  discovery(params?: IGetDiscoveryParams): Promise<IAdtResponse<TDiscovery>>;
 }
 
 /**
@@ -344,7 +372,7 @@ export interface IAdtDiscovery {
  * This is what a caller uses when the type is a value rather than a decision:
  * the typed handlers on `AdtClient` are for when it is known at the call site.
  */
-export interface IAdtObjectAccess {
+export interface IAdtObjectAccess<TSource, TMetadata, TInclude> {
   /** Source of any object that has source. */
   readObjectSource(
     objectType: AdtSourceObjectType,
@@ -352,7 +380,7 @@ export interface IAdtObjectAccess {
     functionGroup?: string,
     version?: 'active' | 'inactive',
     options?: IReadOptions,
-  ): Promise<IAdtResponse<string>>;
+  ): Promise<IAdtResponse<TSource>>;
 
   /** Metadata of any object. */
   readObjectMetadata(
@@ -360,7 +388,7 @@ export interface IAdtObjectAccess {
     objectName: string,
     functionGroup?: string,
     options?: IReadOptions,
-  ): Promise<IAdtResponse<string>>;
+  ): Promise<IAdtResponse<TMetadata>>;
 
   /** Whether that type has source at all. Issues no request. */
   supportsSourceCode(objectType: AdtObjectType): boolean;
@@ -374,7 +402,7 @@ export interface IAdtObjectAccess {
   ): string;
 
   /** A standalone include. */
-  getInclude(includeName: string): Promise<IAdtResponse<string>>;
+  getInclude(includeName: string): Promise<IAdtResponse<TInclude>>;
 
   /*
    * `getIncludesList`, `listFunctionModules` and `listFunctionGroupIncludes`

@@ -7,6 +7,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [44.0.0] - 2026-09-12
+
+**BREAKING — every member returns the contract, and the shape is the
+implementation's.**
+
+The principle this package was built on: a member answers `IAdtResponse`, and
+what the result *is* comes from an injected reading. Five members of
+`IAdtUtilities` honoured it. Thirteen pinned their result to `string`, so the
+contract itself chose the document — and no reading a consumer injected could
+change it.
+
+That was the same fault as the one 40.0.0 fixed for where-used, left standing in
+thirteen other places.
+
+### Changed — thirteen results become type parameters
+
+| atom | was | now |
+|---|---|---|
+| `IAdtWhereUsed<TWhereUsed>` | `getWhereUsedScope: string` | `<TWhereUsed, TScope>` |
+| `IAdtVirtualFolders` | `getVirtualFoldersContents: string` | `<TFolders>` |
+| `IAdtRepositoryStructure<TNode>` | `getObjectStructure: string` | `<TNode, TObjectStructure>` |
+| `IAdtGroupLifecycle<TInactive>` | three members `: string` | `<TInactive, TActivation, TRun, TResults, TDeletionCheck, TDeletion>` |
+| `IAdtDataPreview` | three members `: string` | `<TQuery, TColumns, TContents>` |
+| `IAdtDiscovery` | `discovery: string` | `<TDiscovery>` |
+| `IAdtObjectAccess` | three members `: string` | `<TSource, TMetadata, TInclude>` |
+
+`IAdtInformationSystem` passes the two new parameters of its parts through:
+`<TSearch, TWhereUsed, TScope, TFolders, TTypes>`.
+
+**Nothing changes for a caller who wants the document** — an implementation
+answering `string` everywhere satisfies every one of these. What changes is that
+it is now the implementation saying so, rather than the contract deciding for it.
+
+### Added
+
+- `getActivationRun(runId, { withLongPolling })` and
+  `getActivationResults(runId)` on `IAdtGroupLifecycle`. `activateObjectsGroup`
+  starts a run and answers its id; without these two the atom described a
+  beginning with no way to reach the end.
+
+### Unchanged, deliberately
+
+`modifyWhereUsedScope`, `supportsSourceCode` and `getObjectSourceUri` issue no
+request. A reading applies to an answer, and these have none — so they keep
+returning a plain `string`, `boolean` and `string`, and they are the only
+members here that do.
+
 ## [43.0.0] - 2026-09-11
 
 **BREAKING — a pull is started, not awaited.**
