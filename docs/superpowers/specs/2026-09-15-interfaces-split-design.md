@@ -210,56 +210,69 @@ Added only when their first accepting package is implemented (decision 11); sket
 |---|---|---|---|
 | `AccessCheck<R>` | `(request: R) => Promise<boolean>` — passed or not; a throw inside counts as `false`; the null implementation answers `true` | `llm-agent` (session factory, collection registry and tools, server routes), cloud-llm-hub | `interfaces-auth` |
 | request type `R` | per checking site: tool call, collection action, model, configuration | the one package that checks | that package |
-| API-key credential | the key, and nothing about where it travels | several LLM providers and embedders (`openai-llm`, `anthropic-llm`, `deepseek-llm`, `openai-embedder`), `qdrant-rag` | `interfaces-auth` |
-| client-credentials credential | client id, secret and token endpoint — or the token they yield | `sap-aicore-llm`, `sap-aicore-embedder` | `interfaces-auth` |
-| user-and-password credential `IUserPasswordCredential` | `kind: 'user-password'`, a user, a password | `pg-vector-rag`, `hana-vector-rag` (§7.1) | `interfaces-auth` |
-| token credential `ITokenCredential` | `kind: 'token'`, `token(): Promise<string>` — asked for on every use, never held as a string | `pg-vector-rag`, `hana-vector-rag` (§7.1) | `interfaces-auth` |
+| `IApiKeyCredential` | `kind: 'api-key'`, `secret(): Promise<string>` | several LLM providers and embedders (`openai-llm`, `anthropic-llm`, `deepseek-llm`, `openai-embedder`), `qdrant-rag` | `interfaces-auth` |
+| `IBearerCredential` | `kind: 'bearer'`, `token(): Promise<string>` | `sap-aicore-llm`, `sap-aicore-embedder` — to verify: whether the SAP AI SDK they use takes a token source, or only a service key it exchanges itself | `interfaces-auth` |
+| `ISecretLoginCredential` | `kind: 'secret-login'`, `readonly principal: string`, `secret(): Promise<string>` | `pg-vector-rag`, `hana-vector-rag` (§7.1) | `interfaces-auth` |
 
-**A credential contract names the way in, never where it travels.** An API key is an API key whether the provider sends it as `Authorization: Bearer`, `x-api-key` or `api-key`; a user and password are the same whether they become a Basic header or connection fields. The header, query parameter or connection field is the accepting implementation's, and a consumer holding the credential never learns it. So contracts are per authentication method, not per transport.
+**A credential contract names the method the accepting side speaks — never what the holder keeps, nor where it travels.**
 
-Admission follows the pattern `connection` already uses: the accepting site constrains a type parameter (`AdtCloudConnector<TCredential extends IAuthProvider>`) and credentials carry a string-literal `kind`, never a `unique symbol` brand, so the same shape declared in two packages is satisfied by one object. Every contract has a do-nothing implementation.
+- **Not what the holder keeps.** Whether a secret is a static password, a rotated key or a freshly issued token; whether a bearer token came from client credentials, a device flow or a token exchange — that is the implementation behind the contract (`StaticPassword`, `EntraTokenLogin`, an adapter over `ITokenProvider`). The contract carries no user-and-password, client-id or token-endpoint fields. Client credentials are therefore not a contract: they are one way to implement `IBearerCredential`.
+- **Not where it travels.** An API key is the same whether the provider sends it as `Authorization: Bearer`, `x-api-key` or `api-key`; a secret login is the same whether it becomes a Basic header or connection fields. The header, query parameter or connection field is the accepting implementation's.
+- **What remains** is what the accepting side must hand to its protocol: a secret; a bearer token; an identity and a secret. The identity (`principal`) is not a detail of the method but what the protocol logs in as, so it lives in the credential, not in the provider's configuration — the provider can never pair one principal's secret with another name.
+- **Secrets and tokens are functions,** asked for on every use and never held as strings by the acceptor, so rotation and expiry are the implementation's (Azure Entra ID tokens expire after 60 minutes).
+- **A new `kind` appears only when the accepting side speaks a different protocol,** not when the holder keeps something different.
 
-### 7.1 Vector-store credentials: the database decides which methods it admits
+Admission follows the pattern `connection` already uses: the accepting site constrains a type parameter (`AdtCloudConnector<TCredential extends IAuthProvider>`) and credentials carry a string-literal `kind`, never a `unique symbol` brand, so the same shape declared in two packages is satisfied by one object. Every contract has a do-nothing implementation; for a site that may run without authentication, that is one more member, `{ kind: 'none' }`, admitted only where the accepting package includes it.
 
-A vector-store provider accepts a **union of the method contracts its database supports**. There is no per-database credential contract: a database that can authenticate with a user and password or with a token gets a provider constructed with either.
+### 7.1 Vector-store credentials
+
+A vector-store provider accepts the credential contracts for the protocols its database speaks. PostgreSQL has one for this purpose: a user name and a password message. A static password and an Azure Entra ID token both travel in it, so for `pg-vector-rag` they are **one contract**, and which of the two sits behind it is invisible to the provider.
 
 ```ts
-// interfaces-auth — one contract per method
-interface IUserPasswordCredential { readonly kind: 'user-password'; user: string; password: string }
-interface ITokenCredential        { readonly kind: 'token'; token(): Promise<string> }
+// interfaces-auth
+interface ISecretLoginCredential {
+  readonly kind: 'secret-login';
+  readonly principal: string;   // what the database logs in as
+  secret(): Promise<string>;    // a password or a token — the implementation's
+}
 
-// pg-vector-rag — what PostgreSQL admits
-type PgCredential = IUserPasswordCredential | ITokenCredential;
-new PgVectorRagProvider({ host, database, credential }); // credential: PgCredential
+// pg-vector-rag
+new PgVectorRagProvider({ host, database, credential }); // credential: ISecretLoginCredential
+// inside: { user: credential.principal, password: () => credential.secret() }
+
+// built by whoever owns the secret
+const byPassword = { kind: 'secret-login', principal: 'rag_svc', secret: async () => process.env.PG_PASSWORD! };
+const byEntra    = { kind: 'secret-login', principal: 'rag-app@contoso', secret: () => entra.getToken() };
 ```
 
-- **Admission.** The union in the constructor parameter is the filter: a method the database cannot use does not compile.
-- **Transport stays inside.** The provider switches on `credential.kind`. In `pg-vector-rag`, a user and password become `password: string`; a token becomes `password: () => credential.token()`. `pg` 8.23.0 accepts a password function, possibly async, and calls it for each new connection (`Client._getPassword`), so every new pooled connection gets a fresh token. The consumer never learns which field carries it.
-- **A token is a function, not a string.** Tokens expire (Azure Entra ID tokens after 60 minutes). Where the token comes from — `ITokenProvider` from `auth-providers`, the hub's XSUAA exchange, a cache — belongs to whoever builds the object. The database package does not depend on `auth-providers`; an adapter is one line: `{ kind: 'token', token: async () => (await provider.getTokens()).authorizationToken }`.
-- **Placement.** Both contracts are accepted by two packages, so they go to `interfaces-auth`. A method only one database admits (X.509 for HANA) stays in that database's package until a second one accepts it.
-- **No authentication** is one more member, `{ kind: 'none' }`; each provider decides whether its union includes it.
-- **Whose credential.** Normally the service's: one object per provider, with user isolation done by the consumer (cloud-llm-hub). Passing an end user's token to the database (HANA JWT single sign-on) means a provider per session built with that user's token — the same shape as an MCP server per session; the contract does not change.
+- **Principal is required.** `pg` falls back to the environment (`PGUSER`, then the OS user) when `user` is missing; with the principal inside the credential there is no such fallback and no connection under the wrong identity.
+- **Fresh secret per connection.** `pg` 8.23.0 accepts `password` as a function, possibly async, and calls it for each new connection (`Client._getPassword`), so each new pooled connection gets a current token.
+- **Admission.** The constructor's parameter type is the filter: a credential for another protocol does not compile. A database speaking several protocols accepts a union, one member per protocol.
+- **The token source stays outside.** The database package does not depend on `auth-providers`; an adapter over `ITokenProvider` is one line: `secret: async () => (await provider.getTokens()).authorizationToken`.
+- **Placement.** `ISecretLoginCredential` is accepted by two packages, so it goes to `interfaces-auth`. A protocol only one database speaks stays in that database's package until a second one accepts it.
+- **Whose credential.** Normally the service's: one object per provider, with user isolation done by the consumer (cloud-llm-hub). Passing an end user's token to the database (HANA JWT single sign-on) means a provider per session built with that user's credential — the same shape as an MCP server per session; the contract does not change.
 
-What each database admits, as checked on 2026-09-15:
+What each database speaks, as checked on 2026-09-15:
 
-| package | today | the database also supports | union to adopt |
+| package | accepts today | the database also supports | contracts to accept |
 |---|---|---|---|
-| `pg-vector-rag` | connection string, or host/port/user/password/database | a token as the password (Azure Entra ID) | `IUserPasswordCredential \| ITokenCredential` |
-| `hana-vector-rag` | user and password (`uid`/`pwd`), both required | JWT, SAML, X.509 (SAP HANA Cloud; the `@sap/hana-client` 2.29.27 changelog mentions JWT, SAML and X.509 connections) | `IUserPasswordCredential \| ITokenCredential`, more once the client's connection properties are checked (§8.6) |
+| `pg-vector-rag` | connection string, or host/port/user/password/database | a token in the password message (Azure Entra ID) — same protocol | `ISecretLoginCredential` |
+| `hana-vector-rag` | user and password (`uid`/`pwd`), both required | JWT, SAML, X.509 (SAP HANA Cloud; the `@sap/hana-client` 2.29.27 changelog mentions JWT, SAML and X.509 connections) — separate authentication mechanisms | `ISecretLoginCredential`; a contract per further mechanism once the client's connection properties are checked (§8.6) |
 
 ---
 
 ## 8. Open questions
 
-1. ~~**LLM headers that are not `Authorization`.**~~ **Resolved:** where a key travels is the implementation's (§7). Credential contracts are per authentication method; no header-shaped contract is added.
+1. ~~**LLM headers that are not `Authorization`.**~~ **Resolved:** where a key travels is the implementation's (§7). Credential contracts are per protocol the accepting side speaks; no header-shaped contract is added.
 2. **The unaccepted contracts (§3.5).** Four files and five header groups in `interfaces`, and five exports that move into `interfaces-adt`, that no package imports. Remove the first group in 45.0.0 instead of keeping it one more major, and leave the five exports out of `interfaces-adt`'s first release so no removal major is needed there at all? Only repositories under `~/prj` were searched; a consumer outside them would not have shown.
 3. **A separate `interfaces-sap`.** §3.4 puts SAP/BTP configuration and authentication in `interfaces-adt` because only the ABAP family accepts them. If their release rate differs from ADT's as much as ADT's differs from the rest, they could be their own package.
 4. **`IAuthorizationStrategy`** describes a generic interactive OAuth login but is accepted only by `auth-providers` today, so it stays in `interfaces-adt`. It moves to `interfaces-auth` when a package outside the SAP side accepts it.
 5. **Decision entry.** This rule becomes decision 26 in `docs/architecture/DECISIONS.md` once agreed; ARCHITECTURE §1 and §4 are updated in the same change.
-6. ~~**Database credentials.**~~ **Resolved (§7.1):** a vector-store provider accepts the union of method contracts its database supports. `auth-providers` stays a token source behind `ITokenCredential`: every provider there is a `BaseTokenProvider` yielding an OAuth/OIDC/SAML token, and its client-credentials configuration is XSUAA-shaped (`uaaUrl`). Still open inside this:
-   - **HANA connection properties.** Which `@sap/hana-client` properties carry a JWT, SAML assertion or X.509 key decides what joins `HanaCredential`.
+6. ~~**Database credentials.**~~ **Resolved (§7, §7.1):** contracts are per protocol the accepting side speaks; a static password and a token in PostgreSQL's password message are one contract, `ISecretLoginCredential`, with the principal inside it. `auth-providers` stays a token source behind an adapter: every provider there is a `BaseTokenProvider` yielding an OAuth/OIDC/SAML token, and its client-credentials configuration is XSUAA-shaped (`uaaUrl`). Still open inside this:
+   - **HANA connection properties.** Which `@sap/hana-client` properties carry a JWT, SAML assertion or X.509 key decides whether each is its own contract or, where the client sends it as a password, `ISecretLoginCredential`.
    - **Passwords in connection strings.** Both packages accept a connection string, which can carry the password — the credential travelling where the consumer can see it. Proposed: the connection string carries the address only, and authentication always comes as a credential object. A major release of both packages.
-   - **One credential object for HTTP and databases.** `IAuthProvider` is HTTP-shaped (header, cookies, TLS material) and does not fit a database wire protocol. Should `connection`'s `BasicAuthProvider` and `TokenAuthProvider` be built from `IUserPasswordCredential` and `ITokenCredential`, so one object serves ADT and a database alike?
+   - **One credential object for HTTP and databases.** `IAuthProvider` is HTTP-shaped (header, cookies, TLS material) and does not fit a database wire protocol. Should `connection`'s `BasicAuthProvider` and `TokenAuthProvider` be built from `ISecretLoginCredential` and `IBearerCredential`, so one object serves ADT and a database alike?
+   - **SAP AI SDK.** Whether `sap-aicore-llm` and `sap-aicore-embedder` can accept `IBearerCredential`, or whether the SDK only takes a service key and runs client credentials itself (§7).
 
 ---
 
