@@ -248,7 +248,7 @@ for (const file of tsFiles(path.join(FACADE_SRC, '__typechecks__'))) {
   const text = read(file);
   // A typecheck goes to the highest-ranked package among what it imports; for a
   // split file, the imported names decide.
-  let home = 'interfaces-utils';
+  let home = 'interfaces';
   const raise = (pkg) => {
     if (RANK.indexOf(pkg) > RANK.indexOf(home)) home = pkg;
   };
