@@ -199,6 +199,14 @@ ARCHITECTURE §1 says the package "depends on nothing". After the split, **each 
 - **Licence unchanged:** every package is `LGPL-3.0-only`, as `interfaces` is today (`package.json`, `LICENSE`). The split does not relicense anything; a change of licence would be a separate decision.
 - **TypeScript project references** between packages, so a sibling is built before its dependent.
 - **Root scripts** build and type-check all packages in dependency order.
+- **Published-artifact check, before every publish.** A workspace build resolves siblings through symlinks, so it cannot prove what a consumer installing from npm gets. A root script therefore:
+  1. builds and `npm pack`s every package;
+  2. installs the tarballs into a fresh project outside the repository, with no workspace links;
+  3. checks the tarballs themselves: each `package.json` names its siblings by a published version range (no `workspace:` or `file:`), and `files` ships `dist`;
+  4. type-checks a generated consumer that imports **every moved symbol twice** — from `@mcp-abap-adt/interfaces` (the deprecated facade) and from its new package — and asserts the two types are assignable to each other in both directions;
+  5. runs the same consumer under Node and asserts that every runtime constant (`NETWORK_ERROR_CODES`, `ADT_SESSION_ERROR`, `HEADER_*`, `AUTH_TYPES`, …) is defined on both paths and is the **same object** (`===`), so the facade re-exports rather than copies.
+
+  The symbol list is generated from the facade's re-exports, not written by hand, so a symbol dropped from the facade fails the check. This proves the migration guarantee of §5.2; the check runs before the first publish of `interfaces` 45.0.0 and before each later publish of any package.
 
 ---
 
