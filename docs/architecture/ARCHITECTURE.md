@@ -41,11 +41,22 @@ reading produces. So `AdtOperationError`, `isNetworkError()` and
 shapes live in `@mcp-abap-adt/adt-clients`, where a consumer takes them from if
 they want `instanceof` as a convenience.
 
-**It depends on nothing.** No runtime dependencies, and no dependency on the
-implementation package. The arrow runs one way:
+**It depends on no implementation and no runtime package.** Since 45.0.0 the
+contract is five packages, split by who accepts a contract (decision 26). A
+contract package may depend on a sibling contract package, and on nothing else:
 
 ```
-@mcp-abap-adt/interfaces          ← contracts, no code
+interfaces-utils      interfaces-network      interfaces-auth
+       ▲                                            ▲
+       └──────────────── interfaces-adt ────────────┘
+                               ▲
+                  interfaces (deprecated facade)
+```
+
+The arrow to implementations still runs one way:
+
+```
+@mcp-abap-adt/interfaces-*        ← contracts, no code
         ▲                    ▲
         │                    │
 @mcp-abap-adt/adt-clients    a consumer's own implementation
@@ -222,6 +233,15 @@ it seemed likely.
 `src/` is organised by what a family *is*, not by layer. Two groups, and the
 distinction decides which rules above apply.
 
+**Which package holds them** (decision 26). The ADT contracts, and every
+infrastructure contract accepted only on the SAP side, are in
+`@mcp-abap-adt/interfaces-adt`. `logging/` is `@mcp-abap-adt/interfaces-utils`.
+The WebSocket transport, network error codes, timeouts and generic header names
+are `@mcp-abap-adt/interfaces-network`. `IAuthProvider` and
+`ICertificateMaterial` are `@mcp-abap-adt/interfaces-auth`. `storage/` and the
+header groups stay in the deprecated `@mcp-abap-adt/interfaces` facade until its
+next major.
+
 ### ADT contracts — 97 members, all answering `IAdtResponse`
 
 | directory | what it holds |
@@ -296,7 +316,7 @@ alone, composed families, a consumer's own readings, and the shapes that must
 There is no CI on this repository. What holds instead:
 
 1. **The compiler** — `npm run build` and `npm run test:check` (`tsc --noEmit`
-   over `src/`, which includes the typechecks).
+   over every package's `src/`, which includes its typechecks).
 2. **The typechecks** — 22 files of compile-only assertions, including the ones
    that must *fail* (`@ts-expect-error`). They are the tests of a package that
    has nothing to run.
@@ -309,3 +329,19 @@ There is no CI on this repository. What holds instead:
    name the release promises must be present. This check exists because it was
    needed: 30.0.0 announced three aliases as removed while they were still
    exported.
+5. **The 44.0.0 contract** — `npm run check:surface` compares what
+   `@mcp-abap-adt/interfaces` exports with `tools/surface-44.0.0.txt` (names and
+   kinds) and `tools/baseline-44.0.0.json` (each declaration's tokens, without
+   comments or layout, and each constant's value), and the package that declares
+   each symbol with `tools/package-map.json`.
+6. **The package graph** — `npm run check:graph`: every import is one the graph
+   in §1 allows, and is declared in that package's `package.json`.
+7. **The deprecations** — `npm run check:deprecated`: importing any facade
+   symbol reports TS6385.
+8. **What npm installs** — `npm run check:packed` packs every package, installs
+   the tarballs into a clean project with Node's types and no workspace links,
+   type-checks the published `.d.ts` files without `skipLibCheck`, and checks that
+   their declarations and constant values are the 44.0.0 ones and that the facade
+   and each package give one declaration and one constant object.
+   `npm run check` runs 1 and 5–8, and every package's `prepublishOnly` runs
+   `npm run check`.

@@ -1875,3 +1875,49 @@ kind of caller. A member whose options are not parameterised, or whose return is
 not — so a strategy's type stops at the call site. A member whose parameterised
 signature does not require the strategy. A type-level check that declares the
 answer instead of obtaining it from a member.
+
+## 26. A contract lives in the package that accepts it
+
+**The problem.** `@mcp-abap-adt/interfaces` was one version line for every
+contract. By 44.0.0 it had 108 versions and 41 majors, 28 of them after
+2026-08-15, and almost all of that churn was ADT. Then `llm-agent` needed to
+accept `IAuthProvider` and an access-check contract, which the hub accepts too.
+Depending on this package for them would have tied `llm-agent` to every ADT
+major. Import size was never the issue: the package is types and 51 constants.
+
+**The decision.** A contract lives where it is **accepted** — a parameter, a
+field or a return typed by it — not where it is implemented. One accepting
+package owns it. Several accepting packages on the SAP side share
+`@mcp-abap-adt/interfaces-adt` (or `-utils`, by what it is). Contracts accepted
+across families go to `@mcp-abap-adt/interfaces-auth`, `-network` or `-utils`.
+What nobody accepts is not moved; it stays in the `@mcp-abap-adt/interfaces`
+facade, deprecated, and leaves with its next major (decision 11).
+
+**The unit that moves is the file.** Evidence is gathered per exported symbol,
+from parsed import statements across every dependent repository, not from name
+searches: a name search missed exports whose file is named differently and
+credited packages that declare a same-named type of their own. A file moves when
+any export is imported, or is composed by a contract that moves — which is why
+`auth/AuthType.ts`, imported by nobody, moved with `IValidatedAuthConfig`.
+
+**Why not the alternatives.**
+- *One package, fewer majors.* The churn is real ADT work; slowing it to spare
+  other families inverts the cost.
+- *A package per folder.* Folders are how the code is filed, not who depends on
+  it; `auth/` alone holds both SAP-specific configuration and the cross-family
+  `IAuthProvider`.
+- *Contracts inside implementation packages* (`ILogger` in
+  `@mcp-abap-adt/logger`). A package accepting the contract would pull the
+  implementation and its peers (`pino`) with it, and "use your own
+  implementation" stops being true (§1).
+
+**What keeps it true.** `tools/check-graph.js` fails an import the graph does
+not allow; `tools/check-surface.js` fails a symbol in the wrong package or a
+facade that lost one; `tools/check-packed.js` proves the facade and the packages
+resolve to the same declarations once installed from npm.
+
+**What would change it.** A second family that accepts most of
+`interfaces-adt`: then the split is along the wrong line, and the family
+boundary should be redrawn.
+
+Spec: `docs/superpowers/specs/2026-09-15-interfaces-split-design.md`.
