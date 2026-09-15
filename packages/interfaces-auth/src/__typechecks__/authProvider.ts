@@ -4,7 +4,7 @@ import type {
   IAuthProvider,
   IRenewableCredential,
 } from '../auth/IAuthProvider';
-import type { ICertificateMaterial } from '../auth/ICertificateMaterialLoader';
+import type { ICertificateMaterial } from '../auth/ICertificateMaterial';
 
 // The whole contract, stated: a credential says all of itself, and the empty
 // answers are as much a statement as the others. If a member below ever becomes

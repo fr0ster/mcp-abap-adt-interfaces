@@ -12,6 +12,9 @@
     },
     {
       "path": "../interfaces-network/tsconfig.build.json"
+    },
+    {
+      "path": "../interfaces-auth/tsconfig.build.json"
     }
   ]
 }

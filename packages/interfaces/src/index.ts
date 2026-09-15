@@ -6,6 +6,14 @@
  */
 
 export type {
+  /** @deprecated Import from @mcp-abap-adt/interfaces-auth */
+  IAuthProvider,
+  /** @deprecated Import from @mcp-abap-adt/interfaces-auth */
+  ICertificateMaterial,
+  /** @deprecated Import from @mcp-abap-adt/interfaces-auth */
+  IRenewableCredential,
+} from '@mcp-abap-adt/interfaces-auth';
+export type {
   /** @deprecated Import from @mcp-abap-adt/interfaces-network */
   ITimeoutConfig,
   /** @deprecated Import from @mcp-abap-adt/interfaces-network */
@@ -341,18 +349,11 @@ export type {
   IAuthorizationStrategy,
 } from './auth/IAuthorizationStrategy';
 export type {
-  IAuthProvider,
-  IRenewableCredential,
-} from './auth/IAuthProvider';
-export type {
   CallbackServerFactory,
   ICallbackServerHandle,
   ICallbackServerOptions,
 } from './auth/ICallbackServer';
-export type {
-  ICertificateMaterial,
-  ICertificateMaterialLoader,
-} from './auth/ICertificateMaterialLoader';
+export type { ICertificateMaterialLoader } from './auth/ICertificateMaterialLoader';
 export type { IConfig } from './auth/IConfig';
 export type { IConnectionConfig } from './auth/IConnectionConfig';
 export type { CalmService } from './connection/CalmService';

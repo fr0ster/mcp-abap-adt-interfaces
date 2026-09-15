@@ -5,6 +5,7 @@
   "workspaces": [
     "packages/interfaces-utils",
     "packages/interfaces-network",
+    "packages/interfaces-auth",
     "packages/interfaces"
   ],
   "scripts": {

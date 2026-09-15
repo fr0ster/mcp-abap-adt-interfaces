@@ -24,7 +24,7 @@
  * only possible if the contract is in the contract package.
  */
 
-import type { ICertificateMaterial } from './ICertificateMaterialLoader';
+import type { ICertificateMaterial } from './ICertificateMaterial';
 
 export interface IAuthProvider {
   /** For logs, so which credential ran is never inferred from behaviour. */
