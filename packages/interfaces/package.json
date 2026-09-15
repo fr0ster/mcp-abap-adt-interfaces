@@ -1,0 +1,46 @@
+{
+  "name": "@mcp-abap-adt/interfaces",
+  "version": "44.0.0",
+  "description": "Shared interfaces for MCP ABAP ADT packages",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "COPYING"
+  ],
+  "keywords": [
+    "abap",
+    "sap",
+    "adt",
+    "interfaces",
+    "types",
+    "mcp",
+    "abap-adt"
+  ],
+  "author": "Oleksii Kyslytsia <oleksij.kyslytsja@gmail.com>",
+  "license": "LGPL-3.0-only",
+  "homepage": "https://github.com/fr0ster/mcp-abap-adt-interfaces#readme",
+  "bugs": {
+    "url": "https://github.com/fr0ster/mcp-abap-adt-interfaces/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fr0ster/mcp-abap-adt-interfaces.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "clean": "rm -rf dist tsconfig.tsbuildinfo tsconfig.build.tsbuildinfo",
+    "build": "tsc -b tsconfig.build.json",
+    "test:check": "tsc -p tsconfig.json --noEmit",
+    "prepublishOnly": "npm run --prefix ../.. check"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "sideEffects": false
+}

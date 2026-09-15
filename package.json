@@ -1,48 +1,22 @@
 {
-  "name": "@mcp-abap-adt/interfaces",
-  "version": "44.0.0",
-  "description": "Shared interfaces for MCP ABAP ADT packages",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist",
-    "README.md",
-    "CHANGELOG.md",
-    "LICENSE",
-    "COPYING"
-  ],
-  "keywords": [
-    "abap",
-    "sap",
-    "adt",
-    "interfaces",
-    "types",
-    "mcp",
-    "abap-adt"
-  ],
-  "author": "Oleksii Kyslytsia <oleksij.kyslytsja@gmail.com>",
+  "name": "mcp-abap-adt-interfaces-workspace",
+  "private": true,
   "license": "LGPL-3.0-only",
-  "homepage": "https://github.com/fr0ster/mcp-abap-adt-interfaces#readme",
-  "bugs": {
-    "url": "https://github.com/fr0ster/mcp-abap-adt-interfaces/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/fr0ster/mcp-abap-adt-interfaces.git"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
+  "workspaces": [
+    "packages/interfaces"
+  ],
   "scripts": {
     "chrono": "./tools/version-stats.sh",
-    "clean": "rm -rf dist tsconfig.tsbuildinfo tsconfig.build.tsbuildinfo",
-    "lint": "npx biome check --write src",
-    "lint:check": "npx biome check src",
-    "format": "npx biome format --write src",
-    "build": "npm run --silent clean && npx biome check src --diagnostic-level=error && npx tsc -p tsconfig.build.json",
-    "build:fast": "npx tsc -p tsconfig.build.json",
-    "test:check": "npx tsc --noEmit",
-    "prepublishOnly": "npm run build"
+    "clean": "npm run clean --workspaces",
+    "lint": "biome check --write packages tools",
+    "lint:check": "biome check packages tools",
+    "format": "biome format --write packages tools",
+    "build": "biome check packages tools --diagnostic-level=error && tsc -b packages/interfaces/tsconfig.build.json",
+    "test:check": "npm run test:check --workspaces",
+    "check:surface": "node tools/check-surface.js --placement all",
+    "check:graph": "node tools/check-graph.js",
+    "check:deprecated": "node tools/check-deprecated.js",
+    "check": "npm run build && npm run test:check && npm run check:surface && npm run check:graph && npm run check:deprecated"
   },
   "engines": {
     "node": ">=18.0.0"
