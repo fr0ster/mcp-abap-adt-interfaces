@@ -180,8 +180,11 @@ Added only when their first accepting package is implemented (decision 11); sket
 |---|---|---|---|
 | `AccessCheck<R>` | `(request: R) => Promise<boolean>` — passed or not; a throw inside counts as `false`; the null implementation answers `true` | `llm-agent` (session factory, collection registry and tools, server routes), cloud-llm-hub | `interfaces-auth` |
 | request type `R` | per checking site: tool call, collection action, model, configuration | the one package that checks | that package |
-| LLM credentials | API key, OAuth client credentials — each a small contract with a literal `kind` | several providers (`openai-llm`, `anthropic-llm`, `deepseek-llm`, `sap-aicore-llm`, embedders) | `interfaces-auth` |
-| vector-store credentials | connection user/password | `pg-vector-rag`, `hana-vector-rag` | `interfaces-auth` |
+| API-key credential | the key, and nothing about where it travels | several LLM providers and embedders (`openai-llm`, `anthropic-llm`, `deepseek-llm`, `openai-embedder`), `qdrant-rag` | `interfaces-auth` |
+| client-credentials credential | client id, secret and token endpoint — or the token they yield | `sap-aicore-llm`, `sap-aicore-embedder` | `interfaces-auth` |
+| user-and-password credential | a user and a password | `pg-vector-rag`, `hana-vector-rag` | `interfaces-auth` |
+
+**A credential contract names the way in, never where it travels.** An API key is an API key whether the provider sends it as `Authorization: Bearer`, `x-api-key` or `api-key`; a user and password are the same whether they become a Basic header or connection fields. The header, query parameter or connection field is the accepting implementation's, and a consumer holding the credential never learns it. So contracts are per authentication method, not per transport.
 
 Admission follows the pattern `connection` already uses: the accepting site constrains a type parameter (`AdtCloudConnector<TCredential extends IAuthProvider>`) and credentials carry a string-literal `kind`, never a `unique symbol` brand, so the same shape declared in two packages is satisfied by one object. Every contract has a do-nothing implementation.
 
@@ -189,7 +192,7 @@ Admission follows the pattern `connection` already uses: the accepting site cons
 
 ## 8. Open questions
 
-1. **LLM headers that are not `Authorization`.** Anthropic sends `x-api-key`, Qdrant `api-key`; `IAuthProvider.authorizationHeader()` answers only the `Authorization` value. A separate "authentication headers" contract, or a widened one — decided with the `llm-agent` spec.
+1. ~~**LLM headers that are not `Authorization`.**~~ **Resolved:** where a key travels is the implementation's (§7). Credential contracts are per authentication method; no header-shaped contract is added.
 2. **The unaccepted contracts (§3.5).** Seven symbols no package names. Remove them in 45.0.0 instead of keeping them one more major? The search excluded tests and scripts, so a test-only or script-only use would not have shown.
 3. **A separate `interfaces-sap`.** §3.4 puts SAP/BTP configuration and authentication in `interfaces-adt` because only the ABAP family accepts them. If their release rate differs from ADT's as much as ADT's differs from the rest, they could be their own package.
 4. **`IAuthorizationStrategy`** describes a generic interactive OAuth login but is accepted only by `auth-providers` today, so it stays in `interfaces-adt`. It moves to `interfaces-auth` when a package outside the SAP side accepts it.
