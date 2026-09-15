@@ -182,7 +182,7 @@ Added only when their first accepting package is implemented (decision 11); sket
 | request type `R` | per checking site: tool call, collection action, model, configuration | the one package that checks | that package |
 | API-key credential | the key, and nothing about where it travels | several LLM providers and embedders (`openai-llm`, `anthropic-llm`, `deepseek-llm`, `openai-embedder`), `qdrant-rag` | `interfaces-auth` |
 | client-credentials credential | client id, secret and token endpoint — or the token they yield | `sap-aicore-llm`, `sap-aicore-embedder` | `interfaces-auth` |
-| user-and-password credential | a user and a password | `pg-vector-rag`, `hana-vector-rag` | `interfaces-auth` |
+| database credential — **unverified, see §8.6** | today a user and a password, the only thing both packages accept | `pg-vector-rag`, `hana-vector-rag` | `interfaces-auth` |
 
 **A credential contract names the way in, never where it travels.** An API key is an API key whether the provider sends it as `Authorization: Bearer`, `x-api-key` or `api-key`; a user and password are the same whether they become a Basic header or connection fields. The header, query parameter or connection field is the accepting implementation's, and a consumer holding the credential never learns it. So contracts are per authentication method, not per transport.
 
@@ -197,6 +197,12 @@ Admission follows the pattern `connection` already uses: the accepting site cons
 3. **A separate `interfaces-sap`.** §3.4 puts SAP/BTP configuration and authentication in `interfaces-adt` because only the ABAP family accepts them. If their release rate differs from ADT's as much as ADT's differs from the rest, they could be their own package.
 4. **`IAuthorizationStrategy`** describes a generic interactive OAuth login but is accepted only by `auth-providers` today, so it stays in `interfaces-adt`. It moves to `interfaces-auth` when a package outside the SAP side accepts it.
 5. **Decision entry.** This rule becomes decision 26 in `docs/architecture/DECISIONS.md` once agreed; ARCHITECTURE §1 and §4 are updated in the same change.
+6. **Database credentials (§7).** The user-and-password row describes what `pg-vector-rag` and `hana-vector-rag` accept today, not how these databases can authenticate. Checked 2026-09-15:
+   - `pg-vector-rag` builds its pool from a connection string or host, port, user, password and database; nothing else is passed. The `pg` it would use (8.23.0) already accepts `password` as a function, possibly async, called for each new connection (`Client._getPassword`), so a short-lived token can be supplied as the password — the pattern Azure Entra ID uses for Azure Database for PostgreSQL.
+   - `hana-vector-rag` requires a user and a password and passes them as `uid`/`pwd`. SAP HANA Cloud also authenticates with JWT, SAML and X.509, and the installed `@sap/hana-client` (2.29.27) changelog mentions JWT, SAML and X.509 connections; which connection properties carry them is not yet checked.
+   - `@mcp-abap-adt/auth-providers` (2.1.0) is organised by authentication method, but every provider is a `BaseTokenProvider` yielding an OAuth/OIDC/SAML token (`ITokenResult`). It fits a database only where that database takes a token in place of a password, and its client-credentials configuration is XSUAA-shaped (`uaaUrl`).
+
+   Open: is the vector-store contract a user-and-password credential, a token credential reusing `ITokenProvider`, or both with `kind` choosing? Settle it when the first of the two packages accepts a credential object.
 
 ---
 
