@@ -26,13 +26,13 @@ request builders, the shipped `IAdtContentTypes` classes) stay in
 
 ## Architecture, and why
 
-[`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md)
+[`docs/architecture/ARCHITECTURE.md`](../../docs/architecture/ARCHITECTURE.md)
 describes the shape: what an answer is, the two axes a consumer decides on, how
 contracts are composed rather than inherited, what each family holds, and where
 the seam to an implementation runs. Read it first if you are about to implement
 one of these contracts or replace one.
 
-[`docs/architecture/DECISIONS.md`](docs/architecture/DECISIONS.md) records the
+[`docs/architecture/DECISIONS.md`](../../docs/architecture/DECISIONS.md) records the
 choices in this contract that could reasonably have gone the other way — what
 was decided, what it was decided *against*, and what would change it. It is a
 log: entries are marked where a later decision superseded them, rather than
@@ -243,7 +243,7 @@ try {
 
 ### Core Development Principle
 
-**Interface-Only Communication**: This package defines **contracts** — interfaces, types and the constants they refer to. It contains no implementations: no classes, no functions, and no dependencies on other packages beyond type-only imports. It is the single source of truth for the shapes every package here agrees on.
+**Interface-Only Communication**: This package defines **contracts** — interfaces, types and the constants they refer to. It contains no implementations: no classes, no functions, and no dependency on any implementation or runtime package — only on its four sibling contract packages. It is the single source of truth for the shapes every package here agrees on.
 
 ### Package Responsibilities
 
@@ -264,7 +264,7 @@ This package is responsible for:
 #### What This Package Does NOT Do
 
 - **Does NOT implement anything**: no class and no function is exported. The only executable output is the constants listed above, which are values a contract names rather than behaviour it performs
-- **Does NOT have runtime dependencies**: Only devDependencies for TypeScript compilation
+- **Does NOT have implementation or runtime dependencies**: only on its four sibling contract packages, plus devDependencies for TypeScript compilation
 - **Does NOT know about implementations**: Interfaces are independent of implementations
 
 ## Interface Domains

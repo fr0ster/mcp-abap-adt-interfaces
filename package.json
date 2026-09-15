@@ -15,7 +15,7 @@
     "lint": "biome check --write packages tools",
     "lint:check": "biome check packages tools",
     "format": "biome format --write packages tools",
-    "build": "biome check packages tools --diagnostic-level=error && tsc -b packages/interfaces/tsconfig.build.json",
+    "build": "npm run clean --workspaces && biome check packages tools --diagnostic-level=error && tsc -b packages/interfaces/tsconfig.build.json",
     "test:check": "npm run test:check --workspaces",
     "check:surface": "node tools/check-surface.js --placement all",
     "check:graph": "node tools/check-graph.js",

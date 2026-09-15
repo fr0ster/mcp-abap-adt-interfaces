@@ -317,9 +317,10 @@ There is no CI on this repository. What holds instead:
 
 1. **The compiler** — `npm run build` and `npm run test:check` (`tsc --noEmit`
    over every package's `src/`, which includes its typechecks).
-2. **The typechecks** — 22 files of compile-only assertions, including the ones
-   that must *fail* (`@ts-expect-error`). They are the tests of a package that
-   has nothing to run.
+2. **The typechecks** — 23 files of compile-only assertions (22 in
+   `interfaces-adt`, one in `interfaces-auth`), including the ones that must
+   *fail* (`@ts-expect-error`). They are the tests of a package that has
+   nothing to run.
 3. **Enumerate, edit, count** — a removal is verified by listing the targets,
    editing, then grepping every touched symbol across `src`, `README.md` and
    `docs/`, and comparing counts. Six review rounds on #63 found zero defects in
@@ -333,7 +334,10 @@ There is no CI on this repository. What holds instead:
    `@mcp-abap-adt/interfaces` exports with `tools/surface-44.0.0.txt` (names and
    kinds) and `tools/baseline-44.0.0.json` (each declaration's tokens, without
    comments or layout, and each constant's value), and the package that declares
-   each symbol with `tools/package-map.json`.
+   each symbol with `tools/package-map.json`. After an intentional contract
+   change, the baseline is regenerated with `node tools/generate-baseline.js`
+   and the rewrite of those two files is reviewed in the diff before it is
+   committed.
 6. **The package graph** — `npm run check:graph`: every import is one the graph
    in §1 allows, and is declared in that package's `package.json`.
 7. **The deprecations** — `npm run check:deprecated`: importing any facade

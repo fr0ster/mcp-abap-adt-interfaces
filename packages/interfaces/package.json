@@ -22,13 +22,14 @@
   ],
   "author": "Oleksii Kyslytsia <oleksij.kyslytsja@gmail.com>",
   "license": "LGPL-3.0-only",
-  "homepage": "https://github.com/fr0ster/mcp-abap-adt-interfaces#readme",
+  "homepage": "https://github.com/fr0ster/mcp-abap-adt-interfaces/tree/master/packages/interfaces#readme",
   "bugs": {
     "url": "https://github.com/fr0ster/mcp-abap-adt-interfaces/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/fr0ster/mcp-abap-adt-interfaces.git"
+    "url": "git+https://github.com/fr0ster/mcp-abap-adt-interfaces.git",
+    "directory": "packages/interfaces"
   },
   "publishConfig": {
     "access": "public"
