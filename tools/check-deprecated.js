@@ -1,9 +1,8 @@
 // Every symbol a consumer imports from @mcp-abap-adt/interfaces is reported
 // deprecated (TS6385) — the moved ones point at their new package, the
 // unaccepted ones announce their removal. Run after `npm run build`.
-//   node tools/check-deprecated.js [--expect-none-for <dir>]
+//   node tools/check-deprecated.js
 const fs = require('node:fs');
-const os = require('node:os');
 const path = require('node:path');
 const ts = require('typescript');
 const { ROOT, COMPILER_OPTIONS } = require('./lib/exports');
