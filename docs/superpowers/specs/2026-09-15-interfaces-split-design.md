@@ -14,9 +14,9 @@
   | `@mcp-abap-adt/interfaces-network` | transport-level contracts, generic HTTP/MCP headers, network error codes | nothing |
   | `@mcp-abap-adt/interfaces-auth` | cross-family credential and access contracts | nothing |
   | `@mcp-abap-adt/interfaces-adt` | ADT contracts, the ABAP connection, SAP/BTP configuration and authentication | `interfaces-auth`, `interfaces-utils` |
-  | `@mcp-abap-adt/interfaces` | what no package accepts (today: seven symbols) + a transitional re-export of everything | all of the above |
+  | `@mcp-abap-adt/interfaces` | what no package accepts (today: four files and the five header groups, §3.5) + a transitional re-export of everything | all of the above |
 
-- **Migration.** `interfaces` 45.0.0 re-exports what moved, marked deprecated. The eight dependent packages move their imports when they next release. A later major removes the re-export.
+- **Migration.** `interfaces` 45.0.0 re-exports what moved, marked deprecated. The fourteen packages that import it move their imports when they next release (§5). A later major removes the re-export.
 - **Constants** stay with the contract whose vocabulary they are.
 - **New contracts** (`AccessCheck`, LLM and vector-store credentials) go into `interfaces-auth`, but only when their first accepting package exists (decision 11).
 
@@ -47,9 +47,10 @@ Import size is **not** the problem: every module except 51 runtime values compil
 
 - **Accepted** means a package declares something typed by the contract: a parameter, a field, a return. Implementing it does not count.
 - **One accepting package** → the contract lives in that package (or is added to the shared package only when a second acceptor appears).
-- **Several accepting packages, all on the SAP side** — the ABAP family (`connection`, `lib`, `proxy`, `auth-*`, `adt-clients`, `header-validator`, `logger`) and the Cloud ALM family (`mcp-calm-client`, `mcp-calm-server`) → `interfaces-adt` or `interfaces-utils`, by what it is.
+- **Several accepting packages, all on the SAP side** — the ABAP family (`connection`, `lib`, `core`, `proxy`, `auth-*`, `adt-clients`, `adt-strategies`, `header-validator`, `logger`) and the Cloud ALM family (`mcp-calm-client`, `mcp-calm-server`) → `interfaces-adt` or `interfaces-utils`, by what it is.
 - **Accepted across families** (the ABAP family and `llm-agent` / the hub) → `interfaces-auth`, `interfaces-network` or `interfaces-utils`, by what it is.
 - **Accepted by nobody** → not moved; a candidate for removal (decision 11: zero callers is evidence of an unused contract).
+- **Granularity.** Evidence is gathered per exported symbol; the unit that moves is the file. A file moves when any of its exports is imported by another package, or is referenced by a contract that moves. Unimported exports inside a moved file travel with it and are listed as removal candidates (§3.5); a file none of whose exports is used stays in `interfaces`.
 
 This extends decisions 11 and 24 from members and shapes to packages, and does not change decisions 3, 20 or 23: contracts stay atoms, composed at the point of use, never inherited.
 
@@ -59,14 +60,16 @@ This extends decisions 11 and 24 from members and shapes to packages, and does n
 
 ## 3. Package map
 
-Acceptors below were found by searching every repository under `~/prj` for the symbol, excluding `node_modules`, `dist`, worktrees, tests, scripts, the `mcp-abap-adt-workspace` mirrors, backups and `mcp-abap-adt-interfaces` itself. A name match is evidence, not proof: each move is re-checked against the importing file when it is planned.
+Acceptors below were found (2026-09-16) by parsing, in every repository under `~/prj`, the import and `require` statements that name `@mcp-abap-adt/interfaces`, and attributing each imported name to the package owning the file. Excluded: `node_modules`, `dist`, worktrees, the `mcp-abap-adt-workspace` mirrors, backups and this repository. Imports from tests, type checks and scripts were recorded separately and do not make a symbol accepted. On top of that, a reference graph inside this repository marks exports that a used contract's declaration names, so a composed atom moves with its composite. Names are resolved through `src/index.ts`, including its aliases (`AuthTypeEnum`). An import is evidence, not proof of acceptance: an implementing package imports too. Each move is re-checked against the importing file when it is planned.
+
+An earlier version of this map searched for file and symbol names instead; it missed exports whose file name differs from them (`IConnectionCapabilities.ts`, `ICallbackServer.ts`) and credited acceptors that declare a same-named type of their own.
 
 ### 3.1 `@mcp-abap-adt/interfaces-utils` — depends on nothing
 
 | from | symbols | accepted by |
 |---|---|---|
-| `logging/` | `ILogger` | `logger`, `proxy`, `auth-broker`, `auth-providers`, `auth-stores`, `adt-clients`, `connection`, `lib`, `mcp-calm-server`, cloud-llm-hub (`llm-agent` declares its own `ILogger`) |
-| `logging/` | `LogLevel` (enum) | `logger`, `proxy`, `mcp-sap-docs` |
+| `logging/` | `ILogger` | `logger`, `auth-broker`, `auth-providers`, `auth-stores`, `adt-clients`, `connection`, `lib`, `core`, `mcp-calm-server`, cloud-llm-hub (`llm-agent` declares its own `ILogger`); also the SAP-side `ICallbackServer` (§3.4) |
+| `logging/` | `LogLevel` (enum) | `logger` |
 
 ### 3.2 `@mcp-abap-adt/interfaces-network` — depends on nothing
 
@@ -75,7 +78,7 @@ Acceptors below were found by searching every repository under `~/prj` for the s
 | `connection/IWebSocketTransport.ts` | `IWebSocketTransport` and its message kinds | `adt-clients`, `connection` |
 | `connection/NetworkErrors.ts` | `NETWORK_ERROR_CODES` | `connection` |
 | `utils/ITimeoutConfig.ts` | `ITimeoutConfig` | `adt-clients`, `connection` |
-| `Headers.ts` (generic part) | `HEADER_AUTHORIZATION`, `HEADER_CONTENT_TYPE`, `HEADER_ACCEPT`, `HEADER_SESSION_ID`, `HEADER_MCP_SESSION_ID`, `HEADER_X_MCP_SESSION_ID` | `proxy`, cloud-llm-hub |
+| `Headers.ts` (generic part) | `HEADER_AUTHORIZATION` · `HEADER_CONTENT_TYPE`, `HEADER_ACCEPT`, `HEADER_SESSION_ID`, `HEADER_MCP_SESSION_ID`, `HEADER_X_MCP_SESSION_ID` | `proxy`, cloud-llm-hub · `proxy` |
 
 ### 3.3 `@mcp-abap-adt/interfaces-auth` — depends on nothing
 
@@ -90,9 +93,19 @@ The file `auth/ICertificateMaterialLoader.ts` is **split**: `ICertificateMateria
 
 ### 3.4 `@mcp-abap-adt/interfaces-adt` — depends on `interfaces-auth`, `interfaces-utils`
 
-**ADT contracts** (ARCHITECTURE §4, unchanged): `adt/*`, `runtime/*`, `execution/*`, `feeds/*`, `service/*`, `shared/IReadOptions` (accepted by `adt-clients`).
+**ADT contracts** (ARCHITECTURE §4, unchanged): `adt/*`, `runtime/*`, `execution/*`, `feeds/*`, `service/*`, `shared/IReadOptions` — accepted by `adt-clients`; `adt/IAdtObject`, `adt/IAdtResponse` also by `adt-strategies`, `lib`, and `IAdtResponse` by `connection` and cloud-llm-hub. `adt/IAdtObjectState.ts` has no importer but moves: `IInterfaceConfig` composes its `IAdtObjectConfig`.
 
-**ABAP connection:** `connection/IAbapConnection` (with `IAdtWireResponse`) and `IAbapRequestOptions` — accepted by cloud-llm-hub, `lib`, `adt-clients`, `connection`.
+**ABAP connection:** `connection/IAbapConnection` (with `IAdtWireResponse`) and `IAbapRequestOptions` — accepted by cloud-llm-hub, `lib`, `adt-clients`, `adt-strategies`, `connection`.
+
+**ABAP connection capabilities** — `connection/IConnectionCapabilities.ts` exports atoms, not a symbol of that name:
+
+| symbol | accepted by |
+|---|---|
+| `ISessionLifecycleAware`, `ADT_SESSION_ERROR` | `adt-clients`, `connection` |
+| `IDeferredResponseConnection` | `adt-clients` |
+| `ICriticalSection`, `IRequestProfiling`, `AdtSessionErrorCode` | `connection` |
+
+**Browser callback server** — `auth/ICallbackServer.ts`: `ICallbackServerOptions`, `ICallbackServerHandle<TResult>`, `CallbackServerFactory<TResult>`, accepted by `auth-providers` (`BrowserCallbackStrategy` holds a `CallbackServerFactory<TResult>` field). It imports `ILogger` (`interfaces-utils`). Like `IAuthorizationStrategy` (open question 4) it is generic OAuth machinery accepted only on the SAP side, so it lives here until a package outside it accepts it.
 
 **Cloud ALM connection:** `ICalmConnection`, `ICalmRequestOptions`, `CalmService` + `CALM_SERVICES` — accepted by `mcp-calm-client`, `mcp-calm-server`.
 
@@ -104,26 +117,38 @@ The file `auth/ICertificateMaterialLoader.ts` is **split**: `ICertificateMateria
 | `auth/` (SAP/BTP part) | `IConnectionConfig` (`sapClient`, `language`, `sessionCookies`, …) | `lib`, `auth-broker`, `auth-stores` |
 | | `IAuthorizationConfig` (UAA) | `lib`, `auth-broker`, `auth-providers`, `auth-stores`, `proxy` |
 | | `IConfig` | `auth-broker`, `auth-stores` |
-| | `AuthType` (`jwt` · `xsuaa` · `basic`) | `auth-broker`, `header-validator` |
 | | `IAuthorizationStrategy` | `auth-providers` |
 | | `ICertificateMaterialLoader` | `connection` |
 | `token/` | `ITokenProvider` | `lib`, `auth-broker`, `auth-providers`, `mcp-calm-server` |
-| | `ITokenRefresher` | cloud-llm-hub, `lib`, `auth-broker`, `connection`, `mcp-calm-server` |
+| | `ITokenRefresher` | `lib`, `auth-broker`, `connection`, `mcp-calm-server` |
 | | `ITokenResult` | `lib`, `auth-broker`, `auth-providers` |
 | | `ITokenProviderOptions` | `auth-broker` |
 | | the token `AuthType` constants (`AUTH_TYPE_AUTHORIZATION_CODE`, …), `TOKEN_PROVIDER_ERROR_CODES` | `auth-providers` |
-| `session/` | `ISessionStore` | `lib`, `auth-broker`, `auth-stores`, `proxy`, `mcp-calm-server` |
-| `serviceKey/` | `IServiceKeyStore` | `lib`, `auth-broker`, `auth-stores`, `proxy` |
+| `session/` | `ISessionStore` | `lib`, `auth-broker`, `auth-stores`, `mcp-calm-server` |
+| `serviceKey/` | `IServiceKeyStore` | `lib`, `auth-broker`, `auth-stores` |
 | `store/` | `STORE_ERROR_CODES` | `auth-broker`, `auth-stores` |
 | `validation/` | `IHeaderValidationResult`, `IValidatedAuthConfig`, `AuthMethodPriority` | `header-validator` |
 | `utils/ITokenRefreshResult.ts` | `ITokenRefreshResult` | `connection` |
-| `Headers.ts` (SAP/BTP part) | `HEADER_SAP_*`, `HEADER_BTP_DESTINATION`, `HEADER_MCP_DESTINATION`, `HEADER_MCP_URL`, UAA headers, the header groups (`SAP_CONNECTION_HEADERS`, `UAA_HEADERS`, `PRESERVED_HEADERS`, `PROXY_MODIFIED_HEADERS`), `AUTH_TYPE_JWT` · `_BASIC` · `_XSUAA` | `header-validator` (e.g. `HEADER_SAP_URL`), `proxy` |
+| `Headers.ts` (SAP/BTP part) | `HEADER_SAP_*`, `HEADER_BTP_DESTINATION`, `HEADER_MCP_DESTINATION`, `HEADER_MCP_URL`, `HEADER_UAA_*` | `header-validator`, `proxy`, cloud-llm-hub (`HEADER_SAP_CLIENT`, `_DESTINATION`, `_LOGIN`, `_PASSWORD`) |
+| | `AuthType` (`jwt` · `xsuaa` · `basic`, derived from `AUTH_TYPES`) with `AUTH_TYPES` and `AUTH_TYPE_JWT` · `_BASIC` · `_XSUAA` | `AuthType`: `auth-broker`, `header-validator`; the constants: `header-validator` |
+
+The header groups (`SAP_CONNECTION_HEADERS`, `UAA_HEADERS`, `PRESERVED_HEADERS`, `PROXY_MODIFIED_HEADERS`, `PROXY_ROUTING_HEADERS`) are **not** here: no package imports them (§3.5).
 
 `AdtObjectErrorCodes`, `SERVICE_BINDING_VARIANT_MAP`, `ADT_NO_FAILURE`, `TRANSPORT_SEARCH_CONFIGURATIONS_URL` stay with their `adt/` contracts.
 
 ### 3.5 `@mcp-abap-adt/interfaces` — the rest
 
-- **Unaccepted** — no package outside this repository names them: `storage/ISessionState`, `storage/ISessionStorage`, `auth/ICallbackServer`, `token/ITokenProviderResult`, `connection/IConnectionCapabilities` (with `ADT_SESSION_ERROR`, unless a use of the constant is found), `PROXY_ROUTING_HEADERS`, `AUTH_TYPES` (its derived `AuthType` in `Headers.ts` is unaccepted with it). Kept for one major, marked deprecated; removed with the re-export (open question 2).
+- **Unaccepted files** — no export is imported by another package or composed by a moved contract:
+
+  | file / symbols | note |
+  |---|---|
+  | `storage/ISessionState.ts`, `storage/ISessionStorage.ts` | |
+  | `token/ITokenProviderResult.ts` | |
+  | `auth/AuthType.ts` — public name `AuthTypeEnum` | the same union as `Headers.ts`'s `AuthType`, which is the one imported |
+  | `Headers.ts` groups: `SAP_CONNECTION_HEADERS`, `UAA_HEADERS`, `PRESERVED_HEADERS`, `PROXY_MODIFIED_HEADERS`, `PROXY_ROUTING_HEADERS` | they list header names from both the generic and the SAP/BTP part; only this package depends on both (§3.6) |
+
+- **Unimported exports inside moved files** — they move with their file and are removal candidates: `IUpdateIncludeSourceParams`, `IDeleteIncludeParams` (`adt/IAdtInclude.ts`), `IClassExecutor`, `IProgramExecutor` (`execution/IAdtExecutors.ts`), `IRunnableWithProfiling` (`execution/IAdtRunnable.ts`). Types derived from a used constant (`NetworkErrorCode`, `TokenProviderErrorCode`, `AdtSessionErrorCode`) are that constant's vocabulary, not candidates.
+- Both lists are kept for one major, marked deprecated, and removed with the re-export (open question 2).
 - **Transitional re-export** of every moved symbol (§5).
 
 The unaccepted contracts stay here, not in the package their folder would suggest: moving a contract nobody uses into a new package would give it a second life it has no claim to.
@@ -138,7 +163,9 @@ interfaces-utils      interfaces-network      interfaces-auth
                         interfaces (residual + re-export)
 ```
 
-Measured cross-folder imports today that decide the arrows: `auth → logging` and `token → logging` (utils); `serviceKey`, `session`, `token`, `validation → auth` (all SAP/BTP, all in `interfaces-adt`); `adt → connection` is `IAdtWireResponse` only (inside `interfaces-adt`); `auth → sap` is `ICertificateMaterialLoader` only (split, §3.3). No arrow from `interfaces-adt` to `interfaces-network` exists today. No cycle.
+Measured cross-folder imports today that decide the arrows: `auth → logging` and `token → logging` (utils); `serviceKey`, `session`, `token`, `validation → auth` (all SAP/BTP, all in `interfaces-adt`); `adt → connection` is `IAdtWireResponse` only (inside `interfaces-adt`); `auth → sap` is `ICertificateMaterialLoader` only (split, §3.3); `auth/ICallbackServer → logging` (utils). No contract bound for `interfaces-adt` imports a file bound for `interfaces-network` (`IWebSocketTransport`, `NetworkErrors`, `ITimeoutConfig` are imported only by `index.ts`).
+
+**Inside `Headers.ts`** the only cross-part references are the five header groups: `PROXY_MODIFIED_HEADERS` lists `HEADER_AUTHORIZATION` (generic) next to `HEADER_SAP_*`. Placing the groups in `interfaces-adt` would need an `interfaces-adt → interfaces-network` arrow. They are unaccepted, so they stay in `interfaces`, which depends on every sibling; the arrow is not added. If a package starts importing a group, it moves to `interfaces-adt` and the arrow, the table and that package's `package.json` change together. No cycle.
 
 ARCHITECTURE §1 says the package "depends on nothing". After the split, **each package depends on no implementation and no runtime package**; contract packages may depend on sibling contract packages. §1 is updated to say exactly that.
 
@@ -157,7 +184,7 @@ ARCHITECTURE §1 says the package "depends on nothing". After the split, **each 
 
 1. **Publish order:** `interfaces-utils`, `interfaces-network`, `interfaces-auth` (independent) → `interfaces-adt` → `interfaces` 45.0.0.
 2. **`interfaces` 45.0.0** re-exports every moved symbol from its new package, each with `@deprecated Import from @mcp-abap-adt/interfaces-<name>`. Nothing a dependent imports disappears. It is a major because the package gains dependencies and loses the "depends on nothing" guarantee.
-3. **Dependents move when they next release**, not all at once: `connection`, `lib`, `proxy`, `auth-broker`, `auth-providers`, `auth-stores`, `header-validator`, `logger`. Each release is a manual publish, so batching them is not required.
+3. **Dependents move when they next release**, not all at once: `connection`, `lib`, `core`, `proxy`, `auth-broker`, `auth-providers`, `auth-stores`, `header-validator`, `logger`, `adt-clients`, `adt-strategies`, `mcp-calm-client`, `mcp-calm-server`, and cloud-llm-hub. `mcp-abap-adt-gcts-client` and `mcp-reports-server` declare the dependency but import nothing from it; they drop it. Each release is a manual publish, so batching them is not required.
 4. **A later major of `interfaces`** removes the re-export and the unaccepted storage contracts, once no dependent imports moved symbols from it.
 5. **Versions are independent** per package — no lockstep. The point of the split is that an ADT major does not bump `interfaces-auth`.
 
@@ -166,7 +193,8 @@ ARCHITECTURE §1 says the package "depends on nothing". After the split, **each 
 ## 6. Repository layout
 
 - **One repository, npm workspaces:** `packages/interfaces-utils`, `packages/interfaces-network`, `packages/interfaces-auth`, `packages/interfaces-adt`, and the existing package moved to `packages/interfaces`. History, `docs/architecture` and review stay in one place.
-- **Each package keeps the existing guarantees:** biome + `tsc -p tsconfig.build.json`, its own `src/__typechecks__/` (the downstream-compiles checks move with the contracts they check), `LICENSE` (MIT) and `README.md`.
+- **Each package keeps the existing guarantees:** biome + `tsc -p tsconfig.build.json`, its own `src/__typechecks__/` (the downstream-compiles checks move with the contracts they check), `LICENSE` and `README.md`.
+- **Licence unchanged:** every package is `LGPL-3.0-only`, as `interfaces` is today (`package.json`, `LICENSE`). The split does not relicense anything; a change of licence would be a separate decision.
 - **TypeScript project references** between packages, so a sibling is built before its dependent.
 - **Root scripts** build and type-check all packages in dependency order.
 
@@ -222,7 +250,7 @@ What each database admits, as checked on 2026-09-15:
 ## 8. Open questions
 
 1. ~~**LLM headers that are not `Authorization`.**~~ **Resolved:** where a key travels is the implementation's (§7). Credential contracts are per authentication method; no header-shaped contract is added.
-2. **The unaccepted contracts (§3.5).** Seven symbols no package names. Remove them in 45.0.0 instead of keeping them one more major? The search excluded tests and scripts, so a test-only or script-only use would not have shown.
+2. **The unaccepted contracts (§3.5).** Four files, five header groups and five exports inside moved files that no package imports. Remove them in 45.0.0 instead of keeping them one more major? Only repositories under `~/prj` were searched; a consumer outside them would not have shown.
 3. **A separate `interfaces-sap`.** §3.4 puts SAP/BTP configuration and authentication in `interfaces-adt` because only the ABAP family accepts them. If their release rate differs from ADT's as much as ADT's differs from the rest, they could be their own package.
 4. **`IAuthorizationStrategy`** describes a generic interactive OAuth login but is accepted only by `auth-providers` today, so it stays in `interfaces-adt`. It moves to `interfaces-auth` when a package outside the SAP side accepts it.
 5. **Decision entry.** This rule becomes decision 26 in `docs/architecture/DECISIONS.md` once agreed; ARCHITECTURE §1 and §4 are updated in the same change.
