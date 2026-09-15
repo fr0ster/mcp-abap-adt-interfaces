@@ -4,6 +4,7 @@
  */
 import type { ISessionState } from './ISessionState';
 
+/** @deprecated No package imports this; it is removed in the next major of `@mcp-abap-adt/interfaces`. */
 export interface ISessionStorage {
   /**
    * Save session state for a given session ID

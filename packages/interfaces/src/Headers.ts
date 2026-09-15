@@ -26,6 +26,8 @@ import { HEADER_AUTHORIZATION } from '@mcp-abap-adt/interfaces-network';
 
 /**
  * All proxy routing headers
+ *
+ * @deprecated No package imports this; it is removed in the next major of `@mcp-abap-adt/interfaces`.
  */
 export const PROXY_ROUTING_HEADERS = [
   HEADER_BTP_DESTINATION,
@@ -34,6 +36,8 @@ export const PROXY_ROUTING_HEADERS = [
 ] as const;
 /**
  * All SAP ABAP connection headers
+ *
+ * @deprecated No package imports this; it is removed in the next major of `@mcp-abap-adt/interfaces`.
  */
 export const SAP_CONNECTION_HEADERS = [
   HEADER_SAP_DESTINATION,
@@ -47,6 +51,8 @@ export const SAP_CONNECTION_HEADERS = [
 ] as const;
 /**
  * All UAA/XSUAA headers
+ *
+ * @deprecated No package imports this; it is removed in the next major of `@mcp-abap-adt/interfaces`.
  */
 export const UAA_HEADERS = [
   HEADER_SAP_UAA_URL,
@@ -58,6 +64,8 @@ export const UAA_HEADERS = [
 ] as const;
 /**
  * Headers that should be preserved from original request (not modified by proxy)
+ *
+ * @deprecated No package imports this; it is removed in the next major of `@mcp-abap-adt/interfaces`.
  */
 export const PRESERVED_HEADERS = [
   HEADER_SAP_DESTINATION,
@@ -65,6 +73,8 @@ export const PRESERVED_HEADERS = [
 ] as const;
 /**
  * Headers that are modified/added by proxy when destinations are present
+ *
+ * @deprecated No package imports this; it is removed in the next major of `@mcp-abap-adt/interfaces`.
  */
 export const PROXY_MODIFIED_HEADERS = [
   HEADER_AUTHORIZATION, // Added when BTP destination is present
