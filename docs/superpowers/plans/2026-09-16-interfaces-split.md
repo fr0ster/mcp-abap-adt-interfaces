@@ -4,7 +4,7 @@
 
 **Goal:** Turn the single `@mcp-abap-adt/interfaces` package into an npm workspace of five packages — `interfaces-utils`, `interfaces-network`, `interfaces-auth`, `interfaces-adt` and the `interfaces` facade — without changing any contract and without removing anything a consumer imports today.
 
-**Architecture:** The repository becomes an npm workspace. The existing package moves unchanged to `packages/interfaces`; then, one package at a time in publish order, a script moves the files the spec assigns to that package, rewrites the imports that now cross a package boundary, and leaves a per-symbol `@deprecated` re-export in the facade. Five checks, written before anything moves, hold the split honest: the facade's export surface equals 44.0.0; every symbol is declared in its assigned package; every import follows the dependency graph; every facade symbol is reported deprecated; and the packed tarballs, installed with no workspace links, give the same declarations and the same constant objects from both paths.
+**Architecture:** The repository becomes an npm workspace. The existing package moves unchanged to `packages/interfaces`; then, one package at a time in publish order, a script moves the files the spec assigns to that package, rewrites the imports that now cross a package boundary, and leaves a per-symbol `@deprecated` re-export in the facade. Five checks, written before anything moves, hold the split honest: the facade's surface, declarations and constant values equal 44.0.0; every symbol is declared in its assigned package; every import follows the dependency graph; every facade symbol is reported deprecated; and the packed tarballs, installed with no workspace links, give the same declarations and the same constant objects from both paths.
 
 **Tech Stack:** TypeScript 5.9 (CommonJS, `moduleResolution: node`, project references with `tsc -b`), npm 10+ workspaces, Biome 2.3, Node ≥ 18 (checks run on the local Node). No CI in this repository.
 
@@ -16,7 +16,7 @@
 
 - **Licence:** every package is `LGPL-3.0-only` (spec §6). Each package ships `LICENSE` and `COPYING`.
 - **No contract changes:** no member, parameter, type or constant changes shape or value (spec §9). Files move; only import specifiers change.
-- **Nothing disappears from the facade:** `@mcp-abap-adt/interfaces` exports exactly the 381 symbols of 44.0.0, with the same type/value kind (`tools/surface-44.0.0.txt`).
+- **Nothing disappears or changes in the facade:** `@mcp-abap-adt/interfaces` exports exactly the 381 symbols of 44.0.0 with the same type/value kind (`tools/surface-44.0.0.txt`), the same declarations and the same constant values (`tools/baseline-44.0.0.json`), and so does what npm installs.
 - **Deprecation text:** every moved symbol is re-exported from the facade as `/** @deprecated Import from @mcp-abap-adt/interfaces-<name> */` (spec §5.2). The seven unaccepted ones stay in the facade with a `@deprecated` tag saying no package imports them and they go with the facade's next major — the exact text is `NOTE` in `tools/split/deprecate-unaccepted.js` (spec §3.5).
 - **Dependency graph (spec §3.6):** `interfaces-utils`, `interfaces-network`, `interfaces-auth` → nothing; `interfaces-adt` → `interfaces-auth`, `interfaces-utils`; `interfaces` → all four. No package depends on an implementation or runtime package.
 - **Constants:** data only; every package sets `"sideEffects": false` (spec §4).
@@ -54,10 +54,11 @@ tools/
   lib/exports.js              reads a package's public surface with the TypeScript API
   package-map.json            symbol → package, generated once from 44.0.0 (Task 1)
   surface-44.0.0.txt          the 44.0.0 facade surface: "<name> <type|value>" per line
-  check-surface.js            facade surface == 44.0.0; symbol placement
+  baseline-44.0.0.json        44.0.0 declarations (tokens, no comments) and constant values (JSON)
+  check-surface.js            facade names, kinds, declarations, values == 44.0.0; placement
   check-graph.js              imports follow spec §3.6 and are declared
   check-deprecated.js         every facade symbol reports TS6385
-  check-packed.js             spec §6 published-artifact check
+  check-packed.js             spec §6 published-artifact check, also against 44.0.0
   version-stats.sh            unchanged
 packages/
   interfaces-utils/           logging/ILogger.ts, logging/LogLevel.ts
@@ -83,13 +84,13 @@ Each package has `package.json`, `tsconfig.json` (includes `__typechecks__`), `t
 
 **Files:**
 - Create: `tools/lib/exports.js`, `tools/generate-package-map.js`, `tools/check-surface.js`, `tools/check-graph.js`, `tools/check-deprecated.js`, `tsconfig.base.json`, `packages/interfaces/tsconfig.json`, `packages/interfaces/tsconfig.build.json`
-- Generate: `tools/package-map.json`, `tools/surface-44.0.0.txt`
+- Generate: `tools/package-map.json`, `tools/surface-44.0.0.txt`, `tools/baseline-44.0.0.json`
 - Move: `src/`, `tsconfig.json`, `tsconfig.build.json`, `README.md`, `CHANGELOG.md`, `package.json` → `packages/interfaces/`
 - Copy: `LICENSE`, `COPYING` → `packages/interfaces/`
 - Replace: root `package.json` (workspace root), `package-lock.json` (regenerated)
 
 **Interfaces:**
-- Produces: `tools/lib/exports.js` exporting `{ ROOT, COMPILER_OPTIONS, exportsOf(entry) → [{ name, kind: 'type'|'value', file, packageDir }], packageDirOf(file) }`; `tools/package-map.json` `{ [symbol]: 'interfaces-utils'|'interfaces-network'|'interfaces-auth'|'interfaces-adt'|'interfaces' }`; `tools/surface-44.0.0.txt`; root scripts `build`, `test:check`, `lint`, `check:surface`, `check:graph`, `check:deprecated`, `check`; `packages/interfaces/package.json` scripts `clean`, `build`, `test:check`, `prepublishOnly`.
+- Produces: `tools/lib/exports.js` exporting `{ ROOT, COMPILER_OPTIONS, exportsOf(entry, options?) → [{ name, kind: 'type'|'value', file, packageDir, declaration }], normalizedDeclaration(symbol), packageDirOf(file), readBaseline() }`; `tools/package-map.json` `{ [symbol]: 'interfaces-utils'|'interfaces-network'|'interfaces-auth'|'interfaces-adt'|'interfaces' }`; `tools/surface-44.0.0.txt`; `tools/baseline-44.0.0.json` `{ [symbol]: { declaration: string, value?: string } }`; root scripts `build`, `test:check`, `lint`, `check:surface`, `check:graph`, `check:deprecated`, `check`; `packages/interfaces/package.json` scripts `clean`, `build`, `test:check`, `prepublishOnly`.
 
 - [ ] **Step 1: Create the surface reader**
 
@@ -129,11 +130,38 @@ function packageDirOf(fileName) {
 }
 
 /**
- * Every export of `entry`: its public name, whether it is usable as a value,
- * and the file and package that declare what it resolves to.
+ * A declaration as a contract: its tokens, without comments, JSDoc or layout.
+ * Moving a file changes its imports and JSDoc, never these tokens.
  */
-function exportsOf(entry) {
-  const program = ts.createProgram([entry], COMPILER_OPTIONS);
+function normalizedDeclaration(symbol) {
+  return (symbol.declarations ?? [])
+    .map((declaration) => {
+      const scanner = ts.createScanner(
+        ts.ScriptTarget.Latest,
+        true,
+        ts.LanguageVariant.Standard,
+        declaration.getText(),
+      );
+      const tokens = [];
+      for (
+        let kind = scanner.scan();
+        kind !== ts.SyntaxKind.EndOfFileToken;
+        kind = scanner.scan()
+      )
+        tokens.push(scanner.getTokenText());
+      return tokens.join(' ');
+    })
+    .sort()
+    .join('\n');
+}
+
+/**
+ * Every export of `entry`: its public name, whether it is usable as a value,
+ * the file and package that declare what it resolves to, and that declaration
+ * normalised.
+ */
+function exportsOf(entry, options = COMPILER_OPTIONS) {
+  const program = ts.createProgram([entry], options);
   const checker = program.getTypeChecker();
   const source = program.getSourceFile(entry);
   if (!source) throw new Error(`cannot read ${entry}`);
@@ -155,22 +183,38 @@ function exportsOf(entry) {
             : 'type',
         file,
         packageDir: file ? packageDirOf(file) : null,
+        declaration: normalizedDeclaration(target),
       };
     })
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
-module.exports = { ROOT, COMPILER_OPTIONS, exportsOf, packageDirOf };
+/** The 44.0.0 baseline: { [name]: { declaration, value? } }, value as JSON. */
+function readBaseline() {
+  return JSON.parse(
+    fs.readFileSync(path.join(ROOT, 'tools', 'baseline-44.0.0.json'), 'utf8'),
+  );
+}
+
+module.exports = {
+  ROOT,
+  COMPILER_OPTIONS,
+  exportsOf,
+  normalizedDeclaration,
+  packageDirOf,
+  readBaseline,
+};
 ```
 
-- [ ] **Step 2: Create the map generator** — it reads the 44.0.0 layout, so it runs before anything moves
+- [ ] **Step 2: Create the map generator** — it reads the built 44.0.0 layout, so it runs before anything moves
 
 `tools/generate-package-map.js`:
 
 ```js
-// One-off, run on the 44.0.0 layout: records which package every public symbol
-// belongs to after the split (spec §3), and the 44.0.0 surface to preserve.
-//   node tools/generate-package-map.js
+// One-off, run on the built 44.0.0 layout (`npm run build` first): records which
+// package every public symbol belongs to after the split (spec §3), and the
+// 44.0.0 contract to preserve — surface, declarations and constant values.
+//   npm run build && node tools/generate-package-map.js
 const fs = require('node:fs');
 const path = require('node:path');
 const { ROOT, exportsOf } = require('./lib/exports');
@@ -217,32 +261,39 @@ function packageFor(relFile, name) {
   return 'interfaces-adt';
 }
 
-const src = path.join(ROOT, 'src');
-const entries = exportsOf(path.join(src, 'index.ts'));
+const dist = path.join(ROOT, 'dist');
+const entries = exportsOf(path.join(dist, 'index.d.ts'));
+const runtime = require(path.join(dist, 'index.js'));
 const map = {};
+const baseline = {};
 for (const e of entries) {
-  map[e.name] = packageFor(path.relative(src, e.file), e.name);
+  const relFile = path.relative(dist, e.file).replace(/\.d\.ts$/, '.ts');
+  map[e.name] = packageFor(relFile, e.name);
+  baseline[e.name] = { declaration: e.declaration };
+  if (e.kind === 'value')
+    baseline[e.name].value = JSON.stringify(runtime[e.name]);
 }
-fs.writeFileSync(
-  path.join(ROOT, 'tools', 'package-map.json'),
-  `${JSON.stringify(map, null, 2)}\n`,
-);
-fs.writeFileSync(
-  path.join(ROOT, 'tools', 'surface-44.0.0.txt'),
+const write = (name, text) =>
+  fs.writeFileSync(path.join(ROOT, 'tools', name), text);
+write('package-map.json', `${JSON.stringify(map, null, 2)}\n`);
+write(
+  'surface-44.0.0.txt',
   `${entries.map((e) => `${e.name} ${e.kind}`).join('\n')}\n`,
 );
+write('baseline-44.0.0.json', `${JSON.stringify(baseline, null, 1)}\n`);
 const counts = {};
 for (const p of Object.values(map)) counts[p] = (counts[p] ?? 0) + 1;
-console.log(entries.length, 'symbols', counts);
+const values = entries.filter((e) => e.kind === 'value').length;
+console.log(entries.length, 'symbols', values, 'values', counts);
 ```
 
-- [ ] **Step 3: Generate the map and the 44.0.0 surface**
+- [ ] **Step 3: Build 44.0.0 and generate the map and the baseline**
 
-Run: `node tools/generate-package-map.js`
+Run: `npm run build && node tools/generate-package-map.js`
 
-Expected:
+Expected, after Biome's line:
 ```
-381 symbols {
+381 symbols 51 values {
   'interfaces-adt': 355,
   'interfaces-network': 14,
   'interfaces-auth': 3,
@@ -279,16 +330,17 @@ LogLevel interfaces-utils
 `tools/check-surface.js`:
 
 ```js
-// The facade still exports exactly the 44.0.0 surface, and each symbol is
-// declared in the package the split assigns it to.
-//   node tools/check-surface.js                      surface only
+// The built facade exports exactly the 44.0.0 contract — the same names, kinds,
+// declarations and constant values — and each symbol is declared in the package
+// the split assigns it to. Run after `npm run build`.
+//   node tools/check-surface.js                      contract only
 //   node tools/check-surface.js --placement <dir>    + placement for one package
 //   node tools/check-surface.js --placement all      + placement for every symbol
 const fs = require('node:fs');
 const path = require('node:path');
-const { ROOT, exportsOf } = require('./lib/exports');
+const { ROOT, exportsOf, readBaseline } = require('./lib/exports');
 
-const facade = path.join(ROOT, 'packages', 'interfaces', 'src', 'index.ts');
+const facade = path.join(ROOT, 'packages', 'interfaces', 'dist');
 const expected = fs
   .readFileSync(path.join(ROOT, 'tools', 'surface-44.0.0.txt'), 'utf8')
   .trim()
@@ -296,14 +348,25 @@ const expected = fs
 const map = JSON.parse(
   fs.readFileSync(path.join(ROOT, 'tools', 'package-map.json'), 'utf8'),
 );
+const baseline = readBaseline();
 
-const entries = exportsOf(facade);
+const entries = exportsOf(path.join(facade, 'index.d.ts'));
 const actual = entries.map((e) => `${e.name} ${e.kind}`);
 const problems = [];
 for (const line of expected)
   if (!actual.includes(line)) problems.push(`missing from facade: ${line}`);
 for (const line of actual)
   if (!expected.includes(line)) problems.push(`not in 44.0.0: ${line}`);
+
+const runtime = require(path.join(facade, 'index.js'));
+for (const e of entries) {
+  const base = baseline[e.name];
+  if (!base) continue;
+  if (e.declaration !== base.declaration)
+    problems.push(`declaration changed: ${e.name}`);
+  if ('value' in base && JSON.stringify(runtime[e.name]) !== base.value)
+    problems.push(`value changed: ${e.name}`);
+}
 
 const flag = process.argv.indexOf('--placement');
 const only = flag === -1 ? null : process.argv[flag + 1];
@@ -324,7 +387,7 @@ if (problems.length) {
   process.exit(1);
 }
 console.log(
-  `surface: ${actual.length} symbols match 44.0.0${only ? `; placement ok (${only})` : ''}`,
+  `surface: ${actual.length} symbols match 44.0.0 in name, kind, declaration and value${only ? `; placement ok (${only})` : ''}`,
 );
 ```
 
@@ -502,7 +565,7 @@ console.log(
 - [ ] **Step 5: Run the surface check — it fails, there is no workspace yet**
 
 Run: `node tools/check-surface.js`
-Expected: FAIL with `Error: cannot read …/packages/interfaces/src/index.ts`.
+Expected: FAIL with `Error: cannot read …/packages/interfaces/dist/index.d.ts`.
 
 - [ ] **Step 6: Turn the repository into a workspace holding the existing package unchanged**
 
@@ -611,9 +674,29 @@ npm run test:check
 node tools/check-surface.js --placement interfaces
 node tools/check-graph.js
 ```
-Expected: Biome reports no errors (warnings are pre-existing); `tsc` prints nothing; `surface: 381 symbols match 44.0.0; placement ok (interfaces)`; `graph: every import is allowed and declared`.
+Expected: Biome reports no errors (warnings are pre-existing); `tsc` prints nothing; `surface: 381 symbols match 44.0.0 in name, kind, declaration and value; placement ok (interfaces)`; `graph: every import is allowed and declared`.
 
-- [ ] **Step 8: The deprecation check fails on exactly the seven unaccepted symbols** (Task 6 fixes them)
+- [ ] **Step 8: The contract check catches a changed value and a changed shape** — mutate, watch it fail, restore
+
+Run:
+```bash
+sed -i "s/export const HEADER_ACCEPT = 'Accept';/export const HEADER_ACCEPT = 'accept';/" packages/interfaces/src/Headers.ts
+sed -i 's/^export interface ILogger {$/export interface ILogger {\n  flush?(): void;/' packages/interfaces/src/logging/ILogger.ts
+npm run build && node tools/check-surface.js; echo "exit $?"
+git checkout packages/interfaces/src/Headers.ts packages/interfaces/src/logging/ILogger.ts
+npm run build && node tools/check-surface.js
+```
+Expected: the mutated build passes and the check fails with exactly
+```
+declaration changed: HEADER_ACCEPT
+value changed: HEADER_ACCEPT
+declaration changed: ILogger
+3 problem(s)
+exit 1
+```
+and after the restore: `surface: 381 symbols match 44.0.0 in name, kind, declaration and value`.
+
+- [ ] **Step 9: The deprecation check fails on exactly the seven unaccepted symbols** (Task 6 fixes them)
 
 Run: `node tools/check-deprecated.js`
 Expected: FAIL, `7 problem(s)`:
@@ -627,7 +710,7 @@ not deprecated in the facade: SAP_CONNECTION_HEADERS
 not deprecated in the facade: UAA_HEADERS
 ```
 
-- [ ] **Step 9: Commit**
+- [ ] **Step 10: Commit**
 
 ```bash
 git add -A
@@ -638,7 +721,8 @@ The package moves unchanged to packages/interfaces. tools/ gains the checks
 the split is held to: the facade surface equals 44.0.0, symbols sit in their
 assigned package, imports follow the spec's graph, and facade symbols are
 deprecated. tools/package-map.json and tools/surface-44.0.0.txt are generated
-from the 44.0.0 layout before anything moves."
+from the built 44.0.0 layout before anything moves, and tools/baseline-44.0.0.json
+records each declaration and constant value, so a changed contract fails too."
 ```
 
 ---
@@ -1148,7 +1232,7 @@ node tools/check-surface.js --placement interfaces-utils
 node tools/check-graph.js
 node tools/check-deprecated.js
 ```
-Expected: no build or type errors; `surface: 381 symbols match 44.0.0; placement ok (interfaces-utils)`; `graph: every import is allowed and declared`; the deprecation check still fails on exactly the 7 names of Task 1 Step 8 and nothing else.
+Expected: no build or type errors; `surface: 381 symbols match 44.0.0 in name, kind, declaration and value; placement ok (interfaces-utils)`; `graph: every import is allowed and declared`; the deprecation check still fails on exactly the 7 names of Task 1 Step 9 and nothing else.
 
 - [ ] **Step 6: Commit**
 
@@ -1327,7 +1411,7 @@ node tools/check-surface.js --placement all
 node tools/check-graph.js
 node tools/check-deprecated.js
 ```
-Expected: no errors; `surface: 381 symbols match 44.0.0; placement ok (all)`; graph ok; deprecation fails on the same 7 names only.
+Expected: no errors; `surface: 381 symbols match 44.0.0 in name, kind, declaration and value; placement ok (all)`; graph ok; deprecation fails on the same 7 names only.
 
 - [ ] **Step 5: Commit**
 
@@ -1355,7 +1439,7 @@ header groups, the storage contracts and ITokenProviderResult."
 - [ ] **Step 1: The deprecation check fails on the seven**
 
 Run: `node tools/check-deprecated.js`
-Expected: FAIL, `7 problem(s)` — the list of Task 1 Step 8.
+Expected: FAIL, `7 problem(s)` — the list of Task 1 Step 9.
 
 - [ ] **Step 2: Create the marker script**
 
@@ -1420,7 +1504,7 @@ Expected: three lines naming the files and symbols; `ISessionState` now has a on
 Run: `npm run check`
 Expected, at the end:
 ```
-surface: 381 symbols match 44.0.0; placement ok (all)
+surface: 381 symbols match 44.0.0 in name, kind, declaration and value; placement ok (all)
 graph: every import is allowed and declared
 deprecated: all 381 checked symbols are reported deprecated
 ```
@@ -1446,6 +1530,7 @@ exports is reported deprecated."
 
 **Interfaces:**
 - Produces: `npm run check:packed`; `npm run check` now ends with it, so every package's `prepublishOnly` (`npm run --prefix ../.. check`) runs it before a publish.
+- The consumer gets `@types/node` at the root's range (the contracts name `Buffer`) and type-checks the published `.d.ts` files with `skipLibCheck: false`; without that, a declaration needing Node's types would pass unnoticed.
 - The symbols it checks come from `tools/surface-44.0.0.txt` and `tools/package-map.json`, both generated from 44.0.0 in Task 1 rather than written by hand, so a symbol the facade stops exporting fails here as well (spec §6).
 
 - [ ] **Step 1: Create the check**
@@ -1455,14 +1540,20 @@ exports is reported deprecated."
 ```js
 // Spec §6: what a consumer installs from npm, not what the workspace links.
 // Packs every package, installs the tarballs into a fresh project outside the
-// repository, and checks the migration guarantee of spec §5.2 there.
+// repository, and checks there that the migration guarantee of spec §5.2 holds
+// and that the published contract is the 44.0.0 one.
 //   npm run build && node tools/check-packed.js
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const ts = require('typescript');
-const { ROOT, COMPILER_OPTIONS } = require('./lib/exports');
+const {
+  ROOT,
+  COMPILER_OPTIONS,
+  normalizedDeclaration,
+  readBaseline,
+} = require('./lib/exports');
 
 const run = (cmd, args, cwd) =>
   execFileSync(cmd, args, {
@@ -1479,6 +1570,10 @@ const surface = fs
   .trim()
   .split('\n')
   .map((l) => l.split(' '));
+const baseline = readBaseline();
+const rootManifest = JSON.parse(
+  fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'),
+);
 
 // 1. Pack.
 const work = fs.mkdtempSync(path.join(os.tmpdir(), 'interfaces-packed-'));
@@ -1523,16 +1618,25 @@ function finish() {
 // A tarball that names a sibling by path cannot be installed anywhere else.
 if (problems.length) finish();
 
-// 3. Install into a clean project, no workspace links.
+// 3. Install into a clean project, no workspace links. The contracts name
+// Node's `Buffer`, so a consumer type-checking them has Node's types.
 const consumer = path.join(work, 'consumer');
 fs.mkdirSync(consumer);
 fs.writeFileSync(
   path.join(consumer, 'package.json'),
   '{ "name": "consumer", "private": true }\n',
 );
+const nodeTypes = `@types/node@${rootManifest.devDependencies['@types/node']}`;
 run(
   'npm',
-  ['install', '--no-audit', '--no-fund', '--ignore-scripts', ...files],
+  [
+    'install',
+    '--no-audit',
+    '--no-fund',
+    '--ignore-scripts',
+    nodeTypes,
+    ...files,
+  ],
   consumer,
 );
 const installed = path.join(consumer, 'node_modules', '@mcp-abap-adt');
@@ -1547,10 +1651,12 @@ for (const name of fs.readdirSync(installed)) {
     );
 }
 
-// 4. Types: every moved symbol from the facade and from its package is the same declaration.
+// 4. Types, with the published declarations checked too (no skipLibCheck):
+// every moved symbol resolves to one declaration from the facade and from its
+// package, and every symbol's declaration is the 44.0.0 one.
 const moved = surface.filter(([name]) => map[name] !== 'interfaces');
 const source = [
-  ...moved.map(
+  ...surface.map(
     ([name]) =>
       `import type { ${name} as F_${name} } from '@mcp-abap-adt/interfaces';`,
   ),
@@ -1564,40 +1670,48 @@ const entry = path.join(consumer, 'types.ts');
 fs.writeFileSync(entry, source);
 const program = ts.createProgram([entry], {
   ...COMPILER_OPTIONS,
-  typeRoots: undefined,
-  types: [],
+  typeRoots: [path.join(consumer, 'node_modules', '@types')],
+  types: ['node'],
+  skipLibCheck: false,
 });
 const checker = program.getTypeChecker();
 for (const d of ts.getPreEmitDiagnostics(program))
   problems.push(
-    `types.ts: ${ts.flattenDiagnosticMessageText(d.messageText, ' ')}`,
+    `${d.file ? path.relative(consumer, d.file.fileName) : 'program'}: ${ts.flattenDiagnosticMessageText(d.messageText, ' ')}`,
   );
 const locals = new Map();
 for (const st of program.getSourceFile(entry).statements) {
   for (const el of st.importClause.namedBindings.elements) {
     const alias = checker.getSymbolAtLocation(el.name);
-    const resolved = checker.getAliasedSymbol(alias);
-    locals.set(el.name.text, resolved);
+    locals.set(el.name.text, checker.getAliasedSymbol(alias));
   }
 }
-for (const [name] of moved) {
+for (const [name] of surface) {
   const facade = locals.get(`F_${name}`);
-  const direct = locals.get(`N_${name}`);
-  if (!facade || !direct || facade !== direct)
+  if (!facade) {
+    problems.push(`${name}: not exported by the installed facade`);
+    continue;
+  }
+  if (normalizedDeclaration(facade) !== baseline[name].declaration)
+    problems.push(`${name}: published declaration differs from 44.0.0`);
+  if (map[name] === 'interfaces') continue;
+  if (locals.get(`N_${name}`) !== facade)
     problems.push(
       `${name}: the facade and @mcp-abap-adt/${map[name]} resolve to different declarations`,
     );
 }
 
-// 5. Runtime: every constant is defined on both paths and is the same object.
-const values = surface.filter(([name, kind]) => kind === 'value');
+// 5. Runtime: every constant is defined on both paths, is the same object, and
+// holds its 44.0.0 value.
+const values = surface.filter(([, kind]) => kind === 'value');
 const script = `
 const facade = require('@mcp-abap-adt/interfaces');
-const map = ${JSON.stringify(Object.fromEntries(values.map(([n]) => [n, map[n]])))};
+const expected = ${JSON.stringify(Object.fromEntries(values.map(([n]) => [n, { pkg: map[n], value: baseline[n].value }])))};
 const out = [];
-for (const [name, pkg] of Object.entries(map)) {
+for (const [name, { pkg, value }] of Object.entries(expected)) {
   const a = facade[name];
   if (a === undefined) { out.push(name + ': undefined on the facade'); continue; }
+  if (JSON.stringify(a) !== value) out.push(name + ': published value differs from 44.0.0');
   if (pkg === 'interfaces') continue;
   const b = require('@mcp-abap-adt/' + pkg)[name];
   if (b === undefined) out.push(name + ': undefined on @mcp-abap-adt/' + pkg);
@@ -1610,7 +1724,7 @@ problems.push(...JSON.parse(run('node', ['runtime.js'], consumer)));
 
 finish();
 console.log(
-  `packed: ${files.length} tarballs install cleanly; ${moved.length} moved types and ${values.length} constants agree`,
+  `packed: ${files.length} tarballs install cleanly; ${surface.length} published declarations and ${values.length} constant values match 44.0.0; ${moved.length} moved symbols are one declaration on both paths`,
 );
 ```
 
@@ -1648,7 +1762,7 @@ Expected: the build passes; the check fails with `@mcp-abap-adt/interfaces: @mcp
 - [ ] **Step 4: It passes on the real tree**
 
 Run: `npm run build && npm run check:packed`
-Expected: `packed: 5 tarballs install cleanly; 374 moved types and 51 constants agree`.
+Expected (it fetches `@types/node` from the npm registry): `packed: 5 tarballs install cleanly; 381 published declarations and 51 constant values match 44.0.0; 374 moved symbols are one declaration on both paths`.
 
 - [ ] **Step 5: Commit**
 
@@ -1660,7 +1774,8 @@ Packs every package, installs the tarballs into a clean project outside the
 repository, and checks there: sibling ranges are published versions, dist is
 shipped, each moved symbol resolves to the same declaration from the facade
 and from its package, and each constant is the same object on both paths
-(spec §6). npm run check, and so every prepublishOnly, now ends with it."
+(spec §6). Declarations and values are compared with 44.0.0, and the
+published .d.ts files are type-checked with Node's types and no skipLibCheck. npm run check, and so every prepublishOnly, now ends with it."
 ```
 
 ---
@@ -2034,18 +2149,22 @@ next major.
 - [ ] **Step 3: ARCHITECTURE §7** — append to the numbered list:
 
 ```markdown
-5. **The facade surface** — `npm run check:surface` compares what
-   `@mcp-abap-adt/interfaces` exports with `tools/surface-44.0.0.txt`, and the
-   package that declares each symbol with `tools/package-map.json`.
+5. **The 44.0.0 contract** — `npm run check:surface` compares what
+   `@mcp-abap-adt/interfaces` exports with `tools/surface-44.0.0.txt` (names and
+   kinds) and `tools/baseline-44.0.0.json` (each declaration's tokens, without
+   comments or layout, and each constant's value), and the package that declares
+   each symbol with `tools/package-map.json`.
 6. **The package graph** — `npm run check:graph`: every import is one the graph
    in §1 allows, and is declared in that package's `package.json`.
 7. **The deprecations** — `npm run check:deprecated`: importing any facade
    symbol reports TS6385.
 8. **What npm installs** — `npm run check:packed` packs every package, installs
-   the tarballs into a clean project with no workspace links, and checks that the
-   facade and each package give the same declarations and the same constant
-   objects. `npm run check` runs 1 and 5–8, and every package's
-   `prepublishOnly` runs `npm run check`.
+   the tarballs into a clean project with Node's types and no workspace links,
+   type-checks the published `.d.ts` files without `skipLibCheck`, and checks that
+   their declarations and constant values are the 44.0.0 ones and that the facade
+   and each package give one declaration and one constant object.
+   `npm run check` runs 1 and 5–8, and every package's `prepublishOnly` runs
+   `npm run check`.
 ```
 
 and replace item 1, which currently reads
@@ -2125,7 +2244,7 @@ Expected: the grep finds nothing (the plan and spec under `docs/` may still ment
 - [ ] **Step 6: Full check**
 
 Run: `npm run check`
-Expected: all five check lines pass, ending with `packed: 5 tarballs install cleanly; 374 moved types and 51 constants agree`.
+Expected: all five check lines pass, ending with `packed: 5 tarballs install cleanly; 381 published declarations and 51 constant values match 44.0.0; 374 moved symbols are one declaration on both paths`.
 
 - [ ] **Step 7: Commit, push, open the PR**
 
@@ -2148,10 +2267,10 @@ gh pr create --base master --title "Split @mcp-abap-adt/interfaces into five pac
 
 | check | what it proves |
 |---|---|
-| `check:surface` | facade surface == 44.0.0; every symbol in its assigned package |
+| `check:surface` | facade names, kinds, declarations and constant values == 44.0.0; every symbol in its assigned package |
 | `check:graph` | imports follow spec §3.6 and are declared in `package.json` |
 | `check:deprecated` | all 381 facade symbols report TS6385 |
-| `check:packed` | tarballs installed with no workspace links: same declarations and same constant objects from facade and package |
+| `check:packed` | tarballs installed with no workspace links: published `.d.ts` type-check with Node's types and no `skipLibCheck`; declarations and values == 44.0.0; one declaration and one constant object from facade and package |
 
 `npm run check` runs all of them; every `prepublishOnly` runs `check`.
 
