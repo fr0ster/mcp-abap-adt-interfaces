@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+**BREAKING — the contracts move to four packages; this one becomes a deprecated facade.**
+
+Nothing a consumer imports disappears, and no contract changes shape. It is a
+major because the package now has dependencies: it no longer depends on nothing.
+
+### Changed
+
+- The contracts live in four packages, and this one re-exports them:
+
+  | now in | what |
+  |---|---|
+  | `@mcp-abap-adt/interfaces-utils` | `ILogger`, `LogLevel` |
+  | `@mcp-abap-adt/interfaces-network` | `IWebSocketTransport` and its message types, `NETWORK_ERROR_CODES`, `ITimeoutConfig`, `HEADER_AUTHORIZATION`, `HEADER_CONTENT_TYPE`, `HEADER_ACCEPT`, `HEADER_SESSION_ID`, `HEADER_MCP_SESSION_ID`, `HEADER_X_MCP_SESSION_ID` |
+  | `@mcp-abap-adt/interfaces-auth` | `IAuthProvider`, `IRenewableCredential`, `ICertificateMaterial` |
+  | `@mcp-abap-adt/interfaces-adt` | everything else that a package imports: ADT contracts, the ABAP and Cloud ALM connections, SAP/BTP configuration and authentication, token, session and service-key stores, validation, the SAP/BTP header names and `AUTH_TYPES` |
+
+- Every symbol exported here is `@deprecated` and names its package. Editors
+  strike it through; `tsc` still compiles.
+
+### Deprecated
+
+- `PROXY_ROUTING_HEADERS`, `SAP_CONNECTION_HEADERS`, `UAA_HEADERS`,
+  `PRESERVED_HEADERS`, `PROXY_MODIFIED_HEADERS`, `ISessionState`,
+  `ISessionStorage`: no package imports them. They stay in this package and are
+  removed in its next major.
+
+### Migrating from 44.0.0
+
+1. **Nothing is required.** Imports from `@mcp-abap-adt/interfaces` keep compiling and resolve to the same declarations and the same constant objects.
+2. **To leave the facade**, import each symbol from the package its deprecation names, and depend on that package instead of this one.
+3. `AuthTypeEnum` comes from `@mcp-abap-adt/interfaces-adt` under the same name.
+
 ## [44.0.0] - 2026-09-12
 
 **BREAKING — every member returns the contract, and the shape is the

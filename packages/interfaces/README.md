@@ -1,5 +1,13 @@
 # @mcp-abap-adt/interfaces
 
+> **Deprecated facade since 45.0.0.** The contracts live in
+> [`@mcp-abap-adt/interfaces-utils`](../interfaces-utils),
+> [`-network`](../interfaces-network), [`-auth`](../interfaces-auth) and
+> [`-adt`](../interfaces-adt). This package re-exports them; every symbol is
+> marked `@deprecated` with the package to import it from. Nothing was removed
+> and no contract changed. The domain documentation below still describes
+> these contracts.
+
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://stand-with-ukraine.pp.ua)
 
 Shared interfaces for MCP ABAP ADT packages.
@@ -39,7 +47,8 @@ the evidence that settled it.
 ## Installation
 
 ```bash
-npm install @mcp-abap-adt/interfaces
+npm install @mcp-abap-adt/interfaces-adt      # or -auth, -network, -utils: only what you accept
+npm install @mcp-abap-adt/interfaces          # deprecated facade: everything, as before
 ```
 
 ## Overview
@@ -538,9 +547,7 @@ This package is responsible for:
 
 ## Dependencies
 
-This package has **no runtime dependencies**. It only has devDependencies for TypeScript compilation:
-- `typescript` - TypeScript compiler
-- `@types/node` - Node.js type definitions
+The facade depends on the four `@mcp-abap-adt/interfaces-*` packages and re-exports them. Those depend on no implementation and no runtime package; `interfaces-adt` depends on `interfaces-auth` and `interfaces-utils`.
 
 ## License
 
