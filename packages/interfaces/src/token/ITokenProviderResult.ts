@@ -1,7 +1,7 @@
 /**
  * Result from token provider
  */
-import type { IConnectionConfig } from '../auth/IConnectionConfig';
+import type { IConnectionConfig } from '@mcp-abap-adt/interfaces-adt';
 
 export interface ITokenProviderResult {
   /** Connection configuration with authorization token */

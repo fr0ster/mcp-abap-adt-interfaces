@@ -8,16 +8,10 @@
   "exclude": ["node_modules", "dist"],
   "references": [
     {
-      "path": "../interfaces-utils/tsconfig.build.json"
-    },
-    {
-      "path": "../interfaces-network/tsconfig.build.json"
-    },
-    {
       "path": "../interfaces-auth/tsconfig.build.json"
     },
     {
-      "path": "../interfaces-adt/tsconfig.build.json"
+      "path": "../interfaces-utils/tsconfig.build.json"
     }
   ]
 }
