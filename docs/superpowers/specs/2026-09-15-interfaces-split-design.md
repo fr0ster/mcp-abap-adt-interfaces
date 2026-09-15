@@ -148,7 +148,9 @@ The header groups (`SAP_CONNECTION_HEADERS`, `UAA_HEADERS`, `PRESERVED_HEADERS`,
   | `Headers.ts` groups: `SAP_CONNECTION_HEADERS`, `UAA_HEADERS`, `PRESERVED_HEADERS`, `PROXY_MODIFIED_HEADERS`, `PROXY_ROUTING_HEADERS` | they list header names from both the generic and the SAP/BTP part; only this package depends on both (§3.6) |
 
 - **Unimported exports inside moved files** — they move with their file and are removal candidates: `IUpdateIncludeSourceParams`, `IDeleteIncludeParams` (`adt/IAdtInclude.ts`), `IClassExecutor`, `IProgramExecutor` (`execution/IAdtExecutors.ts`), `IRunnableWithProfiling` (`execution/IAdtRunnable.ts`). Types derived from a used constant (`NetworkErrorCode`, `TokenProviderErrorCode`, `AdtSessionErrorCode`) are that constant's vocabulary, not candidates.
-- Both lists are kept for one major, marked deprecated, and removed with the re-export (open question 2).
+- **The two lists are removed separately, by the package that holds them** (open question 2):
+  - the unaccepted files stay in `interfaces`, marked deprecated, and go in the `interfaces` major that removes the re-export;
+  - the unimported exports live in `interfaces-adt` from its first release, so removing them is an `interfaces-adt` major of its own. It is released only after the usage scan is run again, because by then a package may import them directly from `interfaces-adt`. Even if both majors ship on the same day, they are two decisions, each with its own evidence.
 - **Transitional re-export** of every moved symbol (§5).
 
 The unaccepted contracts stay here, not in the package their folder would suggest: moving a contract nobody uses into a new package would give it a second life it has no claim to.
@@ -185,7 +187,7 @@ ARCHITECTURE §1 says the package "depends on nothing". After the split, **each 
 1. **Publish order:** `interfaces-utils`, `interfaces-network`, `interfaces-auth` (independent) → `interfaces-adt` → `interfaces` 45.0.0.
 2. **`interfaces` 45.0.0** re-exports every moved symbol from its new package, each with `@deprecated Import from @mcp-abap-adt/interfaces-<name>`. Nothing a dependent imports disappears. It is a major because the package gains dependencies and loses the "depends on nothing" guarantee.
 3. **Dependents move when they next release**, not all at once: `connection`, `lib`, `core`, `proxy`, `auth-broker`, `auth-providers`, `auth-stores`, `header-validator`, `logger`, `adt-clients`, `adt-strategies`, `mcp-calm-client`, `mcp-calm-server`, and cloud-llm-hub. `mcp-abap-adt-gcts-client` and `mcp-reports-server` declare the dependency but import nothing from it; they drop it. Each release is a manual publish, so batching them is not required.
-4. **A later major of `interfaces`** removes the re-export and the unaccepted storage contracts, once no dependent imports moved symbols from it.
+4. **A later major of `interfaces`** removes the re-export and its unaccepted files (§3.5), once no dependent imports moved symbols from it. It removes nothing from the new packages: an export removed from `interfaces-adt` (or any sibling) takes that package's own major, after a fresh usage scan.
 5. **Versions are independent** per package — no lockstep. The point of the split is that an ADT major does not bump `interfaces-auth`.
 
 ---
@@ -250,7 +252,7 @@ What each database admits, as checked on 2026-09-15:
 ## 8. Open questions
 
 1. ~~**LLM headers that are not `Authorization`.**~~ **Resolved:** where a key travels is the implementation's (§7). Credential contracts are per authentication method; no header-shaped contract is added.
-2. **The unaccepted contracts (§3.5).** Four files, five header groups and five exports inside moved files that no package imports. Remove them in 45.0.0 instead of keeping them one more major? Only repositories under `~/prj` were searched; a consumer outside them would not have shown.
+2. **The unaccepted contracts (§3.5).** Four files and five header groups in `interfaces`, and five exports that move into `interfaces-adt`, that no package imports. Remove the first group in 45.0.0 instead of keeping it one more major, and leave the five exports out of `interfaces-adt`'s first release so no removal major is needed there at all? Only repositories under `~/prj` were searched; a consumer outside them would not have shown.
 3. **A separate `interfaces-sap`.** §3.4 puts SAP/BTP configuration and authentication in `interfaces-adt` because only the ABAP family accepts them. If their release rate differs from ADT's as much as ADT's differs from the rest, they could be their own package.
 4. **`IAuthorizationStrategy`** describes a generic interactive OAuth login but is accepted only by `auth-providers` today, so it stays in `interfaces-adt`. It moves to `interfaces-auth` when a package outside the SAP side accepts it.
 5. **Decision entry.** This rule becomes decision 26 in `docs/architecture/DECISIONS.md` once agreed; ARCHITECTURE §1 and §4 are updated in the same change.
