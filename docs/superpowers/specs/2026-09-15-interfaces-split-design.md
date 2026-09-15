@@ -14,7 +14,7 @@
   | `@mcp-abap-adt/interfaces-network` | transport-level contracts, generic HTTP/MCP headers, network error codes | nothing |
   | `@mcp-abap-adt/interfaces-auth` | cross-family credential and access contracts | nothing |
   | `@mcp-abap-adt/interfaces-adt` | ADT contracts, the ABAP connection, SAP/BTP configuration and authentication | `interfaces-auth`, `interfaces-utils` |
-  | `@mcp-abap-adt/interfaces` | what no package accepts (today: four files and the five header groups, §3.5) + a transitional re-export of everything | all of the above |
+  | `@mcp-abap-adt/interfaces` | what no package accepts (today: three files and the five header groups, §3.5) + a transitional re-export of everything | all of the above |
 
 - **Migration.** `interfaces` 45.0.0 re-exports what moved, marked deprecated. The fourteen packages that import it move their imports when they next release (§5). A later major removes the re-export.
 - **Constants** stay with the contract whose vocabulary they are.
@@ -117,6 +117,7 @@ The file `auth/ICertificateMaterialLoader.ts` is **split**: `ICertificateMateria
 | `auth/` (SAP/BTP part) | `IConnectionConfig` (`sapClient`, `language`, `sessionCookies`, …) | `lib`, `auth-broker`, `auth-stores` |
 | | `IAuthorizationConfig` (UAA) | `lib`, `auth-broker`, `auth-providers`, `auth-stores`, `proxy` |
 | | `IConfig` | `auth-broker`, `auth-stores` |
+| | `AuthType` from `auth/AuthType.ts` (public name `AuthTypeEnum`) | no importer; moves because `validation/IValidatedAuthConfig` imports it — left in `interfaces`, it would make `interfaces-adt` depend on `interfaces` |
 | | `IAuthorizationStrategy` | `auth-providers` |
 | | `ICertificateMaterialLoader` | `connection` |
 | `token/` | `ITokenProvider` | `lib`, `auth-broker`, `auth-providers`, `mcp-calm-server` |
@@ -144,7 +145,6 @@ The header groups (`SAP_CONNECTION_HEADERS`, `UAA_HEADERS`, `PRESERVED_HEADERS`,
   |---|---|
   | `storage/ISessionState.ts`, `storage/ISessionStorage.ts` | |
   | `token/ITokenProviderResult.ts` | |
-  | `auth/AuthType.ts` — public name `AuthTypeEnum` | the same union as `Headers.ts`'s `AuthType`, which is the one imported |
   | `Headers.ts` groups: `SAP_CONNECTION_HEADERS`, `UAA_HEADERS`, `PRESERVED_HEADERS`, `PROXY_MODIFIED_HEADERS`, `PROXY_ROUTING_HEADERS` | they list header names from both the generic and the SAP/BTP part; only this package depends on both (§3.6) |
 
 - **Unimported exports inside moved files** — they move with their file and are removal candidates: `IUpdateIncludeSourceParams`, `IDeleteIncludeParams` (`adt/IAdtInclude.ts`), `IClassExecutor`, `IProgramExecutor` (`execution/IAdtExecutors.ts`), `IRunnableWithProfiling` (`execution/IAdtRunnable.ts`). Types derived from a used constant (`NetworkErrorCode`, `TokenProviderErrorCode`, `AdtSessionErrorCode`) are that constant's vocabulary, not candidates.
@@ -272,7 +272,7 @@ What each database speaks, as checked on 2026-09-15:
 ## 8. Open questions
 
 1. ~~**LLM headers that are not `Authorization`.**~~ **Resolved:** where a key travels is the implementation's (§7). Credential contracts are per protocol the accepting side speaks; no header-shaped contract is added.
-2. **The unaccepted contracts (§3.5).** Four files and five header groups in `interfaces`, and five exports that move into `interfaces-adt`, that no package imports. Remove the first group in 45.0.0 instead of keeping it one more major, and leave the five exports out of `interfaces-adt`'s first release so no removal major is needed there at all? Only repositories under `~/prj` were searched; a consumer outside them would not have shown.
+2. **The unaccepted contracts (§3.5).** Three files and five header groups in `interfaces`, and five exports that move into `interfaces-adt`, that no package imports. Remove the first group in 45.0.0 instead of keeping it one more major, and leave the five exports out of `interfaces-adt`'s first release so no removal major is needed there at all? Only repositories under `~/prj` were searched; a consumer outside them would not have shown.
 3. **A separate `interfaces-sap`.** §3.4 puts SAP/BTP configuration and authentication in `interfaces-adt` because only the ABAP family accepts them. If their release rate differs from ADT's as much as ADT's differs from the rest, they could be their own package.
 4. **`IAuthorizationStrategy`** describes a generic interactive OAuth login but is accepted only by `auth-providers` today, so it stays in `interfaces-adt`. It moves to `interfaces-auth` when a package outside the SAP side accepts it.
 5. **Decision entry.** This rule becomes decision 26 in `docs/architecture/DECISIONS.md` once agreed; ARCHITECTURE §1 and §4 are updated in the same change.
