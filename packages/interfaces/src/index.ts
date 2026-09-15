@@ -5,6 +5,14 @@
  * All interfaces follow the convention of starting with 'I' prefix
  */
 
+export type {
+  /** @deprecated Import from @mcp-abap-adt/interfaces-utils */
+  ILogger,
+} from '@mcp-abap-adt/interfaces-utils';
+export {
+  /** @deprecated Import from @mcp-abap-adt/interfaces-utils */
+  LogLevel,
+} from '@mcp-abap-adt/interfaces-utils';
 export type { HttpError, XmlNode } from './adt/AdtTypes';
 export type {
   IAbapGitExternalRepoCredentials,
@@ -371,9 +379,6 @@ export type {
 } from './feeds/types';
 // Headers domain
 export * from './Headers';
-// Logging domain
-export type { ILogger } from './logging/ILogger';
-export { LogLevel } from './logging/LogLevel';
 export type {
   IApplicationLog,
   IGetApplicationLogObjectOptions,

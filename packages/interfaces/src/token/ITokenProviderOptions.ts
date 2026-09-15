@@ -4,7 +4,7 @@
  * Used by ITokenProvider implementations to configure token acquisition behavior.
  * All options are optional, allowing providers to use sensible defaults.
  */
-import type { ILogger } from '../logging/ILogger';
+import type { ILogger } from '@mcp-abap-adt/interfaces-utils';
 
 export interface ITokenProviderOptions {
   /**

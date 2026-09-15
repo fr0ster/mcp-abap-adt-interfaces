@@ -9,7 +9,7 @@
  * See `ICallbackServer` for the transport a shipped strategy is composed of.
  */
 
-import type { ILogger } from '../logging/ILogger';
+import type { ILogger } from '@mcp-abap-adt/interfaces-utils';
 
 /** What the provider tells a strategy about the login to conduct. */
 export interface AuthorizationRequest {

@@ -34,8 +34,8 @@ const _samlOutcome: AuthorizationOutcome<string> = {
 };
 void _samlOutcome;
 
+import type { ILogger } from '@mcp-abap-adt/interfaces-utils';
 import type { ICallbackServerOptions } from '../auth/ICallbackServer';
-import type { ILogger } from '../logging/ILogger';
 
 const logger: ILogger = {
   debug: () => undefined,

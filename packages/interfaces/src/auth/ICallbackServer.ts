@@ -1,4 +1,4 @@
-import type { ILogger } from '../logging/ILogger';
+import type { ILogger } from '@mcp-abap-adt/interfaces-utils';
 
 /**
  * Local callback server used by interactive authorization flows.
