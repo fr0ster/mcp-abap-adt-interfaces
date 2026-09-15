@@ -6,6 +6,38 @@
  */
 
 export type {
+  /** @deprecated Import from @mcp-abap-adt/interfaces-network */
+  ITimeoutConfig,
+  /** @deprecated Import from @mcp-abap-adt/interfaces-network */
+  IWebSocketCloseInfo,
+  /** @deprecated Import from @mcp-abap-adt/interfaces-network */
+  IWebSocketConnectOptions,
+  /** @deprecated Import from @mcp-abap-adt/interfaces-network */
+  IWebSocketMessageEnvelope,
+  /** @deprecated Import from @mcp-abap-adt/interfaces-network */
+  IWebSocketMessageHandler,
+  /** @deprecated Import from @mcp-abap-adt/interfaces-network */
+  IWebSocketTransport,
+  /** @deprecated Import from @mcp-abap-adt/interfaces-network */
+  NetworkErrorCode,
+} from '@mcp-abap-adt/interfaces-network';
+export {
+  /** @deprecated Import from @mcp-abap-adt/interfaces-network */
+  HEADER_ACCEPT,
+  /** @deprecated Import from @mcp-abap-adt/interfaces-network */
+  HEADER_AUTHORIZATION,
+  /** @deprecated Import from @mcp-abap-adt/interfaces-network */
+  HEADER_CONTENT_TYPE,
+  /** @deprecated Import from @mcp-abap-adt/interfaces-network */
+  HEADER_MCP_SESSION_ID,
+  /** @deprecated Import from @mcp-abap-adt/interfaces-network */
+  HEADER_SESSION_ID,
+  /** @deprecated Import from @mcp-abap-adt/interfaces-network */
+  HEADER_X_MCP_SESSION_ID,
+  /** @deprecated Import from @mcp-abap-adt/interfaces-network */
+  NETWORK_ERROR_CODES,
+} from '@mcp-abap-adt/interfaces-network';
+export type {
   /** @deprecated Import from @mcp-abap-adt/interfaces-utils */
   ILogger,
 } from '@mcp-abap-adt/interfaces-utils';
@@ -345,15 +377,6 @@ export type {
 } from './connection/IConnectionCapabilities';
 export { ADT_SESSION_ERROR } from './connection/IConnectionCapabilities';
 export type {
-  IWebSocketCloseInfo,
-  IWebSocketConnectOptions,
-  IWebSocketMessageEnvelope,
-  IWebSocketMessageHandler,
-  IWebSocketTransport,
-} from './connection/IWebSocketTransport';
-export type { NetworkErrorCode } from './connection/NetworkErrors';
-export { NETWORK_ERROR_CODES } from './connection/NetworkErrors';
-export type {
   IClassExecuteWithProfilerOptions,
   IClassExecuteWithProfilingOptions,
   IClassExecuteWithProfilingResult,
@@ -480,7 +503,6 @@ export type { ITokenRefresher } from './token/ITokenRefresher';
 export type { ITokenResult } from './token/ITokenResult';
 export type { TokenProviderErrorCode } from './token/TokenProviderErrorCodes';
 export { TOKEN_PROVIDER_ERROR_CODES } from './token/TokenProviderErrorCodes';
-export type { ITimeoutConfig } from './utils/ITimeoutConfig';
 // Utils domain
 export type { ITokenRefreshResult } from './utils/ITokenRefreshResult';
 export type { IHeaderValidationResult } from './validation/IHeaderValidationResult';

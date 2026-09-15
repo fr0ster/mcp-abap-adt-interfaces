@@ -1,3 +1,5 @@
+import { HEADER_AUTHORIZATION } from '@mcp-abap-adt/interfaces-network';
+
 /**
  * HTTP Header Constants for MCP ABAP ADT
  *
@@ -15,7 +17,6 @@
 export const HEADER_BTP_DESTINATION = 'x-btp-destination';
 export const HEADER_MCP_DESTINATION = 'x-mcp-destination';
 export const HEADER_MCP_URL = 'x-mcp-url';
-
 /**
  * SAP ABAP Connection Headers
  * Used for SAP ABAP system connection
@@ -35,7 +36,6 @@ export const HEADER_SAP_CLIENT = 'x-sap-client';
 export const HEADER_SAP_LOGIN = 'x-sap-login';
 export const HEADER_SAP_PASSWORD = 'x-sap-password';
 export const HEADER_SAP_REFRESH_TOKEN = 'x-sap-refresh-token';
-
 /**
  * UAA/XSUAA Headers
  * Used for UAA/XSUAA authentication
@@ -46,22 +46,6 @@ export const HEADER_SAP_UAA_CLIENT_ID = 'x-sap-uaa-client-id';
 export const HEADER_UAA_CLIENT_ID = 'uaa-client-id'; // Alternative name
 export const HEADER_SAP_UAA_CLIENT_SECRET = 'x-sap-uaa-client-secret';
 export const HEADER_UAA_CLIENT_SECRET = 'uaa-client-secret'; // Alternative name
-
-/**
- * Session ID Headers
- * Used for session identification in proxy requests
- */
-export const HEADER_SESSION_ID = 'x-session-id';
-export const HEADER_MCP_SESSION_ID = 'mcp-session-id';
-export const HEADER_X_MCP_SESSION_ID = 'x-mcp-session-id';
-
-/**
- * Standard HTTP Headers
- */
-export const HEADER_AUTHORIZATION = 'Authorization';
-export const HEADER_CONTENT_TYPE = 'Content-Type';
-export const HEADER_ACCEPT = 'Accept';
-
 /**
  * Header Groups
  * Useful for iterating over related headers
@@ -75,7 +59,6 @@ export const PROXY_ROUTING_HEADERS = [
   HEADER_MCP_DESTINATION,
   HEADER_MCP_URL,
 ] as const;
-
 /**
  * All SAP ABAP connection headers
  */
@@ -89,7 +72,6 @@ export const SAP_CONNECTION_HEADERS = [
   HEADER_SAP_PASSWORD,
   HEADER_SAP_REFRESH_TOKEN,
 ] as const;
-
 /**
  * All UAA/XSUAA headers
  */
@@ -101,7 +83,6 @@ export const UAA_HEADERS = [
   HEADER_SAP_UAA_CLIENT_SECRET,
   HEADER_UAA_CLIENT_SECRET,
 ] as const;
-
 /**
  * Headers that should be preserved from original request (not modified by proxy)
  */
@@ -109,7 +90,6 @@ export const PRESERVED_HEADERS = [
   HEADER_SAP_DESTINATION,
   HEADER_SAP_CLIENT,
 ] as const;
-
 /**
  * Headers that are modified/added by proxy when destinations are present
  */
@@ -119,14 +99,12 @@ export const PROXY_MODIFIED_HEADERS = [
   HEADER_SAP_URL, // Added when ABAP destination is present
   HEADER_SAP_AUTH_TYPE, // Added when ABAP destination is present (set to 'jwt')
 ] as const;
-
 /**
  * Authentication type values
  */
 export const AUTH_TYPE_JWT = 'jwt';
 export const AUTH_TYPE_BASIC = 'basic';
 export const AUTH_TYPE_XSUAA = 'xsuaa';
-
 /**
  * Valid authentication types
  */
@@ -135,5 +113,4 @@ export const AUTH_TYPES = [
   AUTH_TYPE_BASIC,
   AUTH_TYPE_XSUAA,
 ] as const;
-
 export type AuthType = (typeof AUTH_TYPES)[number];

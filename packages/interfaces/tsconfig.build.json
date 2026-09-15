@@ -4,6 +4,9 @@
   "references": [
     {
       "path": "../interfaces-utils/tsconfig.build.json"
+    },
+    {
+      "path": "../interfaces-network/tsconfig.build.json"
     }
   ]
 }
