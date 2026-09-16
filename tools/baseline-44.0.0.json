@@ -1,0 +1,1196 @@
+{
+  "ADT_NO_FAILURE": {
+    "declaration": "ADT_NO_FAILURE : \"adt:no-failure\"",
+    "value": "\"adt:no-failure\""
+  },
+  "ADT_SESSION_ERROR": {
+    "declaration": "ADT_SESSION_ERROR : { readonly NOT_CONNECTED : \"ADT_NOT_CONNECTED\" ; readonly SESSION_REPLACED : \"ADT_SESSION_REPLACED\" ; readonly RELEASE_PENDING : \"ADT_RELEASE_PENDING\" ; }",
+    "value": "{\"NOT_CONNECTED\":\"ADT_NOT_CONNECTED\",\"SESSION_REPLACED\":\"ADT_SESSION_REPLACED\",\"RELEASE_PENDING\":\"ADT_RELEASE_PENDING\"}"
+  },
+  "AdtFailureOrigin": {
+    "declaration": "export type AdtFailureOrigin = 'connection' | 'refusal' ;"
+  },
+  "AdtNoFailure": {
+    "declaration": "export type AdtNoFailure = typeof ADT_NO_FAILURE ;"
+  },
+  "AdtObjectErrorCodes": {
+    "declaration": "AdtObjectErrorCodes : { readonly OBJECT_NOT_FOUND : \"ADT_OBJECT_NOT_FOUND\" ; readonly OBJECT_NOT_READY : \"ADT_OBJECT_NOT_READY\" ; readonly VALIDATION_FAILED : \"ADT_VALIDATION_FAILED\" ; readonly CREATE_FAILED : \"ADT_CREATE_FAILED\" ; readonly UPDATE_FAILED : \"ADT_UPDATE_FAILED\" ; readonly DELETE_FAILED : \"ADT_DELETE_FAILED\" ; readonly ACTIVATE_FAILED : \"ADT_ACTIVATE_FAILED\" ; readonly CHECK_FAILED : \"ADT_CHECK_FAILED\" ; readonly LOCK_FAILED : \"ADT_LOCK_FAILED\" ; readonly UNLOCK_FAILED : \"ADT_UNLOCK_FAILED\" ; readonly UNSUPPORTED_OPERATION : \"ADT_UNSUPPORTED_OPERATION\" ; }",
+    "value": "{\"OBJECT_NOT_FOUND\":\"ADT_OBJECT_NOT_FOUND\",\"OBJECT_NOT_READY\":\"ADT_OBJECT_NOT_READY\",\"VALIDATION_FAILED\":\"ADT_VALIDATION_FAILED\",\"CREATE_FAILED\":\"ADT_CREATE_FAILED\",\"UPDATE_FAILED\":\"ADT_UPDATE_FAILED\",\"DELETE_FAILED\":\"ADT_DELETE_FAILED\",\"ACTIVATE_FAILED\":\"ADT_ACTIVATE_FAILED\",\"CHECK_FAILED\":\"ADT_CHECK_FAILED\",\"LOCK_FAILED\":\"ADT_LOCK_FAILED\",\"UNLOCK_FAILED\":\"ADT_UNLOCK_FAILED\",\"UNSUPPORTED_OPERATION\":\"ADT_UNSUPPORTED_OPERATION\"}"
+  },
+  "AdtObjectType": {
+    "declaration": "export type AdtObjectType = AdtObjectTypeLower | Uppercase < AdtObjectTypeLower > ;"
+  },
+  "AdtObjectTypeLower": {
+    "declaration": "export type AdtObjectTypeLower = 'class' | 'clas/oc' | 'program' | 'prog/p' | 'interface' | 'intf/if' | 'functionmodule' | 'fugr/ff' | 'view' | 'ddls/df' | 'structure' | 'stru/dt' | 'table' | 'tabl/dt' | 'tabletype' | 'ttyp/df' | 'domain' | 'doma/dd' | 'dataelement' | 'dtel' | 'functiongroup' | 'fugr' | 'package' | 'devc/k' ;"
+  },
+  "AdtSessionErrorCode": {
+    "declaration": "export type AdtSessionErrorCode = ( typeof ADT_SESSION_ERROR ) [ keyof typeof ADT_SESSION_ERROR ] ;"
+  },
+  "AdtSourceObjectType": {
+    "declaration": "export type AdtSourceObjectType = AdtSourceObjectTypeLower | Uppercase < AdtSourceObjectTypeLower > ;"
+  },
+  "AdtSourceObjectTypeLower": {
+    "declaration": "export type AdtSourceObjectTypeLower = 'class' | 'clas/oc' | 'program' | 'prog/p' | 'interface' | 'intf/if' | 'functionmodule' | 'fugr/ff' | 'view' | 'ddls/df' | 'structure' | 'stru/dt' | 'table' | 'tabl/dt' | 'tabletype' | 'ttyp/df' ;"
+  },
+  "AtcObjectType": {
+    "declaration": "export type AtcObjectType = 'class' | 'interface' | 'function_group' | 'package' | 'ddl_source' | 'table' | 'behavior_definition' ;"
+  },
+  "AUTH_TYPE_AUTHORIZATION_CODE": {
+    "declaration": "AUTH_TYPE_AUTHORIZATION_CODE : \"authorization_code\"",
+    "value": "\"authorization_code\""
+  },
+  "AUTH_TYPE_AUTHORIZATION_CODE_PKCE": {
+    "declaration": "AUTH_TYPE_AUTHORIZATION_CODE_PKCE : \"authorization_code_pkce\"",
+    "value": "\"authorization_code_pkce\""
+  },
+  "AUTH_TYPE_BASIC": {
+    "declaration": "AUTH_TYPE_BASIC = \"basic\"",
+    "value": "\"basic\""
+  },
+  "AUTH_TYPE_CLIENT_CREDENTIALS": {
+    "declaration": "AUTH_TYPE_CLIENT_CREDENTIALS : \"client_credentials\"",
+    "value": "\"client_credentials\""
+  },
+  "AUTH_TYPE_CLIENT_X509": {
+    "declaration": "AUTH_TYPE_CLIENT_X509 : \"client_x509\"",
+    "value": "\"client_x509\""
+  },
+  "AUTH_TYPE_JWT": {
+    "declaration": "AUTH_TYPE_JWT = \"jwt\"",
+    "value": "\"jwt\""
+  },
+  "AUTH_TYPE_PASSWORD": {
+    "declaration": "AUTH_TYPE_PASSWORD : \"password\"",
+    "value": "\"password\""
+  },
+  "AUTH_TYPE_SAML2_BEARER": {
+    "declaration": "AUTH_TYPE_SAML2_BEARER : \"saml2_bearer\"",
+    "value": "\"saml2_bearer\""
+  },
+  "AUTH_TYPE_USER_TOKEN": {
+    "declaration": "AUTH_TYPE_USER_TOKEN : \"user_token\"",
+    "value": "\"user_token\""
+  },
+  "AUTH_TYPE_XSUAA": {
+    "declaration": "AUTH_TYPE_XSUAA = \"xsuaa\"",
+    "value": "\"xsuaa\""
+  },
+  "AUTH_TYPES": {
+    "declaration": "AUTH_TYPES : readonly [ \"jwt\" , \"basic\" , \"xsuaa\" ]",
+    "value": "[\"jwt\",\"basic\",\"xsuaa\"]"
+  },
+  "AuthMethodPriority": {
+    "declaration": "export declare enum AuthMethodPriority { SAP_DESTINATION = 4 , MCP_DESTINATION = 3 , DIRECT_JWT = 2 , BASIC = 1 , NONE = 0 }",
+    "value": "{\"0\":\"NONE\",\"1\":\"BASIC\",\"2\":\"DIRECT_JWT\",\"3\":\"MCP_DESTINATION\",\"4\":\"SAP_DESTINATION\",\"SAP_DESTINATION\":4,\"MCP_DESTINATION\":3,\"DIRECT_JWT\":2,\"BASIC\":1,\"NONE\":0}"
+  },
+  "AuthorizationOutcome": {
+    "declaration": "export interface AuthorizationOutcome < TResult > { readonly payload : TResult ; readonly redirectUri : string ; }"
+  },
+  "AuthorizationRequest": {
+    "declaration": "export interface AuthorizationRequest { buildAuthorizationUrl ( redirectUri : string ) : Promise < string > ; readonly logger ? : ILogger ; }"
+  },
+  "AuthType": {
+    "declaration": "export type AuthType = ( typeof AUTH_TYPES ) [ number ] ;"
+  },
+  "AuthTypeEnum": {
+    "declaration": "export type AuthType = 'jwt' | 'xsuaa' | 'basic' ;"
+  },
+  "BehaviorDefinitionImplementationType": {
+    "declaration": "export type BehaviorDefinitionImplementationType = 'Managed' | 'Unmanaged' | 'Abstract' | 'Projection' ;"
+  },
+  "CallbackServerFactory": {
+    "declaration": "export type CallbackServerFactory < TResult > = < TReturn > ( options : ICallbackServerOptions , use : ( server : ICallbackServerHandle < TResult > ) => Promise < TReturn > ) => Promise < TReturn > ;"
+  },
+  "CALM_SERVICES": {
+    "declaration": "CALM_SERVICES : readonly [ \"features\" , \"documents\" , \"tasks\" , \"projects\" , \"testManagement\" , \"hierarchy\" , \"analytics\" , \"processMonitoring\" , \"logs\" ]",
+    "value": "[\"features\",\"documents\",\"tasks\",\"projects\",\"testManagement\",\"hierarchy\",\"analytics\",\"processMonitoring\",\"logs\"]"
+  },
+  "CalmService": {
+    "declaration": "export type CalmService = ( typeof CALM_SERVICES ) [ number ] ;"
+  },
+  "DataElementTypeKind": {
+    "declaration": "export type DataElementTypeKind = 'domain' | 'predefinedAbapType' | 'refToPredefinedAbapType' | 'refToDictionaryType' | 'refToClifType' ;"
+  },
+  "DesiredPublicationState": {
+    "declaration": "export type DesiredPublicationState = 'published' | 'unpublished' | 'unchanged' ;"
+  },
+  "EnhancementType": {
+    "declaration": "export type EnhancementType = 'enhoxh' | 'enhoxhb' | 'enhoxhh' | 'enhsxs' | 'enhsxsb' ;"
+  },
+  "GeneratedServiceType": {
+    "declaration": "export type GeneratedServiceType = 'odatav2' | 'odatav4' ;"
+  },
+  "HEADER_ACCEPT": {
+    "declaration": "HEADER_ACCEPT = \"Accept\"",
+    "value": "\"Accept\""
+  },
+  "HEADER_AUTHORIZATION": {
+    "declaration": "HEADER_AUTHORIZATION = \"Authorization\"",
+    "value": "\"Authorization\""
+  },
+  "HEADER_BTP_DESTINATION": {
+    "declaration": "HEADER_BTP_DESTINATION = \"x-btp-destination\"",
+    "value": "\"x-btp-destination\""
+  },
+  "HEADER_CONTENT_TYPE": {
+    "declaration": "HEADER_CONTENT_TYPE = \"Content-Type\"",
+    "value": "\"Content-Type\""
+  },
+  "HEADER_MCP_DESTINATION": {
+    "declaration": "HEADER_MCP_DESTINATION = \"x-mcp-destination\"",
+    "value": "\"x-mcp-destination\""
+  },
+  "HEADER_MCP_SESSION_ID": {
+    "declaration": "HEADER_MCP_SESSION_ID = \"mcp-session-id\"",
+    "value": "\"mcp-session-id\""
+  },
+  "HEADER_MCP_URL": {
+    "declaration": "HEADER_MCP_URL = \"x-mcp-url\"",
+    "value": "\"x-mcp-url\""
+  },
+  "HEADER_SAP_AUTH_TYPE": {
+    "declaration": "HEADER_SAP_AUTH_TYPE = \"x-sap-auth-type\"",
+    "value": "\"x-sap-auth-type\""
+  },
+  "HEADER_SAP_CLIENT": {
+    "declaration": "HEADER_SAP_CLIENT = \"x-sap-client\"",
+    "value": "\"x-sap-client\""
+  },
+  "HEADER_SAP_DESTINATION": {
+    "declaration": "HEADER_SAP_DESTINATION = \"x-sap-destination\"",
+    "value": "\"x-sap-destination\""
+  },
+  "HEADER_SAP_DESTINATION_SERVICE": {
+    "declaration": "HEADER_SAP_DESTINATION_SERVICE = \"x-sap-destination\"",
+    "value": "\"x-sap-destination\""
+  },
+  "HEADER_SAP_JWT_TOKEN": {
+    "declaration": "HEADER_SAP_JWT_TOKEN = \"x-sap-jwt-token\"",
+    "value": "\"x-sap-jwt-token\""
+  },
+  "HEADER_SAP_LOGIN": {
+    "declaration": "HEADER_SAP_LOGIN = \"x-sap-login\"",
+    "value": "\"x-sap-login\""
+  },
+  "HEADER_SAP_PASSWORD": {
+    "declaration": "HEADER_SAP_PASSWORD = \"x-sap-password\"",
+    "value": "\"x-sap-password\""
+  },
+  "HEADER_SAP_REFRESH_TOKEN": {
+    "declaration": "HEADER_SAP_REFRESH_TOKEN = \"x-sap-refresh-token\"",
+    "value": "\"x-sap-refresh-token\""
+  },
+  "HEADER_SAP_UAA_CLIENT_ID": {
+    "declaration": "HEADER_SAP_UAA_CLIENT_ID = \"x-sap-uaa-client-id\"",
+    "value": "\"x-sap-uaa-client-id\""
+  },
+  "HEADER_SAP_UAA_CLIENT_SECRET": {
+    "declaration": "HEADER_SAP_UAA_CLIENT_SECRET = \"x-sap-uaa-client-secret\"",
+    "value": "\"x-sap-uaa-client-secret\""
+  },
+  "HEADER_SAP_UAA_URL": {
+    "declaration": "HEADER_SAP_UAA_URL = \"x-sap-uaa-url\"",
+    "value": "\"x-sap-uaa-url\""
+  },
+  "HEADER_SAP_URL": {
+    "declaration": "HEADER_SAP_URL = \"x-sap-url\"",
+    "value": "\"x-sap-url\""
+  },
+  "HEADER_SESSION_ID": {
+    "declaration": "HEADER_SESSION_ID = \"x-session-id\"",
+    "value": "\"x-session-id\""
+  },
+  "HEADER_UAA_CLIENT_ID": {
+    "declaration": "HEADER_UAA_CLIENT_ID = \"uaa-client-id\"",
+    "value": "\"uaa-client-id\""
+  },
+  "HEADER_UAA_CLIENT_SECRET": {
+    "declaration": "HEADER_UAA_CLIENT_SECRET = \"uaa-client-secret\"",
+    "value": "\"uaa-client-secret\""
+  },
+  "HEADER_UAA_URL": {
+    "declaration": "HEADER_UAA_URL = \"uaa-url\"",
+    "value": "\"uaa-url\""
+  },
+  "HEADER_X_MCP_SESSION_ID": {
+    "declaration": "HEADER_X_MCP_SESSION_ID = \"x-mcp-session-id\"",
+    "value": "\"x-mcp-session-id\""
+  },
+  "HttpError": {
+    "declaration": "export interface HttpError { response ? : { status ? : number ; statusText ? : string ; data ? : unknown ; headers ? : Record < string , unknown > ; } ; message ? : string ; }"
+  },
+  "IAbapConnection": {
+    "declaration": "export interface IAbapConnection { connect ( ) : Promise < void > ; getBaseUrl ( ) : Promise < string > ; getSessionId ( ) : string | null ; setSessionType ( type : 'stateful' | 'stateless' ) : void ; makeAdtRequest < T = any , D = any > ( options : IAbapRequestOptions ) : Promise < IAdtWireResponse < T , D > > ; }"
+  },
+  "IAbapGitExternalRepoCredentials": {
+    "declaration": "export interface IAbapGitExternalRepoCredentials { url : string ; remoteUser ? : string ; remotePassword ? : string ; }"
+  },
+  "IAbapGitLinkArgs": {
+    "declaration": "export interface IAbapGitLinkArgs { package : string ; url : string ; branchName ? : string ; remoteUser ? : string ; remotePassword ? : string ; transportRequest ? : string ; }"
+  },
+  "IAbapGitPullArgs": {
+    "declaration": "export interface IAbapGitPullArgs { package : string ; pullLink : string ; branchName ? : string ; remoteUser ? : string ; remotePassword ? : string ; transportRequest ? : string ; }"
+  },
+  "IAbapGitUnlinkArgs": {
+    "declaration": "export interface IAbapGitUnlinkArgs { package : string ; transportRequest ? : string ; }"
+  },
+  "IAbapRequestOptions": {
+    "declaration": "export interface IAbapRequestOptions { url : string ; method : string ; timeout : number ; data ? : unknown ; params ? : unknown ; headers ? : Record < string , string > ; }"
+  },
+  "IAbapTimestamp": {
+    "declaration": "export type IAbapTimestamp = string ;"
+  },
+  "IAccessControlConfig": {
+    "declaration": "export interface IAccessControlConfig { accessControlName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; sourceCode ? : string ; }"
+  },
+  "IActivateServiceBindingParams": {
+    "declaration": "export interface IActivateServiceBindingParams { bindingName : string ; preauditRequested ? : boolean ; }"
+  },
+  "IAdtAbapGitClient": {
+    "declaration": "export interface IAdtAbapGitClient < TRepos , TRepo , TErrorLog , TPull , TExternalRepo > { link ( args : IAbapGitLinkArgs ) : Promise < IAdtResponse < void > > ; pull ( args : IAbapGitPullArgs ) : Promise < IAdtResponse < TPull > > ; unlink ( args : IAbapGitUnlinkArgs ) : Promise < IAdtResponse < void > > ; listRepos ( ) : Promise < IAdtResponse < TRepos > > ; getRepo ( packageName : string ) : Promise < IAdtResponse < TRepo > > ; getErrorLog ( packageName : string ) : Promise < IAdtResponse < TErrorLog > > ; checkExternalRepo ( args : IAbapGitExternalRepoCredentials ) : Promise < IAdtResponse < TExternalRepo > > ; }"
+  },
+  "IAdtAbapGitClientOptions": {
+    "declaration": "export interface IAdtAbapGitClientOptions { contentTypeVersion ? : 'v3' | 'v4' ; }"
+  },
+  "IAdtActivatable": {
+    "declaration": "export interface IAdtActivatable < TConfig , TActivated > { activate < E extends IAdtError > ( config : Partial < TConfig > , options : IAdtOperationOptions < E > & { analyse : IAnalyse < E > ; } ) : Promise < IAdtResponse < TActivated , E > > ; activate ( config : Partial < TConfig > , options ? : IAdtOperationOptions ) : Promise < IAdtResponse < TActivated > > ; }"
+  },
+  "IAdtCheckable": {
+    "declaration": "export interface IAdtCheckable < TConfig , TChecked > { check < E extends IAdtError > ( config : Partial < TConfig > , status : string | undefined , options : IAdtOperationOptions < E > & { analyse : IAnalyse < E > ; } ) : Promise < IAdtResponse < TChecked , E > > ; check ( config : Partial < TConfig > , status ? : string , options ? : IAdtOperationOptions ) : Promise < IAdtResponse < TChecked > > ; }"
+  },
+  "IAdtClientOptions": {
+    "declaration": "export interface IAdtClientOptions { enableAcceptCorrection ? : boolean ; masterSystem ? : string ; responsible ? : string ; masterLanguage ? : string ; contentTypes ? : IAdtContentTypes ; unicode ? : boolean ; }"
+  },
+  "IAdtContentTypes": {
+    "declaration": "export interface IAdtContentTypes { programCreate ( ) : IAdtHeaders ; programRead ( ) : IAdtHeaders ; includeCreate ( ) : IAdtHeaders ; classCreate ( ) : IAdtHeaders ; classRead ( ) : IAdtHeaders ; interfaceCreate ( ) : IAdtHeaders ; domainCreate ( ) : IAdtHeaders ; domainRead ( ) : IAdtHeaders ; domainUpdate ( ) : IAdtHeaders ; dataElementCreate ( ) : IAdtHeaders ; dataElementRead ( ) : IAdtHeaders ; dataElementUpdate ( ) : IAdtHeaders ; structureCreate ( ) : IAdtHeaders ; tableCreate ( ) : IAdtHeaders ; packageCreate ( ) : IAdtHeaders ; packageRead ( ) : IAdtHeaders ; packageUpdate ( ) : IAdtHeaders ; functionGroupCreate ( ) : IAdtHeaders ; functionGroupUpdate ( ) : IAdtHeaders ; sourceArtifactContentType ( ) : string ; }"
+  },
+  "IAdtCreatable": {
+    "declaration": "export interface IAdtCreatable < TConfig , TCreated > { create < E extends IAdtError > ( config : Omit < TConfig , 'sourceCode' > & { sourceCode ? : never ; } , options : IAdtCreateOptions < E > & { analyse : IAnalyse < E > ; } ) : Promise < IAdtResponse < TCreated , E > > ; create ( config : Omit < TConfig , 'sourceCode' > & { sourceCode ? : never ; } , options ? : IAdtCreateOptions ) : Promise < IAdtResponse < TCreated > > ; }"
+  },
+  "IAdtCreateOptions": {
+    "declaration": "export type IAdtCreateOptions < E extends IAdtError = IAdtError > = Omit < IAdtOperationOptions < E > , 'sourceCode' > & { sourceCode ? : never ; } ;"
+  },
+  "IAdtDataPreview": {
+    "declaration": "export interface IAdtDataPreview < TQuery , TColumns , TContents > { getSqlQuery ( params : IGetSqlQueryParams ) : Promise < IAdtResponse < TQuery > > ; getTableColumns ( tableName : string ) : Promise < IAdtResponse < TColumns > > ; getTableContents ( params : IGetTableContentsParams ) : Promise < IAdtResponse < TContents > > ; }"
+  },
+  "IAdtDeletable": {
+    "declaration": "export interface IAdtDeletable < TConfig , TDeleted , TChecked = string > { delete < E extends IAdtError > ( config : Partial < TConfig > , options : IAdtOperationOptions < E > & { analyse : IAnalyse < E > ; } ) : Promise < IAdtResponse < TDeleted , E > > ; delete ( config : Partial < TConfig > , options ? : IAdtOperationOptions ) : Promise < IAdtResponse < TDeleted > > ; checkDeletion < E extends IAdtError > ( config : Partial < TConfig > , options : IAdtOperationOptions < E > & { analyse : IAnalyse < E > ; } ) : Promise < IAdtResponse < TChecked , E > > ; checkDeletion ( config : Partial < TConfig > , options ? : IAdtOperationOptions ) : Promise < IAdtResponse < TChecked > > ; }"
+  },
+  "IAdtDiscovery": {
+    "declaration": "export interface IAdtDiscovery < TDiscovery > { discovery ( params ? : IGetDiscoveryParams ) : Promise < IAdtResponse < TDiscovery > > ; }"
+  },
+  "IAdtError": {
+    "declaration": "export interface IAdtError { readonly origin : AdtFailureOrigin ; readonly message : string ; readonly adtType ? : string ; readonly namespace ? : string ; readonly response ? : IAdtWireResponse ; readonly request ? : { readonly method ? : string ; readonly url ? : string ; } ; readonly code ? : string ; }"
+  },
+  "IAdtFailure": {
+    "declaration": "export interface IAdtFailure < TError extends IAdtError = IAdtError > { readonly ok : false ; getError ( ) : TError ; }"
+  },
+  "IAdtGroupLifecycle": {
+    "declaration": "export interface IAdtGroupLifecycle < TInactive , TActivation , TRun , TResults , TDeletionCheck , TDeletion > { activateObjectsGroup ( objects : IObjectReference [ ] , preauditRequested ? : boolean ) : Promise < IAdtResponse < TActivation > > ; getActivationRun ( runId : string , options ? : { withLongPolling ? : boolean ; } ) : Promise < IAdtResponse < TRun > > ; getActivationResults ( runId : string ) : Promise < IAdtResponse < TResults > > ; getInactiveObjects ( ) : Promise < IAdtResponse < TInactive > > ; checkDeletionGroup ( objects : IObjectReference [ ] ) : Promise < IAdtResponse < TDeletionCheck > > ; deleteObjectsGroup ( objects : IObjectReference [ ] , transportRequest ? : string ) : Promise < IAdtResponse < TDeletion > > ; }"
+  },
+  "IAdtHeaders": {
+    "declaration": "export interface IAdtHeaders { accept : string ; contentType : string ; }"
+  },
+  "IAdtInformationSystem": {
+    "declaration": "export interface IAdtInformationSystem < TSearch , TWhereUsed , TScope , TFolders , TTypes > extends IAdtObjectSearch < TSearch > , IAdtWhereUsed < TWhereUsed , TScope > , IAdtVirtualFolders < TFolders > , IAdtTypeCatalogue < TTypes > { }"
+  },
+  "IAdtLockable": {
+    "declaration": "export interface IAdtLockable < TConfig > { lock ( config : Partial < TConfig > ) : Promise < IAdtResponse < string > > ; unlock ( config : Partial < TConfig > , lockHandle : string ) : Promise < IAdtResponse < void > > ; }"
+  },
+  "IAdtMetadataReadable": {
+    "declaration": "export interface IAdtMetadataReadable < TConfig , TMetadata > { readMetadata < E extends IAdtError > ( config : Partial < TConfig > , options : { withLongPolling ? : boolean ; version ? : 'active' | 'inactive' ; } & IAdtOperationOptions < E > & { analyse : IAnalyse < E > ; } ) : Promise < IAdtResponse < TMetadata , E > > ; readMetadata ( config : Partial < TConfig > , options ? : { withLongPolling ? : boolean ; version ? : 'active' | 'inactive' ; } & IAdtOperationOptions ) : Promise < IAdtResponse < TMetadata > > ; }"
+  },
+  "IAdtMetadataUpdatable": {
+    "declaration": "export interface IAdtMetadataUpdatable < TConfig , TMetadataUpdated > { updateMetadata < E extends IAdtError > ( config : TConfig , options : IAdtOperationOptions < E > & { analyse : IAnalyse < E > ; } ) : Promise < IAdtResponse < TMetadataUpdated , E > > ; updateMetadata ( config : TConfig , options ? : IAdtOperationOptions ) : Promise < IAdtResponse < TMetadataUpdated > > ; }"
+  },
+  "IAdtObjectAccess": {
+    "declaration": "export interface IAdtObjectAccess < TSource , TMetadata , TInclude > { readObjectSource ( objectType : AdtSourceObjectType , objectName : string , functionGroup ? : string , version ? : 'active' | 'inactive' , options ? : IReadOptions ) : Promise < IAdtResponse < TSource > > ; readObjectMetadata ( objectType : AdtObjectType , objectName : string , functionGroup ? : string , options ? : IReadOptions ) : Promise < IAdtResponse < TMetadata > > ; supportsSourceCode ( objectType : AdtObjectType ) : boolean ; getObjectSourceUri ( objectType : AdtSourceObjectType , objectName : string , functionGroup ? : string , version ? : 'active' | 'inactive' ) : string ; getInclude ( includeName : string ) : Promise < IAdtResponse < TInclude > > ; }"
+  },
+  "IAdtObjectConfig": {
+    "declaration": "export interface IAdtObjectConfig { packageName ? : string ; description ? : string ; transportRequest ? : string ; }"
+  },
+  "IAdtObjectSearch": {
+    "declaration": "export interface IAdtObjectSearch < TSearch > { search ( criteria : ISearchObjectsParams ) : Promise < IAdtResponse < TSearch > > ; }"
+  },
+  "IAdtOperationOptions": {
+    "declaration": "export interface IAdtOperationOptions < E extends IAdtError = IAdtError > { analyse ? : IAnalyse < E > ; sourceCode ? : string ; xmlContent ? : string ; lockHandle ? : string ; timeout ? : number ; }"
+  },
+  "IAdtReadable": {
+    "declaration": "export interface IAdtReadable < TConfig , TSource > { read < E extends IAdtError > ( config : Partial < TConfig > , version : 'active' | 'inactive' | undefined , options : { withLongPolling ? : boolean ; } & IAdtOperationOptions < E > & { analyse : IAnalyse < E > ; } ) : Promise < IAdtResponse < TSource , E > > ; read ( config : Partial < TConfig > , version ? : 'active' | 'inactive' , options ? : { withLongPolling ? : boolean ; } & IAdtOperationOptions ) : Promise < IAdtResponse < TSource > > ; }"
+  },
+  "IAdtRepositoryStructure": {
+    "declaration": "export interface IAdtRepositoryStructure < TNode , TObjectStructure > { fetchNodeStructure ( parentType : string , parentName : string , options ? : IGetNodeContentsOptions ) : Promise < IAdtResponse < TNode > > ; getObjectStructure ( objectType : string , objectName : string ) : Promise < IAdtResponse < TObjectStructure > > ; }"
+  },
+  "IAdtRequest": {
+    "declaration": "export interface IAdtRequest < TList > { list ( options ? : IListTransportsOptions ) : Promise < IAdtResponse < TList > > ; }"
+  },
+  "IAdtResponse": {
+    "declaration": "export type IAdtResponse < TValue , TError extends IAdtError = IAdtError > = IAdtSuccess < TValue > | IAdtFailure < TError > ;"
+  },
+  "IAdtResult": {
+    "declaration": "export interface IAdtResult < T > { readonly value : T ; }"
+  },
+  "IAdtRunnable": {
+    "declaration": "export interface IAdtRunnable < TTarget , TResult , TOptions = never > { run ( target : TTarget , ... args : [ TOptions ] extends [ never ] ? [ ] : [ options ? : TOptions ] ) : Promise < IAdtResponse < TResult > > ; }"
+  },
+  "IAdtSuccess": {
+    "declaration": "export interface IAdtSuccess < TValue > { readonly ok : true ; getResult ( ) : IAdtResult < TValue > ; }"
+  },
+  "IAdtSystemContext": {
+    "declaration": "export interface IAdtSystemContext { masterSystem ? : string ; responsible ? : string ; masterLanguage ? : string ; }"
+  },
+  "IAdtTransportAware": {
+    "declaration": "export interface IAdtTransportAware < TConfig , TTransport > { readTransport < E extends IAdtError > ( config : Partial < TConfig > , options : { withLongPolling ? : boolean ; } & IAdtOperationOptions < E > & { analyse : IAnalyse < E > ; } ) : Promise < IAdtResponse < TTransport , E > > ; readTransport ( config : Partial < TConfig > , options ? : { withLongPolling ? : boolean ; } & IAdtOperationOptions ) : Promise < IAdtResponse < TTransport > > ; }"
+  },
+  "IAdtTypeCatalogue": {
+    "declaration": "export interface IAdtTypeCatalogue < TTypes > { getAllTypes ( maxItemCount ? : number , name ? : string , data ? : string ) : Promise < IAdtResponse < TTypes > > ; }"
+  },
+  "IAdtUpdatable": {
+    "declaration": "export interface IAdtUpdatable < TConfig , TUpdated > { update < E extends IAdtError > ( config : TConfig , options : IAdtOperationOptions < E > & { analyse : IAnalyse < E > ; } ) : Promise < IAdtResponse < TUpdated , E > > ; update ( config : TConfig , options ? : IAdtOperationOptions ) : Promise < IAdtResponse < TUpdated > > ; }"
+  },
+  "IAdtValidatable": {
+    "declaration": "export interface IAdtValidatable < TConfig , TValidated > { validate < E extends IAdtError > ( config : Partial < TConfig > , options : IAdtOperationOptions < E > & { analyse : IAnalyse < E > ; } ) : Promise < IAdtResponse < TValidated , E > > ; validate ( config : Partial < TConfig > , options ? : IAdtOperationOptions ) : Promise < IAdtResponse < TValidated > > ; }"
+  },
+  "IAdtVersionable": {
+    "declaration": "export interface IAdtVersionable < TConfig , TVersions , TSource > { getVersions ( config : Partial < TConfig > ) : Promise < IAdtResponse < TVersions > > ; getVersionSource ( contentUri : string ) : Promise < IAdtResponse < TSource > > ; }"
+  },
+  "IAdtVirtualFolders": {
+    "declaration": "export interface IAdtVirtualFolders < TFolders > { getVirtualFoldersContents ( params : IGetVirtualFoldersContentsParams ) : Promise < IAdtResponse < TFolders > > ; }"
+  },
+  "IAdtWhereUsed": {
+    "declaration": "export interface IAdtWhereUsed < TWhereUsed , TScope > { getWhereUsed ( params : IGetWhereUsedParams ) : Promise < IAdtResponse < TWhereUsed > > ; getWhereUsedScope ( params : IGetWhereUsedScopeParams ) : Promise < IAdtResponse < TScope > > ; modifyWhereUsedScope ( scopeXml : string , options : { enableAll ? : boolean ; enableOnly ? : string [ ] ; enable ? : string [ ] ; disable ? : string [ ] ; } ) : string ; }"
+  },
+  "IAdtWireResponse": {
+    "declaration": "export interface IAdtWireResponse < T = any , D = any > { data : T ; status : number ; statusText : string ; headers : Record < string , IAdtHeaderValue > & { location ? : string ; Location ? : string ; 'content-location' ? : IAdtHeaderValue ; 'Content-Location' ? : IAdtHeaderValue ; 'sap-adt-location' ? : IAdtHeaderValue ; } ; config ? : D ; request ? : unknown ; }"
+  },
+  "IAnalyse": {
+    "declaration": "export type IAnalyse < E extends IAdtError = IAdtError > = ( verdict : IAdtError | AdtNoFailure , answer ? : IAdtWireResponse ) => E | AdtNoFailure ;"
+  },
+  "IAppendStructureConfig": {
+    "declaration": "export interface IAppendStructureConfig { appendStructureName : string ; baseObject ? : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; sourceCode ? : string ; }"
+  },
+  "IApplicationLog": {
+    "declaration": "export interface IApplicationLog < TObject , TSource , TValidation > { readonly kind : 'applicationLog' ; getObject ( objectName : string , options ? : IGetApplicationLogObjectOptions ) : Promise < IAdtResponse < TObject > > ; getSource ( objectName : string , options ? : IGetApplicationLogSourceOptions ) : Promise < IAdtResponse < TSource > > ; validateName ( objectName : string ) : Promise < IAdtResponse < TValidation > > ; }"
+  },
+  "IAtcFindings": {
+    "declaration": "export interface IAtcFindings < TFindings > { getFindings ( worklistId : string ) : Promise < IAdtResponse < TFindings > > ; }"
+  },
+  "IAtcLog": {
+    "declaration": "export interface IAtcLog < TCheckFailures , TExecutionLog > { readonly kind : 'atcLog' ; getCheckFailureLogs ( options ? : IGetCheckFailureLogsOptions ) : Promise < IAdtResponse < TCheckFailures > > ; getExecutionLog ( executionId : string ) : Promise < IAdtResponse < TExecutionLog > > ; }"
+  },
+  "IAtcObjectRef": {
+    "declaration": "export interface IAtcObjectRef { objectType : AtcObjectType ; objectName : string ; }"
+  },
+  "IAtcRunOptions": {
+    "declaration": "export interface IAtcRunOptions { wait ? : boolean ; checkVariant ? : string ; maximumVerdicts ? : number ; }"
+  },
+  "IAtcRunStatusReadable": {
+    "declaration": "export interface IAtcRunStatusReadable < TStatus > { getRunStatus ( runId : string ) : Promise < IAdtResponse < TStatus > > ; }"
+  },
+  "IAtcRunTarget": {
+    "declaration": "export interface IAtcRunTarget { objects : readonly [ IAtcObjectRef , ... IAtcObjectRef [ ] ] ; }"
+  },
+  "IAuthorizationConfig": {
+    "declaration": "export interface IAuthorizationConfig { uaaUrl : string ; uaaClientId : string ; uaaClientSecret : string ; refreshToken ? : string ; }"
+  },
+  "IAuthorizationFieldConfig": {
+    "declaration": "export interface IAuthorizationFieldConfig { authorizationFieldName : string ; packageName ? : string ; description ? : string ; transportRequest ? : string ; masterSystem ? : string ; responsible ? : string ; fieldName ? : string ; rollName ? : string ; checkTable ? : string ; exitFb ? : string ; abapLanguageVersion ? : string ; search ? : string ; objexit ? : string ; domname ? : string ; outputlen ? : string ; convexit ? : string ; orglvlinfo ? : string ; colSearchhelp ? : string ; colSearchhelpName ? : string ; colSearchhelpDescr ? : string ; onLock ? : ( lockHandle : string ) => void ; }"
+  },
+  "IAuthorizationStrategy": {
+    "declaration": "export interface IAuthorizationStrategy < TResult > { authorize ( request : AuthorizationRequest ) : Promise < AuthorizationOutcome < TResult > > ; dispose ? ( ) : Promise < void > ; }"
+  },
+  "IAuthProvider": {
+    "declaration": "export interface IAuthProvider { readonly kind : string ; prepare ( ) : Promise < void > ; authorizationHeader ( ) : Promise < string | null > ; cookies ( ) : string | null ; transportMaterial ( ) : ICertificateMaterial ; }"
+  },
+  "IBehaviorDefinitionConfig": {
+    "declaration": "export interface IBehaviorDefinitionConfig { name : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; implementationType ? : 'Managed' | 'Unmanaged' | 'Abstract' | 'Projection' ; rootEntity ? : string ; sourceCode ? : string ; onLock ? : ( lockHandle : string ) => void ; }"
+  },
+  "IBehaviorDefinitionCreateParams": {
+    "declaration": "export interface IBehaviorDefinitionCreateParams { name : string ; description : string ; package : string ; implementationType : BehaviorDefinitionImplementationType ; language ? : string ; responsible ? : string ; masterSystem ? : string ; transportRequest ? : string ; }"
+  },
+  "IBehaviorDefinitionValidationParams": {
+    "declaration": "export interface IBehaviorDefinitionValidationParams { objname : string ; rootEntity : string ; description : string ; package : string ; implementationType : BehaviorDefinitionImplementationType ; }"
+  },
+  "IBehaviorImplementationConfig": {
+    "declaration": "export interface IBehaviorImplementationConfig { className : string ; description ? : string ; packageName ? : string ; transportRequest ? : string ; behaviorDefinition : string ; sourceCode ? : string ; implementationCode ? : string ; masterSystem ? : string ; responsible ? : string ; }"
+  },
+  "ICallbackServerHandle": {
+    "declaration": "export interface ICallbackServerHandle < TResult > { readonly port : number ; readonly redirectUri : string ; waitForResult ( ) : Promise < TResult > ; fail ( error : Error ) : void ; }"
+  },
+  "ICallbackServerOptions": {
+    "declaration": "export interface ICallbackServerOptions { readonly port : number ; readonly timeoutMs : number ; readonly signal ? : AbortSignal ; readonly logger ? : ILogger ; }"
+  },
+  "ICalmConnection": {
+    "declaration": "export interface ICalmConnection { connect ( ) : Promise < void > ; getBaseUrl ( ) : Promise < string > ; getServiceUrl ( service : CalmService ) : Promise < string > ; makeRequest < T = unknown , D = unknown > ( options : ICalmRequestOptions ) : Promise < ICalmResponse < T , D > > ; }"
+  },
+  "ICalmRequestOptions": {
+    "declaration": "export interface ICalmRequestOptions { url : string ; method : string ; timeout ? : number ; service ? : CalmService ; data ? : unknown ; params ? : unknown ; headers ? : Record < string , string > ; }"
+  },
+  "ICalmResponse": {
+    "declaration": "export type ICalmResponse < T = unknown , D = unknown > = IAdtWireResponse < T , D > ;"
+  },
+  "ICdsTestDoubleCheckable": {
+    "declaration": "export interface ICdsTestDoubleCheckable < TResult > { checkCdsTestDoubles ( cdsViewName : string ) : Promise < IAdtResponse < TResult > > ; }"
+  },
+  "ICdsUnitTestConfig": {
+    "declaration": "export type ICdsUnitTestConfig = IUnitTestConfig & { cdsViewName ? : string ; } ;"
+  },
+  "ICertificateMaterial": {
+    "declaration": "export interface ICertificateMaterial { cert ? : Buffer | string ; key ? : Buffer | string ; pfx ? : Buffer ; passphrase ? : string ; }"
+  },
+  "ICertificateMaterialLoader": {
+    "declaration": "export interface ICertificateMaterialLoader { load ( config : ISapConfig ) : Promise < ICertificateMaterial > ; }"
+  },
+  "ICheckEnhancementParams": {
+    "declaration": "export interface ICheckEnhancementParams { enhancement_name : string ; enhancement_type : EnhancementType ; version ? : 'active' | 'inactive' ; source_code ? : string ; }"
+  },
+  "ICheckServiceBindingParams": {
+    "declaration": "export interface ICheckServiceBindingParams { bindingName : string ; version ? : 'active' | 'inactive' ; }"
+  },
+  "IClassConfig": {
+    "declaration": "export interface IClassConfig { className : string ; masterLanguage ? : string ; description ? : string ; packageName ? : string ; transportRequest ? : string ; sourceCode ? : string ; testClassCode ? : string ; testClassName ? : string ; localTypesCode ? : string ; definitionsCode ? : string ; macrosCode ? : string ; superclass ? : string ; final ? : boolean ; abstract ? : boolean ; createProtected ? : boolean ; masterSystem ? : string ; responsible ? : string ; classTemplate ? : string ; }"
+  },
+  "IClassExecuteWithProfilerOptions": {
+    "declaration": "export interface IClassExecuteWithProfilerOptions { profilerId : string ; }"
+  },
+  "IClassExecuteWithProfilingOptions": {
+    "declaration": "export interface IClassExecuteWithProfilingOptions { profilerParameters ? : IProfilerTraceParameters ; }"
+  },
+  "IClassExecuteWithProfilingResult": {
+    "declaration": "export interface IClassExecuteWithProfilingResult < TRun > { run : TRun ; profilerId : string ; }"
+  },
+  "IClassExecutionTarget": {
+    "declaration": "export interface IClassExecutionTarget { className : string ; }"
+  },
+  "IClassExecutor": {
+    "declaration": "export type IClassExecutor < TRun , TTypes , TRequests , TScheduled > = IAdtRunnable < IClassExecutionTarget , TRun > & IRunnableWithProfiler < IClassExecutionTarget , TRun , IClassExecuteWithProfilerOptions > & IRunnableWithProfiling < IClassExecutionTarget , IClassExecuteWithProfilingResult < TRun > , IClassExecuteWithProfilingOptions > & ITraceScheduling < TTypes , TRequests , TScheduled > ;"
+  },
+  "IClassifyServiceBindingParams": {
+    "declaration": "export interface IClassifyServiceBindingParams { objectname : string ; bindtype ? : string ; bindtypeversion ? : string ; repositoryid ? : string ; servicename ? : string ; serviceversion ? : string ; }"
+  },
+  "IClassUnitTestDefinition": {
+    "declaration": "export interface IClassUnitTestDefinition { containerClass : string ; testClass : string ; }"
+  },
+  "IClassUnitTestRunOptions": {
+    "declaration": "export interface IClassUnitTestRunOptions { title ? : string ; context ? : string ; scope ? : IUnitTestScope ; riskLevel ? : IUnitTestRiskLevel ; duration ? : IUnitTestDuration ; }"
+  },
+  "IConfig": {
+    "declaration": "export type IConfig = Partial < IAuthorizationConfig > & Partial < IConnectionConfig > ;"
+  },
+  "IConnectionConfig": {
+    "declaration": "export interface IConnectionConfig { serviceUrl ? : string ; authorizationToken ? : string ; username ? : string ; password ? : string ; authType ? : 'basic' | 'jwt' | 'saml' ; sapClient ? : string ; language ? : string ; sessionCookies ? : string ; }"
+  },
+  "ICreateAccessControlParams": {
+    "declaration": "export interface ICreateAccessControlParams { access_control_name : string ; description ? : string ; package_name : string ; transport_request ? : string ; masterSystem ? : string ; responsible ? : string ; masterLanguage ? : string ; }"
+  },
+  "ICreateAndGenerateServiceBindingParams": {
+    "declaration": "export type ICreateAndGenerateServiceBindingParams = ICreateServiceBindingParams ;"
+  },
+  "ICreateAndGenerateServiceBindingParamsLegacy": {
+    "declaration": "export type ICreateAndGenerateServiceBindingParamsLegacy = ICreateAndGenerateServiceBindingParams ;"
+  },
+  "ICreateAppendStructureParams": {
+    "declaration": "export interface ICreateAppendStructureParams { append_structure_name : string ; base_object : string ; description ? : string ; package_name : string ; transport_request ? : string ; masterSystem ? : string ; responsible ? : string ; masterLanguage ? : string ; }"
+  },
+  "ICreateAuthorizationFieldParams": {
+    "declaration": "export interface ICreateAuthorizationFieldParams { authorization_field_name : string ; description ? : string ; package_name : string ; transport_request ? : string ; master_system ? : string ; responsible ? : string ; field_name ? : string ; roll_name ? : string ; check_table ? : string ; exit_fb ? : string ; abap_language_version ? : string ; search ? : string ; objexit ? : string ; domname ? : string ; outputlen ? : string ; convexit ? : string ; orglvlinfo ? : string ; col_searchhelp ? : string ; col_searchhelp_name ? : string ; col_searchhelp_descr ? : string ; }"
+  },
+  "ICreateBehaviorImplementationParams": {
+    "declaration": "export interface ICreateBehaviorImplementationParams { class_name : string ; description ? : string ; package_name : string ; transport_request ? : string ; master_system ? : string ; responsible ? : string ; behavior_definition : string ; }"
+  },
+  "ICreateClassParams": {
+    "declaration": "export interface ICreateClassParams { class_name : string ; description ? : string ; package_name : string ; transport_request ? : string ; master_system ? : string ; responsible ? : string ; masterLanguage ? : string ; superclass ? : string ; final ? : boolean ; abstract ? : boolean ; create_protected ? : boolean ; template_xml ? : string ; }"
+  },
+  "ICreateDataElementParams": {
+    "declaration": "export interface ICreateDataElementParams { data_element_name : string ; description ? : string ; package_name : string ; transport_request ? : string ; masterSystem ? : string ; responsible ? : string ; masterLanguage ? : string ; type_kind ? : DataElementTypeKind ; type_name ? : string ; data_type ? : string ; length ? : number ; decimals ? : number ; short_label ? : string ; medium_label ? : string ; long_label ? : string ; heading_label ? : string ; search_help ? : string ; search_help_parameter ? : string ; set_get_parameter ? : string ; default_component_name ? : string ; deactivate_input_history ? : boolean ; change_document ? : boolean ; left_to_right_direction ? : boolean ; deactivate_bidi_filtering ? : boolean ; }"
+  },
+  "ICreateDdlParams": {
+    "declaration": "export interface ICreateDdlParams { ddl_name : string ; ddl_source ? : string ; package_name : string ; transport_request ? : string ; description ? : string ; masterSystem ? : string ; responsible ? : string ; masterLanguage ? : string ; }"
+  },
+  "ICreateDomainParams": {
+    "declaration": "export interface ICreateDomainParams { domain_name : string ; description ? : string ; package_name : string ; transport_request ? : string ; masterSystem ? : string ; responsible ? : string ; masterLanguage ? : string ; datatype ? : string ; length ? : number ; decimals ? : number ; conversion_exit ? : string ; lowercase ? : boolean ; sign_exists ? : boolean ; value_table ? : string ; activate ? : boolean ; fixed_values ? : IFixedValue [ ] ; }"
+  },
+  "ICreateEnhancementParams": {
+    "declaration": "export interface ICreateEnhancementParams { enhancement_name : string ; enhancement_type : EnhancementType ; description ? : string ; package_name : string ; transport_request ? : string ; enhancement_spot ? : string ; badi_definition ? : string ; source_code ? : string ; masterSystem ? : string ; responsible ? : string ; masterLanguage ? : string ; }"
+  },
+  "ICreateFeatureToggleParams": {
+    "declaration": "export interface ICreateFeatureToggleParams { feature_toggle_name : string ; description ? : string ; package_name : string ; transport_request ? : string ; master_system ? : string ; responsible ? : string ; source ? : IFeatureToggleSource ; }"
+  },
+  "ICreateFunctionGroupParams": {
+    "declaration": "export interface ICreateFunctionGroupParams { functionGroupName : string ; description : string ; packageName : string ; transportRequest ? : string ; masterSystem ? : string ; responsible ? : string ; masterLanguage ? : string ; }"
+  },
+  "ICreateFunctionIncludeParams": {
+    "declaration": "export interface ICreateFunctionIncludeParams { function_group_name : string ; include_name : string ; description ? : string ; transport_request ? : string ; master_system ? : string ; responsible ? : string ; }"
+  },
+  "ICreateFunctionModuleParams": {
+    "declaration": "export interface ICreateFunctionModuleParams { functionGroupName : string ; functionModuleName : string ; description : string ; transportRequest ? : string ; masterSystem ? : string ; responsible ? : string ; }"
+  },
+  "ICreateIncludeParams": {
+    "declaration": "export interface ICreateIncludeParams { includeName : string ; description ? : string ; packageName : string ; transportRequest ? : string ; masterSystem ? : string ; responsible ? : string ; masterLanguage ? : string ; activate ? : boolean ; }"
+  },
+  "ICreateInterfaceParams": {
+    "declaration": "export interface ICreateInterfaceParams { interfaceName : string ; description : string ; packageName : string ; transportRequest ? : string ; masterSystem ? : string ; responsible ? : string ; masterLanguage ? : string ; }"
+  },
+  "ICreateMessageClassParams": {
+    "declaration": "export interface ICreateMessageClassParams { name : string ; description : string ; package_name : string ; transport_request ? : string ; master_language ? : string ; }"
+  },
+  "ICreatePackageParams": {
+    "declaration": "export interface ICreatePackageParams { package_name : string ; description ? : string ; super_package : string ; package_type ? : string ; software_component ? : string ; transport_layer ? : string ; transport_request ? : string ; application_component ? : string ; responsible ? : string ; master_system ? : string ; master_language ? : string ; record_changes : boolean ; }"
+  },
+  "ICreateProgramParams": {
+    "declaration": "export interface ICreateProgramParams { programName : string ; description ? : string ; packageName : string ; transportRequest ? : string ; masterSystem ? : string ; responsible ? : string ; masterLanguage ? : string ; programType ? : string ; application ? : string ; activate ? : boolean ; }"
+  },
+  "ICreateScalarFunctionImplementationParams": {
+    "declaration": "export interface ICreateScalarFunctionImplementationParams { implementation_name : string ; scalar_function_name : string ; engine_value ? : ScalarFunctionEngine ; description ? : string ; package_name : string ; transport_request ? : string ; masterSystem ? : string ; responsible ? : string ; masterLanguage ? : string ; }"
+  },
+  "ICreateScalarFunctionParams": {
+    "declaration": "export interface ICreateScalarFunctionParams { scalar_function_name : string ; description ? : string ; package_name : string ; transport_request ? : string ; masterSystem ? : string ; responsible ? : string ; masterLanguage ? : string ; }"
+  },
+  "ICreateServiceBindingParams": {
+    "declaration": "export interface ICreateServiceBindingParams { bindingName : string ; packageName : string ; description : string ; serviceDefinitionName : string ; serviceName : string ; serviceVersion : string ; bindingVariant : ServiceBindingVariant ; masterLanguage ? : string ; masterSystem ? : string ; responsible ? : string ; transportRequest ? : string ; runTransportCheck ? : boolean ; activateAfterCreate ? : boolean ; }"
+  },
+  "ICreateServiceDefinitionParams": {
+    "declaration": "export interface ICreateServiceDefinitionParams { service_definition_name : string ; description ? : string ; package_name : string ; transport_request ? : string ; masterSystem ? : string ; responsible ? : string ; masterLanguage ? : string ; }"
+  },
+  "ICreateStructureParams": {
+    "declaration": "export interface ICreateStructureParams { structureName : string ; description : string ; packageName : string ; transportRequest ? : string ; masterSystem ? : string ; responsible ? : string ; masterLanguage ? : string ; }"
+  },
+  "ICreateTableParams": {
+    "declaration": "export interface ICreateTableParams { table_name : string ; package_name : string ; transport_request ? : string ; masterSystem ? : string ; responsible ? : string ; masterLanguage ? : string ; }"
+  },
+  "ICreateTableTypeParams": {
+    "declaration": "export interface ICreateTableTypeParams { tabletype_name : string ; package_name : string ; description ? : string ; transport_request ? : string ; masterSystem ? : string ; responsible ? : string ; masterLanguage ? : string ; }"
+  },
+  "ICreateTransformationParams": {
+    "declaration": "export interface ICreateTransformationParams { transformation_name : string ; transformation_type : TransformationType ; description ? : string ; package_name : string ; transport_request ? : string ; masterSystem ? : string ; responsible ? : string ; masterLanguage ? : string ; }"
+  },
+  "ICreateTransportParams": {
+    "declaration": "export interface ICreateTransportParams { transport_type ? : string ; description : string ; target_system ? : string ; owner ? : string ; }"
+  },
+  "ICriticalSection": {
+    "declaration": "export interface ICriticalSection { beginCriticalSection ( ) : void ; endCriticalSection ( ) : void ; }"
+  },
+  "ICrossTrace": {
+    "declaration": "export interface ICrossTrace < R extends ICrossTraceResults > { readonly kind : 'crossTrace' ; list ( options ? : IListCrossTracesOptions ) : Promise < IAdtResponse < R [ 'list' ] > > ; getById ( traceId : string , includeSensitiveData ? : boolean ) : Promise < IAdtResponse < R [ 'trace' ] > > ; getRecords ( traceId : string ) : Promise < IAdtResponse < R [ 'records' ] > > ; getRecordContent ( traceId : string , recordNumber : number ) : Promise < IAdtResponse < R [ 'recordContent' ] > > ; getActivations ( ) : Promise < IAdtResponse < R [ 'activations' ] > > ; }"
+  },
+  "ICrossTraceResults": {
+    "declaration": "export interface ICrossTraceResults { list : unknown ; trace : unknown ; records : unknown ; recordContent : unknown ; activations : unknown ; }"
+  },
+  "IDataElementConfig": {
+    "declaration": "export interface IDataElementConfig { document ? : string ; dataElementName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; dataType ? : string ; length ? : number ; decimals ? : number ; shortLabel ? : string ; mediumLabel ? : string ; longLabel ? : string ; headingLabel ? : string ; typeKind ? : 'domain' | 'predefinedAbapType' | 'refToPredefinedAbapType' | 'refToDictionaryType' | 'refToClifType' ; typeName ? : string ; searchHelp ? : string ; searchHelpParameter ? : string ; setGetParameter ? : string ; }"
+  },
+  "IDdicActivation": {
+    "declaration": "export interface IDdicActivation < TGraph > { readonly kind : 'ddicActivation' ; getGraph ( options ? : IGetActivationGraphOptions ) : Promise < IAdtResponse < TGraph > > ; }"
+  },
+  "IDdlConfig": {
+    "declaration": "export interface IDdlConfig { ddlName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; ddlSource ? : string ; sessionId ? : string ; onLock ? : ( lockHandle : string ) => void ; }"
+  },
+  "IDeferredResponseConnection": {
+    "declaration": "export interface IDeferredResponseConnection { readonly responsesAreDeferred : true ; }"
+  },
+  "IDeleteAccessControlParams": {
+    "declaration": "export interface IDeleteAccessControlParams { access_control_name : string ; transport_request ? : string ; }"
+  },
+  "IDeleteAppendStructureParams": {
+    "declaration": "export interface IDeleteAppendStructureParams { append_structure_name : string ; transport_request ? : string ; }"
+  },
+  "IDeleteClassParams": {
+    "declaration": "export interface IDeleteClassParams { class_name : string ; transport_request ? : string ; }"
+  },
+  "IDeleteDataElementParams": {
+    "declaration": "export interface IDeleteDataElementParams { data_element_name : string ; transport_request ? : string ; }"
+  },
+  "IDeleteDdlParams": {
+    "declaration": "export interface IDeleteDdlParams { ddl_name : string ; transport_request ? : string ; }"
+  },
+  "IDeleteDomainParams": {
+    "declaration": "export interface IDeleteDomainParams { domain_name : string ; transport_request ? : string ; }"
+  },
+  "IDeleteEnhancementParams": {
+    "declaration": "export interface IDeleteEnhancementParams { enhancement_name : string ; enhancement_type : EnhancementType ; transport_request ? : string ; }"
+  },
+  "IDeleteFeatureToggleParams": {
+    "declaration": "export interface IDeleteFeatureToggleParams { feature_toggle_name : string ; transport_request ? : string ; }"
+  },
+  "IDeleteFunctionGroupParams": {
+    "declaration": "export interface IDeleteFunctionGroupParams { function_group_name : string ; transport_request ? : string ; }"
+  },
+  "IDeleteFunctionModuleParams": {
+    "declaration": "export interface IDeleteFunctionModuleParams { function_module_name : string ; function_group_name : string ; transport_request ? : string ; }"
+  },
+  "IDeleteIncludeParams": {
+    "declaration": "export interface IDeleteIncludeParams { includeName : string ; transportRequest ? : string ; }"
+  },
+  "IDeleteInterfaceParams": {
+    "declaration": "export interface IDeleteInterfaceParams { interface_name : string ; transport_request ? : string ; }"
+  },
+  "IDeletePackageParams": {
+    "declaration": "export interface IDeletePackageParams { package_name : string ; transport_request ? : string ; }"
+  },
+  "IDeleteProgramParams": {
+    "declaration": "export interface IDeleteProgramParams { programName : string ; transportRequest ? : string ; }"
+  },
+  "IDeleteScalarFunctionImplementationParams": {
+    "declaration": "export interface IDeleteScalarFunctionImplementationParams { implementation_name : string ; transport_request ? : string ; }"
+  },
+  "IDeleteScalarFunctionParams": {
+    "declaration": "export interface IDeleteScalarFunctionParams { scalar_function_name : string ; transport_request ? : string ; }"
+  },
+  "IDeleteServiceBindingParams": {
+    "declaration": "export interface IDeleteServiceBindingParams { bindingName : string ; transportRequest ? : string ; }"
+  },
+  "IDeleteServiceDefinitionParams": {
+    "declaration": "export interface IDeleteServiceDefinitionParams { service_definition_name : string ; transport_request ? : string ; }"
+  },
+  "IDeleteStructureParams": {
+    "declaration": "export interface IDeleteStructureParams { structure_name : string ; transport_request ? : string ; }"
+  },
+  "IDeleteTableParams": {
+    "declaration": "export interface IDeleteTableParams { table_name : string ; transport_request ? : string ; }"
+  },
+  "IDeleteTableTypeParams": {
+    "declaration": "export interface IDeleteTableTypeParams { tabletype_name : string ; transport_request ? : string ; }"
+  },
+  "IDeleteTransformationParams": {
+    "declaration": "export interface IDeleteTransformationParams { transformation_name : string ; transport_request ? : string ; }"
+  },
+  "IDomainConfig": {
+    "declaration": "export interface IDomainConfig { document ? : string ; domainName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; datatype ? : string ; length ? : number ; decimals ? : number ; conversion_exit ? : string ; lowercase ? : boolean ; sign_exists ? : boolean ; value_table ? : string ; fixed_values ? : IFixedValue [ ] ; }"
+  },
+  "IEnhancementConfig": {
+    "declaration": "export interface IEnhancementConfig { enhancementName : string ; masterLanguage ? : string ; enhancementType : EnhancementType ; description ? : string ; packageName ? : string ; transportRequest ? : string ; sourceCode ? : string ; enhancementSpot ? : string ; badiDefinition ? : string ; }"
+  },
+  "IFeatureToggleAttribute": {
+    "declaration": "export interface IFeatureToggleAttribute { key : string ; value : string ; }"
+  },
+  "IFeatureToggleConfig": {
+    "declaration": "export interface IFeatureToggleConfig { featureToggleName : string ; packageName ? : string ; description ? : string ; transportRequest ? : string ; masterSystem ? : string ; responsible ? : string ; source ? : IFeatureToggleSource ; onLock ? : ( lockHandle : string ) => void ; }"
+  },
+  "IFeatureToggleHeader": {
+    "declaration": "export interface IFeatureToggleHeader { description ? : string ; originalLanguage ? : string ; abapLanguageVersion ? : string ; }"
+  },
+  "IFeatureToggleObject": {
+    "declaration": "export interface IFeatureToggleObject < TState > { switchOn ( config : Partial < IFeatureToggleConfig > , opts : { transportRequest : string ; userSpecific ? : boolean ; } ) : Promise < IAdtResponse < TState > > ; switchOff ( config : Partial < IFeatureToggleConfig > , opts : { transportRequest : string ; userSpecific ? : boolean ; } ) : Promise < IAdtResponse < TState > > ; getRuntimeState ( config : Partial < IFeatureToggleConfig > ) : Promise < IAdtResponse < TState > > ; checkState ( config : Partial < IFeatureToggleConfig > , opts ? : { userSpecific ? : boolean ; } ) : Promise < IAdtResponse < TState > > ; readSource ( config : Partial < IFeatureToggleConfig > , version ? : 'active' | 'inactive' ) : Promise < IAdtResponse < TState > > ; }"
+  },
+  "IFeatureTogglePlanning": {
+    "declaration": "export interface IFeatureTogglePlanning { referenceProduct ? : string ; releaseToCustomer ? : IFeatureToggleReleasePlan ; generalAvailability ? : IFeatureToggleReleasePlan ; generalRollout ? : IFeatureToggleReleasePlan ; }"
+  },
+  "IFeatureToggleReleasePlan": {
+    "declaration": "export interface IFeatureToggleReleasePlan { version : string ; sp : string ; }"
+  },
+  "IFeatureToggleRollout": {
+    "declaration": "export interface IFeatureToggleRollout { lifecycleStatus ? : 'new' | 'inValidation' | 'released' | 'discontinued' ; validationStep ? : 'internal' | 'releaseToCustomer' | string ; rolloutStep ? : 'releaseToCustomer' | 'generalAvailability' | 'generalRollout' | string ; strategy ? : 'immediate' | 'gradual' | string ; finalDate ? : string ; event ? : 'noRestriction' | string ; planning ? : IFeatureTogglePlanning ; configurable ? : boolean ; defaultEnabledFor ? : 'none' | 'someCustomers' | 'allCustomers' | string ; reversible ? : boolean ; }"
+  },
+  "IFeatureToggleSource": {
+    "declaration": "export interface IFeatureToggleSource { header ? : IFeatureToggleHeader ; rollout ? : IFeatureToggleRollout ; toggledPackages ? : string [ ] ; relatedToggles ? : string [ ] ; attributes ? : IFeatureToggleAttribute [ ] ; }"
+  },
+  "IFeedQueryOptions": {
+    "declaration": "export interface IFeedQueryOptions { user ? : string ; maxResults ? : number ; from ? : IAbapTimestamp ; to ? : IAbapTimestamp ; }"
+  },
+  "IFeedRepository": {
+    "declaration": "export interface IFeedRepository < TFeeds , TVariants , TEntries , TSystemMessages , TGatewayErrors , TGatewayErrorDetail > { list ( ) : Promise < IAdtResponse < TFeeds > > ; variants ( category : string ) : Promise < IAdtResponse < TVariants > > ; dumps ( options ? : IFeedQueryOptions ) : Promise < IAdtResponse < TEntries > > ; systemMessages ( options ? : IFeedQueryOptions ) : Promise < IAdtResponse < TSystemMessages > > ; gatewayErrors ( options ? : IFeedQueryOptions ) : Promise < IAdtResponse < TGatewayErrors > > ; gatewayErrorDetail ( feedUrl : string ) : Promise < IAdtResponse < TGatewayErrorDetail > > ; }"
+  },
+  "IFixedValue": {
+    "declaration": "export interface IFixedValue { low : string ; text : string ; }"
+  },
+  "IFunctionGroupConfig": {
+    "declaration": "export interface IFunctionGroupConfig { document ? : string ; functionGroupName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; masterSystem ? : string ; responsible ? : string ; sessionId ? : string ; onLock ? : ( lockHandle : string ) => void ; }"
+  },
+  "IFunctionIncludeConfig": {
+    "declaration": "export interface IFunctionIncludeConfig { functionGroupName : string ; includeName : string ; description ? : string ; transportRequest ? : string ; masterSystem ? : string ; responsible ? : string ; sourceCode ? : string ; sessionId ? : string ; onLock ? : ( lockHandle : string ) => void ; }"
+  },
+  "IFunctionModuleConfig": {
+    "declaration": "export interface IFunctionModuleConfig { functionGroupName : string ; functionModuleName : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; sourceCode ? : string ; masterSystem ? : string ; responsible ? : string ; onLock ? : ( lockHandle : string ) => void ; }"
+  },
+  "IGatewayErrorLog": {
+    "declaration": "export interface IGatewayErrorLog < TList , TError > { readonly kind : 'gatewayErrorLog' ; list ( options ? : IFeedQueryOptions ) : Promise < IAdtResponse < TList > > ; getById ( errorType : string , errorId : string ) : Promise < IAdtResponse < TError > > ; }"
+  },
+  "IGenerateServiceBindingParams": {
+    "declaration": "export interface IGenerateServiceBindingParams { serviceType : GeneratedServiceType ; bindingName : string ; serviceName : string ; serviceVersion : string ; serviceDefinitionName : string ; }"
+  },
+  "IGetActivationGraphOptions": {
+    "declaration": "export interface IGetActivationGraphOptions { objectName ? : string ; objectType ? : string ; logName ? : string ; }"
+  },
+  "IGetApplicationLogObjectOptions": {
+    "declaration": "export interface IGetApplicationLogObjectOptions { corrNr ? : string ; lockHandle ? : string ; version ? : string ; accessMode ? : string ; action ? : string ; }"
+  },
+  "IGetApplicationLogSourceOptions": {
+    "declaration": "export interface IGetApplicationLogSourceOptions { corrNr ? : string ; lockHandle ? : string ; version ? : string ; }"
+  },
+  "IGetCheckFailureLogsOptions": {
+    "declaration": "export interface IGetCheckFailureLogsOptions { displayId ? : string ; objName ? : string ; objType ? : string ; moduleId ? : string ; phaseKey ? : string ; }"
+  },
+  "IGetDiscoveryParams": {
+    "declaration": "export interface IGetDiscoveryParams { requestId ? : string ; timeout ? : number ; }"
+  },
+  "IGetNodeContentsOptions": {
+    "declaration": "export interface IGetNodeContentsOptions { nodeId ? : string ; withShortDescriptions ? : boolean ; }"
+  },
+  "IGetServiceBindingODataParams": {
+    "declaration": "export interface IGetServiceBindingODataParams { objectname : string ; servicename ? : string ; serviceversion ? : string ; srvdname ? : string ; }"
+  },
+  "IGetSqlQueryParams": {
+    "declaration": "export interface IGetSqlQueryParams { sql_query : string ; row_number ? : number ; }"
+  },
+  "IGetTableContentsParams": {
+    "declaration": "export interface IGetTableContentsParams { table_name : string ; max_rows ? : number ; sql_query : string ; }"
+  },
+  "IGetVirtualFoldersContentsParams": {
+    "declaration": "export interface IGetVirtualFoldersContentsParams { objectSearchPattern ? : string ; preselection ? : IVirtualFoldersPreselection [ ] ; facetOrder ? : string [ ] ; withVersions ? : boolean ; ignoreShortDescriptions ? : boolean ; }"
+  },
+  "IGetWhereUsedParams": {
+    "declaration": "export interface IGetWhereUsedParams { object_name : string ; object_type : string ; scopeXml ? : string ; }"
+  },
+  "IGetWhereUsedScopeParams": {
+    "declaration": "export interface IGetWhereUsedScopeParams { object_name : string ; object_type : string ; }"
+  },
+  "IHeaderValidationResult": {
+    "declaration": "export interface IHeaderValidationResult { isValid : boolean ; config ? : IValidatedAuthConfig ; errors : string [ ] ; warnings : string [ ] ; }"
+  },
+  "IIncludeConfig": {
+    "declaration": "export interface IIncludeConfig { includeName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; sourceCode ? : string ; sessionId ? : string ; onLock ? : ( lockHandle : string ) => void ; }"
+  },
+  "IInterfaceConfig": {
+    "declaration": "export type IInterfaceConfig = IAdtObjectConfig & { interfaceName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; sourceCode ? : string ; sessionId ? : string ; onLock ? : ( lockHandle : string ) => void ; } ;"
+  },
+  "IListCrossTracesOptions": {
+    "declaration": "export interface IListCrossTracesOptions { traceUser ? : string ; actCreateUser ? : string ; actChangeUser ? : string ; }"
+  },
+  "IListTransportsOptions": {
+    "declaration": "export interface IListTransportsOptions { configUri ? : string ; }"
+  },
+  "IListTransportsParams": {
+    "declaration": "export interface IListTransportsParams { configUri : string ; }"
+  },
+  "ILocalDefinitionsConfig": {
+    "declaration": "export interface ILocalDefinitionsConfig { className : string ; definitionsCode ? : string ; transportRequest ? : string ; }"
+  },
+  "ILocalMacrosConfig": {
+    "declaration": "export interface ILocalMacrosConfig { className : string ; macrosCode ? : string ; transportRequest ? : string ; }"
+  },
+  "ILocalTestClassConfig": {
+    "declaration": "export interface ILocalTestClassConfig { className : string ; testClassCode ? : string ; transportRequest ? : string ; }"
+  },
+  "ILocalTypesConfig": {
+    "declaration": "export interface ILocalTypesConfig { className : string ; localTypesCode ? : string ; transportRequest ? : string ; }"
+  },
+  "ILogger": {
+    "declaration": "export interface ILogger { info ( message : string , meta ? : unknown ) : void ; error ( message : string , meta ? : unknown ) : void ; warn ( message : string , meta ? : unknown ) : void ; debug ( message : string , meta ? : unknown ) : void ; }"
+  },
+  "IMessageClassConfig": {
+    "declaration": "export interface IMessageClassConfig { name : string ; description ? : string ; packageName ? : string ; transportRequest ? : string ; masterLanguage ? : string ; }"
+  },
+  "IMessageClassMessageConfig": {
+    "declaration": "export interface IMessageClassMessageConfig { className : string ; msgno : string ; msgtext ? : string ; selfExplanatory ? : boolean ; description ? : string ; transportRequest ? : string ; }"
+  },
+  "IMetadataExtensionConfig": {
+    "declaration": "export interface IMetadataExtensionConfig { name : string ; description ? : string ; packageName ? : string ; transportRequest ? : string ; sourceCode ? : string ; masterLanguage ? : string ; masterSystem ? : string ; responsible ? : string ; sessionId ? : string ; }"
+  },
+  "IMetadataExtensionCreateParams": {
+    "declaration": "export interface IMetadataExtensionCreateParams { name : string ; description : string ; packageName : string ; transportRequest ? : string ; masterLanguage ? : string ; masterSystem ? : string ; responsible ? : string ; }"
+  },
+  "IMetadataExtensionValidationParams": {
+    "declaration": "export interface IMetadataExtensionValidationParams { name : string ; description : string ; packageName : string ; }"
+  },
+  "IObjectReference": {
+    "declaration": "export interface IObjectReference { name : string ; type : string ; uri ? : string ; parentName ? : string ; }"
+  },
+  "IPackageConfig": {
+    "declaration": "export interface IPackageConfig { document ? : string ; packageName : string ; superPackage ? : string ; description ? : string ; updatedDescription ? : string ; packageType ? : string ; softwareComponent ? : string ; transportLayer ? : string ; transportRequest ? : string ; applicationComponent ? : string ; responsible ? : string ; masterSystem ? : string ; masterLanguage ? : string ; recordChanges ? : boolean ; onLock ? : ( lockHandle : string ) => void ; }"
+  },
+  "IProfiler": {
+    "declaration": "export type IProfiler < TEntry extends ITraceEntry , TViews extends { [ K in keyof TViews ] : ITraceView < unknown , unknown > ; } > = ITraceFamily < 'profiler' > & ITraceListing < TEntry , IProfilerListOptions > & ITraceReading < TViews > & ITraceDeletion ;"
+  },
+  "IProfilerListOptions": {
+    "declaration": "export interface IProfilerListOptions { user ? : string ; }"
+  },
+  "IProfilerTraceDbAccessesOptions": {
+    "declaration": "export interface IProfilerTraceDbAccessesOptions { withSystemEvents ? : boolean ; }"
+  },
+  "IProfilerTraceHitListOptions": {
+    "declaration": "export interface IProfilerTraceHitListOptions { withSystemEvents ? : boolean ; }"
+  },
+  "IProfilerTraceParameters": {
+    "declaration": "export interface IProfilerTraceParameters { allMiscAbapStatements ? : boolean ; allProceduralUnits ? : boolean ; allInternalTableEvents ? : boolean ; allDynproEvents ? : boolean ; description ? : string ; aggregate ? : boolean ; explicitOnOff ? : boolean ; withRfcTracing ? : boolean ; allSystemKernelEvents ? : boolean ; sqlTrace ? : boolean ; allDbEvents ? : boolean ; maxSizeForTraceFile ? : number ; amdpTrace ? : boolean ; maxTimeForTracing ? : number ; }"
+  },
+  "IProfilerTraceStatementsOptions": {
+    "declaration": "export interface IProfilerTraceStatementsOptions { id ? : number ; withDetails ? : boolean ; autoDrillDownThreshold ? : number ; withSystemEvents ? : boolean ; }"
+  },
+  "IProgramConfig": {
+    "declaration": "export interface IProgramConfig { programName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; programType ? : string ; application ? : string ; sourceCode ? : string ; sessionId ? : string ; onLock ? : ( lockHandle : string ) => void ; }"
+  },
+  "IProgramExecuteWithProfilerOptions": {
+    "declaration": "export interface IProgramExecuteWithProfilerOptions { profilerId : string ; }"
+  },
+  "IProgramExecuteWithProfilingOptions": {
+    "declaration": "export interface IProgramExecuteWithProfilingOptions { profilerParameters ? : IProfilerTraceParameters ; }"
+  },
+  "IProgramExecuteWithProfilingResult": {
+    "declaration": "export interface IProgramExecuteWithProfilingResult < TRun > { run : TRun ; profilerId : string ; }"
+  },
+  "IProgramExecutionTarget": {
+    "declaration": "export interface IProgramExecutionTarget { programName : string ; }"
+  },
+  "IProgramExecutor": {
+    "declaration": "export type IProgramExecutor < TRun , TTypes , TRequests , TScheduled > = IAdtRunnable < IProgramExecutionTarget , TRun > & IRunnableWithProfiler < IProgramExecutionTarget , TRun , IProgramExecuteWithProfilerOptions > & IRunnableWithProfiling < IProgramExecutionTarget , IProgramExecuteWithProfilingResult < TRun > , IProgramExecuteWithProfilingOptions > & ITraceScheduling < TTypes , TRequests , TScheduled > ;"
+  },
+  "IPublishODataV2Params": {
+    "declaration": "export interface IPublishODataV2Params { servicename : string ; serviceversion ? : string ; }"
+  },
+  "IReadOptions": {
+    "declaration": "export interface IReadOptions { withLongPolling ? : boolean ; accept ? : string ; version ? : 'active' | 'inactive' ; }"
+  },
+  "IReadServiceBindingParams": {
+    "declaration": "export interface IReadServiceBindingParams { bindingName : string ; version ? : 'active' | 'inactive' ; }"
+  },
+  "IRenewableCredential": {
+    "declaration": "export interface IRenewableCredential { renew ( ) : Promise < void > ; }"
+  },
+  "IRequestProfiling": {
+    "declaration": "export interface IRequestProfiling { setProfilingRequest ( what : string | null ) : void ; getProfilingRequest ( ) : string | null ; }"
+  },
+  "IResultStrategy": {
+    "declaration": "export type IResultStrategy < T > = ( answer : IAdtWireResponse ) => T ;"
+  },
+  "IRunnableWithProfiler": {
+    "declaration": "export interface IRunnableWithProfiler < TTarget , TResult , TOptions > { runWithProfiler ( target : TTarget , options : TOptions ) : Promise < IAdtResponse < TResult > > ; }"
+  },
+  "IRunnableWithProfiling": {
+    "declaration": "export interface IRunnableWithProfiling < TTarget , TResult , TOptions > { runWithProfiling ( target : TTarget , options ? : TOptions ) : Promise < IAdtResponse < TResult > > ; }"
+  },
+  "IRuntimeDumpReadOptions": {
+    "declaration": "export interface IRuntimeDumpReadOptions { view ? : IRuntimeDumpReadView ; }"
+  },
+  "IRuntimeDumpReadView": {
+    "declaration": "export type IRuntimeDumpReadView = 'default' | 'summary' | 'formatted' ;"
+  },
+  "IRuntimeDumps": {
+    "declaration": "export interface IRuntimeDumps < TList , TDump > { readonly kind : 'runtimeDumps' ; list ( options ? : IRuntimeDumpsListOptions ) : Promise < IAdtResponse < TList > > ; listByUser ( user ? : string , options ? : Omit < IRuntimeDumpsListOptions , 'query' > ) : Promise < IAdtResponse < TList > > ; getById ( dumpId : string , options ? : IRuntimeDumpReadOptions ) : Promise < IAdtResponse < TDump > > ; }"
+  },
+  "IRuntimeDumpsListOptions": {
+    "declaration": "export interface IRuntimeDumpsListOptions { query ? : string ; inlinecount ? : 'allpages' | 'none' ; top ? : number ; skip ? : number ; orderby ? : string ; from ? : string ; to ? : string ; }"
+  },
+  "ISapConfig": {
+    "declaration": "export interface ISapConfig { url : string ; client ? : string ; authType : SapAuthType ; connectionType ? : SapConnectionType ; username ? : string ; password ? : string ; jwtToken ? : string ; refreshToken ? : string ; sessionCookies ? : string ; certPath ? : string ; certKeyPath ? : string ; certPfxPath ? : string ; certPassphrase ? : string ; kerberosSpn ? : string ; kerberosService ? : string ; uaaUrl ? : string ; uaaClientId ? : string ; uaaClientSecret ? : string ; }"
+  },
+  "IScalarFunctionConfig": {
+    "declaration": "export interface IScalarFunctionConfig { scalarFunctionName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; sourceCode ? : string ; }"
+  },
+  "IScalarFunctionImplementationConfig": {
+    "declaration": "export interface IScalarFunctionImplementationConfig { implementationName : string ; scalarFunctionName : string ; engineValue ? : ScalarFunctionEngine ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; sourceCode ? : string ; }"
+  },
+  "ISearchObjectsParams": {
+    "declaration": "export interface ISearchObjectsParams { query : string ; objectType ? : string ; maxResults ? : number ; }"
+  },
+  "IServiceBindingConfig": {
+    "declaration": "export interface IServiceBindingConfig { bindingName : string ; packageName ? : string ; description ? : string ; serviceDefinitionName ? : string ; serviceName ? : string ; serviceVersion ? : string ; bindingVariant ? : ServiceBindingVariant ; masterLanguage ? : string ; masterSystem ? : string ; responsible ? : string ; desiredPublicationState ? : DesiredPublicationState ; serviceType ? : GeneratedServiceType ; transportRequest ? : string ; runTransportCheck ? : boolean ; }"
+  },
+  "IServiceDefinitionConfig": {
+    "declaration": "export interface IServiceDefinitionConfig { serviceDefinitionName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; sourceCode ? : string ; }"
+  },
+  "IServiceKeyStore": {
+    "declaration": "export interface IServiceKeyStore { getServiceKey ( destination : string ) : Promise < IConfig | null > ; getAuthorizationConfig ( destination : string ) : Promise < IAuthorizationConfig | null > ; getConnectionConfig ( destination : string ) : Promise < IConnectionConfig | null > ; }"
+  },
+  "ISessionLifecycleAware": {
+    "declaration": "export interface ISessionLifecycleAware { disconnect ( ) : Promise < void > ; flushGoodbye ( timeoutMs ? : number ) : Promise < void > ; isConnected ( ) : boolean ; getSessionIdentity ( ) : string | null ; }"
+  },
+  "ISessionState": {
+    "declaration": "export interface ISessionState { cookies : string | null ; csrfToken : string | null ; cookieStore : Record < string , string > ; }"
+  },
+  "ISessionStorage": {
+    "declaration": "export interface ISessionStorage { save ( sessionId : string , state : ISessionState ) : Promise < void > ; load ( sessionId : string ) : Promise < ISessionState | null > ; delete ( sessionId : string ) : Promise < void > ; }"
+  },
+  "ISessionStore": {
+    "declaration": "export interface ISessionStore { loadSession ( destination : string ) : Promise < IConfig | null > ; saveSession ( destination : string , config : IConfig | unknown ) : Promise < void > ; deleteSession ? ( destination : string ) : Promise < void > ; getAuthorizationConfig ( destination : string ) : Promise < IAuthorizationConfig | null > ; getConnectionConfig ( destination : string ) : Promise < IConnectionConfig | null > ; setAuthorizationConfig ( destination : string , config : IAuthorizationConfig ) : Promise < void > ; setConnectionConfig ( destination : string , config : IConnectionConfig ) : Promise < void > ; }"
+  },
+  "ISt05Trace": {
+    "declaration": "export interface ISt05Trace < TState , TDirectory > { readonly kind : 'st05Trace' ; getState ( ) : Promise < IAdtResponse < TState > > ; getDirectory ( ) : Promise < IAdtResponse < TDirectory > > ; }"
+  },
+  "IStructureConfig": {
+    "declaration": "export interface IStructureConfig { structureName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; ddlCode ? : string ; fields ? : IStructureField [ ] ; includes ? : IStructureInclude [ ] ; onLock ? : ( lockHandle : string ) => void ; }"
+  },
+  "IStructureField": {
+    "declaration": "export interface IStructureField { name : string ; data_type ? : string ; length ? : number ; decimals ? : number ; domain ? : string ; data_element ? : string ; structure_ref ? : string ; table_ref ? : string ; description ? : string ; }"
+  },
+  "IStructureInclude": {
+    "declaration": "export interface IStructureInclude { name : string ; suffix ? : string ; }"
+  },
+  "ISystemMessages": {
+    "declaration": "export interface ISystemMessages < TList , TMessage > { readonly kind : 'systemMessages' ; list ( options ? : IFeedQueryOptions ) : Promise < IAdtResponse < TList > > ; getById ( messageId : string ) : Promise < IAdtResponse < TMessage > > ; }"
+  },
+  "ITableConfig": {
+    "declaration": "export interface ITableConfig { tableName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; ddlCode ? : string ; description ? : string ; }"
+  },
+  "ITableTypeConfig": {
+    "declaration": "export interface ITableTypeConfig { document ? : string ; tableTypeName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; rowTypeName ? : string ; rowTypeKind ? : 'dictionaryType' | 'predefinedAbapType' | 'refToPredefinedAbapType' | 'refToDictionaryType' | 'refToClassOrInterfaceType' | 'rangeTypeOnPredefinedType' | 'rangeTypeOnDataelement' ; accessType ? : 'standard' | 'sorted' | 'hashed' | 'index' | 'notSpecified' ; primaryKeyDefinition ? : 'standard' | 'rowType' | 'keyComponents' | 'empty' | 'notSpecified' ; primaryKeyKind ? : 'unique' | 'nonUnique' | 'notSpecified' ; description ? : string ; }"
+  },
+  "ITestRunInformation": {
+    "declaration": "export interface ITestRunInformation < TStatus , TResult > { getStatus ( runId : string , withLongPolling ? : boolean ) : Promise < IAdtResponse < TStatus > > ; getResult ( runId : string , options ? : IUnitTestResultOptions ) : Promise < IAdtResponse < TResult > > ; }"
+  },
+  "ITimeoutConfig": {
+    "declaration": "export interface ITimeoutConfig { default : number ; csrf : number ; long : number ; }"
+  },
+  "IToggleFeatureToggleParams": {
+    "declaration": "export interface IToggleFeatureToggleParams { feature_toggle_name : string ; state : 'on' | 'off' ; is_user_specific : boolean ; transport_request ? : string ; }"
+  },
+  "ITokenProvider": {
+    "declaration": "export interface ITokenProvider { getTokens ( ) : Promise < ITokenResult > ; validateToken ? ( token : string , serviceUrl ? : string ) : Promise < boolean > ; }"
+  },
+  "ITokenProviderOptions": {
+    "declaration": "export interface ITokenProviderOptions { browser ? : string ; logger ? : ILogger ; }"
+  },
+  "ITokenRefresher": {
+    "declaration": "export interface ITokenRefresher { getToken ( ) : Promise < string > ; refreshToken ( ) : Promise < string > ; }"
+  },
+  "ITokenRefreshResult": {
+    "declaration": "export interface ITokenRefreshResult { accessToken : string ; refreshToken ? : string ; }"
+  },
+  "ITokenResult": {
+    "declaration": "export interface ITokenResult { authorizationToken : string ; refreshToken ? : string ; authType : OAuth2GrantType ; expiresIn ? : number ; expiresAt ? : number ; tokenType ? : 'jwt' | 'saml' | 'opaque' ; }"
+  },
+  "ITraceDeletion": {
+    "declaration": "export interface ITraceDeletion { delete ( traceId : string ) : Promise < IAdtResponse < void > > ; }"
+  },
+  "ITraceEntry": {
+    "declaration": "export interface ITraceEntry { id : string ; recordedAt : string ; user ? : string ; objectName ? : string ; uri ? : string ; state ? : ITraceState ; expiresAt ? : string ; }"
+  },
+  "ITraceFamily": {
+    "declaration": "export interface ITraceFamily < TKind extends string > { readonly kind : TKind ; }"
+  },
+  "ITraceListing": {
+    "declaration": "export interface ITraceListing < TEntry extends ITraceEntry = ITraceEntry , TOptions = void > { list ( options ? : TOptions ) : Promise < IAdtResponse < TEntry [ ] > > ; }"
+  },
+  "ITraceReading": {
+    "declaration": "export interface ITraceReading < TViews extends { [ K in keyof TViews ] : ITraceView < unknown , unknown > ; } > { read < K extends keyof TViews > ( traceId : string , view : K , ... args : ViewArgs < TViews , K > ) : Promise < IAdtResponse < ViewResult < TViews , K > > > ; }"
+  },
+  "ITraceScheduling": {
+    "declaration": "export interface ITraceScheduling < TTypes , TRequests , TScheduled > { listObjectTypes ( ) : Promise < IAdtResponse < TTypes > > ; listProcessTypes ( ) : Promise < IAdtResponse < TTypes > > ; listRequests ( ) : Promise < IAdtResponse < TRequests > > ; getRequestsByUri ( uri : string ) : Promise < IAdtResponse < TRequests > > ; scheduleTrace ( options ? : IProfilerTraceParameters ) : Promise < IAdtResponse < TScheduled > > ; }"
+  },
+  "ITraceState": {
+    "declaration": "export interface ITraceState { value : string ; text : string ; }"
+  },
+  "ITraceView": {
+    "declaration": "export interface ITraceView < TResult , TOptions = void > { result : TResult ; options : TOptions ; }"
+  },
+  "ITransformationConfig": {
+    "declaration": "export interface ITransformationConfig { transformationName : string ; masterLanguage ? : string ; transformationType : TransformationType ; packageName ? : string ; transportRequest ? : string ; description ? : string ; sourceCode ? : string ; }"
+  },
+  "ITransportCheckServiceBindingParams": {
+    "declaration": "export interface ITransportCheckServiceBindingParams { objectName : string ; packageName : string ; description ? : string ; operation ? : 'I' | 'U' | 'D' ; }"
+  },
+  "ITransportConfig": {
+    "declaration": "export interface ITransportConfig { document ? : string ; description : string ; transportType ? : 'workbench' | 'customizing' ; targetSystem ? : string ; owner ? : string ; transportNumber ? : string ; }"
+  },
+  "ITransportSearchConfiguration": {
+    "declaration": "export interface ITransportSearchConfiguration { uri : string ; etag ? : string ; attributes : Record < string , string > ; }"
+  },
+  "IUnitTestConfig": {
+    "declaration": "export interface IUnitTestConfig { className : string ; testClassSource ? : string ; packageName ? : string ; description ? : string ; classTemplate ? : string ; transportRequest ? : string ; }"
+  },
+  "IUnitTestDuration": {
+    "declaration": "export interface IUnitTestDuration { short ? : boolean ; medium ? : boolean ; long ? : boolean ; }"
+  },
+  "IUnitTestResultOptions": {
+    "declaration": "export interface IUnitTestResultOptions { withNavigationUris ? : boolean ; format ? : 'abapunit' | 'junit' ; }"
+  },
+  "IUnitTestRiskLevel": {
+    "declaration": "export interface IUnitTestRiskLevel { harmless ? : boolean ; dangerous ? : boolean ; critical ? : boolean ; }"
+  },
+  "IUnitTestScope": {
+    "declaration": "export interface IUnitTestScope { ownTests ? : boolean ; foreignTests ? : boolean ; addForeignTestsAsPreview ? : boolean ; }"
+  },
+  "IUnpublishODataV2Params": {
+    "declaration": "export interface IUnpublishODataV2Params { servicename : string ; serviceversion ? : string ; }"
+  },
+  "IUpdateAccessControlParams": {
+    "declaration": "export interface IUpdateAccessControlParams { access_control_name : string ; source_code : string ; transport_request ? : string ; }"
+  },
+  "IUpdateAppendStructureParams": {
+    "declaration": "export interface IUpdateAppendStructureParams { append_structure_name : string ; source_code : string ; transport_request ? : string ; }"
+  },
+  "IUpdateBehaviorDefinitionParams": {
+    "declaration": "export interface IUpdateBehaviorDefinitionParams { name : string ; sourceCode : string ; lockHandle : string ; transportRequest ? : string ; }"
+  },
+  "IUpdateDataElementParams": {
+    "declaration": "export interface IUpdateDataElementParams { data_element_name : string ; description ? : string ; package_name : string ; transport_request ? : string ; type_kind ? : DataElementTypeKind ; type_name ? : string ; data_type ? : string ; length ? : number ; decimals ? : number ; short_label ? : string ; medium_label ? : string ; long_label ? : string ; heading_label ? : string ; search_help ? : string ; search_help_parameter ? : string ; set_get_parameter ? : string ; default_component_name ? : string ; deactivate_input_history ? : boolean ; change_document ? : boolean ; left_to_right_direction ? : boolean ; deactivate_bidi_filtering ? : boolean ; activate ? : boolean ; }"
+  },
+  "IUpdateDdlSourceParams": {
+    "declaration": "export interface IUpdateDdlSourceParams { ddl_name : string ; ddl_source : string ; activate ? : boolean ; lock_handle ? : string ; transport_request ? : string ; }"
+  },
+  "IUpdateDomainParams": {
+    "declaration": "export interface IUpdateDomainParams { domain_name : string ; description ? : string ; package_name : string ; transport_request ? : string ; masterSystem ? : string ; responsible ? : string ; datatype ? : string ; length ? : number ; decimals ? : number ; conversion_exit ? : string ; lowercase ? : boolean ; sign_exists ? : boolean ; value_table ? : string ; activate ? : boolean ; fixed_values ? : IFixedValue [ ] ; }"
+  },
+  "IUpdateEnhancementParams": {
+    "declaration": "export interface IUpdateEnhancementParams { enhancement_name : string ; enhancement_type : EnhancementType ; source_code : string ; lock_handle : string ; transport_request ? : string ; }"
+  },
+  "IUpdateFunctionGroupParams": {
+    "declaration": "export interface IUpdateFunctionGroupParams { function_group_name : string ; description ? : string ; transport_request ? : string ; lock_handle ? : string ; }"
+  },
+  "IUpdateFunctionModuleParams": {
+    "declaration": "export interface IUpdateFunctionModuleParams { functionGroupName : string ; functionModuleName : string ; lockHandle : string ; sourceCode : string ; transportRequest ? : string ; }"
+  },
+  "IUpdateIncludeSourceParams": {
+    "declaration": "export interface IUpdateIncludeSourceParams { includeName : string ; sourceCode : string ; activate ? : boolean ; }"
+  },
+  "IUpdateInterfaceSourceParams": {
+    "declaration": "export interface IUpdateInterfaceSourceParams { interface_name : string ; source_code : string ; activate ? : boolean ; }"
+  },
+  "IUpdatePackageParams": {
+    "declaration": "export interface IUpdatePackageParams { package_name : string ; description ? : string ; super_package ? : string ; package_type ? : string ; software_component ? : string ; transport_layer ? : string ; transport_request ? : string ; application_component ? : string ; responsible ? : string ; master_system ? : string ; record_changes ? : boolean ; }"
+  },
+  "IUpdateProgramSourceParams": {
+    "declaration": "export interface IUpdateProgramSourceParams { programName : string ; sourceCode : string ; activate ? : boolean ; }"
+  },
+  "IUpdateScalarFunctionImplementationParams": {
+    "declaration": "export interface IUpdateScalarFunctionImplementationParams { implementation_name : string ; source_code : string ; transport_request ? : string ; }"
+  },
+  "IUpdateScalarFunctionParams": {
+    "declaration": "export interface IUpdateScalarFunctionParams { scalar_function_name : string ; source_code : string ; transport_request ? : string ; }"
+  },
+  "IUpdateServiceBindingParams": {
+    "declaration": "export interface IUpdateServiceBindingParams { bindingName : string ; desiredPublicationState : DesiredPublicationState ; serviceType : GeneratedServiceType ; serviceName : string ; serviceVersion ? : string ; }"
+  },
+  "IUpdateServiceDefinitionParams": {
+    "declaration": "export interface IUpdateServiceDefinitionParams { service_definition_name : string ; source_code : string ; transport_request ? : string ; }"
+  },
+  "IUpdateStructureParams": {
+    "declaration": "export interface IUpdateStructureParams { structureName : string ; ddlCode : string ; transportRequest ? : string ; }"
+  },
+  "IUpdateTableParams": {
+    "declaration": "export interface IUpdateTableParams { table_name : string ; ddl_code : string ; transport_request ? : string ; activate ? : boolean ; }"
+  },
+  "IUpdateTableTypeParams": {
+    "declaration": "export interface IUpdateTableTypeParams { tabletype_name : string ; description ? : string ; row_type_name : string ; row_type_kind ? : TableTypeRowKind ; access_type ? : TableTypeAccessType ; primary_key_definition ? : TableTypePrimaryKeyDefinition ; primary_key_kind ? : TableTypePrimaryKeyKind ; transport_request ? : string ; activate ? : boolean ; }"
+  },
+  "IUpdateTransformationParams": {
+    "declaration": "export interface IUpdateTransformationParams { transformation_name : string ; source_code : string ; transport_request ? : string ; }"
+  },
+  "IValidatedAuthConfig": {
+    "declaration": "export interface IValidatedAuthConfig { priority : AuthMethodPriority ; authType : AuthType ; sapUrl : string ; sapClient ? : string ; destination ? : string ; jwtToken ? : string ; refreshToken ? : string ; uaaUrl ? : string ; uaaClientId ? : string ; uaaClientSecret ? : string ; username ? : string ; password ? : string ; errors : string [ ] ; warnings : string [ ] ; }"
+  },
+  "IValidateEnhancementParams": {
+    "declaration": "export interface IValidateEnhancementParams { enhancement_name : string ; enhancement_type : EnhancementType ; package_name ? : string ; description ? : string ; }"
+  },
+  "IValidateServiceBindingParams": {
+    "declaration": "export interface IValidateServiceBindingParams { objname : string ; serviceDefinition : string ; serviceBindingVersion ? : string ; description ? : string ; package ? : string ; }"
+  },
+  "IVirtualFoldersPreselection": {
+    "declaration": "export interface IVirtualFoldersPreselection { facet : string ; values : string [ ] ; }"
+  },
+  "IWebSocketCloseInfo": {
+    "declaration": "export interface IWebSocketCloseInfo { code : number ; reason ? : string ; wasClean ? : boolean ; }"
+  },
+  "IWebSocketConnectOptions": {
+    "declaration": "export interface IWebSocketConnectOptions { protocols ? : string [ ] ; headers ? : Record < string , string > ; connectTimeoutMs ? : number ; heartbeatIntervalMs ? : number ; }"
+  },
+  "IWebSocketMessageEnvelope": {
+    "declaration": "export interface IWebSocketMessageEnvelope < T = unknown > { kind : 'request' | 'response' | 'event' | 'error' ; correlationId ? : string ; operation ? : string ; payload ? : T ; timestamp ? : number ; }"
+  },
+  "IWebSocketMessageHandler": {
+    "declaration": "export type IWebSocketMessageHandler < T = unknown > = ( message : IWebSocketMessageEnvelope < T > ) => void | Promise < void > ;"
+  },
+  "IWebSocketTransport": {
+    "declaration": "export interface IWebSocketTransport { connect ( url : string , options ? : IWebSocketConnectOptions ) : Promise < void > ; disconnect ( code ? : number , reason ? : string ) : Promise < void > ; send < T = unknown > ( message : IWebSocketMessageEnvelope < T > ) : Promise < void > ; onMessage < T = unknown > ( handler : IWebSocketMessageHandler < T > ) : void ; onOpen ( handler : ( ) => void | Promise < void > ) : void ; onError ( handler : ( error : Error ) => void | Promise < void > ) : void ; onClose ( handler : ( info : IWebSocketCloseInfo ) => void | Promise < void > ) : void ; isConnected ( ) : boolean ; }"
+  },
+  "LogLevel": {
+    "declaration": "export declare enum LogLevel { ERROR = 0 , WARN = 1 , INFO = 2 , DEBUG = 3 }",
+    "value": "{\"0\":\"ERROR\",\"1\":\"WARN\",\"2\":\"INFO\",\"3\":\"DEBUG\",\"ERROR\":0,\"WARN\":1,\"INFO\":2,\"DEBUG\":3}"
+  },
+  "NETWORK_ERROR_CODES": {
+    "declaration": "NETWORK_ERROR_CODES : { readonly ECONNREFUSED : \"ECONNREFUSED\" ; readonly ETIMEDOUT : \"ETIMEDOUT\" ; readonly ENOTFOUND : \"ENOTFOUND\" ; readonly ECONNRESET : \"ECONNRESET\" ; readonly ENETUNREACH : \"ENETUNREACH\" ; readonly EHOSTUNREACH : \"EHOSTUNREACH\" ; }",
+    "value": "{\"ECONNREFUSED\":\"ECONNREFUSED\",\"ETIMEDOUT\":\"ETIMEDOUT\",\"ENOTFOUND\":\"ENOTFOUND\",\"ECONNRESET\":\"ECONNRESET\",\"ENETUNREACH\":\"ENETUNREACH\",\"EHOSTUNREACH\":\"EHOSTUNREACH\"}"
+  },
+  "NetworkErrorCode": {
+    "declaration": "export type NetworkErrorCode = ( typeof NETWORK_ERROR_CODES ) [ keyof typeof NETWORK_ERROR_CODES ] ;"
+  },
+  "OAuth2GrantType": {
+    "declaration": "export type OAuth2GrantType = typeof AUTH_TYPE_AUTHORIZATION_CODE | typeof AUTH_TYPE_AUTHORIZATION_CODE_PKCE | typeof AUTH_TYPE_PASSWORD | typeof AUTH_TYPE_CLIENT_CREDENTIALS | typeof AUTH_TYPE_USER_TOKEN | typeof AUTH_TYPE_CLIENT_X509 | typeof AUTH_TYPE_SAML2_BEARER ;"
+  },
+  "PRESERVED_HEADERS": {
+    "declaration": "PRESERVED_HEADERS : readonly [ \"x-sap-destination\" , \"x-sap-client\" ]",
+    "value": "[\"x-sap-destination\",\"x-sap-client\"]"
+  },
+  "PROXY_MODIFIED_HEADERS": {
+    "declaration": "PROXY_MODIFIED_HEADERS : readonly [ \"Authorization\" , \"x-sap-jwt-token\" , \"x-sap-url\" , \"x-sap-auth-type\" ]",
+    "value": "[\"Authorization\",\"x-sap-jwt-token\",\"x-sap-url\",\"x-sap-auth-type\"]"
+  },
+  "PROXY_ROUTING_HEADERS": {
+    "declaration": "PROXY_ROUTING_HEADERS : readonly [ \"x-btp-destination\" , \"x-mcp-destination\" , \"x-mcp-url\" ]",
+    "value": "[\"x-btp-destination\",\"x-mcp-destination\",\"x-mcp-url\"]"
+  },
+  "SAP_CONNECTION_HEADERS": {
+    "declaration": "SAP_CONNECTION_HEADERS : readonly [ \"x-sap-destination\" , \"x-sap-url\" , \"x-sap-jwt-token\" , \"x-sap-auth-type\" , \"x-sap-client\" , \"x-sap-login\" , \"x-sap-password\" , \"x-sap-refresh-token\" ]",
+    "value": "[\"x-sap-destination\",\"x-sap-url\",\"x-sap-jwt-token\",\"x-sap-auth-type\",\"x-sap-client\",\"x-sap-login\",\"x-sap-password\",\"x-sap-refresh-token\"]"
+  },
+  "SapAuthType": {
+    "declaration": "export type SapAuthType = 'basic' | 'jwt' | 'saml' | 'certificate' | 'kerberos' ;"
+  },
+  "SapConnectionType": {
+    "declaration": "export type SapConnectionType = 'http' | 'rfc' ;"
+  },
+  "ScalarFunctionEngine": {
+    "declaration": "export type ScalarFunctionEngine = 'sqlEngine' | 'amdpEngine' ;"
+  },
+  "SERVICE_BINDING_VARIANT_MAP": {
+    "declaration": "SERVICE_BINDING_VARIANT_MAP : Record < ServiceBindingVariant , { bindingType : ServiceBindingType ; bindingVersion : ServiceBindingVersion ; bindingCategory : '0' | '1' ; serviceType : GeneratedServiceType ; } >",
+    "value": "{\"ODATA_V2_UI\":{\"bindingType\":\"ODATA\",\"bindingVersion\":\"V2\",\"bindingCategory\":\"0\",\"serviceType\":\"odatav2\"},\"ODATA_V2_WEB_API\":{\"bindingType\":\"ODATA\",\"bindingVersion\":\"V2\",\"bindingCategory\":\"1\",\"serviceType\":\"odatav2\"},\"ODATA_V4_UI\":{\"bindingType\":\"ODATA\",\"bindingVersion\":\"V4\",\"bindingCategory\":\"0\",\"serviceType\":\"odatav4\"},\"ODATA_V4_WEB_API\":{\"bindingType\":\"ODATA\",\"bindingVersion\":\"V4\",\"bindingCategory\":\"1\",\"serviceType\":\"odatav4\"}}"
+  },
+  "ServiceBindingType": {
+    "declaration": "export type ServiceBindingType = 'ODATA' | 'INA' | 'SQL' ;"
+  },
+  "ServiceBindingVariant": {
+    "declaration": "export type ServiceBindingVariant = 'ODATA_V2_UI' | 'ODATA_V2_WEB_API' | 'ODATA_V4_UI' | 'ODATA_V4_WEB_API' ;"
+  },
+  "ServiceBindingVersion": {
+    "declaration": "export type ServiceBindingVersion = 'V2' | 'V4' | '0001' | '0000' | string ;"
+  },
+  "STORE_ERROR_CODES": {
+    "declaration": "STORE_ERROR_CODES : { readonly FILE_NOT_FOUND : \"FILE_NOT_FOUND\" ; readonly PARSE_ERROR : \"PARSE_ERROR\" ; readonly INVALID_CONFIG : \"INVALID_CONFIG\" ; readonly STORAGE_ERROR : \"STORAGE_ERROR\" ; }",
+    "value": "{\"FILE_NOT_FOUND\":\"FILE_NOT_FOUND\",\"PARSE_ERROR\":\"PARSE_ERROR\",\"INVALID_CONFIG\":\"INVALID_CONFIG\",\"STORAGE_ERROR\":\"STORAGE_ERROR\"}"
+  },
+  "StoreErrorCode": {
+    "declaration": "export type StoreErrorCode = ( typeof STORE_ERROR_CODES ) [ keyof typeof STORE_ERROR_CODES ] ;"
+  },
+  "TableTypeAccessType": {
+    "declaration": "export type TableTypeAccessType = 'standard' | 'sorted' | 'hashed' | 'index' | 'notSpecified' ;"
+  },
+  "TableTypePrimaryKeyDefinition": {
+    "declaration": "export type TableTypePrimaryKeyDefinition = 'standard' | 'rowType' | 'keyComponents' | 'empty' | 'notSpecified' ;"
+  },
+  "TableTypePrimaryKeyKind": {
+    "declaration": "export type TableTypePrimaryKeyKind = 'unique' | 'nonUnique' | 'notSpecified' ;"
+  },
+  "TableTypeRowKind": {
+    "declaration": "export type TableTypeRowKind = 'dictionaryType' | 'predefinedAbapType' | 'refToPredefinedAbapType' | 'refToDictionaryType' | 'refToClassOrInterfaceType' | 'rangeTypeOnPredefinedType' | 'rangeTypeOnDataelement' ;"
+  },
+  "TOKEN_PROVIDER_ERROR_CODES": {
+    "declaration": "TOKEN_PROVIDER_ERROR_CODES : { readonly VALIDATION_ERROR : \"VALIDATION_ERROR\" ; readonly REFRESH_ERROR : \"REFRESH_ERROR\" ; readonly SESSION_DATA_ERROR : \"SESSION_DATA_ERROR\" ; readonly SERVICE_KEY_ERROR : \"SERVICE_KEY_ERROR\" ; readonly BROWSER_AUTH_ERROR : \"BROWSER_AUTH_ERROR\" ; }",
+    "value": "{\"VALIDATION_ERROR\":\"VALIDATION_ERROR\",\"REFRESH_ERROR\":\"REFRESH_ERROR\",\"SESSION_DATA_ERROR\":\"SESSION_DATA_ERROR\",\"SERVICE_KEY_ERROR\":\"SERVICE_KEY_ERROR\",\"BROWSER_AUTH_ERROR\":\"BROWSER_AUTH_ERROR\"}"
+  },
+  "TokenProviderErrorCode": {
+    "declaration": "export type TokenProviderErrorCode = ( typeof TOKEN_PROVIDER_ERROR_CODES ) [ keyof typeof TOKEN_PROVIDER_ERROR_CODES ] ;"
+  },
+  "TransformationType": {
+    "declaration": "export type TransformationType = 'SimpleTransformation' | 'XSLTProgram' ;"
+  },
+  "TRANSPORT_SEARCH_CONFIGURATIONS_URL": {
+    "declaration": "TRANSPORT_SEARCH_CONFIGURATIONS_URL = \"/sap/bc/adt/cts/transportrequests/searchconfiguration/configurations\"",
+    "value": "\"/sap/bc/adt/cts/transportrequests/searchconfiguration/configurations\""
+  },
+  "UAA_HEADERS": {
+    "declaration": "UAA_HEADERS : readonly [ \"x-sap-uaa-url\" , \"uaa-url\" , \"x-sap-uaa-client-id\" , \"uaa-client-id\" , \"x-sap-uaa-client-secret\" , \"uaa-client-secret\" ]",
+    "value": "[\"x-sap-uaa-url\",\"uaa-url\",\"x-sap-uaa-client-id\",\"uaa-client-id\",\"x-sap-uaa-client-secret\",\"uaa-client-secret\"]"
+  },
+  "ViewArgs": {
+    "declaration": "export type ViewArgs < TViews , K extends keyof TViews > = ViewOptions < TViews , K > extends void ? [ ] : undefined extends ViewOptions < TViews , K > ? [ options ? : ViewOptions < TViews , K > ] : [ options : ViewOptions < TViews , K > ] ;"
+  },
+  "ViewOptions": {
+    "declaration": "export type ViewOptions < TViews , K extends keyof TViews > = TViews [ K ] extends ITraceView < infer _TResult , infer TOptions > ? TOptions : never ;"
+  },
+  "ViewResult": {
+    "declaration": "export type ViewResult < TViews , K extends keyof TViews > = TViews [ K ] extends ITraceView < infer TResult , infer _TOptions > ? TResult : never ;"
+  },
+  "XmlNode": {
+    "declaration": "export interface XmlNode { [ key : string ] : XmlNode | XmlNode [ ] | string | number | boolean | undefined ; }"
+  }
+}

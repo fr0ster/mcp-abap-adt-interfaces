@@ -1,0 +1,42 @@
+{
+  "name": "@mcp-abap-adt/interfaces-adt",
+  "version": "1.0.0",
+  "description": "ADT contracts, the ABAP and Cloud ALM connections, and SAP/BTP configuration and authentication contracts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "COPYING"
+  ],
+  "sideEffects": false,
+  "author": "Oleksii Kyslytsia <oleksij.kyslytsja@gmail.com>",
+  "license": "LGPL-3.0-only",
+  "homepage": "https://github.com/fr0ster/mcp-abap-adt-interfaces/tree/master/packages/interfaces-adt#readme",
+  "bugs": {
+    "url": "https://github.com/fr0ster/mcp-abap-adt-interfaces/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fr0ster/mcp-abap-adt-interfaces.git",
+    "directory": "packages/interfaces-adt"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "clean": "rm -rf dist tsconfig.tsbuildinfo tsconfig.build.tsbuildinfo",
+    "build": "tsc -b tsconfig.build.json",
+    "test:check": "tsc -p tsconfig.json --noEmit",
+    "prepublishOnly": "npm run --prefix ../.. check"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@mcp-abap-adt/interfaces-auth": "^1.0.0",
+    "@mcp-abap-adt/interfaces-utils": "^1.0.0"
+  }
+}
