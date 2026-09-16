@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [45.0.0] - 2026-09-16
+
 **BREAKING — the contracts move to four packages; this one becomes a deprecated facade.**
 
 Nothing a consumer imports disappears, and no contract changes shape. It is a
