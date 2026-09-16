@@ -19,6 +19,8 @@ export const TOKEN_PROVIDER_ERROR_CODES = {
   SERVICE_KEY_ERROR: 'SERVICE_KEY_ERROR',
   /** Browser authentication failed or was cancelled */
   BROWSER_AUTH_ERROR: 'BROWSER_AUTH_ERROR',
+  /** A SAML assertion failed validation and was refused */
+  ASSERTION_VALIDATION_ERROR: 'ASSERTION_VALIDATION_ERROR',
 } as const;
 
 /**
