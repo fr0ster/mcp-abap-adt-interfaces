@@ -35,6 +35,12 @@ const NPM_TAG =
 // --tag was passed: `--tag=latest` bypassed both when they asked the latter.
 const TARGETS_LATEST = NPM_TAG === null || NPM_TAG === 'latest';
 
+// How long to wait for the registry to serve a version it has just accepted.
+// Only tools/test-publish-changed.js overrides these, so that the case where the
+// registry never serves the version does not take the full wait.
+const POLL_ATTEMPTS = Number(process.env.PUBLISH_POLL_ATTEMPTS ?? 10);
+const POLL_MS = Number(process.env.PUBLISH_POLL_MS ?? 3000);
+
 /** Sleep without going async, so the whole run stays a readable sequence. */
 const sleep = (ms) =>
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
@@ -256,13 +262,14 @@ for (const p of pending) {
   // The publish printing "+ name@version" is npm reporting what it sent, not
   // the registry reporting what it serves. Ask the registry.
   let serving = false;
-  for (let attempt = 1; attempt <= 10 && !serving; attempt += 1) {
+  for (let attempt = 1; attempt <= POLL_ATTEMPTS && !serving; attempt += 1) {
     serving = publishedVersions(p.name).includes(p.local);
-    if (!serving) sleep(3000);
+    if (!serving) sleep(POLL_MS);
   }
   if (!serving)
     fail(
-      `${p.name}@${p.local} was published but the registry does not serve it after 30s.\n` +
+      `${p.name}@${p.local} was published but the registry does not serve it after ` +
+        `${Math.round((POLL_ATTEMPTS * POLL_MS) / 1000)}s.\n` +
         'Check it before publishing anything that depends on it.',
     );
   console.log(`${p.name}@${p.local} is on the registry.`);

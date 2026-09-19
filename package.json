@@ -20,8 +20,9 @@
     "check:surface": "node tools/check-surface.js --placement all",
     "check:graph": "node tools/check-graph.js",
     "check:deprecated": "node tools/check-deprecated.js",
-    "check": "npm run build && npm run test:check && npm run check:surface && npm run check:graph && npm run check:deprecated && npm run check:packed",
+    "check": "npm run build && npm run test:check && npm run check:surface && npm run check:graph && npm run check:deprecated && npm run check:packed && npm run check:publish",
     "check:packed": "node tools/check-packed.js",
+    "check:publish": "node tools/test-publish-changed.js",
     "release:publish": "node tools/publish-changed.js"
   },
   "engines": {
