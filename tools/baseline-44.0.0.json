@@ -1164,8 +1164,8 @@
     "declaration": "export type TableTypeRowKind = 'dictionaryType' | 'predefinedAbapType' | 'refToPredefinedAbapType' | 'refToDictionaryType' | 'refToClassOrInterfaceType' | 'rangeTypeOnPredefinedType' | 'rangeTypeOnDataelement' ;"
   },
   "TOKEN_PROVIDER_ERROR_CODES": {
-    "declaration": "TOKEN_PROVIDER_ERROR_CODES : { readonly VALIDATION_ERROR : \"VALIDATION_ERROR\" ; readonly REFRESH_ERROR : \"REFRESH_ERROR\" ; readonly SESSION_DATA_ERROR : \"SESSION_DATA_ERROR\" ; readonly SERVICE_KEY_ERROR : \"SERVICE_KEY_ERROR\" ; readonly BROWSER_AUTH_ERROR : \"BROWSER_AUTH_ERROR\" ; readonly ASSERTION_VALIDATION_ERROR : \"ASSERTION_VALIDATION_ERROR\" ; }",
-    "value": "{\"VALIDATION_ERROR\":\"VALIDATION_ERROR\",\"REFRESH_ERROR\":\"REFRESH_ERROR\",\"SESSION_DATA_ERROR\":\"SESSION_DATA_ERROR\",\"SERVICE_KEY_ERROR\":\"SERVICE_KEY_ERROR\",\"BROWSER_AUTH_ERROR\":\"BROWSER_AUTH_ERROR\",\"ASSERTION_VALIDATION_ERROR\":\"ASSERTION_VALIDATION_ERROR\"}"
+    "declaration": "TOKEN_PROVIDER_ERROR_CODES : { readonly VALIDATION_ERROR : \"VALIDATION_ERROR\" ; readonly REFRESH_ERROR : \"REFRESH_ERROR\" ; readonly SESSION_DATA_ERROR : \"SESSION_DATA_ERROR\" ; readonly SERVICE_KEY_ERROR : \"SERVICE_KEY_ERROR\" ; readonly BROWSER_AUTH_ERROR : \"BROWSER_AUTH_ERROR\" ; }",
+    "value": "{\"VALIDATION_ERROR\":\"VALIDATION_ERROR\",\"REFRESH_ERROR\":\"REFRESH_ERROR\",\"SESSION_DATA_ERROR\":\"SESSION_DATA_ERROR\",\"SERVICE_KEY_ERROR\":\"SERVICE_KEY_ERROR\",\"BROWSER_AUTH_ERROR\":\"BROWSER_AUTH_ERROR\"}"
   },
   "TokenProviderErrorCode": {
     "declaration": "export type TokenProviderErrorCode = ( typeof TOKEN_PROVIDER_ERROR_CODES ) [ keyof typeof TOKEN_PROVIDER_ERROR_CODES ] ;"

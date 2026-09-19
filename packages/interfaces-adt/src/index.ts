@@ -290,6 +290,8 @@ export type {
   IAdtWhereUsed,
   IGetNodeContentsOptions,
 } from './adt/IAdtUtilities';
+export type { AssertionErrorCode } from './auth/AssertionErrorCodes';
+export { ASSERTION_ERROR_CODES } from './auth/AssertionErrorCodes';
 export type { AuthType as AuthTypeEnum } from './auth/AuthType';
 export type {
   AssertionContext,

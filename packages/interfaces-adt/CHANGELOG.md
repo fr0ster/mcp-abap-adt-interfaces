@@ -28,13 +28,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   assertions so a replay is refused, keyed by issuer and assertion ID together,
   since an assertion ID is unique only within the identity provider that minted
   it.
-- **`ASSERTION_VALIDATION_ERROR`** added to `TOKEN_PROVIDER_ERROR_CODES`, so a
-  consumer can tell an assertion refusal apart from a misconfiguration
-  (`VALIDATION_ERROR`) instead of the two sharing a code.
-
-  This changes the declaration of an existing constant, so
-  `tools/baseline-44.0.0.json` was regenerated with
-  `node tools/generate-baseline.js` (ARCHITECTURE §7 item 5).
+- **`ASSERTION_ERROR_CODES`** and **`AssertionErrorCode`** — the codes an
+  assertion validator refuses with, starting with `ASSERTION_VALIDATION_ERROR`.
+  They are their own set rather than additions to `TOKEN_PROVIDER_ERROR_CODES`:
+  that set describes what can go wrong with ANY token provider, and SAML is one
+  authentication mechanism among several, so it must not widen a contract every
+  provider shares. A mechanism brings its own codes, as the store and network
+  layers already do. Existing declarations are therefore untouched, and
+  `tools/baseline-44.0.0.json` needs no regeneration.
 
 ## [1.0.0] - 2026-09-16
 
