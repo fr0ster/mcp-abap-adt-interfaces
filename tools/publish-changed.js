@@ -10,14 +10,26 @@
 // package's prepublishOnly, which is the same full check five times over; the
 // publishes here pass --ignore-scripts because the check has already run.
 //
+// What it guarantees: the tarball holds the tree the release tag names. A tag
+// that is merely an ancestor of HEAD does not give that — a commit after the tag
+// can change a package without bumping its version, and the tarball then carries
+// content the tagged version never had. So the tree must equal the tag's tree.
+//
 //   npm run release:publish
 //   npm run release:publish -- --dry-run
+//   npm run release:publish -- --tag=next     # for a prerelease version
 const fs = require('node:fs');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
+const semver = require('semver');
 
 const ROOT = path.resolve(__dirname, '..');
 const DRY_RUN = process.argv.includes('--dry-run');
+// The npm dist-tag to publish under. Without it npm publishes to `latest`,
+// which is why a prerelease requires it explicitly.
+const NPM_TAG =
+  process.argv.find((a) => a.startsWith('--tag='))?.slice('--tag='.length) ??
+  null;
 
 /** Sleep without going async, so the whole run stays a readable sequence. */
 const sleep = (ms) =>
@@ -47,26 +59,31 @@ const fail = (message) => {
   process.exit(1);
 };
 
-/** Every version of a package on the registry; [] when it has none. */
-function publishedVersions(name) {
-  let out;
+/** Asks the registry, never the cache. Returns null when it has no answer. */
+function registryJson(name, field) {
   try {
     // --prefer-online: npm's metadata cache answered a just-published version
     // with the previous one, which is indistinguishable from a failed publish.
-    out = capture('npm', [
-      'view',
-      name,
-      'versions',
-      '--json',
-      '--prefer-online',
-    ]);
+    return JSON.parse(
+      capture('npm', ['view', name, field, '--json', '--prefer-online']),
+    );
   } catch (error) {
     const text = `${error.stdout ?? ''}${error.stderr ?? ''}`;
-    if (text.includes('E404')) return [];
+    if (text.includes('E404')) return null;
     throw error;
   }
-  const parsed = JSON.parse(out);
+}
+
+/** Every version of a package on the registry; [] when it has none. */
+function publishedVersions(name) {
+  const parsed = registryJson(name, 'versions');
+  if (parsed === null) return [];
   return Array.isArray(parsed) ? parsed : [parsed];
+}
+
+/** What the package's `latest` dist-tag points at, or null. */
+function latestTag(name) {
+  return registryJson(name, 'dist-tags')?.latest ?? null;
 }
 
 /** The release tag this package's version is published from. */
@@ -74,18 +91,10 @@ function tagFor(dir, version) {
   return dir === 'interfaces' ? `v${version}` : `${dir}-v${version}`;
 }
 
-function tagExists(tag) {
+/** True when `git <args>` exits 0; for the questions git answers by status. */
+function gitSucceeds(args) {
   try {
-    capture('git', ['rev-parse', '-q', '--verify', `refs/tags/${tag}`]);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-function tagIsAncestorOfHead(tag) {
-  try {
-    capture('git', ['merge-base', '--is-ancestor', tag, 'HEAD']);
+    capture('git', args);
     return true;
   } catch {
     return false;
@@ -107,17 +116,17 @@ const plan = workspaces.map((workspace) => {
     name: manifest.name,
     local: manifest.version,
     versions,
+    latest: versions.length > 0 ? latestTag(manifest.name) : null,
     published: versions.includes(manifest.version),
   };
 });
 
 const width = Math.max(...plan.map((p) => p.name.length));
-console.log(`${'PACKAGE'.padEnd(width)}  LOCAL       REGISTRY    ACTION`);
+console.log(`${'PACKAGE'.padEnd(width)}  LOCAL       LATEST      ACTION`);
 for (const p of plan) {
-  const latest = p.versions.at(-1) ?? 'none';
   const action = p.published ? 'up to date' : 'PUBLISH';
   console.log(
-    `${p.name.padEnd(width)}  ${p.local.padEnd(10)}  ${latest.padEnd(10)}  ${action}`,
+    `${p.name.padEnd(width)}  ${p.local.padEnd(10)}  ${(p.latest ?? 'none').padEnd(10)}  ${action}`,
   );
 }
 
@@ -131,7 +140,7 @@ if (pending.length === 0) {
 // --- the guards -----------------------------------------------------------
 //
 // Each one refuses to publish something that cannot be traced back to this
-// repository's history.
+// repository's history, or that would move the `latest` dist-tag backwards.
 
 if (capture('git', ['status', '--porcelain']).trim() !== '')
   fail(
@@ -140,29 +149,61 @@ if (capture('git', ['status', '--porcelain']).trim() !== '')
   );
 
 for (const p of pending) {
+  if (!semver.valid(p.local))
+    fail(`${p.name} has version "${p.local}", which is not valid semver.`);
+
   const tag = tagFor(p.dir, p.local);
-  if (!tagExists(tag))
+
+  if (!gitSucceeds(['rev-parse', '-q', '--verify', `refs/tags/${tag}`]))
     fail(
       `${p.name} ${p.local} has no tag ${tag}.\n` +
         'A published version that is not tagged cannot be checked out again.',
     );
-  if (!tagIsAncestorOfHead(tag))
+
+  if (!gitSucceeds(['merge-base', '--is-ancestor', tag, 'HEAD']))
     fail(
       `${tag} is not an ancestor of HEAD.\n` +
-        'HEAD would publish something the tagged release does not contain.',
+        'HEAD is not the history that tag belongs to.',
     );
-  const newer = p.versions.filter(
-    (v) => v.localeCompare(p.local, undefined, { numeric: true }) > 0,
-  );
-  if (newer.length > 0)
+
+  // Ancestry alone is not traceability: a commit after the tag can change a
+  // package without bumping it, and the tarball would then carry content the
+  // tagged version never had. The tree has to BE the tagged tree.
+  if (!gitSucceeds(['diff', '--quiet', tag, 'HEAD'])) {
+    const changed = capture('git', ['diff', '--name-only', tag, 'HEAD'])
+      .trim()
+      .split('\n')
+      .slice(0, 10);
     fail(
-      `${p.name} ${p.local} is older than the published ${newer.at(-1)}.\n` +
-        'Publishing it would move the latest tag backwards.',
+      `HEAD differs from ${tag}, so the tarball would not be what that tag names:\n` +
+        `${changed.map((f) => `  ${f}`).join('\n')}\n` +
+        `Publish the tagged tree (git checkout ${tag}) or bump and tag again.`,
+    );
+  }
+
+  // A prerelease published without a dist-tag becomes `latest`, which is how a
+  // beta reaches everyone who asked for the stable line.
+  if (semver.prerelease(p.local) && NPM_TAG === null)
+    fail(
+      `${p.name} ${p.local} is a prerelease and no --tag was given.\n` +
+        'Without one npm publishes it as `latest`. Pass --tag=next (or another\n' +
+        'name) so the stable line is left alone.',
+    );
+
+  // Only `latest` can be moved backwards, so this asks about the dist-tag
+  // rather than about the greatest version that exists.
+  if (NPM_TAG === null && p.latest !== null && semver.gt(p.latest, p.local))
+    fail(
+      `${p.name} ${p.local} is lower than the published latest ${p.latest}.\n` +
+        'Publishing it to `latest` would move that tag backwards. Pass --tag to\n' +
+        'publish it somewhere else.',
     );
 }
 
 console.log(
-  `\nTo publish, in dependency order: ${pending.map((p) => `${p.name}@${p.local}`).join(', ')}`,
+  `\nTo publish${NPM_TAG ? ` under the "${NPM_TAG}" tag` : ''}, in dependency order: ${pending
+    .map((p) => `${p.name}@${p.local}`)
+    .join(', ')}`,
 );
 
 if (DRY_RUN) {
@@ -186,7 +227,9 @@ for (const p of pending) {
   try {
     // --ignore-scripts: prepublishOnly is `npm run check`, which just ran. It
     // stays in each package.json as the net for a publish by hand.
-    interactive('npm', ['publish', '--workspace', p.name, '--ignore-scripts']);
+    const args = ['publish', '--workspace', p.name, '--ignore-scripts'];
+    if (NPM_TAG !== null) args.push('--tag', NPM_TAG);
+    interactive('npm', args);
   } catch {
     fail(
       `${p.name}@${p.local} did not publish. Later packages were not attempted.`,
