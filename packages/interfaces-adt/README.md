@@ -4,7 +4,7 @@ ADT contracts, the ABAP and Cloud ALM connections, and SAP/BTP configuration and
 
 ## TL;DR
 
-- Everything a package on the SAP side accepts: ADT object operations, runtime analysis, execution, feeds, services, the ABAP and Cloud ALM connections, SAP/BTP configuration, token providers, session and service-key stores, header validation, and the SAP/BTP header names.
+- Everything a package on the SAP side accepts: ADT object operations, runtime analysis, execution, feeds, services, the ABAP and Cloud ALM connections, SAP/BTP configuration, token providers, SAML assertion validation, session and service-key stores, header validation, and the SAP/BTP header names.
 - Depends on `@mcp-abap-adt/interfaces-auth` and `@mcp-abap-adt/interfaces-utils` only. Types and constants; no implementation.
 - Moved unchanged from `@mcp-abap-adt/interfaces` 44.0.0. Most majors of that package came from these contracts; this package now carries them alone.
 
@@ -20,11 +20,11 @@ npm install @mcp-abap-adt/interfaces-adt
 |---|---|
 | `adt/`, `runtime/`, `execution/`, `feeds/`, `service/`, `shared/` | the ADT contracts: capability atoms, object types, `IAdtResponse`, runtime analysis, execution |
 | `connection/` | `IAbapConnection`, `IAbapRequestOptions`, the connection capability atoms, `ICalmConnection`, `CalmService` |
-| `sap/`, `auth/` | `ISapConfig`, `IConnectionConfig`, `IAuthorizationConfig`, `IConfig`, `IAuthorizationStrategy`, the callback-server contracts, `ICertificateMaterialLoader`, `AuthTypeEnum` |
+| `sap/`, `auth/` | `ISapConfig`, `IConnectionConfig`, `IAuthorizationConfig`, `IConfig`, `IAuthorizationStrategy`, the callback-server contracts, `ICertificateMaterialLoader`, `AuthTypeEnum`; `IAssertionValidator` with `AssertionContext`, `ValidatedAssertion`, `IAssertionReplayStore` and `ASSERTION_ERROR_CODES` |
 | `token/`, `session/`, `serviceKey/`, `store/` | token providers and refreshers, stores and their error codes |
 | `validation/`, `Headers.ts` | header validation; `HEADER_SAP_*`, `HEADER_UAA_*`, `HEADER_BTP_DESTINATION`, `HEADER_MCP_DESTINATION`, `HEADER_MCP_URL`, `AUTH_TYPES`, `AuthType` |
 
-The contract rules — what a member answers, how a strategy is supplied, how a contract is built — are in [`docs/architecture/ARCHITECTURE.md`](../../docs/architecture/ARCHITECTURE.md). Domain-by-domain documentation with examples stays in the [`@mcp-abap-adt/interfaces` README](../interfaces/README.md); the contracts it describes are these.
+The contract rules — what a member answers, how a strategy is supplied, how a contract is built — are in [`docs/architecture/ARCHITECTURE.md`](../../docs/architecture/ARCHITECTURE.md). Domain-by-domain documentation with examples stays in the [`@mcp-abap-adt/interfaces` README](../interfaces/README.md); the contracts it describes are these. Contracts added after the split are documented here only — the facade is frozen at its 44.0.0 surface and does not export them.
 
 ## Coming from `@mcp-abap-adt/interfaces`
 

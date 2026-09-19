@@ -1921,3 +1921,45 @@ resolve to the same declarations once installed from npm.
 boundary should be redrawn.
 
 Spec: `docs/superpowers/specs/2026-09-15-interfaces-split-design.md`.
+
+## 27. One mechanism brings its own error codes; it does not widen a shared set
+
+**The problem.** Contracts for validating a SAML assertion needed a code for
+"the assertion was refused". `TOKEN_PROVIDER_ERROR_CODES` was already there, it
+already held `VALIDATION_ERROR` for a misconfiguration, and adding one member
+was a two-line diff. That is what the first revision of #87 did.
+
+**Why not.** That set describes what can go wrong with ANY token provider, and
+the facade re-exports it, so every consumer of every mechanism sees every member.
+SAML is one way in among several — client credentials, authorization code, basic,
+JWT bearer, certificate. A consumer exhaustively handling `TokenProviderErrorCode`
+would gain a case that cannot occur on its path, and would gain another with each
+mechanism that followed. The shared set stops describing token provision and
+starts being the union of every mechanism anyone implemented.
+
+**The decision.** A mechanism or layer declares its own
+`<AREA>_ERROR_CODES` / `<Area>ErrorCode` pair in the folder that owns it, and the
+shared set keeps only what is shared. `ASSERTION_ERROR_CODES` in `auth/` holds
+`ASSERTION_VALIDATION_ERROR`; `TOKEN_PROVIDER_ERROR_CODES` is unchanged. This is
+not a new shape: `STORE_ERROR_CODES` and `NETWORK_ERROR_CODES` are the same rule
+already applied, which is why the narrow set needed no argument beyond following
+them.
+
+**Read with decision 25.** There, a failure does not grow a field per case; here,
+a set of codes does not grow a member per mechanism. Same instinct — one more
+special case is always the small diff — and the same answer: the special case
+declares its own thing.
+
+**What keeps it true.** `npm run check:surface` compares every declaration and
+every constant value against the 44.0.0 baseline, so widening a shared set fails
+the check by name: the first revision failed with `declaration changed` and
+`value changed` on `TOKEN_PROVIDER_ERROR_CODES`, and the narrow set left all 381
+symbols and 51 constant values matching. A baseline diff appearing in a PR that
+only adds contracts is the signal that something shared was widened.
+
+**What would change it.** A code that genuinely belongs to token provision
+itself, not to one way of doing it — an exhaustion or refusal every provider can
+hit. That belongs in the shared set, and regenerating the baseline for it is the
+documented path (§7 item 5), not a workaround.
+
+PR: #87.
