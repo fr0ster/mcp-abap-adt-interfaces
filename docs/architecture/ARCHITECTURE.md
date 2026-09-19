@@ -354,6 +354,10 @@ There is no CI on this repository. What holds instead:
    that a failing check publishes nothing, and that a version the registry never
    serves is reported rather than assumed. The guards that run before a publish
    are exercised against the real repository; this covers the half that only a
-   release would reach.
+   release would reach. Each fixture links in **this** repository's `semver` and
+   the suite asserts the copied script resolved that one, because symlinking the
+   whole `node_modules` let node walk past a missing dependency to a stray copy
+   in an ancestor of the temporary directory — the suite passed green with the
+   declared dependency uninstalled.
    `npm run check` runs 1 and 5–9, and every package's `prepublishOnly` runs
    `npm run check`.

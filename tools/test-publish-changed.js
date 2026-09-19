@@ -21,6 +21,12 @@ const { execFileSync, spawnSync } = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const SCRIPT = path.join(ROOT, 'tools', 'publish-changed.js');
+const SEMVER = path.join(ROOT, 'node_modules', 'semver');
+// Read on demand, never at load: reading it here threw MODULE_NOT_FOUND before
+// the explicit "run npm ci" check below could report the same thing in words.
+const declaredSemverVersion = () =>
+  JSON.parse(fs.readFileSync(path.join(SEMVER, 'package.json'), 'utf8'))
+    .version;
 
 const git = (cwd, args) =>
   execFileSync('git', args, { cwd, encoding: 'utf8', stdio: 'pipe' });
@@ -60,11 +66,22 @@ function fixture(packages) {
 
   fs.mkdirSync(path.join(dir, 'tools'));
   fs.copyFileSync(SCRIPT, path.join(dir, 'tools', 'publish-changed.js'));
-  // so the copied script resolves `semver`
-  fs.symlinkSync(
-    path.join(ROOT, 'node_modules'),
-    path.join(dir, 'node_modules'),
-  );
+
+  // Only `semver` is linked, and only into the fixture's own node_modules, so
+  // the copied script resolves the dependency this repository declares.
+  //
+  // Symlinking the whole node_modules looked equivalent and was not: when the
+  // repository's copy is missing, node walks past the empty link and resolves
+  // whatever an ancestor of the temporary directory happens to hold. On this
+  // machine /tmp/node_modules holds a stray semver, so the suite passed with the
+  // declared dependency uninstalled — green, and meaningless.
+  if (!fs.existsSync(SEMVER))
+    throw new Error(
+      `${SEMVER} is missing. Run npm ci: this suite must resolve the semver this` +
+        ' repository declares, never one that happens to be installed elsewhere.',
+    );
+  fs.mkdirSync(path.join(dir, 'node_modules'));
+  fs.symlinkSync(SEMVER, path.join(dir, 'node_modules', 'semver'));
 
   git(dir, ['init', '-q']);
   git(dir, ['config', 'user.email', 'test@example.com']);
@@ -176,6 +193,29 @@ const check = (name, fn) => {
 };
 
 // --- cases ----------------------------------------------------------------
+
+check('the fixture resolves the semver this repository declares', () => {
+  const dir = fixture([{ dir: 'alpha', version: '1.0.0' }]);
+  const probe = path.join(dir, 'tools', 'probe.js');
+  fs.writeFileSync(
+    probe,
+    "console.log(JSON.stringify({ path: require.resolve('semver'), version: require('semver/package.json').version }));",
+  );
+  const result = spawnSync(process.execPath, [probe], {
+    cwd: dir,
+    encoding: 'utf8',
+  });
+  assert.strictEqual(result.status, 0, result.stderr);
+  const { path: resolved, version } = JSON.parse(result.stdout);
+  // node resolves symlinks, so the answer is the realpath of the link's target,
+  // not a path under the fixture. What matters is WHICH copy that is: this
+  // repository's, rather than one an ancestor of the temporary directory holds.
+  assert.ok(
+    resolved.startsWith(fs.realpathSync(SEMVER) + path.sep),
+    `resolved ${resolved}, which is not ${fs.realpathSync(SEMVER)}`,
+  );
+  assert.strictEqual(version, declaredSemverVersion());
+});
 
 check('publishes every pending package, in workspace order', () => {
   const dir = fixture([
