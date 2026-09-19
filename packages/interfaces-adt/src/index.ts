@@ -290,7 +290,16 @@ export type {
   IAdtWhereUsed,
   IGetNodeContentsOptions,
 } from './adt/IAdtUtilities';
+export type { AssertionErrorCode } from './auth/AssertionErrorCodes';
+export { ASSERTION_ERROR_CODES } from './auth/AssertionErrorCodes';
 export type { AuthType as AuthTypeEnum } from './auth/AuthType';
+export type {
+  AssertionContext,
+  AssertionReplayKey,
+  IAssertionReplayStore,
+  IAssertionValidator,
+  ValidatedAssertion,
+} from './auth/IAssertionValidator';
 export type { IAuthorizationConfig } from './auth/IAuthorizationConfig';
 export type {
   AuthorizationOutcome,
