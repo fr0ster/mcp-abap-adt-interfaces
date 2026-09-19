@@ -347,5 +347,13 @@ There is no CI on this repository. What holds instead:
    type-checks the published `.d.ts` files without `skipLibCheck`, and checks that
    their declarations and constant values are the 44.0.0 ones and that the facade
    and each package give one declaration and one constant object.
-   `npm run check` runs 1 and 5–8, and every package's `prepublishOnly` runs
+9. **The release tool** — `npm run check:publish` runs `tools/publish-changed.js`
+   against throwaway git repositories with a fake `npm` first on `PATH`, and
+   checks what it does with the publish it cannot otherwise be given: the
+   arguments, the order, that a failure stops the run before the next package,
+   that a failing check publishes nothing, and that a version the registry never
+   serves is reported rather than assumed. The guards that run before a publish
+   are exercised against the real repository; this covers the half that only a
+   release would reach.
+   `npm run check` runs 1 and 5–9, and every package's `prepublishOnly` runs
    `npm run check`.

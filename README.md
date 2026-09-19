@@ -27,7 +27,15 @@ npm ci
 npm run check      # build, type checks, surface, graph, deprecations, packed tarballs
 ```
 
-There is no CI; `npm run check` is what holds, and every package's `prepublishOnly` runs it. Packages are published in dependency order: `interfaces-utils`, `interfaces-network`, `interfaces-auth`, then `interfaces-adt`, then `interfaces`.
+There is no CI; `npm run check` is what holds, and every package's `prepublishOnly` runs it.
+
+Publish with `npm run release:publish`. It publishes only the packages whose version is not on the registry yet, in dependency order (`interfaces-utils`, `interfaces-network`, `interfaces-auth`, `interfaces-adt`, `interfaces`), runs `npm run check` once rather than once per package, and confirms the registry serves each version before publishing anything that depends on it. `npm run release:publish -- --dry-run` prints the plan and changes nothing.
+
+It refuses to publish unless the tree **is** the tagged release: a dirty tree, a version with no matching tag, a tag that is not an ancestor of `HEAD`, or any difference between `HEAD` and that tag. Ancestry alone would let a commit made after the tag change a package without bumping it, and the tarball would then carry content the tagged version never had — so release, tag and publish from one commit; if `HEAD` has moved on, `git checkout <tag>` and publish from there.
+
+A prerelease version requires a dist-tag other than `latest` (`npm run release:publish -- --tag=next`); on `latest` it would reach everyone who asked for the stable line. Publishing to `latest` is also refused when it would move that tag backwards, compared with real SemVer precedence rather than string order. Both rules key on whether the publish targets `latest`, not on whether a `--tag` was given, so `--tag=latest` is treated exactly like passing none.
+
+Do not publish the workspaces by hand. `npm publish -w` for every package republishes the ones that have not changed, and npm answers each with `You cannot publish over the previously published versions` — errors that are expected, and therefore skipped over, and therefore hide the one that is not.
 
 ## Licence
 
