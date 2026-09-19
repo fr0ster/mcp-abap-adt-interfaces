@@ -27,7 +27,11 @@ npm ci
 npm run check      # build, type checks, surface, graph, deprecations, packed tarballs
 ```
 
-There is no CI; `npm run check` is what holds, and every package's `prepublishOnly` runs it. Packages are published in dependency order: `interfaces-utils`, `interfaces-network`, `interfaces-auth`, then `interfaces-adt`, then `interfaces`.
+There is no CI; `npm run check` is what holds, and every package's `prepublishOnly` runs it.
+
+Publish with `npm run release:publish`. It publishes only the packages whose version is not on the registry yet, in dependency order (`interfaces-utils`, `interfaces-network`, `interfaces-auth`, `interfaces-adt`, `interfaces`), runs `npm run check` once rather than once per package, refuses a dirty tree or a version with no matching git tag reachable from `HEAD`, and confirms the registry serves each version before publishing anything that depends on it. `npm run release:publish -- --dry-run` prints the plan and changes nothing.
+
+Do not publish the workspaces by hand. `npm publish -w` for every package republishes the ones that have not changed, and npm answers each with `You cannot publish over the previously published versions` — errors that are expected, and therefore skipped over, and therefore hide the one that is not.
 
 ## Licence
 
