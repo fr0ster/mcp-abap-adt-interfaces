@@ -30,6 +30,10 @@ const DRY_RUN = process.argv.includes('--dry-run');
 const NPM_TAG =
   process.argv.find((a) => a.startsWith('--tag='))?.slice('--tag='.length) ??
   null;
+// `latest` is the tag a plain `npm publish` moves, so naming it explicitly must
+// not buy anything. Both dist-tag guards key on this rather than on whether a
+// --tag was passed: `--tag=latest` bypassed both when they asked the latter.
+const TARGETS_LATEST = NPM_TAG === null || NPM_TAG === 'latest';
 
 /** Sleep without going async, so the whole run stays a readable sequence. */
 const sleep = (ms) =>
@@ -100,6 +104,18 @@ function gitSucceeds(args) {
     return false;
   }
 }
+
+// --- the argument ---------------------------------------------------------
+
+// npm refuses a dist-tag that is a valid SemVer range, the empty string
+// included. It refuses it at publish time, though — after the check has run and,
+// in a multi-package release, after earlier packages have already gone out. A
+// malformed tag should cost nothing, so it fails here instead.
+if (NPM_TAG !== null && semver.validRange(NPM_TAG) !== null)
+  fail(
+    `--tag=${NPM_TAG === '' ? '' : NPM_TAG} is not a usable dist-tag: npm refuses a tag name that is a\n` +
+      'valid SemVer range, and would refuse it only once publishing had started.',
+  );
 
 // --- the plan -------------------------------------------------------------
 
@@ -183,20 +199,21 @@ for (const p of pending) {
 
   // A prerelease published without a dist-tag becomes `latest`, which is how a
   // beta reaches everyone who asked for the stable line.
-  if (semver.prerelease(p.local) && NPM_TAG === null)
+  if (semver.prerelease(p.local) && TARGETS_LATEST)
     fail(
-      `${p.name} ${p.local} is a prerelease and no --tag was given.\n` +
-        'Without one npm publishes it as `latest`. Pass --tag=next (or another\n' +
-        'name) so the stable line is left alone.',
+      `${p.name} ${p.local} is a prerelease and this publish targets \`latest\`\n` +
+        `(${NPM_TAG === null ? 'no --tag was given' : '--tag=latest names it explicitly'}).\n` +
+        'A prerelease on `latest` reaches everyone who asked for the stable line.\n' +
+        'Pass --tag=next, or another name that is not `latest`.',
     );
 
   // Only `latest` can be moved backwards, so this asks about the dist-tag
   // rather than about the greatest version that exists.
-  if (NPM_TAG === null && p.latest !== null && semver.gt(p.latest, p.local))
+  if (TARGETS_LATEST && p.latest !== null && semver.gt(p.latest, p.local))
     fail(
       `${p.name} ${p.local} is lower than the published latest ${p.latest}.\n` +
-        'Publishing it to `latest` would move that tag backwards. Pass --tag to\n' +
-        'publish it somewhere else.',
+        'Publishing it to `latest` would move that tag backwards. Pass a --tag\n' +
+        'other than `latest` to publish it somewhere else.',
     );
 }
 
