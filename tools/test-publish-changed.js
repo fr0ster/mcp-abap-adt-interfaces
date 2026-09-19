@@ -217,7 +217,12 @@ function run(dir, bin, args = []) {
       cwd: dir,
       encoding: 'utf8',
       env: {
-        ...process.env,
+        // GIT_ENV, not process.env: the script runs git itself, so ambient
+        // configuration reaches its guards too. Measured: a global
+        // status.showUntrackedFiles=no makes `git status --porcelain` answer
+        // empty while untracked files exist, which blinds the dirty-tree guard.
+        // Isolating only the fixture setup left that half exposed.
+        ...GIT_ENV,
         PATH: `${bin}${path.delimiter}${process.env.PATH}`,
         PUBLISH_POLL_ATTEMPTS: '3',
         PUBLISH_POLL_MS: '1',
@@ -292,6 +297,38 @@ check(
       fs.readFileSync(marker, 'utf8'),
       path.join(dir, 'node_modules', 'semver', 'index.js'),
     );
+  },
+);
+
+check(
+  'the dirty-tree guard is not blinded by ambient git configuration',
+  () => {
+    const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
+    fs.writeFileSync(path.join(dir, 'stray.txt'), 'uncommitted');
+
+    // Measured: with this configuration `git status --porcelain` answers empty
+    // while untracked files exist. GIT_ENV is a snapshot taken at load plus an
+    // explicit override, so setting this now reaches the child only if run()
+    // forwards the ambient environment — which is the defect this pins.
+    const hostile = `${dir}.gitconfig`;
+    fs.writeFileSync(hostile, '[status]\n\tshowUntrackedFiles = no\n');
+    const previous = process.env.GIT_CONFIG_GLOBAL;
+    process.env.GIT_CONFIG_GLOBAL = hostile;
+
+    try {
+      const { bin } = installFakeNpm(dir, {
+        versions: { '@fixture/alpha': ['1.0.0'] },
+        manifests: {
+          '@fixture/alpha': path.join(dir, 'packages/alpha/package.json'),
+        },
+      });
+      const result = run(dir, bin);
+      assert.strictEqual(result.status, 1, result.stdout + result.stderr);
+      assert.match(result.stderr, /the working tree is dirty/);
+    } finally {
+      if (previous === undefined) delete process.env.GIT_CONFIG_GLOBAL;
+      else process.env.GIT_CONFIG_GLOBAL = previous;
+    }
   },
 );
 
