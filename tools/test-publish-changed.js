@@ -22,14 +22,39 @@ const { execFileSync, spawnSync } = require('node:child_process');
 const ROOT = path.resolve(__dirname, '..');
 const SCRIPT = path.join(ROOT, 'tools', 'publish-changed.js');
 const SEMVER = path.join(ROOT, 'node_modules', 'semver');
-// Read on demand, never at load: reading it here threw MODULE_NOT_FOUND before
-// the explicit "run npm ci" check below could report the same thing in words.
-const declaredSemverVersion = () =>
-  JSON.parse(fs.readFileSync(path.join(SEMVER, 'package.json'), 'utf8'))
+
+const readJson = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));
+
+// The declaration and the lock are the independent sources. Comparing the
+// installed copy with itself — which an earlier version of this file did, by
+// reading node_modules/semver/package.json on both sides — holds whatever is
+// installed there, including a stub.
+const declaredRange = () =>
+  readJson(path.join(ROOT, 'package.json')).devDependencies.semver;
+const lockedVersion = () =>
+  readJson(path.join(ROOT, 'package-lock.json')).packages['node_modules/semver']
     .version;
+// Read on demand, never at load: reading it at load threw MODULE_NOT_FOUND
+// before the explicit "run npm ci" check below could say the same in words.
+const installedVersion = () =>
+  readJson(path.join(SEMVER, 'package.json')).version;
+
+// Ambient git configuration reaches a fixture commit: this machine has
+// commit.gpgSign=true, and a hooksPath or autocrlf would arrive the same way.
+const GIT_ENV = {
+  ...process.env,
+  GIT_CONFIG_GLOBAL: '/dev/null',
+  GIT_CONFIG_SYSTEM: '/dev/null',
+  GIT_TERMINAL_PROMPT: '0',
+};
 
 const git = (cwd, args) =>
-  execFileSync('git', args, { cwd, encoding: 'utf8', stdio: 'pipe' });
+  execFileSync('git', args, {
+    cwd,
+    encoding: 'utf8',
+    stdio: 'pipe',
+    env: GIT_ENV,
+  });
 
 /**
  * A repository with `packages` ({ dir, version }) in that order, each committed
@@ -67,25 +92,53 @@ function fixture(packages) {
   fs.mkdirSync(path.join(dir, 'tools'));
   fs.copyFileSync(SCRIPT, path.join(dir, 'tools', 'publish-changed.js'));
 
-  // Only `semver` is linked, and only into the fixture's own node_modules, so
-  // the copied script resolves the dependency this repository declares.
+  // The fixture's own `semver` is a proxy that records being loaded and then
+  // delegates to this repository's copy. Two things follow, and both were
+  // defects here before:
   //
-  // Symlinking the whole node_modules looked equivalent and was not: when the
-  // repository's copy is missing, node walks past the empty link and resolves
-  // whatever an ancestor of the temporary directory happens to hold. On this
-  // machine /tmp/node_modules holds a stray semver, so the suite passed with the
-  // declared dependency uninstalled — green, and meaningless.
+  // Symlinking the whole node_modules let node walk past a missing dependency
+  // and resolve whatever an ancestor of the temporary directory held — on this
+  // machine /tmp/node_modules carries a stray semver, so the suite passed with
+  // the declared dependency uninstalled. Nothing outside the fixture can
+  // satisfy this require now.
+  //
+  // And a probe file resolving semver proved only what a sibling file would do.
+  // The marker is written by whoever actually required it, so the evidence comes
+  // from the script under test.
   if (!fs.existsSync(SEMVER))
     throw new Error(
       `${SEMVER} is missing. Run npm ci: this suite must resolve the semver this` +
         ' repository declares, never one that happens to be installed elsewhere.',
     );
-  fs.mkdirSync(path.join(dir, 'node_modules'));
-  fs.symlinkSync(SEMVER, path.join(dir, 'node_modules', 'semver'));
+  const marker = `${dir}.semver-loaded`;
+  const proxy = path.join(dir, 'node_modules', 'semver');
+  fs.mkdirSync(proxy, { recursive: true });
+  fs.writeFileSync(
+    path.join(proxy, 'package.json'),
+    JSON.stringify({
+      name: 'semver',
+      version: '0.0.0-fixture',
+      main: 'index.js',
+    }),
+  );
+  // Escape-free lines; paths arrive through JSON.stringify. The marker lives
+  // OUTSIDE the repository: written inside, it would dirty the tree and the
+  // script's own first guard would refuse the run.
+  fs.writeFileSync(
+    path.join(proxy, 'index.js'),
+    [
+      "const fs = require('node:fs');",
+      `fs.appendFileSync(${JSON.stringify(marker)}, __filename);`,
+      `module.exports = require(${JSON.stringify(SEMVER)});`,
+    ].join('\n'),
+  );
 
   git(dir, ['init', '-q']);
   git(dir, ['config', 'user.email', 'test@example.com']);
   git(dir, ['config', 'user.name', 'test']);
+  git(dir, ['config', 'commit.gpgSign', 'false']);
+  git(dir, ['config', 'tag.gpgSign', 'false']);
+  git(dir, ['config', 'core.hooksPath', '/dev/null']);
   git(dir, ['add', '-A']);
   git(dir, ['commit', '-qm', 'fixture']);
   for (const p of packages) git(dir, ['tag', `${p.dir}-v${p.version}`]);
@@ -111,7 +164,9 @@ function installFakeNpm(_dir, state) {
 
   fs.writeFileSync(
     path.join(bin, 'npm'),
-    `#!/usr/bin/env node
+    // process.execPath, not `env node`: the runner and the fake npm must be the
+    // same Node, and PATH here is deliberately rewritten.
+    `#!${process.execPath}
 const fs = require('node:fs');
 const args = process.argv.slice(2);
 fs.appendFileSync(${JSON.stringify(logPath)}, JSON.stringify(args) + '\\n');
@@ -194,28 +249,51 @@ const check = (name, fn) => {
 
 // --- cases ----------------------------------------------------------------
 
-check('the fixture resolves the semver this repository declares', () => {
-  const dir = fixture([{ dir: 'alpha', version: '1.0.0' }]);
-  const probe = path.join(dir, 'tools', 'probe.js');
-  fs.writeFileSync(
-    probe,
-    "console.log(JSON.stringify({ path: require.resolve('semver'), version: require('semver/package.json').version }));",
-  );
-  const result = spawnSync(process.execPath, [probe], {
-    cwd: dir,
-    encoding: 'utf8',
-  });
-  assert.strictEqual(result.status, 0, result.stderr);
-  const { path: resolved, version } = JSON.parse(result.stdout);
-  // node resolves symlinks, so the answer is the realpath of the link's target,
-  // not a path under the fixture. What matters is WHICH copy that is: this
-  // repository's, rather than one an ancestor of the temporary directory holds.
+check('the installed semver is the declared and the locked one', () => {
+  const semver = require('semver');
+  const installed = installedVersion();
   assert.ok(
-    resolved.startsWith(fs.realpathSync(SEMVER) + path.sep),
-    `resolved ${resolved}, which is not ${fs.realpathSync(SEMVER)}`,
+    semver.satisfies(installed, declaredRange()),
+    `installed semver ${installed} does not satisfy ${declaredRange()}`,
   );
-  assert.strictEqual(version, declaredSemverVersion());
+  assert.strictEqual(
+    installed,
+    lockedVersion(),
+    'installed semver differs from package-lock.json',
+  );
 });
+
+check(
+  'the script under test loads the fixture semver, not another copy',
+  () => {
+    const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
+    const marker = `${dir}.semver-loaded`;
+    assert.ok(
+      !fs.existsSync(marker),
+      'the marker exists before the script ran',
+    );
+
+    const { bin } = installFakeNpm(dir, {
+      versions: { '@fixture/alpha': ['1.0.0'] },
+      manifests: {
+        '@fixture/alpha': path.join(dir, 'packages/alpha/package.json'),
+      },
+    });
+    const result = run(dir, bin);
+    assert.strictEqual(result.status, 0, result.stdout + result.stderr);
+
+    // Written by the module the script itself required, which exists only inside
+    // this fixture and delegates only to this repository's copy.
+    assert.ok(
+      fs.existsSync(marker),
+      'the script ran without loading the fixture semver',
+    );
+    assert.strictEqual(
+      fs.readFileSync(marker, 'utf8'),
+      path.join(dir, 'node_modules', 'semver', 'index.js'),
+    );
+  },
+);
 
 check('publishes every pending package, in workspace order', () => {
   const dir = fixture([
