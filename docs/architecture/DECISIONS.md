@@ -1920,6 +1920,29 @@ resolve to the same declarations once installed from npm.
 `interfaces-adt`: then the split is along the wrong line, and the family
 boundary should be redrawn.
 
+**One of the two cited acceptors turned out not to be one, and the rule is what
+found that out.** The problem statement above names `llm-agent` as accepting
+"`IAuthProvider` and an access-check contract, which the hub accepts too". The
+access-check half is no longer true. llm-agent settled, on 2026-09-20, that every
+provider in it is a **client** of an outside service: a client proves who it is
+and judges nobody, because nothing calls it, so it performs no authorization at
+request time and accepts no policy function. Authorization there happens when an
+instance is constructed for one caller, by narrowing what that instance can
+address — which is addressing, not permission. An earlier draft of its design had
+a `createFor(identity, check)` on a RAG provider; that is deleted, and with it
+llm-agent's only reason to accept an access check.
+
+So `AccessCheck<R>` has **one** acceptor, cloud-llm-hub, and by this decision one
+accepting package owns its contract: it stays in the hub and does not enter
+`interfaces-auth`. `IAuthProvider` is unaffected — it is accepted across
+families and its placement stands. Nothing about the decision changes; applying
+it to a corrected fact simply produced a different answer, which is what a rule
+is for. Should a second repository later accept the same shape, that is when it
+moves up, and not before.
+
+llm-agent's own record: `docs/ARCHITECTURE.md` principle 8; the reasoning is in
+`docs/superpowers/specs/2026-09-16-auth-contracts-design.md` §1.4, §4.4 and §5.
+
 Spec: `docs/superpowers/specs/2026-09-15-interfaces-split-design.md`.
 
 ## 27. One mechanism brings its own error codes; it does not widen a shared set
