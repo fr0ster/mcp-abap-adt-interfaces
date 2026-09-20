@@ -2030,3 +2030,33 @@ the comparison.
 
 **Read with decision 11.** What nobody accepts is not kept; the same instinct
 applies to output nobody reads.
+
+---
+
+## Open, and what would settle it
+
+Not decisions. These are questions this repository has met and deliberately left
+open, recorded here for the reason the preamble gives: so the next person can tell
+an open question from an accident, and does not re-derive it. Each says what would
+close it. They arrived from `2026-09-16-credential-contracts-design.md`, whose
+design half moved to the `llm-agent` auth-contracts spec when that became the
+single source of truth for the design; these three are about this repository's own
+shape, not about that design.
+
+- **The contracts nobody accepts.** `interfaces` 45.0.0 still carries what no
+  package imports — the five header groups, `ISessionState`, `ISessionStorage`,
+  `ITokenProviderResult` — each marked `@deprecated`. They leave with the facade's
+  next major, together with the re-export (decision 11). **What would settle it:**
+  that major. One caveat on the evidence — only repositories under `~/prj` were
+  searched, so a consumer outside them would not have shown.
+
+- **A separate `interfaces-sap`.** SAP/BTP configuration and authentication live in
+  `interfaces-adt` because only the ABAP family accepts them (decision 26). If
+  their release rate came to differ from ADT's as much as ADT's differs from the
+  rest, they would deserve their own package. **What would settle it:** measured
+  release cadence, not a guess — the same evidence decision 26 was made on.
+
+- **`IAuthorizationStrategy`'s home.** It describes a generic interactive OAuth
+  login but is accepted only by `auth-providers` today, so decision 26 keeps it in
+  `interfaces-adt`. **What would settle it:** a package outside the SAP side
+  accepting it, at which point it moves to `interfaces-auth`.
