@@ -363,5 +363,7 @@ There is no CI on this repository. What holds instead:
    a stray copy in an ancestor of the temporary directory, so the suite was green
    with the declared dependency uninstalled; and comparing the installed copy
    with itself, or asking a probe file rather than the script, asserted nothing.
+   Why the release works this way, and why a check that has never failed is an
+   assumption: decision 28.
    `npm run check` runs 1 and 5–9, and every package's `prepublishOnly` runs
    `npm run check`.

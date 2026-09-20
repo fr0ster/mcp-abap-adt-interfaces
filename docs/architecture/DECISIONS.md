@@ -1963,3 +1963,70 @@ hit. That belongs in the shared set, and regenerating the baseline for it is the
 documented path (§7 item 5), not a workaround.
 
 PR: #87.
+
+## 28. A release publishes what changed, from the tree the tag names
+
+**The problem.** Publishing `interfaces-adt` 1.1.0 meant publishing one changed
+package out of five. The documented procedure — publish all five in dependency
+order — produced four `You cannot publish over the previously published versions`
+errors around the one publish that mattered, and ran every package's
+`prepublishOnly`, which is the full `npm run check`, five times for one release.
+
+**Why not.** A class of errors that is always expected is a class nobody reads.
+The fifth line, the one that is a real failure, looks exactly like the four that
+are not. That is not a style complaint: the same habit hid a stale metadata cache
+minutes later, when `npm view` answered `1.0.0` for a package that had just
+published `1.1.0` and `npm pack` of the new version failed — both indistinguishable
+from a publish that silently did not happen.
+
+**The decision.** `npm run release:publish` asks the registry what it serves,
+publishes only the versions missing from it, in the dependency order of the
+`workspaces` array, runs `npm run check` once, and afterwards asks the registry
+whether it serves each version before publishing anything that depends on it.
+A clean run with nothing pending says so and exits 0; there is no expected-failure
+output to filter.
+
+**What is published is the tree the tag names.** Not "a tree whose tag is an
+ancestor of `HEAD`": a commit made after the tag can change a package without
+bumping its version, and the tarball would then carry content that version never
+had. `HEAD` must equal the tag's tree, compared over the whole repository rather
+than an enumerated set of build-affecting paths — such a list would need the root
+`tsconfig`s, `tools/`, and every package `tsc -b` links through, and would be
+wrong by omission. All five tags of the 45.0.0 release point at one commit, so
+this is how a release here was already made.
+
+**A prerelease never lands on `latest`.** Both dist-tag guards ask whether the
+publish *targets* `latest` — an absent `--tag` or an explicit `--tag=latest` — and
+version order is SemVer, from the same library npm uses, not string order:
+`localeCompare` ranks `1.0.0-beta.1` above `1.0.0`, which refuses a legitimate
+stable release and admits a beta to the stable line.
+
+**What keeps it true.** `npm run check:publish` (§7 item 9) runs the publish path
+against throwaway repositories with a fake `npm` first on `PATH`. Its own history
+is the argument for it: the suite passed on a checkout where the dependency it
+needed was not installed, resolving a stray `semver` from an ancestor of the
+temporary directory; a version assertion compared the installed copy with itself;
+a probe file stood in for the script under test. Three green assertions, nothing
+asserted.
+
+**So a check that has never failed is an assumption.** Every case here was made
+to fail on purpose before it was trusted — a stub dependency, a redirected
+`require`, a weakened isolation rule — and each must fail alone, leaving its
+neighbours green, or it is pinning something other than what it names.
+
+**Isolation is a rule about names, not a list of them.** Git takes configuration
+through `GIT_CONFIG_GLOBAL`, through `GIT_CONFIG_COUNT` with numbered
+`GIT_CONFIG_KEY_n`/`GIT_CONFIG_VALUE_n`, through `GIT_CONFIG_PARAMETERS`, and can
+be pointed at another repository with `GIT_DIR`/`GIT_WORK_TREE`. Each was measured
+to hide an untracked file from `git status --porcelain`, so each could blind the
+dirty-tree guard. Nothing named `GIT_*` is inherited; the few needed are set
+explicitly.
+
+**What would change it.** CI arriving on this repository, which would move the
+gate off `prepublishOnly` and out of one operator's shell. Or a release that
+genuinely spans several commits, which the whole-tree comparison forbids by
+design — the answer there is to tag the commit that is published, not to loosen
+the comparison.
+
+**Read with decision 11.** What nobody accepts is not kept; the same instinct
+applies to output nobody reads.
