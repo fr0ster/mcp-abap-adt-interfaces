@@ -25,17 +25,40 @@ const _login: ISecretLoginCredential = {
   secret: async () => 'hunter2',
 };
 
-// The literal is the whole reason these are three contracts and not one shape.
-// Without `kind`, an api-key and a bearer are both "an object with one async
-// string method", and handing over the wrong one would compile everywhere.
-// @ts-expect-error a bearer is not an api key, however identical the methods
-const _confused: IApiKeyCredential = _bearer;
+// --- what the literal actually buys -----------------------------------------
+//
+// Asserting that a bearer is not an api key proves nothing about `kind`: their
+// members differ, so that assignment fails on the missing method whether or not
+// a discriminator exists. Each check below is built so the ONLY difference is
+// the literal — the members are exactly what the target asks for.
 
-// @ts-expect-error and not the other way round either
-const _confusedBack: IBearerCredential = _key;
+// A secret login is the real overlap: it has everything an api key asks for,
+// and the extra `principal` does not get in the way. Without the literal it
+// would satisfy IApiKeyCredential outright.
+declare const realLogin: ISecretLoginCredential;
+// @ts-expect-error the literal is the only thing refusing this
+const _loginAsKey: IApiKeyCredential = realLogin;
+
+// Members are exactly an api key's; only the `kind` is another protocol's.
+declare const bearerShapedLikeKey: {
+  readonly kind: 'bearer';
+  secret(): Promise<string>;
+};
+// @ts-expect-error only the kind is wrong here
+const _wrongKindKey: IApiKeyCredential = bearerShapedLikeKey;
+
+// And the same in the other direction.
+declare const keyShapedLikeBearer: {
+  readonly kind: 'api-key';
+  token(): Promise<string>;
+};
+// @ts-expect-error only the kind is wrong here
+const _wrongKindBearer: IBearerCredential = keyShapedLikeBearer;
+
+// --- the members are the contract -------------------------------------------
 
 // A structurally right object with no `kind` is not a credential: the
-// discriminator is what an acceptor checks, so it cannot be inferred.
+// discriminator is what an acceptor checks, so it cannot be left to inference.
 // @ts-expect-error `kind` is the contract, not decoration
 const _anonymous: IApiKeyCredential = { secret: async () => 'sk-...' };
 
@@ -52,9 +75,11 @@ const _nameless: ISecretLoginCredential = {
 // @ts-expect-error a held secret is not a credential
 const _held: IApiKeyCredential = { kind: 'api-key', secret: 'sk-...' };
 
-// What an acceptor writes: narrow by the literal, then use what that kind has.
-// The union is the acceptor's to declare — this package ships the members, not
-// the set any one site admits.
+// --- what an acceptor writes ------------------------------------------------
+
+// Narrow by the literal, then use what that kind has. The union is the
+// acceptor's to declare: this package ships the members, not the set any one
+// site admits.
 type Accepted = IApiKeyCredential | IBearerCredential | ISecretLoginCredential;
 
 async function present(credential: Accepted): Promise<string> {
@@ -76,8 +101,14 @@ void present;
 type MaybeAuthenticated = Accepted | { readonly kind: 'none' };
 const _unauthenticated: MaybeAuthenticated = { kind: 'none' };
 
-// @ts-expect-error and a site that did not admit it cannot be handed one
-const _rejected: Accepted = { kind: 'none' };
+// Refused by the site that did not admit it — and again the members are an api
+// key's, so the literal is the only thing doing the refusing.
+declare const noneShapedLikeKey: {
+  readonly kind: 'none';
+  secret(): Promise<string>;
+};
+// @ts-expect-error 'none' is not admitted at this site
+const _rejected: Accepted = noneShapedLikeKey;
 
-void [_key, _bearer, _login, _confused, _confusedBack, _anonymous, _nameless];
-void [_held, _unauthenticated, _rejected];
+void [_key, _bearer, _login, _loginAsKey, _wrongKindKey, _wrongKindBearer];
+void [_anonymous, _nameless, _held, _unauthenticated, _rejected];

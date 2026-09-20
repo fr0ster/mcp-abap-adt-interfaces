@@ -31,10 +31,14 @@
  * that knows about them. An acceptor that captured the string would serve a
  * stale token and defeat the provider it was handed.
  *
- * **The `kind` literal is what makes a check real.** Without it,
- * {@link IApiKeyCredential} and {@link IBearerCredential} are structurally
- * identical — both are "an object with one async string method" — and a
- * consumer handing the wrong one gets no error anywhere. It is a plain string
+ * **The `kind` literal is what makes a check real.** Not because the members
+ * always differ — an api key and a bearer token do differ, one having
+ * `secret()` and the other `token()`. The overlap that matters is between
+ * {@link ISecretLoginCredential} and {@link IApiKeyCredential}: a secret login
+ * has everything a key asks for, and its extra `principal` does not get in the
+ * way, so without the literal it would satisfy the key contract outright. The
+ * literal is also what lets an acceptor narrow a union and reach the members of
+ * exactly one protocol. It is a plain string
  * literal rather than a `unique symbol` so that the same shape declared in two
  * packages is satisfied by one object: a credential written against this
  * package must not have to be re-wrapped to cross a package boundary.
