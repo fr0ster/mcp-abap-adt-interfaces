@@ -58,7 +58,14 @@
  * parameter there — and none of that is in the contract.
  */
 export interface IApiKeyCredential {
-  /** Discriminates this from {@link IBearerCredential}, which is otherwise identical. */
+  /**
+   * The protocol this speaks: present this key.
+   *
+   * Not a discriminator against {@link IBearerCredential} — those two already differ in
+   * their members, `secret()` against `token()`. What the literal refuses is
+   * {@link ISecretLoginCredential}, which carries everything a key asks for and would
+   * otherwise satisfy this contract outright; see the overlap described above.
+   */
   readonly kind: 'api-key';
 
   /**
@@ -84,7 +91,13 @@ export interface IApiKeyCredential {
  * asked each time rather than read once.
  */
 export interface IBearerCredential {
-  /** Discriminates this from {@link IApiKeyCredential}, which is otherwise identical. */
+  /**
+   * The protocol this speaks: present a token someone issued.
+   *
+   * This differs from {@link IApiKeyCredential} in its members as well — `token()` against
+   * `secret()` — so the literal's work here is letting an acceptor narrow a union to one
+   * protocol, not telling those two apart.
+   */
   readonly kind: 'bearer';
 
   /**
