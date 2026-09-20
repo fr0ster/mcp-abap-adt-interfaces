@@ -38,7 +38,12 @@ const TARGETS_LATEST = NPM_TAG === null || NPM_TAG === 'latest';
 // How long to wait for the registry to serve a version it has just accepted.
 // Only tools/test-publish-changed.js overrides these, so that the case where the
 // registry never serves the version does not take the full wait.
-const POLL_ATTEMPTS = Number(process.env.PUBLISH_POLL_ATTEMPTS ?? 10);
+// 20 x 3s = 60s. The first release published under this tool (interfaces-auth 1.1.0,
+// 2026-09-20) succeeded and then tripped the warning below at 30s, which is the worst
+// shape a warning can have: it fires on a success, and a warning that fires on successes
+// is one people learn to scroll past. 60s is a judgement rather than a measurement --
+// that publish was serving by the time it was checked, which only bounds it from above.
+const POLL_ATTEMPTS = Number(process.env.PUBLISH_POLL_ATTEMPTS ?? 20);
 const POLL_MS = Number(process.env.PUBLISH_POLL_MS ?? 3000);
 // A zero, negative or non-numeric override would silently remove the wait, and
 // the check it exists for would report a version the registry has not served.
