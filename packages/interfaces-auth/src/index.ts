@@ -6,3 +6,8 @@
 
 export type { IAuthProvider, IRenewableCredential } from './auth/IAuthProvider';
 export type { ICertificateMaterial } from './auth/ICertificateMaterial';
+export type {
+  IApiKeyCredential,
+  IBearerCredential,
+  ISecretLoginCredential,
+} from './auth/ICredentials';
