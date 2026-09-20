@@ -81,10 +81,13 @@ export interface IApiKeyCredential {
 /**
  * A bearer token, issued by someone and presented as proof.
  *
- * Distinct from {@link IApiKeyCredential} only by `kind`, and that distinction
- * is the point: a token has an issuer and a lifetime, a key does not, and an
- * acceptor that expects one and receives the other has no way to notice without
- * the literal.
+ * It differs from {@link IApiKeyCredential} in its members too, not only by `kind`:
+ * this one has `token()` where that one has `secret()`, so an acceptor handed the
+ * wrong one fails to compile whether or not a literal is there. What the literal
+ * does here is let an acceptor narrow a union to one protocol — and the overlap it
+ * genuinely refuses is {@link ISecretLoginCredential}, which carries everything a
+ * key asks for. A token still has an issuer and a lifetime where a key has neither,
+ * which is why `token()` is asked on every use.
  *
  * The SAP AI Core providers accept this: a constructed destination carries
  * `headers.Authorization`, rebuilt per call, which is exactly why `token()` is
