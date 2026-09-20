@@ -39,21 +39,34 @@ const lockedVersion = () =>
 const installedVersion = () =>
   readJson(path.join(SEMVER, 'package.json')).version;
 
-// Ambient git configuration reaches a fixture commit: this machine has
-// commit.gpgSign=true, and a hooksPath or autocrlf would arrive the same way.
-const GIT_ENV = {
-  ...process.env,
+// Ambient git settings reach both the fixture commits and the guards the script
+// runs. Overriding GIT_CONFIG_GLOBAL and GIT_CONFIG_SYSTEM was not enough, and a
+// longer list of names would be wrong by omission for the same reason: git takes
+// configuration through GIT_CONFIG_COUNT with numbered GIT_CONFIG_KEY_n and
+// GIT_CONFIG_VALUE_n, through GIT_CONFIG_PARAMETERS, and it can be pointed at a
+// different repository entirely with GIT_DIR and GIT_WORK_TREE. All four were
+// measured to hide an untracked file from `git status --porcelain`.
+//
+// So this is a rule rather than a list: nothing named GIT_* is inherited, and the
+// few we want are set explicitly.
+// Computed per call, never snapshotted at load: the cases below put hostile
+// GIT_* variables into process.env, and a snapshot would filter an environment
+// they were not in yet — so the suite would pass however weak the rule became.
+const gitEnv = () => ({
+  ...Object.fromEntries(
+    Object.entries(process.env).filter(([name]) => !name.startsWith('GIT_')),
+  ),
   GIT_CONFIG_GLOBAL: '/dev/null',
   GIT_CONFIG_SYSTEM: '/dev/null',
   GIT_TERMINAL_PROMPT: '0',
-};
+});
 
 const git = (cwd, args) =>
   execFileSync('git', args, {
     cwd,
     encoding: 'utf8',
     stdio: 'pipe',
-    env: GIT_ENV,
+    env: gitEnv(),
   });
 
 /**
@@ -217,12 +230,12 @@ function run(dir, bin, args = []) {
       cwd: dir,
       encoding: 'utf8',
       env: {
-        // GIT_ENV, not process.env: the script runs git itself, so ambient
-        // configuration reaches its guards too. Measured: a global
-        // status.showUntrackedFiles=no makes `git status --porcelain` answer
-        // empty while untracked files exist, which blinds the dirty-tree guard.
-        // Isolating only the fixture setup left that half exposed.
-        ...GIT_ENV,
+        // gitEnv(), not process.env: the script runs git itself, so ambient
+        // settings reach its guards too. Measured: several of them make
+        // `git status --porcelain` answer empty while untracked files exist,
+        // which blinds the dirty-tree guard. Isolating only the fixture setup
+        // left that half exposed.
+        ...gitEnv(),
         PATH: `${bin}${path.delimiter}${process.env.PATH}`,
         PUBLISH_POLL_ATTEMPTS: '3',
         PUBLISH_POLL_MS: '1',
@@ -300,20 +313,56 @@ check(
   },
 );
 
-check(
-  'the dirty-tree guard is not blinded by ambient git configuration',
-  () => {
+// Every one of these was measured to hide an untracked file from
+// `git status --porcelain`, so every one is a way to blind the dirty-tree guard.
+// There is a case per class because the isolation is a rule about names, and a
+// rule earns a test for each class it claims to cover — the first version of it
+// handled only the first entry here.
+const BLINDING_GIT_ENVS = [
+  [
+    'GIT_CONFIG_GLOBAL naming a config file',
+    (dir) => {
+      const file = `${dir}.gitconfig`;
+      fs.writeFileSync(file, '[status]\n\tshowUntrackedFiles = no\n');
+      return { GIT_CONFIG_GLOBAL: file };
+    },
+  ],
+  [
+    'GIT_CONFIG_COUNT with a numbered key and value',
+    () => ({
+      GIT_CONFIG_COUNT: '1',
+      GIT_CONFIG_KEY_0: 'status.showUntrackedFiles',
+      GIT_CONFIG_VALUE_0: 'no',
+    }),
+  ],
+  [
+    'GIT_CONFIG_PARAMETERS',
+    () => ({ GIT_CONFIG_PARAMETERS: "'status.showUntrackedFiles'='no'" }),
+  ],
+  [
+    'GIT_DIR and GIT_WORK_TREE naming another repository',
+    (dir) => {
+      // An empty repository answers "clean" for everything, so the guard would
+      // be reading a tree that is not the one about to be published.
+      const other = `${dir}.other`;
+      fs.mkdirSync(other);
+      git(other, ['init', '-q']);
+      return { GIT_DIR: path.join(other, '.git'), GIT_WORK_TREE: other };
+    },
+  ],
+];
+
+for (const [label, blinding] of BLINDING_GIT_ENVS)
+  check(`the dirty-tree guard survives ${label}`, () => {
     const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
     fs.writeFileSync(path.join(dir, 'stray.txt'), 'uncommitted');
 
-    // Measured: with this configuration `git status --porcelain` answers empty
-    // while untracked files exist. GIT_ENV is a snapshot taken at load plus an
-    // explicit override, so setting this now reaches the child only if run()
-    // forwards the ambient environment — which is the defect this pins.
-    const hostile = `${dir}.gitconfig`;
-    fs.writeFileSync(hostile, '[status]\n\tshowUntrackedFiles = no\n');
-    const previous = process.env.GIT_CONFIG_GLOBAL;
-    process.env.GIT_CONFIG_GLOBAL = hostile;
+    const hostile = blinding(dir);
+    const previous = Object.keys(hostile).map((name) => [
+      name,
+      process.env[name],
+    ]);
+    Object.assign(process.env, hostile);
 
     try {
       const { bin } = installFakeNpm(dir, {
@@ -323,14 +372,17 @@ check(
         },
       });
       const result = run(dir, bin);
+      // Exit 1 is not enough on its own: with GIT_DIR forwarded the run also
+      // fails, but on the missing tag in the other repository. The dirty tree
+      // has to be what stopped it.
       assert.strictEqual(result.status, 1, result.stdout + result.stderr);
       assert.match(result.stderr, /the working tree is dirty/);
     } finally {
-      if (previous === undefined) delete process.env.GIT_CONFIG_GLOBAL;
-      else process.env.GIT_CONFIG_GLOBAL = previous;
+      for (const [name, value] of previous)
+        if (value === undefined) delete process.env[name];
+        else process.env[name] = value;
     }
-  },
-);
+  });
 
 check('publishes every pending package, in workspace order', () => {
   const dir = fixture([
