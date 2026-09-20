@@ -21,9 +21,53 @@ const { execFileSync, spawnSync } = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const SCRIPT = path.join(ROOT, 'tools', 'publish-changed.js');
+const SEMVER = path.join(ROOT, 'node_modules', 'semver');
+
+const readJson = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));
+
+// The declaration and the lock are the independent sources. Comparing the
+// installed copy with itself — which an earlier version of this file did, by
+// reading node_modules/semver/package.json on both sides — holds whatever is
+// installed there, including a stub.
+const declaredRange = () =>
+  readJson(path.join(ROOT, 'package.json')).devDependencies.semver;
+const lockedVersion = () =>
+  readJson(path.join(ROOT, 'package-lock.json')).packages['node_modules/semver']
+    .version;
+// Read on demand, never at load: reading it at load threw MODULE_NOT_FOUND
+// before the explicit "run npm ci" check below could say the same in words.
+const installedVersion = () =>
+  readJson(path.join(SEMVER, 'package.json')).version;
+
+// Ambient git settings reach both the fixture commits and the guards the script
+// runs. Overriding GIT_CONFIG_GLOBAL and GIT_CONFIG_SYSTEM was not enough, and a
+// longer list of names would be wrong by omission for the same reason: git takes
+// configuration through GIT_CONFIG_COUNT with numbered GIT_CONFIG_KEY_n and
+// GIT_CONFIG_VALUE_n, through GIT_CONFIG_PARAMETERS, and it can be pointed at a
+// different repository entirely with GIT_DIR and GIT_WORK_TREE. All four were
+// measured to hide an untracked file from `git status --porcelain`.
+//
+// So this is a rule rather than a list: nothing named GIT_* is inherited, and the
+// few we want are set explicitly.
+// Computed per call, never snapshotted at load: the cases below put hostile
+// GIT_* variables into process.env, and a snapshot would filter an environment
+// they were not in yet — so the suite would pass however weak the rule became.
+const gitEnv = () => ({
+  ...Object.fromEntries(
+    Object.entries(process.env).filter(([name]) => !name.startsWith('GIT_')),
+  ),
+  GIT_CONFIG_GLOBAL: '/dev/null',
+  GIT_CONFIG_SYSTEM: '/dev/null',
+  GIT_TERMINAL_PROMPT: '0',
+});
 
 const git = (cwd, args) =>
-  execFileSync('git', args, { cwd, encoding: 'utf8', stdio: 'pipe' });
+  execFileSync('git', args, {
+    cwd,
+    encoding: 'utf8',
+    stdio: 'pipe',
+    env: gitEnv(),
+  });
 
 /**
  * A repository with `packages` ({ dir, version }) in that order, each committed
@@ -60,15 +104,54 @@ function fixture(packages) {
 
   fs.mkdirSync(path.join(dir, 'tools'));
   fs.copyFileSync(SCRIPT, path.join(dir, 'tools', 'publish-changed.js'));
-  // so the copied script resolves `semver`
-  fs.symlinkSync(
-    path.join(ROOT, 'node_modules'),
-    path.join(dir, 'node_modules'),
+
+  // The fixture's own `semver` is a proxy that records being loaded and then
+  // delegates to this repository's copy. Two things follow, and both were
+  // defects here before:
+  //
+  // Symlinking the whole node_modules let node walk past a missing dependency
+  // and resolve whatever an ancestor of the temporary directory held — on this
+  // machine /tmp/node_modules carries a stray semver, so the suite passed with
+  // the declared dependency uninstalled. Nothing outside the fixture can
+  // satisfy this require now.
+  //
+  // And a probe file resolving semver proved only what a sibling file would do.
+  // The marker is written by whoever actually required it, so the evidence comes
+  // from the script under test.
+  if (!fs.existsSync(SEMVER))
+    throw new Error(
+      `${SEMVER} is missing. Run npm ci: this suite must resolve the semver this` +
+        ' repository declares, never one that happens to be installed elsewhere.',
+    );
+  const marker = `${dir}.semver-loaded`;
+  const proxy = path.join(dir, 'node_modules', 'semver');
+  fs.mkdirSync(proxy, { recursive: true });
+  fs.writeFileSync(
+    path.join(proxy, 'package.json'),
+    JSON.stringify({
+      name: 'semver',
+      version: '0.0.0-fixture',
+      main: 'index.js',
+    }),
+  );
+  // Escape-free lines; paths arrive through JSON.stringify. The marker lives
+  // OUTSIDE the repository: written inside, it would dirty the tree and the
+  // script's own first guard would refuse the run.
+  fs.writeFileSync(
+    path.join(proxy, 'index.js'),
+    [
+      "const fs = require('node:fs');",
+      `fs.appendFileSync(${JSON.stringify(marker)}, __filename);`,
+      `module.exports = require(${JSON.stringify(SEMVER)});`,
+    ].join('\n'),
   );
 
   git(dir, ['init', '-q']);
   git(dir, ['config', 'user.email', 'test@example.com']);
   git(dir, ['config', 'user.name', 'test']);
+  git(dir, ['config', 'commit.gpgSign', 'false']);
+  git(dir, ['config', 'tag.gpgSign', 'false']);
+  git(dir, ['config', 'core.hooksPath', '/dev/null']);
   git(dir, ['add', '-A']);
   git(dir, ['commit', '-qm', 'fixture']);
   for (const p of packages) git(dir, ['tag', `${p.dir}-v${p.version}`]);
@@ -94,7 +177,9 @@ function installFakeNpm(_dir, state) {
 
   fs.writeFileSync(
     path.join(bin, 'npm'),
-    `#!/usr/bin/env node
+    // process.execPath, not `env node`: the runner and the fake npm must be the
+    // same Node, and PATH here is deliberately rewritten.
+    `#!${process.execPath}
 const fs = require('node:fs');
 const args = process.argv.slice(2);
 fs.appendFileSync(${JSON.stringify(logPath)}, JSON.stringify(args) + '\\n');
@@ -145,7 +230,12 @@ function run(dir, bin, args = []) {
       cwd: dir,
       encoding: 'utf8',
       env: {
-        ...process.env,
+        // gitEnv(), not process.env: the script runs git itself, so ambient
+        // settings reach its guards too. Measured: several of them make
+        // `git status --porcelain` answer empty while untracked files exist,
+        // which blinds the dirty-tree guard. Isolating only the fixture setup
+        // left that half exposed.
+        ...gitEnv(),
         PATH: `${bin}${path.delimiter}${process.env.PATH}`,
         PUBLISH_POLL_ATTEMPTS: '3',
         PUBLISH_POLL_MS: '1',
@@ -176,6 +266,123 @@ const check = (name, fn) => {
 };
 
 // --- cases ----------------------------------------------------------------
+
+check('the installed semver is the declared and the locked one', () => {
+  const semver = require('semver');
+  const installed = installedVersion();
+  assert.ok(
+    semver.satisfies(installed, declaredRange()),
+    `installed semver ${installed} does not satisfy ${declaredRange()}`,
+  );
+  assert.strictEqual(
+    installed,
+    lockedVersion(),
+    'installed semver differs from package-lock.json',
+  );
+});
+
+check(
+  'the script under test loads the fixture semver, not another copy',
+  () => {
+    const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
+    const marker = `${dir}.semver-loaded`;
+    assert.ok(
+      !fs.existsSync(marker),
+      'the marker exists before the script ran',
+    );
+
+    const { bin } = installFakeNpm(dir, {
+      versions: { '@fixture/alpha': ['1.0.0'] },
+      manifests: {
+        '@fixture/alpha': path.join(dir, 'packages/alpha/package.json'),
+      },
+    });
+    const result = run(dir, bin);
+    assert.strictEqual(result.status, 0, result.stdout + result.stderr);
+
+    // Written by the module the script itself required, which exists only inside
+    // this fixture and delegates only to this repository's copy.
+    assert.ok(
+      fs.existsSync(marker),
+      'the script ran without loading the fixture semver',
+    );
+    assert.strictEqual(
+      fs.readFileSync(marker, 'utf8'),
+      path.join(dir, 'node_modules', 'semver', 'index.js'),
+    );
+  },
+);
+
+// Every one of these was measured to hide an untracked file from
+// `git status --porcelain`, so every one is a way to blind the dirty-tree guard.
+// There is a case per class because the isolation is a rule about names, and a
+// rule earns a test for each class it claims to cover — the first version of it
+// handled only the first entry here.
+const BLINDING_GIT_ENVS = [
+  [
+    'GIT_CONFIG_GLOBAL naming a config file',
+    (dir) => {
+      const file = `${dir}.gitconfig`;
+      fs.writeFileSync(file, '[status]\n\tshowUntrackedFiles = no\n');
+      return { GIT_CONFIG_GLOBAL: file };
+    },
+  ],
+  [
+    'GIT_CONFIG_COUNT with a numbered key and value',
+    () => ({
+      GIT_CONFIG_COUNT: '1',
+      GIT_CONFIG_KEY_0: 'status.showUntrackedFiles',
+      GIT_CONFIG_VALUE_0: 'no',
+    }),
+  ],
+  [
+    'GIT_CONFIG_PARAMETERS',
+    () => ({ GIT_CONFIG_PARAMETERS: "'status.showUntrackedFiles'='no'" }),
+  ],
+  [
+    'GIT_DIR and GIT_WORK_TREE naming another repository',
+    (dir) => {
+      // An empty repository answers "clean" for everything, so the guard would
+      // be reading a tree that is not the one about to be published.
+      const other = `${dir}.other`;
+      fs.mkdirSync(other);
+      git(other, ['init', '-q']);
+      return { GIT_DIR: path.join(other, '.git'), GIT_WORK_TREE: other };
+    },
+  ],
+];
+
+for (const [label, blinding] of BLINDING_GIT_ENVS)
+  check(`the dirty-tree guard survives ${label}`, () => {
+    const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
+    fs.writeFileSync(path.join(dir, 'stray.txt'), 'uncommitted');
+
+    const hostile = blinding(dir);
+    const previous = Object.keys(hostile).map((name) => [
+      name,
+      process.env[name],
+    ]);
+    Object.assign(process.env, hostile);
+
+    try {
+      const { bin } = installFakeNpm(dir, {
+        versions: { '@fixture/alpha': ['1.0.0'] },
+        manifests: {
+          '@fixture/alpha': path.join(dir, 'packages/alpha/package.json'),
+        },
+      });
+      const result = run(dir, bin);
+      // Exit 1 is not enough on its own: with GIT_DIR forwarded the run also
+      // fails, but on the missing tag in the other repository. The dirty tree
+      // has to be what stopped it.
+      assert.strictEqual(result.status, 1, result.stdout + result.stderr);
+      assert.match(result.stderr, /the working tree is dirty/);
+    } finally {
+      for (const [name, value] of previous)
+        if (value === undefined) delete process.env[name];
+        else process.env[name] = value;
+    }
+  });
 
 check('publishes every pending package, in workspace order', () => {
   const dir = fixture([

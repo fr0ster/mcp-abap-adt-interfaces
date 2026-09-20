@@ -24,7 +24,7 @@ One version line for every contract meant an ADT major bumped a package that onl
 
 ```bash
 npm ci
-npm run check      # build, type checks, surface, graph, deprecations, packed tarballs
+npm run check      # build, type checks, surface, graph, deprecations, packed tarballs, release tool
 ```
 
 There is no CI; `npm run check` is what holds, and every package's `prepublishOnly` runs it.

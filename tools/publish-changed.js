@@ -40,6 +40,17 @@ const TARGETS_LATEST = NPM_TAG === null || NPM_TAG === 'latest';
 // registry never serves the version does not take the full wait.
 const POLL_ATTEMPTS = Number(process.env.PUBLISH_POLL_ATTEMPTS ?? 10);
 const POLL_MS = Number(process.env.PUBLISH_POLL_MS ?? 3000);
+// A zero, negative or non-numeric override would silently remove the wait, and
+// the check it exists for would report a version the registry has not served.
+// Attempts are counted, so a fraction is a mistake rather than a shorter wait.
+if (!Number.isInteger(POLL_ATTEMPTS) || POLL_ATTEMPTS <= 0) {
+  console.error('\npublish: PUBLISH_POLL_ATTEMPTS must be a positive integer.');
+  process.exit(1);
+}
+if (!Number.isFinite(POLL_MS) || POLL_MS <= 0) {
+  console.error('\npublish: PUBLISH_POLL_MS must be a positive number.');
+  process.exit(1);
+}
 
 /** Sleep without going async, so the whole run stays a readable sequence. */
 const sleep = (ms) =>
