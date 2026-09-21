@@ -257,7 +257,9 @@ export type {
   TransformationType,
 } from './adt/IAdtTransformation';
 export type {
+  IAbapObjectEntry,
   IAdtRequest,
+  IAdtTransportObjectActions,
   ICreateTransportParams,
   IListTransportsOptions,
   IListTransportsParams,

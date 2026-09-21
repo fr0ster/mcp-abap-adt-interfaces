@@ -57,6 +57,8 @@ export type {
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   IAbapGitUnlinkArgs,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
+  IAbapObjectEntry,
+  /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   IAbapRequestOptions,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   IAbapTimestamp,
@@ -128,6 +130,8 @@ export type {
   IAdtSystemContext,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   IAdtTransportAware,
+  /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
+  IAdtTransportObjectActions,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   IAdtTypeCatalogue,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */

@@ -5,6 +5,46 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-09-21
+
+### Added
+
+- **`IAbapObjectEntry` — one entry in a transport request's object list**, as
+  the CTS object directory holds it: `pgmid`, `type`, `name`, and optionally
+  the description and the position within a task.
+
+  **Not `IObjectReference`, though they look alike.** That one is ADT's
+  vocabulary — its `type` is an ADT object type code such as `CLAS/OC`, and it
+  carries a `uri` and a `parentName`. The object directory speaks another: a
+  program id, a short type and a name, `R3TR FUGR ZMCP_BLD_FGR_H1`. Merging
+  them would produce a type where half the fields are always wrong and `type`
+  means one thing or the other depending on which member was called.
+
+  A request parameter, which is why it is here — the same reason
+  `IObjectReference` survived 31.0.0 while the result shapes left: a consumer
+  cannot call a member that takes one without being able to name the type.
+
+- **`IAdtTransportObjectActions<TRemoved, TAdded, TTask, TActionLog>`** —
+  `removeObject`, `addObject`, `createTask` and `readActionLog`.
+
+  A transport listing already answers every `atom:link` a request and its
+  tasks carry — `release`, `addobject`, `changeowner`, `newtask` — so that a
+  caller follows an href rather than assembling a URL. Handing over the
+  addresses of operations while declaring nothing that performs one leaves the
+  caller building `tm:root` documents by hand, which is the layering this
+  package exists to prevent.
+
+  What it costs to lack them, measured on an on-premise system: deleting an
+  ABAP object does not free its name, because the object-directory entry stays
+  on the request that carried it. Until it is detached a create of the same
+  name is refused with `CTS_WBO_API 019` — even passing that same request as
+  `corrNr` — and the ways out are releasing the whole request, shipping
+  everything else in it, or SE09. Reported as fr0ster/mcp-abap-adt#221,
+  implemented in fr0ster/mcp-abap-adt-clients#151.
+
+  Four members and no composite: the order a caller uses them in, and what
+  they do when `addObject` is refused, is theirs.
+
 ## [1.1.0] - 2026-09-19
 
 ### Added
