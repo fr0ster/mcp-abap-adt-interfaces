@@ -5,6 +5,64 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-09-21
+
+### Changed
+
+- **BREAKING: `IAdtTransportObjectActions` takes a fifth type parameter**,
+  `TObjects`, for the reading added below. Every implementation and every
+  declared use names it.
+
+- **BREAKING: `removeObject` requires `object.position`.** It took
+  `IAbapObjectEntry` whole, where the field is optional, and the member took
+  the whole type because nothing said the server needed it. It does. Measured
+  against an on-premise system, 2026-09-21: 22 objects asked for by
+  `pgmid`/`type`/`name` alone each answered `200` with the usual echo
+  document, and re-reading the task found all 22 still on it. The same
+  documents carrying `tm:position` — nothing else added — removed every one,
+  22 down to 0, each confirmed by a re-read.
+
+  The parameter is `IAbapObjectEntry & { position: string }` rather than a new
+  type: the field belongs to the entry, and what changes is that this member
+  insists on it. `addObject` still does not, because an entry that does not
+  exist yet has no position.
+
+- **BREAKING: `createTask` requires `targetUser`**, and the options argument
+  with it. This shipped saying the server would decide whose task it is when
+  `tm:targetuser` was absent. It does not: the call without the attribute was
+  refused with `400 SCTS_ADT_MSG 009`, *"User  does not exist in the system
+  (or locked)"* — two spaces, an empty name — and the same call carrying it
+  answered 200 and a task number. Measured on the same run.
+
+  Nothing below the caller can fill it in: `IAbapConnection` does not expose
+  who is authenticated, and finding out costs a second request.
+
+### Added
+
+- **`readObjects`** — the objects a request or task holds, each with the
+  `tm:position` that `removeObject` now needs.
+
+  It is a separate member because it is a separate representation. The
+  transport resource answers differently depending on the `Accept` the request
+  carries, and measured on the same run, a `GET` naming none comes back
+  without a single `tm:abap_object` in it. A reader that sends no `Accept` —
+  the usual one — therefore cannot answer this however its result is parsed;
+  `application/vnd.sap.adt.transportorganizer.v1+xml` is the media type that
+  carries the list.
+
+  Without it `removeObject` would require a value the package offers no way to
+  obtain, leaving a caller to assemble the request themselves — the layering
+  this package exists to prevent.
+
+### Why a major so soon after 1.2.0
+
+1.2.0 declared these members from captures of Eclipse and unit tests over the
+documents it sent. Eclipse sends both attributes on every call, so nothing in
+a capture could show that either was load-bearing. The first run against a
+server found both. The contract is what was wrong, and a contract that permits
+a call which cannot work is worse than one that forbids it: the old signatures
+type-check today and fail — `createTask` at runtime, `removeObject` silently.
+
 ## [1.2.0] - 2026-09-21
 
 ### Added
