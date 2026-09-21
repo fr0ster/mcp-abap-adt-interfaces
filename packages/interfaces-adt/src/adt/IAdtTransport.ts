@@ -174,8 +174,11 @@ export interface IAbapObjectEntry {
  * `removeObject` the ways out are releasing the whole request, shipping
  * everything else in it, or SE09.
  *
- * Four members and no composite: the order a caller uses them in, and what
- * they do when `addObject` is refused, is theirs.
+ * Five members and no composite: the order a caller uses them in, and what
+ * they do when `addObject` is refused, is theirs. One of them,
+ * {@link IAdtTransportObjectActions.readObjects}, is there because
+ * {@link IAdtTransportObjectActions.removeObject} needs a value nothing else
+ * here answers — which is a dependency between readings, not a composite.
  */
 export interface IAdtTransportObjectActions<
   TRemoved,
