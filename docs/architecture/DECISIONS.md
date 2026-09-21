@@ -2085,13 +2085,25 @@ its own sentence wherever it is asked, including after a refusal, where
 folding it into "the registry does not serve this version" would have reported
 a finding nobody made.
 
+**Every question put to the registry now goes through one budgeted helper.**
+Three review rounds each found a different corner of the same mistake: a
+decision taken on a single read of the thing that is known to lag — a refusal
+called a failure, a publish called invisible, a re-run recommended into the
+wall it was meant to avoid. Patching the corners one at a time was producing a
+message with more branches than the logic behind it. So there is one way to
+ask, it spends the budget before it concludes anything, and a caller gets
+`true`, `false` or `null`. A refusal still stops the run, because the packages
+after it depend on it — but only after the registry has been asked to the end
+and still does not have the version.
+
 The last of it is advice rather than behaviour, and it was wrong twice before
 it was right: **"re-run" is only safe once the read path shows what this run
 published.** Before that, those packages go back into the plan, npm refuses
 them, and the run stops before whatever still needs publishing — the original
 failure, reached through the message that was supposed to resolve it. So the
-stop names the versions to wait for and the command that shows them, and says
-plainly what a re-run before then does. What the decision above keeps is its point:
+stop confirms what this run published before reporting, and names them in two
+lists — visible, and not visible yet — with the command that settles the
+second and what a re-run before then does. What the decision above keeps is its point:
 a release is not finished until the registry is asked. What it loses is the
 idea that asking should stand between two publishes.
 

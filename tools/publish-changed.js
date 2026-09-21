@@ -319,13 +319,49 @@ try {
 
 // --- publish --------------------------------------------------------------
 
-// Every package goes out before anything is verified. What made a slow read
-// fatal was doing both in one loop; see the note at the top of this file.
-const published = [];
+/**
+ * Wait, within one shared budget, for the registry to serve each of these.
+ *
+ * **Every decision this file makes about the registry goes through here**, so
+ * none of them is taken on a single read. That was the flaw two reviews kept
+ * finding corners of: a read is asked once, the answer is stale, and a
+ * conclusion is drawn -- a refusal called a failure, a publish called
+ * invisible, a re-run recommended into the same wall. One helper, one budget,
+ * and the only conclusions drawn are the ones the budget has earned.
+ *
+ * Each entry comes back with `served`: `true`, `false` (asked to the end and
+ * never there) or `null` (the registry could not be asked).
+ */
+function confirm(entries, attempts) {
+  const waiting = entries.filter((e) => e.served !== true);
+  for (
+    let attempt = 1;
+    attempt <= attempts && waiting.length > 0;
+    attempt += 1
+  ) {
+    for (let i = waiting.length - 1; i >= 0; i -= 1) {
+      const entry = waiting[i];
+      entry.served = servesVersion(entry.package.name, entry.package.local);
+      if (entry.served !== true) continue;
+      console.log(
+        `${entry.package.name}@${entry.package.local} is on the registry.`,
+      );
+      waiting.splice(i, 1);
+    }
+    if (waiting.length > 0) sleep(POLL_MS);
+  }
+  return entries;
+}
+
+/** `name@version`, one per line, indented for a report. */
+const listed = (entries) =>
+  entries.map((e) => `  ${e.package.name}@${e.package.local}`).join('\n');
+
+const attempted = [];
 
 for (const p of pending) {
   console.log(`\nPublishing ${p.name}@${p.local}\n`);
-  let refused = false;
+  const entry = { package: p, refused: false, served: undefined };
   try {
     // --ignore-scripts: prepublishOnly is `npm run check`, which just ran. It
     // stays in each package.json as the net for a publish by hand.
@@ -333,65 +369,62 @@ for (const p of pending) {
     if (NPM_TAG !== null) args.push('--tag', NPM_TAG);
     interactive('npm', args);
   } catch {
-    refused = true;
+    entry.refused = true;
+  }
+  attempted.push(entry);
+
+  // **A refused publish is not yet a failed one, and one read cannot tell.**
+  // The likeliest way to meet a refusal is a re-run whose plan was built from
+  // a read that is behind: the version IS published, and npm says so by
+  // refusing it. So the same budget everything else gets is spent here before
+  // anything is concluded -- and a refusal only stops the run once the
+  // registry has been asked to the end and still does not have it.
+  //
+  // It stops then because what follows depends on it: these packages are
+  // published in dependency order, and a facade whose dependency was never
+  // accepted would point at a version nobody can install.
+  if (!entry.refused) continue;
+  console.log(
+    `\n${p.name}@${p.local} was refused. Asking the registry whether it is ` +
+      'already published.\n',
+  );
+  confirm([entry], POLL_ATTEMPTS);
+  if (entry.served === true) {
+    console.log(`${p.name}@${p.local} is already published. Continuing.`);
+    continue;
   }
 
-  // **A refused publish is not yet a failed one.** The likeliest reason to be
-  // here on a re-run is that the version IS published and the read that built
-  // the plan was stale: the registry's read path lags its write path by
-  // minutes, which is the whole subject of this file. npm then refuses with
-  // "You cannot publish over the previously published versions", and treating
-  // that as fatal would stop the run before the packages that still need
-  // publishing — the same stranding, one layer down.
-  //
-  // So ask again, and ask the registry rather than parsing npm's message:
-  // `interactive` inherits stdio so the two-factor prompt works, which means
-  // there is no output here to read. A version that is now visible was
-  // published, by this run or an earlier one, and either way there is nothing
-  // left to do for it.
-  if (refused) {
-    const serves = servesVersion(p.name, p.local);
-    if (serves === true) {
-      console.log(
-        `${p.name}@${p.local} was refused, and the registry serves it: ` +
-          'already published. Continuing.',
-      );
-      continue;
-    }
-    fail(
-      `${p.name}@${p.local} did not publish. Later packages were not attempted.\n` +
-        (published.length === 0
-          ? 'Nothing was published by this run.\n'
-          : `Already published by this run: ${published
-              .map((d) => `${d.name}@${d.local}`)
-              .join(', ')}.\n`) +
-        // **`false` and `null` are not the same finding.** One says the
-        // registry does not have this version; the other says it could not be
-        // asked, and a publish may well have been accepted. Reporting the
-        // second as the first would tell an operator to act on a fact nobody
-        // established.
-        (serves === null
-          ? 'The registry could not be read, so whether this version is published\n' +
-            `is UNKNOWN${lastReadFailure ? `:\n  ${lastReadFailure.split('\n')[0]}` : '.'}\n` +
-            'It may have been accepted. Check before doing anything else:\n' +
-            `  npm view ${p.name} versions --prefer-online\n`
-          : 'The registry does not serve this version either, so it is not a\n' +
-            'publish that had already happened. If the two-factor prompt timed\n' +
-            'out, that is all this was.\n') +
-        // The advice the review caught twice: "re-run" is only safe once the
-        // read path has caught up with what THIS run published. Before that,
-        // those packages go back into the plan, npm refuses them, and the run
-        // stops here again — which is the failure this whole file is about.
-        (published.length === 0
-          ? 'Re-run when the cause is dealt with: nothing is on the registry to\n' +
-            'collide with.'
-          : 'Before re-running, wait until each version listed above is visible:\n' +
-            '  npm view <package> versions --prefer-online\n' +
-            'A re-run before then puts them back in the plan, npm refuses them,\n' +
-            'and the run stops here again.'),
-    );
-  }
-  published.push(p);
+  // Everything published so far is confirmed before the report, so the advice
+  // in it can be specific instead of hedged. This costs nothing: those reads
+  // would otherwise happen at the end of the run that is about to stop.
+  const done = attempted.filter((e) => e !== entry);
+  confirm(done, POLL_ATTEMPTS);
+  const visible = done.filter((e) => e.served === true);
+  const pendingVisibility = done.filter((e) => e.served !== true);
+
+  fail(
+    `${p.name}@${p.local} did not publish. Later packages were not attempted.\n` +
+      (entry.served === null
+        ? 'The registry could not be read, so whether this version is published\n' +
+          `is UNKNOWN${lastReadFailure ? `:\n  ${lastReadFailure.split('\n')[0]}` : '.'}\n` +
+          'It may have been accepted. Settle that before anything else:\n' +
+          `  npm view ${p.name} versions --prefer-online\n`
+        : `The registry was asked for ${Math.round((POLL_ATTEMPTS * POLL_MS) / 1000)}s and does not have it, so this is not a\n` +
+          'publish that had already happened. If the two-factor prompt timed\n' +
+          'out, that is all this was.\n') +
+      (done.length === 0
+        ? 'Nothing else was published by this run, so a re-run has nothing to\n' +
+          'collide with.'
+        : `Published by this run and confirmed:\n${visible.length > 0 ? `${listed(visible)}\n` : '  (none)\n'}` +
+          (pendingVisibility.length > 0
+            ? 'Published by this run and NOT yet visible:\n' +
+              `${listed(pendingVisibility)}\n` +
+              'Wait until each of those shows up before re-running, or they go\n' +
+              'back into the plan and npm refuses them:\n' +
+              '  npm view <package> versions --prefer-online'
+            : 'All of them are visible, so a re-run skips them and continues\n' +
+              'from the one above.')),
+  );
 }
 
 // --- verify, once, at the end ---------------------------------------------
@@ -404,38 +437,20 @@ for (const p of pending) {
 // registry's, not each package's, and by the time the last publish is done the
 // first has usually caught up. Whatever is still missing is asked about again
 // each round, so nothing waits on a package ahead of it.
-const waiting = published.map((p) => ({ package: p, lastAnswer: false }));
-for (
-  let attempt = 1;
-  attempt <= POLL_ATTEMPTS && waiting.length > 0;
-  attempt += 1
-) {
-  for (let i = waiting.length - 1; i >= 0; i -= 1) {
-    const entry = waiting[i];
-    entry.lastAnswer = servesVersion(entry.package.name, entry.package.local);
-    if (entry.lastAnswer !== true) continue;
-    console.log(
-      `${entry.package.name}@${entry.package.local} is on the registry.`,
-    );
-    waiting.splice(i, 1);
-  }
-  if (waiting.length > 0) sleep(POLL_MS);
-}
+confirm(attempted, POLL_ATTEMPTS);
 
-console.log(`\nPublished ${published.length} package(s).`);
+console.log(`\nPublished ${attempted.length} package(s).`);
 
-if (waiting.length > 0) {
+const unconfirmed = attempted.filter((e) => e.served !== true);
+if (unconfirmed.length > 0) {
   // Not `fail`: nothing here went wrong. Every version was accepted, and the
   // exit code says "published, not yet visible" rather than "publish failed",
   // because those call for different next steps and looked identical before.
-  const unreadable = waiting.filter((e) => e.lastAnswer === null);
-  const named = waiting
-    .map((e) => `  ${e.package.name}@${e.package.local}`)
-    .join('\n');
+  const unreadable = unconfirmed.filter((e) => e.served === null);
   console.error(
-    `\npublish: ${waiting.length} of ${published.length} IS PUBLISHED but not confirmed, ` +
+    `\npublish: ${unconfirmed.length} of ${attempted.length} IS PUBLISHED but not confirmed, ` +
       `after ${Math.round((POLL_ATTEMPTS * POLL_MS) / 1000)}s:\n` +
-      `${named}\n` +
+      `${listed(unconfirmed)}\n` +
       (unreadable.length > 0
         ? 'The registry could not be read, so whether it serves them is unknown' +
           `${lastReadFailure ? `:\n  ${lastReadFailure.split('\n')[0]}` : '.'}\n`

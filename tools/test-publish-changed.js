@@ -195,6 +195,23 @@ if (args[0] === 'view') {
     process.stderr.write('npm error code ETIMEDOUT\\nnpm error network request timed out\\n');
     process.exit(1);
   }
+  // A read path that catches up rather than one that is instantly right: the
+  // version is withheld for the first few views and served after. Without this
+  // a fake registry answers correctly on the first ask, and a script that only
+  // ever asks once looks identical to one that waits.
+  if (state.serveAfterViews && state.serveAfterViews[name] !== undefined) {
+    state.viewCounts = state.viewCounts ?? {};
+    state.viewCounts[name] = (state.viewCounts[name] ?? 0) + 1;
+    const withheld = state.viewCounts[name] <= state.serveAfterViews[name];
+    fs.writeFileSync(statePath, JSON.stringify(state));
+    if (withheld) {
+      const all = state.versions[name] ?? [];
+      process.stdout.write(
+        JSON.stringify(field === 'versions' ? all.slice(0, -1) : { latest: all[all.length - 2] }),
+      );
+      process.exit(0);
+    }
+  }
   const versions = state.versions[name] ?? null;
   if (versions === null) {
     process.stderr.write('npm error code E404\\n');
@@ -472,11 +489,15 @@ check('a failed publish stops the run before the next package', () => {
   ]);
   // The first package failed, so nothing is on the registry — say that rather
   // than leaving the operator to guess, and say re-running is how to continue.
-  assert.match(result.stderr, /Nothing was published by this run/);
-  assert.match(result.stderr, /Re-run when the cause is dealt with/);
-  // And say that the registry was asked, so "did not publish" is a finding
-  // rather than an assumption about what npm's exit code meant.
-  assert.match(result.stderr, /does not serve this version either/);
+  assert.match(result.stderr, /Nothing else was published by this run/);
+  assert.match(result.stderr, /nothing to\s+collide with/);
+  // And say that the registry was asked to the end of the budget rather than
+  // once, so "did not publish" is a finding and not an assumption about what
+  // npm's exit code meant.
+  assert.match(
+    result.stderr,
+    /The registry was asked for \d+s and does not have it/,
+  );
 });
 
 check('the second package failing names what the first one published', () => {
@@ -499,14 +520,12 @@ check('the second package failing names what the first one published', () => {
   // prompt missed. What matters afterwards is which packages are already out.
   assert.match(
     result.stderr,
-    /Already published by this run: @fixture\/alpha@1\.1\.0/,
+    /Published by this run and confirmed:\n\s+@fixture\/alpha@1\.1\.0/,
   );
   assert.match(result.stderr, /two-factor prompt timed\s+out/);
-  // **And do not tell them to re-run yet.** alpha is published but may not be
-  // visible, and a re-run before it is puts alpha back in the plan, where npm
-  // refuses it and the run stops here again — the failure this file exists
-  // for, one layer down.
-  assert.match(result.stderr, /Before re-running, wait until each version/);
+  // alpha is visible, so a re-run is safe and the report says so rather than
+  // hedging. The opposite case is the test below.
+  assert.match(result.stderr, /All of them are visible/);
 });
 
 check(
@@ -629,7 +648,7 @@ check(
     assert.deepStrictEqual(publishes(readLog(logPath)), [
       'publish --workspace @fixture/alpha --ignore-scripts',
     ]);
-    assert.match(result.stderr, /does not serve this version either/);
+    assert.match(result.stderr, /does not have it/);
   },
 );
 
@@ -692,7 +711,7 @@ check(
       /npm view @fixture\/alpha versions --prefer-online/,
     );
     // The finding it must NOT report, because it was not made.
-    assert.doesNotMatch(result.stderr, /does not serve this version either/);
+    assert.doesNotMatch(result.stderr, /does not have it/);
   },
 );
 
@@ -722,10 +741,43 @@ check('a stop with something already published says what to wait for', () => {
   assert.strictEqual(result.status, 1);
   assert.match(
     result.stderr,
-    /Already published by this run: @fixture\/alpha@1\.1\.0/,
+    /Published by this run and NOT yet visible:\n\s+@fixture\/alpha@1\.1\.0/,
   );
-  assert.match(result.stderr, /Before re-running, wait until each version/);
-  assert.match(result.stderr, /the run stops here again/);
+  assert.match(result.stderr, /Wait until each of those shows up/);
+  assert.match(result.stderr, /npm refuses them/);
+});
+
+/**
+ * **The difference between asking once and waiting.** A refusal is decided by
+ * asking the registry, and the registry is exactly what is behind — so the
+ * first answer is the one least worth trusting. Here the version appears on
+ * the third read: a script that asks once calls this a failed publish and
+ * stops before beta; one that spends the budget finds it and carries on.
+ */
+check('a refusal is decided on the budget, not on the first read', () => {
+  const dir = fixture([
+    { dir: 'alpha', version: '1.1.0' },
+    { dir: 'beta', version: '2.1.0' },
+  ]);
+  const { bin, logPath } = installFakeNpm(dir, {
+    versions: { '@fixture/alpha': ['1.0.0'], '@fixture/beta': ['2.0.0'] },
+    manifests: {
+      '@fixture/alpha': path.join(dir, 'packages/alpha/package.json'),
+      '@fixture/beta': path.join(dir, 'packages/beta/package.json'),
+    },
+    refusedButServed: '@fixture/alpha',
+    // The two views the plan makes are spent first, so the refusal meets a
+    // read path that still says no.
+    serveAfterViews: { '@fixture/alpha': 3 },
+  });
+
+  const result = run(dir, bin);
+  assert.strictEqual(result.status, 0, result.stdout + result.stderr);
+  assert.deepStrictEqual(publishes(readLog(logPath)), [
+    'publish --workspace @fixture/alpha --ignore-scripts',
+    'publish --workspace @fixture/beta --ignore-scripts',
+  ]);
+  assert.match(result.stdout, /already published\. Continuing/);
 });
 
 check('a failing check publishes nothing', () => {
