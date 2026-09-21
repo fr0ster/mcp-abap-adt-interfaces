@@ -2081,7 +2081,17 @@ is one with nothing left to do. **And a read that fails is not a read that
 answers "no"**: only `E404` is an answer, and a timeout or a 5xx in the
 verification loop came out as an unhandled throw — exit 1 with a stack trace,
 on a release where every publish had succeeded. It is now a third state with
-its own sentence, and it exits 2 like the others. What the decision above keeps is its point:
+its own sentence wherever it is asked, including after a refusal, where
+folding it into "the registry does not serve this version" would have reported
+a finding nobody made.
+
+The last of it is advice rather than behaviour, and it was wrong twice before
+it was right: **"re-run" is only safe once the read path shows what this run
+published.** Before that, those packages go back into the plan, npm refuses
+them, and the run stops before whatever still needs publishing — the original
+failure, reached through the message that was supposed to resolve it. So the
+stop names the versions to wait for and the command that shows them, and says
+plainly what a re-run before then does. What the decision above keeps is its point:
 a release is not finished until the registry is asked. What it loses is the
 idea that asking should stand between two publishes.
 

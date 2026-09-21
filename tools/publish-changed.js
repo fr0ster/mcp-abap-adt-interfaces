@@ -350,7 +350,8 @@ for (const p of pending) {
   // published, by this run or an earlier one, and either way there is nothing
   // left to do for it.
   if (refused) {
-    if (servesVersion(p.name, p.local) === true) {
+    const serves = servesVersion(p.name, p.local);
+    if (serves === true) {
       console.log(
         `${p.name}@${p.local} was refused, and the registry serves it: ` +
           'already published. Continuing.',
@@ -360,14 +361,34 @@ for (const p of pending) {
     fail(
       `${p.name}@${p.local} did not publish. Later packages were not attempted.\n` +
         (published.length === 0
-          ? 'Nothing was published by this run.'
+          ? 'Nothing was published by this run.\n'
           : `Already published by this run: ${published
               .map((d) => `${d.name}@${d.local}`)
-              .join(', ')}.`) +
-        '\nThe registry does not serve this version either, so it is not a\n' +
-        'publish that had already happened. If the two-factor prompt timed out,\n' +
-        'that is all this was: re-run, and whatever is already on the registry\n' +
-        'is skipped.',
+              .join(', ')}.\n`) +
+        // **`false` and `null` are not the same finding.** One says the
+        // registry does not have this version; the other says it could not be
+        // asked, and a publish may well have been accepted. Reporting the
+        // second as the first would tell an operator to act on a fact nobody
+        // established.
+        (serves === null
+          ? 'The registry could not be read, so whether this version is published\n' +
+            `is UNKNOWN${lastReadFailure ? `:\n  ${lastReadFailure.split('\n')[0]}` : '.'}\n` +
+            'It may have been accepted. Check before doing anything else:\n' +
+            `  npm view ${p.name} versions --prefer-online\n`
+          : 'The registry does not serve this version either, so it is not a\n' +
+            'publish that had already happened. If the two-factor prompt timed\n' +
+            'out, that is all this was.\n') +
+        // The advice the review caught twice: "re-run" is only safe once the
+        // read path has caught up with what THIS run published. Before that,
+        // those packages go back into the plan, npm refuses them, and the run
+        // stops here again — which is the failure this whole file is about.
+        (published.length === 0
+          ? 'Re-run when the cause is dealt with: nothing is on the registry to\n' +
+            'collide with.'
+          : 'Before re-running, wait until each version listed above is visible:\n' +
+            '  npm view <package> versions --prefer-online\n' +
+            'A re-run before then puts them back in the plan, npm refuses them,\n' +
+            'and the run stops here again.'),
     );
   }
   published.push(p);

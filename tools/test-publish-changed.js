@@ -221,13 +221,14 @@ if (args[0] === 'publish') {
     process.stderr.write('npm error code EPUBLISHCONFLICT\\n');
     process.exit(1);
   }
-  if (state.failPublish === name) process.exit(1);
-  // Reads start failing once something has been published: the plan is built
-  // from reads that worked, and only the verification meets the outage.
+  // Reads start failing once a publish has been ATTEMPTED: the plan is built
+  // from reads that worked, and everything after it meets the outage --
+  // including the check that follows a refusal.
   if (state.viewFailsAfterPublish) {
     state.viewFails = true;
     fs.writeFileSync(statePath, JSON.stringify(state));
   }
+  if (state.failPublish === name) process.exit(1);
   if (!state.neverServe) {
     const local = JSON.parse(
       fs.readFileSync(state.manifests[name], 'utf8'),
@@ -472,10 +473,7 @@ check('a failed publish stops the run before the next package', () => {
   // The first package failed, so nothing is on the registry — say that rather
   // than leaving the operator to guess, and say re-running is how to continue.
   assert.match(result.stderr, /Nothing was published by this run/);
-  assert.match(
-    result.stderr,
-    /re-run, and whatever is already on the registry/,
-  );
+  assert.match(result.stderr, /Re-run when the cause is dealt with/);
   // And say that the registry was asked, so "did not publish" is a finding
   // rather than an assumption about what npm's exit code meant.
   assert.match(result.stderr, /does not serve this version either/);
@@ -503,7 +501,12 @@ check('the second package failing names what the first one published', () => {
     result.stderr,
     /Already published by this run: @fixture\/alpha@1\.1\.0/,
   );
-  assert.match(result.stderr, /two-factor prompt timed out/);
+  assert.match(result.stderr, /two-factor prompt timed\s+out/);
+  // **And do not tell them to re-run yet.** alpha is published but may not be
+  // visible, and a re-run before it is puts alpha back in the plan, where npm
+  // refuses it and the run stops here again — the failure this file exists
+  // for, one layer down.
+  assert.match(result.stderr, /Before re-running, wait until each version/);
 });
 
 check(
@@ -658,6 +661,72 @@ check(
     assert.doesNotMatch(result.stderr, /at Object\.|at Module\._compile/);
   },
 );
+
+/**
+ * **A read that failed is not a version that is absent.** After a refused
+ * publish the script asks the registry whether the version is there. If that
+ * question cannot be asked — a timeout, a 5xx, a reset — the answer is
+ * neither yes nor no, and reporting it as "the registry does not serve this
+ * version" would have an operator act on something nobody established. The
+ * publish may well have been accepted.
+ */
+check(
+  'a refusal the registry could not be asked about says so, not "absent"',
+  () => {
+    const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
+    const { bin } = installFakeNpm(dir, {
+      versions: { '@fixture/alpha': ['1.0.0'] },
+      manifests: {
+        '@fixture/alpha': path.join(dir, 'packages/alpha/package.json'),
+      },
+      failPublish: '@fixture/alpha',
+      viewFailsAfterPublish: true,
+    });
+
+    const result = run(dir, bin);
+    assert.strictEqual(result.status, 1);
+    assert.match(result.stderr, /is UNKNOWN/);
+    assert.match(result.stderr, /It may have been accepted/);
+    assert.match(
+      result.stderr,
+      /npm view @fixture\/alpha versions --prefer-online/,
+    );
+    // The finding it must NOT report, because it was not made.
+    assert.doesNotMatch(result.stderr, /does not serve this version either/);
+  },
+);
+
+/**
+ * The stop that starts the next stop. alpha publishes, the read path does not
+ * show it yet, beta's two-factor prompt times out. Told to re-run, the
+ * operator gets alpha back in the plan, npm refuses it, and the run ends
+ * before beta again — so the advice has to name the condition.
+ */
+check('a stop with something already published says what to wait for', () => {
+  const dir = fixture([
+    { dir: 'alpha', version: '1.1.0' },
+    { dir: 'beta', version: '2.1.0' },
+  ]);
+  const { bin } = installFakeNpm(dir, {
+    versions: { '@fixture/alpha': ['1.0.0'], '@fixture/beta': ['2.0.0'] },
+    manifests: {
+      '@fixture/alpha': path.join(dir, 'packages/alpha/package.json'),
+      '@fixture/beta': path.join(dir, 'packages/beta/package.json'),
+    },
+    // alpha publishes and the registry keeps answering with the old list.
+    neverServe: true,
+    failPublish: '@fixture/beta',
+  });
+
+  const result = run(dir, bin);
+  assert.strictEqual(result.status, 1);
+  assert.match(
+    result.stderr,
+    /Already published by this run: @fixture\/alpha@1\.1\.0/,
+  );
+  assert.match(result.stderr, /Before re-running, wait until each version/);
+  assert.match(result.stderr, /the run stops here again/);
+});
 
 check('a failing check publishes nothing', () => {
   const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
