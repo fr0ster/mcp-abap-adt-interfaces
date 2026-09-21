@@ -397,10 +397,17 @@ for (const p of pending) {
   // Everything published so far is confirmed before the report, so the advice
   // in it can be specific instead of hedged. This costs nothing: those reads
   // would otherwise happen at the end of the run that is about to stop.
+  // **"Published by this run" must mean it.** `attempted` also holds packages
+  // npm refused and the registry then vouched for — published by an EARLIER
+  // run, met again because the plan was built from a stale read. Counting
+  // those as this run's work would make the one report an operator reads
+  // during a partial release describe a release that did not happen.
   const done = attempted.filter((e) => e !== entry);
   confirm(done, POLL_ATTEMPTS);
-  const visible = done.filter((e) => e.served === true);
-  const pendingVisibility = done.filter((e) => e.served !== true);
+  const ours = done.filter((e) => !e.refused);
+  const earlier = done.filter((e) => e.refused);
+  const visible = ours.filter((e) => e.served === true);
+  const pendingVisibility = ours.filter((e) => e.served !== true);
 
   fail(
     `${p.name}@${p.local} did not publish. Later packages were not attempted.\n` +
@@ -412,9 +419,12 @@ for (const p of pending) {
         : `The registry was asked for ${Math.round((POLL_ATTEMPTS * POLL_MS) / 1000)}s and does not have it, so this is not a\n` +
           'publish that had already happened. If the two-factor prompt timed\n' +
           'out, that is all this was.\n') +
-      (done.length === 0
-        ? 'Nothing else was published by this run, so a re-run has nothing to\n' +
-          'collide with.'
+      (earlier.length > 0
+        ? `Already on the registry before this run, not published by it:\n${listed(earlier)}\n`
+        : '') +
+      (ours.length === 0
+        ? 'Nothing was published by this run, so a re-run has nothing of its\n' +
+          'own to collide with.'
         : `Published by this run and confirmed:\n${visible.length > 0 ? `${listed(visible)}\n` : '  (none)\n'}` +
           (pendingVisibility.length > 0
             ? 'Published by this run and NOT yet visible:\n' +
@@ -439,9 +449,21 @@ for (const p of pending) {
 // each round, so nothing waits on a package ahead of it.
 confirm(attempted, POLL_ATTEMPTS);
 
-console.log(`\nPublished ${attempted.length} package(s).`);
+// Same distinction as the stop above: a package npm refused and the registry
+// vouched for was published by an earlier run, and saying otherwise would
+// overstate what happened here.
+const ourPublishes = attempted.filter((e) => !e.refused);
+const alreadyThere = attempted.filter((e) => e.refused);
 
-const unconfirmed = attempted.filter((e) => e.served !== true);
+console.log(`\nPublished ${ourPublishes.length} package(s).`);
+if (alreadyThere.length > 0)
+  console.log(
+    `${alreadyThere.length} were already on the registry and were not published again:\n${listed(alreadyThere)}`,
+  );
+
+// Only this run's publishes can be waiting: one that was refused is here
+// exactly because the registry vouched for it.
+const unconfirmed = ourPublishes.filter((e) => e.served !== true);
 if (unconfirmed.length > 0) {
   // Not `fail`: nothing here went wrong. Every version was accepted, and the
   // exit code says "published, not yet visible" rather than "publish failed",

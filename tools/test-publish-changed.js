@@ -489,8 +489,8 @@ check('a failed publish stops the run before the next package', () => {
   ]);
   // The first package failed, so nothing is on the registry — say that rather
   // than leaving the operator to guess, and say re-running is how to continue.
-  assert.match(result.stderr, /Nothing else was published by this run/);
-  assert.match(result.stderr, /nothing to\s+collide with/);
+  assert.match(result.stderr, /Nothing was published by this run/);
+  assert.match(result.stderr, /nothing of its\s+own to collide with/);
   // And say that the registry was asked to the end of the budget rather than
   // once, so "did not publish" is a finding and not an assumption about what
   // npm's exit code meant.
@@ -779,6 +779,45 @@ check('a refusal is decided on the budget, not on the first read', () => {
   ]);
   assert.match(result.stdout, /already published\. Continuing/);
 });
+
+/**
+ * **A version this run met rather than made is not this run's work.** A
+ * refusal the registry vouches for was published by an earlier run — the plan
+ * held it because the read that built the plan was behind. Counting it as
+ * published here would make the one report an operator reads during a partial
+ * release describe a release that did not happen.
+ */
+check(
+  'a version that was already there is not reported as published by this run',
+  () => {
+    const dir = fixture([
+      { dir: 'alpha', version: '1.1.0' },
+      { dir: 'beta', version: '2.1.0' },
+    ]);
+    const { bin } = installFakeNpm(dir, {
+      versions: { '@fixture/alpha': ['1.0.0'], '@fixture/beta': ['2.0.0'] },
+      manifests: {
+        '@fixture/alpha': path.join(dir, 'packages/alpha/package.json'),
+        '@fixture/beta': path.join(dir, 'packages/beta/package.json'),
+      },
+      refusedButServed: '@fixture/alpha',
+      failPublish: '@fixture/beta',
+    });
+
+    const result = run(dir, bin);
+    assert.strictEqual(result.status, 1);
+    assert.match(
+      result.stderr,
+      /Already on the registry before this run, not published by it:\n\s+@fixture\/alpha@1\.1\.0/,
+    );
+    assert.match(result.stderr, /Nothing was published by this run/);
+    // The claim it must not make.
+    assert.doesNotMatch(
+      result.stderr,
+      /Published by this run and confirmed:\n\s+@fixture\/alpha/,
+    );
+  },
+);
 
 check('a failing check publishes nothing', () => {
   const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
