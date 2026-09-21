@@ -2070,7 +2070,18 @@ So every package is published, then all of them are verified against one
 shared budget. A version that is not being served by the end is named and the
 run exits **2**, distinct from the **1** of a publish that failed, because
 "published, not visible yet" and "not published" call for different next steps
-and had been exiting identically. What the decision above keeps is its point:
+and had been exiting identically.
+
+Two consequences of the same lag had to be handled with it. **A refusal from
+`npm publish` is a question, not a verdict**: the likeliest reason to meet one
+is a re-run whose plan was built from a stale read, where the version is
+published and npm says so by refusing it. Treating that as fatal would strand
+the release one layer down, so the registry is asked, and a version it serves
+is one with nothing left to do. **And a read that fails is not a read that
+answers "no"**: only `E404` is an answer, and a timeout or a 5xx in the
+verification loop came out as an unhandled throw — exit 1 with a stack trace,
+on a release where every publish had succeeded. It is now a third state with
+its own sentence, and it exits 2 like the others. What the decision above keeps is its point:
 a release is not finished until the registry is asked. What it loses is the
 idea that asking should stand between two publishes.
 
