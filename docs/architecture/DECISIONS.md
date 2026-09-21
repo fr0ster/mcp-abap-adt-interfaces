@@ -2051,6 +2051,29 @@ genuinely spans several commits, which the whole-tree comparison forbids by
 design — the answer there is to tag the commit that is published, not to loosen
 the comparison.
 
+**Amended 2026-09-21: the verification moved to the end.** As decided, the run
+asked the registry whether it served each version *before* publishing anything
+that depended on it. Three releases in two days ended on that wait: the first
+package published, the read-through took longer than the timeout, the run
+exited, and the second package was never attempted. Raising the timeout was
+tried and was not the answer — the third stop happened at two minutes.
+
+The wait bought nothing the next publish needed. `npm run check` runs once,
+before any publish, over tarballs built here; it never reads the registry. And
+`npm publish` uploads a tarball rather than resolving the ranges in the
+manifest it uploads, so publishing B never asks whether A is served. The only
+reader of those ranges is a consumer installing later, and their question is
+whether A is on the registry at all — which one verification at the end answers
+for every package at once.
+
+So every package is published, then all of them are verified against one
+shared budget. A version that is not being served by the end is named and the
+run exits **2**, distinct from the **1** of a publish that failed, because
+"published, not visible yet" and "not published" call for different next steps
+and had been exiting identically. What the decision above keeps is its point:
+a release is not finished until the registry is asked. What it loses is the
+idea that asking should stand between two publishes.
+
 **Read with decision 11.** What nobody accepts is not kept; the same instinct
 applies to output nobody reads.
 

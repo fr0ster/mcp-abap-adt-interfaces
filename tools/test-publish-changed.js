@@ -476,24 +476,61 @@ check('the second package failing names what the first one published', () => {
   assert.match(result.stderr, /two-factor prompt timed out/);
 });
 
-check('a version the registry never serves fails the run', () => {
-  const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
-  const { bin } = installFakeNpm(dir, {
-    versions: { '@fixture/alpha': ['1.0.0'] },
+check(
+  'a version the registry never serves is reported, not treated as a failure',
+  () => {
+    const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
+    const { bin } = installFakeNpm(dir, {
+      versions: { '@fixture/alpha': ['1.0.0'] },
+      manifests: {
+        '@fixture/alpha': path.join(dir, 'packages/alpha/package.json'),
+      },
+      neverServe: true,
+    });
+
+    const result = run(dir, bin);
+    // 2, not 1: published-but-not-visible and publish-failed call for different
+    // next steps, and they exited identically before.
+    assert.strictEqual(result.status, 2);
+    assert.match(result.stdout, /Published 1 package/);
+    // The package IS on the registry; only the reading of it is late. Said in
+    // those words, because the operator's next question is whether to publish
+    // again — and doing that would fail on a version that already exists.
+    assert.match(result.stderr, /IS PUBLISHED but not served yet/);
+    assert.match(result.stderr, /nothing needs publishing again/);
+    assert.match(result.stderr, /@fixture\/alpha@1\.1\.0/);
+  },
+);
+
+/**
+ * **The regression this whole shape exists for.** Waiting for each version to
+ * be served before publishing the next one stranded three releases in two
+ * days: the first package published, the read-through was slow, the run
+ * exited, and the second was never attempted. A slow read must not cost a
+ * release, so every package goes out and the verification happens once, after.
+ */
+check('a slow registry read does not stop the packages after it', () => {
+  const dir = fixture([
+    { dir: 'alpha', version: '1.1.0' },
+    { dir: 'beta', version: '2.1.0' },
+  ]);
+  const { bin, logPath } = installFakeNpm(dir, {
+    versions: { '@fixture/alpha': ['1.0.0'], '@fixture/beta': ['2.0.0'] },
     manifests: {
       '@fixture/alpha': path.join(dir, 'packages/alpha/package.json'),
+      '@fixture/beta': path.join(dir, 'packages/beta/package.json'),
     },
     neverServe: true,
   });
 
   const result = run(dir, bin);
-  assert.strictEqual(result.status, 1);
-  assert.match(result.stderr, /the registry does not serve it/);
-  // The package IS on the registry; only the reading of it is late. Said in
-  // those words, because the operator's next question is whether to publish
-  // again — and doing that would fail on a version that already exists.
-  assert.match(result.stderr, /IS PUBLISHED/);
-  assert.match(result.stderr, /Re-run once the registry catches up/);
+  assert.deepStrictEqual(publishes(readLog(logPath)), [
+    'publish --workspace @fixture/alpha --ignore-scripts',
+    'publish --workspace @fixture/beta --ignore-scripts',
+  ]);
+  assert.strictEqual(result.status, 2);
+  assert.match(result.stdout, /Published 2 package/);
+  assert.match(result.stderr, /2 of 2 IS PUBLISHED but not served yet/);
 });
 
 check('a failing check publishes nothing', () => {

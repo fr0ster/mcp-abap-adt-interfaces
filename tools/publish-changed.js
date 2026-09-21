@@ -4,7 +4,27 @@
 // answers each of those with "You cannot publish over the previously published
 // versions". Those lines are not harmless: four of them scrolling past teach the
 // eye to skip the fifth, which is a real failure. So nothing already published is
-// ever attempted, and any error at all stops the run.
+// ever attempted, and a publish that errors stops the run.
+//
+// **A slow registry read does not stop it.** This waited for each version to be
+// SERVED before publishing the next package, on the reasoning that nothing
+// should go out depending on a version that might not exist. Three releases in
+// two days ended the same way: the first package published, the read-through
+// took longer than the wait, the run exited, and the second package was never
+// attempted. A half-published release, caused entirely by the safeguard.
+//
+// The wait bought nothing the next publish needs. `npm run check` runs ONCE,
+// before any of this, over tarballs built here; it never reads the registry.
+// And `npm publish` uploads a tarball, it does not resolve the ranges in the
+// manifest it uploads, so publishing B never asks whether A is being served.
+// What reads those ranges is a consumer installing afterwards, and by then the
+// question is whether A is on the registry at all -- which the verification at
+// the end answers, for every package at once.
+//
+// So: publish everything, then verify everything. A version the registry has
+// not served by the end is reported by name and exits 2, distinct from a
+// publish that failed. Nothing is lost either way, because re-running skips
+// whatever is already there.
 //
 // It also runs `npm run check` ONCE. Publishing five workspaces ran every
 // package's prepublishOnly, which is the same full check five times over; the
@@ -35,18 +55,17 @@ const NPM_TAG =
 // --tag was passed: `--tag=latest` bypassed both when they asked the latter.
 const TARGETS_LATEST = NPM_TAG === null || NPM_TAG === 'latest';
 
-// How long to wait for the registry to serve a version it has just accepted.
-// Only tools/test-publish-changed.js overrides these, so that the case where the
-// registry never serves the version does not take the full wait.
-// 20 x 3s = 60s. The first release published under this tool (interfaces-auth 1.1.0,
-// 2026-09-20) succeeded and then tripped the warning below at 30s, which is the worst
-// shape a warning can have: it fires on a success, and a warning that fires on successes
-// is one people learn to scroll past. 60s is a judgement rather than a measurement --
-// that publish was serving by the time it was checked, which only bounds it from above.
-// Two minutes, not one. The registry serves a fresh version through a CDN,
-// and a read-through miss right after a publish has taken longer than 60s.
-// When it does, this run stops between two packages — the first published,
-// the second never attempted — which reads like a failure and is not one.
+// How long to wait, at the END of the run, for the registry to serve what was
+// just published. Only tools/test-publish-changed.js overrides these, so that
+// the case where the registry never serves a version does not take the full
+// wait.
+//
+// 40 x 3s = 120s, and the number matters far less than it used to: this wait no
+// longer stands between two publishes, so exceeding it costs a report rather
+// than a release. Measured lag, every time after a publish that succeeded: 30s
+// (interfaces-auth 1.1.0, 2026-09-20), and over 60s twice on 2026-09-21. Each
+// bounds the lag from below only, since the version was being served by the
+// time anyone looked again.
 const POLL_ATTEMPTS = Number(process.env.PUBLISH_POLL_ATTEMPTS ?? 40);
 const POLL_MS = Number(process.env.PUBLISH_POLL_MS ?? 3000);
 // A zero, negative or non-numeric override would silently remove the wait, and
@@ -273,6 +292,10 @@ try {
 
 // --- publish --------------------------------------------------------------
 
+// Every package goes out before anything is verified. What made a slow read
+// fatal was doing both in one loop; see the note at the top of this file.
+const published = [];
+
 for (const p of pending) {
   console.log(`\nPublishing ${p.name}@${p.local}\n`);
   try {
@@ -282,35 +305,61 @@ for (const p of pending) {
     if (NPM_TAG !== null) args.push('--tag', NPM_TAG);
     interactive('npm', args);
   } catch {
-    const done = pending.slice(0, pending.indexOf(p));
     fail(
       `${p.name}@${p.local} did not publish. Later packages were not attempted.\n` +
-        (done.length === 0
+        (published.length === 0
           ? 'Nothing was published by this run.'
-          : `Already published by this run: ${done
+          : `Already published by this run: ${published
               .map((d) => `${d.name}@${d.local}`)
               .join(', ')}.`) +
         '\nRe-run to continue: what is already on the registry is skipped.\n' +
         'If the two-factor prompt timed out, that is all this was.',
     );
   }
-
-  // The publish printing "+ name@version" is npm reporting what it sent, not
-  // the registry reporting what it serves. Ask the registry.
-  let serving = false;
-  for (let attempt = 1; attempt <= POLL_ATTEMPTS && !serving; attempt += 1) {
-    serving = publishedVersions(p.name).includes(p.local);
-    if (!serving) sleep(POLL_MS);
-  }
-  if (!serving)
-    fail(
-      `${p.name}@${p.local} IS PUBLISHED, but the registry does not serve it yet ` +
-        `after ${Math.round((POLL_ATTEMPTS * POLL_MS) / 1000)}s.\n` +
-        'Nothing that depends on it was published, which is the point of waiting.\n' +
-        'Re-run once the registry catches up — this package will show as up to date,\n' +
-        'and only the rest will be published. PUBLISH_POLL_ATTEMPTS raises the wait.',
-    );
-  console.log(`${p.name}@${p.local} is on the registry.`);
+  published.push(p);
 }
 
-console.log(`\nPublished ${pending.length} package(s).`);
+// --- verify, once, at the end ---------------------------------------------
+
+// The publish printing "+ name@version" is npm reporting what it SENT, not the
+// registry reporting what it SERVES. Those differ for a while after a publish,
+// and asking is the only way to tell a real failure from a late read.
+//
+// One budget for the whole release rather than one per package: the lag is the
+// registry's, not each package's, and by the time the last publish is done the
+// first has usually caught up. Whatever is still missing is asked about again
+// each round, so nothing waits on a package ahead of it.
+const waiting = [...published];
+const served = [];
+for (
+  let attempt = 1;
+  attempt <= POLL_ATTEMPTS && waiting.length > 0;
+  attempt += 1
+) {
+  for (let i = waiting.length - 1; i >= 0; i -= 1) {
+    const p = waiting[i];
+    if (!publishedVersions(p.name).includes(p.local)) continue;
+    console.log(`${p.name}@${p.local} is on the registry.`);
+    served.push(p);
+    waiting.splice(i, 1);
+  }
+  if (waiting.length > 0) sleep(POLL_MS);
+}
+
+console.log(`\nPublished ${published.length} package(s).`);
+
+if (waiting.length > 0) {
+  // Not `fail`: nothing here went wrong. Every version was accepted, and the
+  // exit code says "published, not yet visible" rather than "publish failed",
+  // because those call for different next steps and looked identical before.
+  console.error(
+    `\npublish: ${waiting.length} of ${published.length} IS PUBLISHED but not served yet, ` +
+      `after ${Math.round((POLL_ATTEMPTS * POLL_MS) / 1000)}s:\n` +
+      `${waiting.map((p) => `  ${p.name}@${p.local}`).join('\n')}\n` +
+      'The registry accepted them; only its read path is behind. Nothing is lost\n' +
+      'and nothing needs publishing again — a re-run would show them as up to date.\n' +
+      'Check with: npm view <package> versions --prefer-online\n' +
+      'PUBLISH_POLL_ATTEMPTS raises the wait.',
+  );
+  process.exit(2);
+}
