@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1] - 2026-09-22
+
+### Changed
+
+- **A measurement asserted in 2.0.0 is retracted.** The documentation for
+  `readObjects` said a metadata read gets a representation carrying no
+  `tm:abap_object`, because the request names no `Accept`, and that positions
+  therefore could not be read from it however it was parsed.
+
+  Measured against an on-premise system on 2026-09-22 — the same URL with
+  `application/vnd.sap.adt.transportorganizer.v1+xml` and without it — the two
+  answers are byte for byte identical: 95411 bytes and 166 `tm:abap_object`
+  for a request, 55549 and 88 for a task. The header settles nothing.
+
+  The member stays, because the reason it exists does: `removeObject` requires
+  a position and nothing else here hands one back, which would leave a caller
+  parsing a transport document for a `tm:position` themselves. What it
+  promises is the answer — entries, each with its position as a value — and
+  not how an implementation obtains them. A contract is no place to assert
+  something about a wire that was not measured, and this one now says only
+  what must come back.
+
+  Documentation only; no type changed. `@mcp-abap-adt/adt-clients` corrected
+  the same claim in its own comments and API reference on 2026-09-21.
+
 ## [2.0.0] - 2026-09-21
 
 ### Changed
@@ -42,13 +67,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`readObjects`** — the objects a request or task holds, each with the
   `tm:position` that `removeObject` now needs.
 
-  It is a separate member because it is a separate representation. The
-  transport resource answers differently depending on the `Accept` the request
-  carries, and measured on the same run, a `GET` naming none comes back
-  without a single `tm:abap_object` in it. A reader that sends no `Accept` —
-  the usual one — therefore cannot answer this however its result is parsed;
-  `application/vnd.sap.adt.transportorganizer.v1+xml` is the media type that
-  carries the list.
+  It is a separate member because it answers a separate thing: entries, each
+  with its position as a value, where a metadata read answers a document.
+
+  > **Retracted in 2.0.1.** This entry also claimed that a reader sending no
+  > `Accept` cannot answer it however its result is parsed. That was measured
+  > false the next day — the same URL with and without the header is byte for
+  > byte identical. See the 2.0.1 entry above.
 
   Without it `removeObject` would require a value the package offers no way to
   obtain, leaving a caller to assemble the request themselves — the layering

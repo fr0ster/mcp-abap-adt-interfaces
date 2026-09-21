@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [46.0.1] - 2026-09-22
+
+### Changed
+
+- **`interfaces-adt` 2.0.1**, which retracts a measurement asserted in the
+  `readObjects` documentation. No type changed; the text a consumer reads
+  through this facade did. That package's changelog has the numbers.
+
 ## [46.0.0] - 2026-09-21
 
 ### Changed
