@@ -2056,6 +2056,56 @@ applies to output nobody reads.
 
 ---
 
+## 29. A contract does not permit a call that cannot work
+
+**The problem.** `IAdtTransportObjectActions` shipped in `interfaces-adt`
+1.2.0 with two optional parameters: the whole options argument of
+`createTask`, and `position` on the entry `removeObject` takes. Both were
+declared from captures of Eclipse ADT, and both were wrong. Measured against
+an on-premise system on 2026-09-21, the call without `tm:targetuser` is
+refused — `400 SCTS_ADT_MSG 009`, *"User  does not exist in the system (or
+locked)"*, an empty name — and the call without `tm:position` answers `200`
+with the usual echo document while removing nothing, 22 entries asked for and
+22 still on the task afterwards.
+
+**Why a capture cannot tell you.** It records what one client sent, not what
+the server requires. Eclipse sends every attribute on every call, so no
+capture of it can separate the load-bearing from the decorative. A contract
+written from captures alone therefore makes optional exactly the fields that
+are not, and nothing in a unit test over the captured documents can see it:
+one failure needs a server, the other is success-shaped.
+
+**The rule.** When a contract is written ahead of a server run, a parameter
+whose necessity has not been measured is **required**, not optional. Being too
+strict costs a caller one argument they might not have needed. Being too loose
+costs them a call that type-checks, ships, and either throws or silently does
+nothing — and a consumer holding the contract has no way to find out which,
+because the contract is what they were given to trust. The asymmetry is the
+whole argument: one error is visible at the call site, the other is invisible
+until a server disagrees.
+
+**It also means a required parameter needs a source.** `removeObject` requires
+a position, so `readObjects` was added in the same major: a contract that
+demands a value it offers no way to obtain sends the caller around the package
+to assemble the request themselves, which is the layering these contracts
+exist to prevent. A requirement and its source ship together or neither does.
+
+**And the wrong shapes are written down.** `src/__typechecks__/` holds both
+old calls as `@ts-expect-error`. A directive that stops erroring is itself an
+error, so loosening either parameter again fails the build rather than
+shipping — the same instinct as decision 28's "a check that has never failed
+is an assumption", applied to a requirement instead of a guard.
+
+**What would change it.** A measurement, which is the only thing that ever
+should: a server that accepts the call without the attribute. Then the
+parameter becomes optional, with the run that says so recorded beside it.
+
+**Read with decision 24.** The contract carries what is needed to use it —
+including, it turns out, the reading that produces an argument another member
+insists on.
+
+---
+
 ## Open, and what would settle it
 
 Not decisions. These are questions this repository has met and deliberately left

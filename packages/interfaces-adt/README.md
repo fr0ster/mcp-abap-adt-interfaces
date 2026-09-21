@@ -24,7 +24,52 @@ npm install @mcp-abap-adt/interfaces-adt
 | `token/`, `session/`, `serviceKey/`, `store/` | token providers and refreshers, stores and their error codes |
 | `validation/`, `Headers.ts` | header validation; `HEADER_SAP_*`, `HEADER_UAA_*`, `HEADER_BTP_DESTINATION`, `HEADER_MCP_DESTINATION`, `HEADER_MCP_URL`, `AUTH_TYPES`, `AuthType` |
 
-The contract rules — what a member answers, how a strategy is supplied, how a contract is built — are in [`docs/architecture/ARCHITECTURE.md`](../../docs/architecture/ARCHITECTURE.md). Domain-by-domain documentation with examples stays in the [`@mcp-abap-adt/interfaces` README](../interfaces/README.md); the contracts it describes are these. Contracts added after the split are documented here only — the facade is frozen at its 44.0.0 surface and does not export them.
+The contract rules — what a member answers, how a strategy is supplied, how a contract is built — are in [`docs/architecture/ARCHITECTURE.md`](../../docs/architecture/ARCHITECTURE.md). Domain-by-domain documentation with examples stays in the [`@mcp-abap-adt/interfaces` README](../interfaces/README.md); the contracts it describes are these.
+
+**The facade is pinned to its 44.0.0 surface, not frozen against additions.** This said the opposite until 2.0.0, and 45.1.0 had already disproved it: `IAbapObjectEntry` and `IAdtTransportObjectActions` were added here and re-exported there. `tools/check-surface.js` compares the built facade against `surface-44.0.0.txt` in both directions — nothing from 44.0.0 may disappear and nothing may appear — and an addition is made deliberate rather than impossible by being written into `tools/surface-added.txt`, one `<name> <kind>` per line. A symbol added here and not written there fails the check; a line written there for a symbol the facade does not export fails too.
+
+## The transport request's object list
+
+`IAdtTransportObjectActions` and `IAbapObjectEntry` (`adt/IAdtTransport.ts`, since 1.2.0) declare what can be done to a request's object list and to its tasks: `removeObject`, `addObject`, `createTask`, `readActionLog`, `readObjects`.
+
+They exist because deleting an ABAP object does not free its name. The CTS object-directory entry stays on the request that carried it, and until it is detached a create of the same name is refused with `CTS_WBO_API 019` — **even when that same request is passed as `corrNr`**. Without a way to detach one, the ways out are releasing the whole request, shipping everything else in it, or SE09 by hand.
+
+Two of the signatures say things a capture cannot. 1.2.0 was declared from captures of Eclipse ADT, and Eclipse sends every attribute on every call, so nothing in a capture could show which of them the server needs. The first run against an on-premise system, 2026-09-21, found two that it does:
+
+| call | what the server does |
+|---|---|
+| `createTask` without `tm:targetuser` | refused — `400 SCTS_ADT_MSG 009`, *"User&nbsp;&nbsp;does not exist in the system (or locked)"*: two spaces, because the owner resolved to an empty name |
+| `removeObject` without `tm:position` | `200` with the usual echo document and **nothing removed** — 22 entries asked for by `pgmid`/`type`/`name` alone, 22 still on the task afterwards |
+
+So `createTask` requires `targetUser` and `removeObject` requires `position`, and `readObjects` was added because otherwise the second would require a value this package offers no way to obtain. It is its own member rather than an option on a reader because it is its own representation: a `GET` naming no `Accept` comes back without a single `tm:abap_object` in it, and `application/vnd.sap.adt.transportorganizer.v1+xml` is the media type that carries the list.
+
+`addObject` still takes an entry without a position — one that does not exist yet has none.
+
+## Migrating to 2.0.0
+
+Three changes, all of them in `IAdtTransportObjectActions`. An implementation or a caller on 1.2.0 does this:
+
+```ts
+// 1. Name the fifth type parameter: what readObjects answers.
+type Actions = IAdtTransportObjectActions<
+  string, string, { number: string }, string[],
+  MyEntry[]                      // ← new
+>;
+
+// 2. Read the position rather than leaving it out.
+const listed = await actions.readObjects(task);      // ← new member
+const entry = listed.ok
+  ? listed.getResult().value.find((o) => o.name === 'ZCL_X')
+  : undefined;
+if (entry) await actions.removeObject(task, { ...entry });
+
+// 3. Name the user the task is for.
+await actions.createTask(request, { targetUser: 'DEVELOPER' });
+```
+
+Both old call shapes compile against 1.2.0 and cannot work: `createTask(n)` throws where an implementation reads `options.targetUser`, and `removeObject(n, { name, type })` answers a success while removing nothing. That is why this is a major rather than a deprecation — there is no window in which the old shape does something useful.
+
+`src/__typechecks__/transportObjectActions.ts` holds both wrong shapes as `@ts-expect-error`, so a future loosening stops compiling instead of shipping.
 
 ## Coming from `@mcp-abap-adt/interfaces`
 
