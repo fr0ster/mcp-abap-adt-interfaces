@@ -43,7 +43,11 @@ const TARGETS_LATEST = NPM_TAG === null || NPM_TAG === 'latest';
 // shape a warning can have: it fires on a success, and a warning that fires on successes
 // is one people learn to scroll past. 60s is a judgement rather than a measurement --
 // that publish was serving by the time it was checked, which only bounds it from above.
-const POLL_ATTEMPTS = Number(process.env.PUBLISH_POLL_ATTEMPTS ?? 20);
+// Two minutes, not one. The registry serves a fresh version through a CDN,
+// and a read-through miss right after a publish has taken longer than 60s.
+// When it does, this run stops between two packages — the first published,
+// the second never attempted — which reads like a failure and is not one.
+const POLL_ATTEMPTS = Number(process.env.PUBLISH_POLL_ATTEMPTS ?? 40);
 const POLL_MS = Number(process.env.PUBLISH_POLL_MS ?? 3000);
 // A zero, negative or non-numeric override would silently remove the wait, and
 // the check it exists for would report a version the registry has not served.
@@ -252,6 +256,14 @@ if (DRY_RUN) {
 
 // --- the gate, once -------------------------------------------------------
 
+if (pending.length > 1)
+  console.log(
+    `\n${pending.length} packages will be published one after another, and npm asks for\n` +
+      'two-factor authentication each time. Each prompt waits for you; a prompt that\n' +
+      'times out fails that package and stops the run, leaving the ones before it\n' +
+      'published. Re-running resumes — they show as up to date.',
+  );
+
 console.log('\nRunning npm run check once for the whole release.\n');
 try {
   interactive('npm', ['run', 'check']);
@@ -270,8 +282,16 @@ for (const p of pending) {
     if (NPM_TAG !== null) args.push('--tag', NPM_TAG);
     interactive('npm', args);
   } catch {
+    const done = pending.slice(0, pending.indexOf(p));
     fail(
-      `${p.name}@${p.local} did not publish. Later packages were not attempted.`,
+      `${p.name}@${p.local} did not publish. Later packages were not attempted.\n` +
+        (done.length === 0
+          ? 'Nothing was published by this run.'
+          : `Already published by this run: ${done
+              .map((d) => `${d.name}@${d.local}`)
+              .join(', ')}.`) +
+        '\nRe-run to continue: what is already on the registry is skipped.\n' +
+        'If the two-factor prompt timed out, that is all this was.',
     );
   }
 
@@ -284,9 +304,11 @@ for (const p of pending) {
   }
   if (!serving)
     fail(
-      `${p.name}@${p.local} was published but the registry does not serve it after ` +
-        `${Math.round((POLL_ATTEMPTS * POLL_MS) / 1000)}s.\n` +
-        'Check it before publishing anything that depends on it.',
+      `${p.name}@${p.local} IS PUBLISHED, but the registry does not serve it yet ` +
+        `after ${Math.round((POLL_ATTEMPTS * POLL_MS) / 1000)}s.\n` +
+        'Nothing that depends on it was published, which is the point of waiting.\n' +
+        'Re-run once the registry catches up — this package will show as up to date,\n' +
+        'and only the rest will be published. PUBLISH_POLL_ATTEMPTS raises the wait.',
     );
   console.log(`${p.name}@${p.local} is on the registry.`);
 }
