@@ -145,7 +145,15 @@ export interface IAbapObjectEntry {
   pgmid?: string;
   /** `tm:obj_desc` — the description ADT shows beside the entry. */
   description?: string;
-  /** `tm:position` — the entry's position in the task, e.g. `000025`. */
+  /**
+   * `tm:position` — the entry's position in the task, e.g. `000025`.
+   *
+   * Optional here because an entry being described is not always an entry
+   * being addressed: {@link IAdtTransportObjectActions.addObject} has no
+   * position to give, since the entry does not exist yet.
+   * {@link IAdtTransportObjectActions.removeObject} requires one, and says in
+   * its own words what happens without it.
+   */
   position?: string;
 }
 
@@ -174,18 +182,35 @@ export interface IAdtTransportObjectActions<
   TAdded,
   TTask,
   TActionLog,
+  TObjects,
 > {
   /**
    * Detach one object from a request or task.
    *
    * Addressed at the **task** that holds the object: a request's objects live
-   * on its tasks. The answer echoes the object it was asked about and says
-   * nothing else, so {@link IAdtTransportObjectActions.readActionLog} is what
-   * confirms the removal happened.
+   * on its tasks.
+   *
+   * **`position` is what identifies the entry, and the call does nothing
+   * without it.** This took `IAbapObjectEntry` whole when it shipped, which
+   * made the field optional. Measured against an on-premise system,
+   * 2026-09-21: 22 objects asked for by `pgmid`/`type`/`name` alone each
+   * answered `200` with the usual echo document, and a re-read of the task
+   * found all 22 still on it. The same documents carrying `tm:position` — and
+   * nothing else added — removed every one, 22 down to 0, each confirmed by a
+   * re-read.
+   *
+   * The number comes from
+   * {@link IAdtTransportObjectActions.readObjects}, which is the reading that
+   * carries it.
+   *
+   * The answer echoes the object it was asked about and says nothing else, so
+   * a `200` here is not evidence:
+   * {@link IAdtTransportObjectActions.readActionLog}, or a re-read of the
+   * object list, is what confirms the removal happened.
    */
   removeObject<E extends IAdtError = IAdtError>(
     transportNumber: string,
-    object: IAbapObjectEntry,
+    object: IAbapObjectEntry & { position: string },
     options?: IAdtOperationOptions<E>,
   ): Promise<IAdtResponse<TRemoved, E>>;
   /**
@@ -206,11 +231,23 @@ export interface IAdtTransportObjectActions<
    *
    * The new task is itself a request resource: it reads, writes and releases
    * like one, and {@link IAdtTransportObjectActions.removeObject} addresses it
-   * directly. With no `targetUser` the server decides whose task it is.
+   * directly.
+   *
+   * **`targetUser` is required, and that is measured.** This shipped saying
+   * the server would decide whose task it is when the attribute was absent.
+   * It does not: sent without `tm:targetuser` against an on-premise system,
+   * 2026-09-21, the owner resolved to an empty name and the call was refused
+   * with `400 SCTS_ADT_MSG 009`, *"User  does not exist in the system (or
+   * locked)"* — two spaces, because the name was empty. The same call carrying
+   * the attribute answered 200 and a task number.
+   *
+   * No implementation can fill it in either. `IAbapConnection` does not say
+   * who is authenticated, and finding out costs a second request — which is
+   * what a member of this size does not do. So it is the caller's to name.
    */
   createTask<E extends IAdtError = IAdtError>(
     transportNumber: string,
-    options?: { targetUser?: string } & IAdtOperationOptions<E>,
+    options: { targetUser: string } & IAdtOperationOptions<E>,
   ): Promise<IAdtResponse<TTask, E>>;
   /**
    * What has happened to this request: created, object added, object deleted,
@@ -220,4 +257,26 @@ export interface IAdtTransportObjectActions<
     transportNumber: string,
     options?: IAdtOperationOptions<E>,
   ): Promise<IAdtResponse<TActionLog, E>>;
+  /**
+   * The objects a request or task holds, each with the `tm:position` that
+   * {@link IAdtTransportObjectActions.removeObject} needs.
+   *
+   * **A separate reading, not the metadata one.** The transport resource has
+   * more than one representation, and which one arrives depends on the
+   * `Accept` the request carries. Measured against an on-premise system,
+   * 2026-09-21: a `GET` that names none at all comes back without a single
+   * `tm:abap_object` in it, so an implementation whose reader sends no
+   * `Accept` — the usual one — cannot answer this no matter how its result is
+   * parsed. `application/vnd.sap.adt.transportorganizer.v1+xml` is the media
+   * type that carries the list.
+   *
+   * This exists because `removeObject` requires a position and nothing else
+   * here hands one back: without it a caller has to go around the
+   * implementation and assemble the request themselves, which is the layering
+   * this package exists to prevent.
+   */
+  readObjects<E extends IAdtError = IAdtError>(
+    transportNumber: string,
+    options?: IAdtOperationOptions<E>,
+  ): Promise<IAdtResponse<TObjects, E>>;
 }

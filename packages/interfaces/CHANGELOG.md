@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [46.0.0] - 2026-09-21
+
+### Changed
+
+- **BREAKING: `IAdtTransportObjectActions` changed shape**, re-exported from
+  `@mcp-abap-adt/interfaces-adt` 2.0.0: a fifth type parameter `TObjects`,
+  `removeObject` requiring `position`, `createTask` requiring `targetUser`,
+  and a new `readObjects`. That package's changelog holds the measurements.
+
+  A major here because the facade re-exports the type: a consumer holding it
+  through `@mcp-abap-adt/interfaces` sees the same break, and both old call
+  shapes compile against 45.1.0 while being unable to work.
+
 ## [45.1.0] - 2026-09-21
 
 ### Added
