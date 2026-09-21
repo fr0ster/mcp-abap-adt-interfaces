@@ -13,6 +13,16 @@ const expected = fs
   .readFileSync(path.join(ROOT, 'tools', 'surface-44.0.0.txt'), 'utf8')
   .trim()
   .split('\n');
+// Additions since the split, declared one by one. Without this the check
+// forbids the facade ever gaining a symbol, which is not what it is for: it is
+// for proving the split preserved 44.0.0, and for catching a symbol that
+// leaked out of a package by accident. An addition nobody wrote down still
+// fails.
+const added = fs
+  .readFileSync(path.join(ROOT, 'tools', 'surface-added.txt'), 'utf8')
+  .split('\n')
+  .map((line) => line.trim())
+  .filter((line) => line !== '' && !line.startsWith('#'));
 const map = JSON.parse(
   fs.readFileSync(path.join(ROOT, 'tools', 'package-map.json'), 'utf8'),
 );
@@ -24,7 +34,13 @@ const problems = [];
 for (const line of expected)
   if (!actual.includes(line)) problems.push(`missing from facade: ${line}`);
 for (const line of actual)
-  if (!expected.includes(line)) problems.push(`not in 44.0.0: ${line}`);
+  if (!expected.includes(line) && !added.includes(line))
+    problems.push(
+      `not in 44.0.0 and not declared in surface-added.txt: ${line}`,
+    );
+for (const line of added)
+  if (!actual.includes(line))
+    problems.push(`declared as added but not in the facade: ${line}`);
 
 const runtime = require(path.join(facade, 'index.js'));
 for (const e of entries) {
@@ -55,5 +71,5 @@ if (problems.length) {
   process.exit(1);
 }
 console.log(
-  `surface: ${actual.length} symbols match 44.0.0 in name, kind, declaration and value${only ? `; placement ok (${only})` : ''}`,
+  `surface: ${actual.length} symbols — ${expected.length} from 44.0.0 in name, kind, declaration and value, ${added.length} declared addition(s)${only ? `; placement ok (${only})` : ''}`,
 );

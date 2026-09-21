@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [45.1.0] - 2026-09-21
+
+### Added
+
+- **`IAbapObjectEntry` and `IAdtTransportObjectActions`**, re-exported from
+  `@mcp-abap-adt/interfaces-adt` 1.2.0 like everything else here, and
+  `@deprecated` like everything else here.
+
+### Changed
+
+- **`check-surface` allows a declared addition.** It compared the built facade
+  against `surface-44.0.0.txt` in both directions: nothing from 44.0.0 may
+  disappear, and nothing may appear. The first half is the point of the file —
+  proof the split preserved the contract — and the second half catches a
+  symbol leaking out of a package by accident. Together they also made it
+  impossible for the facade to gain anything on purpose, which is not what the
+  check is for.
+
+  Additions are declared in `tools/surface-added.txt`, one `<name> <kind>` per
+  line. A symbol added to a package and not written there still fails, and a
+  line written there for a symbol the facade does not export fails too — both
+  verified by removing each in turn.
+
 ## [45.0.0] - 2026-09-16
 
 **BREAKING — the contracts move to four packages; this one becomes a deprecated facade.**
