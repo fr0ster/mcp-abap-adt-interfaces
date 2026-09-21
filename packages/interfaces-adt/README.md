@@ -41,7 +41,7 @@ Two of the signatures say things a capture cannot. 1.2.0 was declared from captu
 | `createTask` without `tm:targetuser` | refused — `400 SCTS_ADT_MSG 009`, *"User&nbsp;&nbsp;does not exist in the system (or locked)"*: two spaces, because the owner resolved to an empty name |
 | `removeObject` without `tm:position` | `200` with the usual echo document and **nothing removed** — 22 entries asked for by `pgmid`/`type`/`name` alone, 22 still on the task afterwards |
 
-So `createTask` requires `targetUser` and `removeObject` requires `position`, and `readObjects` was added because otherwise the second would require a value this package offers no way to obtain. It is its own member rather than an option on a reader because it is its own representation: a `GET` naming no `Accept` comes back without a single `tm:abap_object` in it, and `application/vnd.sap.adt.transportorganizer.v1+xml` is the media type that carries the list.
+So `createTask` requires `targetUser` and `removeObject` requires `position`, and `readObjects` was added because otherwise the second would require a value this package offers no way to obtain — leaving a caller to parse a transport document themselves for a `tm:position`. It is its own member because it answers its own thing: entries, each with its position as a value, rather than a document. What an implementation sends to get them is its own business; the contract says what must come back.
 
 `addObject` still takes an entry without a position — one that does not exist yet has none.
 

@@ -264,19 +264,26 @@ export interface IAdtTransportObjectActions<
    * The objects a request or task holds, each with the `tm:position` that
    * {@link IAdtTransportObjectActions.removeObject} needs.
    *
-   * **A separate reading, not the metadata one.** The transport resource has
-   * more than one representation, and which one arrives depends on the
-   * `Accept` the request carries. Measured against an on-premise system,
-   * 2026-09-21: a `GET` that names none at all comes back without a single
-   * `tm:abap_object` in it, so an implementation whose reader sends no
-   * `Accept` — the usual one — cannot answer this no matter how its result is
-   * parsed. `application/vnd.sap.adt.transportorganizer.v1+xml` is the media
-   * type that carries the list.
+   * **A separate reading, not a separate request.** This member exists
+   * because `removeObject` requires a position and nothing else here hands
+   * one back: without it a caller has to parse a transport document
+   * themselves to find a `tm:position`, which is the layering this package
+   * exists to prevent. What it promises is therefore about the answer —
+   * entries, each with its position as a value — and not about how an
+   * implementation obtains them.
    *
-   * This exists because `removeObject` requires a position and nothing else
-   * here hands one back: without it a caller has to go around the
-   * implementation and assemble the request themselves, which is the layering
-   * this package exists to prevent.
+   * **A claim that was here is retracted.** 2.0.0 said a metadata read gets a
+   * representation carrying no `tm:abap_object`, because the request names no
+   * `Accept`, and that positions therefore could not be read from it however
+   * it was parsed. Measured against an on-premise system, 2026-09-22 — the
+   * same URL with `application/vnd.sap.adt.transportorganizer.v1+xml` and
+   * without it — the two answers are byte for byte identical: 95411 bytes and
+   * 166 `tm:abap_object` for a request, 55549 and 88 for a task. The header
+   * settles nothing, and a contract is no place to assert something about a
+   * wire that was not measured.
+   *
+   * What an implementation sends is its own business either way. This says
+   * what must come back.
    */
   readObjects<E extends IAdtError = IAdtError>(
     transportNumber: string,
