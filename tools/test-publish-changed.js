@@ -189,6 +189,29 @@ const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
 if (args[0] === 'view') {
   const name = args[1];
   const field = args[2];
+  // A registry that cannot be read at all: not E404, which is an answer, but
+  // the shape a timeout, a 5xx or a reset arrives in.
+  if (state.viewFails) {
+    process.stderr.write('npm error code ETIMEDOUT\\nnpm error network request timed out\\n');
+    process.exit(1);
+  }
+  // A read path that catches up rather than one that is instantly right: the
+  // version is withheld for the first few views and served after. Without this
+  // a fake registry answers correctly on the first ask, and a script that only
+  // ever asks once looks identical to one that waits.
+  if (state.serveAfterViews && state.serveAfterViews[name] !== undefined) {
+    state.viewCounts = state.viewCounts ?? {};
+    state.viewCounts[name] = (state.viewCounts[name] ?? 0) + 1;
+    const withheld = state.viewCounts[name] <= state.serveAfterViews[name];
+    fs.writeFileSync(statePath, JSON.stringify(state));
+    if (withheld) {
+      const all = state.versions[name] ?? [];
+      process.stdout.write(
+        JSON.stringify(field === 'versions' ? all.slice(0, -1) : { latest: all[all.length - 2] }),
+      );
+      process.exit(0);
+    }
+  }
   const versions = state.versions[name] ?? null;
   if (versions === null) {
     process.stderr.write('npm error code E404\\n');
@@ -203,6 +226,25 @@ if (args[0] === 'run' && args[1] === 'check') process.exit(state.failCheck ? 1 :
 
 if (args[0] === 'publish') {
   const name = args[args.indexOf('--workspace') + 1];
+  // npm refusing a version the registry already holds: it exits non-zero, and
+  // the version is there. This is what a re-run meets when the read that built
+  // the plan was stale.
+  if (state.refusedButServed === name) {
+    const local = JSON.parse(
+      fs.readFileSync(state.manifests[name], 'utf8'),
+    ).version;
+    state.versions[name] = [...(state.versions[name] ?? []), local];
+    fs.writeFileSync(statePath, JSON.stringify(state));
+    process.stderr.write('npm error code EPUBLISHCONFLICT\\n');
+    process.exit(1);
+  }
+  // Reads start failing once a publish has been ATTEMPTED: the plan is built
+  // from reads that worked, and everything after it meets the outage --
+  // including the check that follows a refusal.
+  if (state.viewFailsAfterPublish) {
+    state.viewFails = true;
+    fs.writeFileSync(statePath, JSON.stringify(state));
+  }
   if (state.failPublish === name) process.exit(1);
   if (!state.neverServe) {
     const local = JSON.parse(
@@ -445,22 +487,377 @@ check('a failed publish stops the run before the next package', () => {
   assert.deepStrictEqual(publishes(readLog(logPath)), [
     'publish --workspace @fixture/alpha --ignore-scripts',
   ]);
+  // The first package failed, so nothing is on the registry — say that rather
+  // than leaving the operator to guess, and say re-running is how to continue.
+  assert.match(result.stderr, /Nothing was published by this run/);
+  assert.match(result.stderr, /nothing of its\s+own to collide with/);
+  // And say that the registry was asked to the end of the budget rather than
+  // once, so "did not publish" is a finding and not an assumption about what
+  // npm's exit code meant.
+  assert.match(
+    result.stderr,
+    /The registry was asked for \d+s and does not have it/,
+  );
 });
 
-check('a version the registry never serves fails the run', () => {
-  const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
+check('the second package failing names what the first one published', () => {
+  const dir = fixture([
+    { dir: 'alpha', version: '1.1.0' },
+    { dir: 'beta', version: '2.1.0' },
+  ]);
   const { bin } = installFakeNpm(dir, {
-    versions: { '@fixture/alpha': ['1.0.0'] },
+    versions: { '@fixture/alpha': ['1.0.0'], '@fixture/beta': ['2.0.0'] },
     manifests: {
       '@fixture/alpha': path.join(dir, 'packages/alpha/package.json'),
+      '@fixture/beta': path.join(dir, 'packages/beta/package.json'),
+    },
+    failPublish: '@fixture/beta',
+  });
+
+  const result = run(dir, bin);
+  assert.strictEqual(result.status, 1);
+  // This is the shape a hardware key produces: one touch given, the next
+  // prompt missed. What matters afterwards is which packages are already out.
+  assert.match(
+    result.stderr,
+    /Published by this run and confirmed:\n\s+@fixture\/alpha@1\.1\.0/,
+  );
+  assert.match(result.stderr, /two-factor prompt timed\s+out/);
+  // alpha is visible, so a re-run is safe and the report says so rather than
+  // hedging. The opposite case is the test below.
+  assert.match(result.stderr, /All of them are visible/);
+});
+
+check(
+  'a version the registry never serves is reported, not treated as a failure',
+  () => {
+    const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
+    const { bin } = installFakeNpm(dir, {
+      versions: { '@fixture/alpha': ['1.0.0'] },
+      manifests: {
+        '@fixture/alpha': path.join(dir, 'packages/alpha/package.json'),
+      },
+      neverServe: true,
+    });
+
+    const result = run(dir, bin);
+    // 2, not 1: published-but-not-visible and publish-failed call for different
+    // next steps, and they exited identically before.
+    assert.strictEqual(result.status, 2);
+    assert.match(result.stdout, /Published 1 package/);
+    // The package IS on the registry; only the reading of it is late. Said in
+    // those words, because the operator's next question is whether to publish
+    // again — and doing that would fail on a version that already exists.
+    assert.match(result.stderr, /IS PUBLISHED but not confirmed/);
+    assert.match(result.stderr, /nothing needs publishing again/);
+    assert.match(result.stderr, /@fixture\/alpha@1\.1\.0/);
+  },
+);
+
+/**
+ * **The regression this whole shape exists for.** Waiting for each version to
+ * be served before publishing the next one stranded three releases in two
+ * days: the first package published, the read-through was slow, the run
+ * exited, and the second was never attempted. A slow read must not cost a
+ * release, so every package goes out and the verification happens once, after.
+ */
+check('a slow registry read does not stop the packages after it', () => {
+  const dir = fixture([
+    { dir: 'alpha', version: '1.1.0' },
+    { dir: 'beta', version: '2.1.0' },
+  ]);
+  const { bin, logPath } = installFakeNpm(dir, {
+    versions: { '@fixture/alpha': ['1.0.0'], '@fixture/beta': ['2.0.0'] },
+    manifests: {
+      '@fixture/alpha': path.join(dir, 'packages/alpha/package.json'),
+      '@fixture/beta': path.join(dir, 'packages/beta/package.json'),
     },
     neverServe: true,
   });
 
   const result = run(dir, bin);
-  assert.strictEqual(result.status, 1);
-  assert.match(result.stderr, /the registry does not serve it/);
+  assert.deepStrictEqual(publishes(readLog(logPath)), [
+    'publish --workspace @fixture/alpha --ignore-scripts',
+    'publish --workspace @fixture/beta --ignore-scripts',
+  ]);
+  assert.strictEqual(result.status, 2);
+  assert.match(result.stdout, /Published 2 package/);
+  assert.match(result.stderr, /2 of 2 IS PUBLISHED but not confirmed/);
 });
+
+/**
+ * **The re-run this file's whole subject creates.** A release stops between two
+ * packages; the operator re-runs; the registry's read path is still behind, so
+ * the plan puts the already-published package back in. npm refuses it, and if
+ * that refusal is fatal the run stops again — before the package that still
+ * needs publishing. The same stranding, one layer down.
+ *
+ * A refusal is therefore a question, not a verdict: ask the registry, and a
+ * version it serves is one there is nothing left to do for.
+ */
+check(
+  'a publish npm refuses for a version the registry serves is not a failure',
+  () => {
+    const dir = fixture([
+      { dir: 'alpha', version: '1.1.0' },
+      { dir: 'beta', version: '2.1.0' },
+    ]);
+    const { bin, logPath } = installFakeNpm(dir, {
+      versions: { '@fixture/alpha': ['1.0.0'], '@fixture/beta': ['2.0.0'] },
+      manifests: {
+        '@fixture/alpha': path.join(dir, 'packages/alpha/package.json'),
+        '@fixture/beta': path.join(dir, 'packages/beta/package.json'),
+      },
+      refusedButServed: '@fixture/alpha',
+    });
+
+    const result = run(dir, bin);
+    // The point: beta was published although alpha's publish exited non-zero.
+    assert.deepStrictEqual(publishes(readLog(logPath)), [
+      'publish --workspace @fixture/alpha --ignore-scripts',
+      'publish --workspace @fixture/beta --ignore-scripts',
+    ]);
+    assert.strictEqual(result.status, 0, result.stdout + result.stderr);
+    assert.match(result.stdout, /already published\. Continuing/);
+  },
+);
+
+/**
+ * A publish that is refused and a version the registry does not serve either is
+ * a real failure, and still stops the run. The check above must not have made
+ * every refusal survivable.
+ */
+check(
+  'a refused publish the registry cannot vouch for still stops the run',
+  () => {
+    const dir = fixture([
+      { dir: 'alpha', version: '1.1.0' },
+      { dir: 'beta', version: '2.1.0' },
+    ]);
+    const { bin, logPath } = installFakeNpm(dir, {
+      versions: { '@fixture/alpha': ['1.0.0'], '@fixture/beta': ['2.0.0'] },
+      manifests: {
+        '@fixture/alpha': path.join(dir, 'packages/alpha/package.json'),
+        '@fixture/beta': path.join(dir, 'packages/beta/package.json'),
+      },
+      failPublish: '@fixture/alpha',
+    });
+
+    const result = run(dir, bin);
+    assert.strictEqual(result.status, 1);
+    assert.deepStrictEqual(publishes(readLog(logPath)), [
+      'publish --workspace @fixture/alpha --ignore-scripts',
+    ]);
+    assert.match(result.stderr, /does not have it/);
+  },
+);
+
+/**
+ * **A read that fails is not a read that answers "no".** `registryJson` turns
+ * E404 into an answer and rethrows the rest, which is right while planning and
+ * wrong afterwards: a timeout in the verification loop came out as an unhandled
+ * throw, exiting 1 with a stack trace on a release where every publish
+ * succeeded — and 1 is this run's code for "a publish failed".
+ */
+check(
+  'a registry that cannot be read after publishing exits 2, not a stack trace',
+  () => {
+    const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
+    const { bin } = installFakeNpm(dir, {
+      versions: { '@fixture/alpha': ['1.0.0'] },
+      manifests: {
+        '@fixture/alpha': path.join(dir, 'packages/alpha/package.json'),
+      },
+      viewFailsAfterPublish: true,
+    });
+
+    const result = run(dir, bin);
+    assert.strictEqual(result.status, 2, result.stdout + result.stderr);
+    assert.match(result.stdout, /Published 1 package/);
+    assert.match(result.stderr, /could not be read/);
+    assert.match(result.stderr, /nothing needs publishing again/);
+    // An unhandled throw is what this replaces; it must not be how it reports.
+    assert.doesNotMatch(result.stderr, /at Object\.|at Module\._compile/);
+  },
+);
+
+/**
+ * **A read that failed is not a version that is absent.** After a refused
+ * publish the script asks the registry whether the version is there. If that
+ * question cannot be asked — a timeout, a 5xx, a reset — the answer is
+ * neither yes nor no, and reporting it as "the registry does not serve this
+ * version" would have an operator act on something nobody established. The
+ * publish may well have been accepted.
+ */
+check(
+  'a refusal the registry could not be asked about says so, not "absent"',
+  () => {
+    const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
+    const { bin } = installFakeNpm(dir, {
+      versions: { '@fixture/alpha': ['1.0.0'] },
+      manifests: {
+        '@fixture/alpha': path.join(dir, 'packages/alpha/package.json'),
+      },
+      failPublish: '@fixture/alpha',
+      viewFailsAfterPublish: true,
+    });
+
+    const result = run(dir, bin);
+    assert.strictEqual(result.status, 1);
+    assert.match(result.stderr, /is UNKNOWN/);
+    assert.match(result.stderr, /It may have been accepted/);
+    assert.match(
+      result.stderr,
+      /npm view @fixture\/alpha versions --prefer-online/,
+    );
+    // The finding it must NOT report, because it was not made.
+    assert.doesNotMatch(result.stderr, /does not have it/);
+  },
+);
+
+/**
+ * The stop that starts the next stop. alpha publishes, the read path does not
+ * show it yet, beta's two-factor prompt times out. Told to re-run, the
+ * operator gets alpha back in the plan, npm refuses it, and the run ends
+ * before beta again — so the advice has to name the condition.
+ */
+check('a stop with something already published says what to wait for', () => {
+  const dir = fixture([
+    { dir: 'alpha', version: '1.1.0' },
+    { dir: 'beta', version: '2.1.0' },
+  ]);
+  const { bin } = installFakeNpm(dir, {
+    versions: { '@fixture/alpha': ['1.0.0'], '@fixture/beta': ['2.0.0'] },
+    manifests: {
+      '@fixture/alpha': path.join(dir, 'packages/alpha/package.json'),
+      '@fixture/beta': path.join(dir, 'packages/beta/package.json'),
+    },
+    // alpha publishes and the registry keeps answering with the old list.
+    neverServe: true,
+    failPublish: '@fixture/beta',
+  });
+
+  const result = run(dir, bin);
+  assert.strictEqual(result.status, 1);
+  assert.match(
+    result.stderr,
+    /Published by this run and NOT yet visible:\n\s+@fixture\/alpha@1\.1\.0/,
+  );
+  assert.match(result.stderr, /Wait until each of those shows up/);
+  assert.match(result.stderr, /npm refuses them/);
+});
+
+/**
+ * **The difference between asking once and waiting.** A refusal is decided by
+ * asking the registry, and the registry is exactly what is behind — so the
+ * first answer is the one least worth trusting. Here the version appears on
+ * the third read: a script that asks once calls this a failed publish and
+ * stops before beta; one that spends the budget finds it and carries on.
+ */
+check('a refusal is decided on the budget, not on the first read', () => {
+  const dir = fixture([
+    { dir: 'alpha', version: '1.1.0' },
+    { dir: 'beta', version: '2.1.0' },
+  ]);
+  const { bin, logPath } = installFakeNpm(dir, {
+    versions: { '@fixture/alpha': ['1.0.0'], '@fixture/beta': ['2.0.0'] },
+    manifests: {
+      '@fixture/alpha': path.join(dir, 'packages/alpha/package.json'),
+      '@fixture/beta': path.join(dir, 'packages/beta/package.json'),
+    },
+    refusedButServed: '@fixture/alpha',
+    // The two views the plan makes are spent first, so the refusal meets a
+    // read path that still says no.
+    serveAfterViews: { '@fixture/alpha': 3 },
+  });
+
+  const result = run(dir, bin);
+  assert.strictEqual(result.status, 0, result.stdout + result.stderr);
+  assert.deepStrictEqual(publishes(readLog(logPath)), [
+    'publish --workspace @fixture/alpha --ignore-scripts',
+    'publish --workspace @fixture/beta --ignore-scripts',
+  ]);
+  assert.match(result.stdout, /already published\. Continuing/);
+});
+
+/**
+ * **A version this run met rather than made is not this run's work.** A
+ * refusal the registry vouches for was published by an earlier run — the plan
+ * held it because the read that built the plan was behind. Counting it as
+ * published here would make the one report an operator reads during a partial
+ * release describe a release that did not happen.
+ */
+check(
+  'a version that was already there is not reported as published by this run',
+  () => {
+    const dir = fixture([
+      { dir: 'alpha', version: '1.1.0' },
+      { dir: 'beta', version: '2.1.0' },
+    ]);
+    const { bin } = installFakeNpm(dir, {
+      versions: { '@fixture/alpha': ['1.0.0'], '@fixture/beta': ['2.0.0'] },
+      manifests: {
+        '@fixture/alpha': path.join(dir, 'packages/alpha/package.json'),
+        '@fixture/beta': path.join(dir, 'packages/beta/package.json'),
+      },
+      refusedButServed: '@fixture/alpha',
+      failPublish: '@fixture/beta',
+    });
+
+    const result = run(dir, bin);
+    assert.strictEqual(result.status, 1);
+    assert.match(
+      result.stderr,
+      /Already on the registry before this run, not published by it:\n\s+@fixture\/alpha@1\.1\.0/,
+    );
+    assert.match(result.stderr, /Nothing was published by this run/);
+    // The claim it must not make.
+    assert.doesNotMatch(
+      result.stderr,
+      /Published by this run and confirmed:\n\s+@fixture\/alpha/,
+    );
+  },
+);
+
+/**
+ * **Both halves of the count have to mean the same thing.** One package met
+ * as already published, one published here and not visible yet: the
+ * numerator counted this run's unconfirmed publishes while the denominator
+ * counted everything attempted, so the report said "1 of 2" about a run that
+ * published one package. A ratio whose halves are drawn from different sets
+ * is not a ratio.
+ */
+check(
+  "the unconfirmed count is out of this run's publishes, not everything tried",
+  () => {
+    const dir = fixture([
+      { dir: 'alpha', version: '1.1.0' },
+      { dir: 'beta', version: '2.1.0' },
+    ]);
+    const { bin } = installFakeNpm(dir, {
+      versions: { '@fixture/alpha': ['1.0.0'], '@fixture/beta': ['2.0.0'] },
+      manifests: {
+        '@fixture/alpha': path.join(dir, 'packages/alpha/package.json'),
+        '@fixture/beta': path.join(dir, 'packages/beta/package.json'),
+      },
+      // alpha is refused and vouched for; beta publishes and stays invisible.
+      refusedButServed: '@fixture/alpha',
+      neverServe: true,
+    });
+
+    const result = run(dir, bin);
+    assert.strictEqual(result.status, 2, result.stdout + result.stderr);
+    assert.match(result.stdout, /Published 1 package\(s\)/);
+    assert.match(result.stdout, /1 were already on the registry/);
+    assert.match(result.stderr, /1 of 1 IS PUBLISHED but not confirmed/);
+    assert.match(result.stderr, /@fixture\/beta@2\.1\.0/);
+    // alpha was not published here, so it is not in the waiting list either.
+    assert.doesNotMatch(
+      result.stderr,
+      /IS PUBLISHED but not confirmed[\s\S]*@fixture\/alpha/,
+    );
+  },
+);
 
 check('a failing check publishes nothing', () => {
   const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);

@@ -2051,6 +2051,62 @@ genuinely spans several commits, which the whole-tree comparison forbids by
 design — the answer there is to tag the commit that is published, not to loosen
 the comparison.
 
+**Amended 2026-09-21: the verification moved to the end.** As decided, the run
+asked the registry whether it served each version *before* publishing anything
+that depended on it. Three releases in two days ended on that wait: the first
+package published, the read-through took longer than the timeout, the run
+exited, and the second package was never attempted. Raising the timeout was
+tried and was not the answer — the third stop happened at two minutes.
+
+The wait bought nothing the next publish needed. `npm run check` runs once,
+before any publish, over tarballs built here; it never reads the registry. And
+`npm publish` uploads a tarball rather than resolving the ranges in the
+manifest it uploads, so publishing B never asks whether A is served. The only
+reader of those ranges is a consumer installing later, and their question is
+whether A is on the registry at all — which one verification at the end answers
+for every package at once.
+
+So every package is published, then all of them are verified against one
+shared budget. A version that is not being served by the end is named and the
+run exits **2**, distinct from the **1** of a publish that failed, because
+"published, not visible yet" and "not published" call for different next steps
+and had been exiting identically.
+
+Two consequences of the same lag had to be handled with it. **A refusal from
+`npm publish` is a question, not a verdict**: the likeliest reason to meet one
+is a re-run whose plan was built from a stale read, where the version is
+published and npm says so by refusing it. Treating that as fatal would strand
+the release one layer down, so the registry is asked, and a version it serves
+is one with nothing left to do. **And a read that fails is not a read that
+answers "no"**: only `E404` is an answer, and a timeout or a 5xx in the
+verification loop came out as an unhandled throw — exit 1 with a stack trace,
+on a release where every publish had succeeded. It is now a third state with
+its own sentence wherever it is asked, including after a refusal, where
+folding it into "the registry does not serve this version" would have reported
+a finding nobody made.
+
+**Every question put to the registry now goes through one budgeted helper.**
+Three review rounds each found a different corner of the same mistake: a
+decision taken on a single read of the thing that is known to lag — a refusal
+called a failure, a publish called invisible, a re-run recommended into the
+wall it was meant to avoid. Patching the corners one at a time was producing a
+message with more branches than the logic behind it. So there is one way to
+ask, it spends the budget before it concludes anything, and a caller gets
+`true`, `false` or `null`. A refusal still stops the run, because the packages
+after it depend on it — but only after the registry has been asked to the end
+and still does not have the version.
+
+The last of it is advice rather than behaviour, and it was wrong twice before
+it was right: **"re-run" is only safe once the read path shows what this run
+published.** Before that, those packages go back into the plan, npm refuses
+them, and the run stops before whatever still needs publishing — the original
+failure, reached through the message that was supposed to resolve it. So the
+stop confirms what this run published before reporting, and names them in two
+lists — visible, and not visible yet — with the command that settles the
+second and what a re-run before then does. What the decision above keeps is its point:
+a release is not finished until the registry is asked. What it loses is the
+idea that asking should stand between two publishes.
+
 **Read with decision 11.** What nobody accepts is not kept; the same instinct
 applies to output nobody reads.
 
