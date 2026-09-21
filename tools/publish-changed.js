@@ -470,7 +470,7 @@ if (unconfirmed.length > 0) {
   // because those call for different next steps and looked identical before.
   const unreadable = unconfirmed.filter((e) => e.served === null);
   console.error(
-    `\npublish: ${unconfirmed.length} of ${attempted.length} IS PUBLISHED but not confirmed, ` +
+    `\npublish: ${unconfirmed.length} of ${ourPublishes.length} IS PUBLISHED but not confirmed, ` +
       `after ${Math.round((POLL_ATTEMPTS * POLL_MS) / 1000)}s:\n` +
       `${listed(unconfirmed)}\n` +
       (unreadable.length > 0

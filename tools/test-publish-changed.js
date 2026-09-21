@@ -819,6 +819,46 @@ check(
   },
 );
 
+/**
+ * **Both halves of the count have to mean the same thing.** One package met
+ * as already published, one published here and not visible yet: the
+ * numerator counted this run's unconfirmed publishes while the denominator
+ * counted everything attempted, so the report said "1 of 2" about a run that
+ * published one package. A ratio whose halves are drawn from different sets
+ * is not a ratio.
+ */
+check(
+  "the unconfirmed count is out of this run's publishes, not everything tried",
+  () => {
+    const dir = fixture([
+      { dir: 'alpha', version: '1.1.0' },
+      { dir: 'beta', version: '2.1.0' },
+    ]);
+    const { bin } = installFakeNpm(dir, {
+      versions: { '@fixture/alpha': ['1.0.0'], '@fixture/beta': ['2.0.0'] },
+      manifests: {
+        '@fixture/alpha': path.join(dir, 'packages/alpha/package.json'),
+        '@fixture/beta': path.join(dir, 'packages/beta/package.json'),
+      },
+      // alpha is refused and vouched for; beta publishes and stays invisible.
+      refusedButServed: '@fixture/alpha',
+      neverServe: true,
+    });
+
+    const result = run(dir, bin);
+    assert.strictEqual(result.status, 2, result.stdout + result.stderr);
+    assert.match(result.stdout, /Published 1 package\(s\)/);
+    assert.match(result.stdout, /1 were already on the registry/);
+    assert.match(result.stderr, /1 of 1 IS PUBLISHED but not confirmed/);
+    assert.match(result.stderr, /@fixture\/beta@2\.1\.0/);
+    // alpha was not published here, so it is not in the waiting list either.
+    assert.doesNotMatch(
+      result.stderr,
+      /IS PUBLISHED but not confirmed[\s\S]*@fixture\/alpha/,
+    );
+  },
+);
+
 check('a failing check publishes nothing', () => {
   const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
   const { bin, logPath } = installFakeNpm(dir, {
