@@ -79,5 +79,4 @@ export interface IServiceBindingConfig {
   desiredPublicationState?: DesiredPublicationState;
   serviceType?: GeneratedServiceType;
   transportRequest?: string;
-  runTransportCheck?: boolean;
 }

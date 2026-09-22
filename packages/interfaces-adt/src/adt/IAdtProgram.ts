@@ -15,5 +15,4 @@ export interface IProgramConfig {
   application?: string;
   sourceCode?: string;
   sessionId?: string;
-  onLock?: (lockHandle: string) => void;
 }

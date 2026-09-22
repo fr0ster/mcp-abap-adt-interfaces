@@ -55,21 +55,5 @@ export interface ITableTypeConfig {
   transportRequest?: string; // Only optional parameter
   // XML-based TableType parameters (TableType is XML-based entity like Domain/DataElement)
   rowTypeName?: string; // Structure name for dictionaryType (required for update)
-  rowTypeKind?:
-    | 'dictionaryType'
-    | 'predefinedAbapType'
-    | 'refToPredefinedAbapType'
-    | 'refToDictionaryType'
-    | 'refToClassOrInterfaceType'
-    | 'rangeTypeOnPredefinedType'
-    | 'rangeTypeOnDataelement';
-  accessType?: 'standard' | 'sorted' | 'hashed' | 'index' | 'notSpecified';
-  primaryKeyDefinition?:
-    | 'standard'
-    | 'rowType'
-    | 'keyComponents'
-    | 'empty'
-    | 'notSpecified';
-  primaryKeyKind?: 'unique' | 'nonUnique' | 'notSpecified';
   description?: string; // Required for create/validate operations, optional for others
 }

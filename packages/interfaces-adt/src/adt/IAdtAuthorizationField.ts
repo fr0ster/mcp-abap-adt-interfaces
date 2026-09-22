@@ -21,9 +21,4 @@ export interface IAuthorizationFieldConfig {
   outputlen?: string;
   convexit?: string;
   orglvlinfo?: string;
-  colSearchhelp?: string;
-  colSearchhelpName?: string;
-  colSearchhelpDescr?: string;
-
-  onLock?: (lockHandle: string) => void;
 }

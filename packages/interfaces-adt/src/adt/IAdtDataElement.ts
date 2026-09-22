@@ -48,19 +48,10 @@ export interface IDataElementConfig {
   description?: string; // Required for create/validate operations, optional for others
   dataType?: string;
   length?: number;
-  decimals?: number;
-  shortLabel?: string;
-  mediumLabel?: string;
-  longLabel?: string;
-  headingLabel?: string;
   typeKind?:
     | 'domain'
     | 'predefinedAbapType'
     | 'refToPredefinedAbapType'
     | 'refToDictionaryType'
     | 'refToClifType';
-  typeName?: string;
-  searchHelp?: string;
-  searchHelpParameter?: string;
-  setGetParameter?: string;
 }

@@ -29,8 +29,4 @@ export interface IStructureConfig {
   transportRequest?: string; // Only optional parameter
   description?: string; // Required for create/validate operations, optional for others
   ddlCode?: string; // Required for create operation - DDL SQL source code for structure
-  // Legacy fields (deprecated, use ddlCode instead)
-  fields?: IStructureField[];
-  includes?: IStructureInclude[];
-  onLock?: (lockHandle: string) => void;
 }
