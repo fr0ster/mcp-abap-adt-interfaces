@@ -33,9 +33,105 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   offers the action. And like every action here, the answer says the document
   was understood — a read is what shows the type.
 
-> **Entries for 3.0.0, 4.0.0 and 4.1.0 are missing.** Those releases bumped
-> `package.json` and nothing else; what they changed is in PRs #96, #97 and
-> #98 and in their commit messages, and belongs here.
+## [4.1.0] - 2026-09-22
+
+### Added
+
+- **`datatype`, `length` and `decimals` return to `IDomainConfig`.** They left
+  in 4.0.0 for a good reason — the create accepted them and did not send them,
+  so a domain asked for as `CHAR(10)` came back with `<doma:datatype/>` empty
+  and SAP refused to activate it, `DO(251) Data type ' ' does not exist`.
+  Removing a field the implementation ignores was right; what was missing was
+  the other half of the measurement.
+
+  That half now exists: a POST carrying `doma:content/doma:typeInformation` is
+  answered `201`, the document reads back as `CHAR`/`000010`, and the
+  activation reports no messages at all — beside a domain created without it,
+  which does not activate. Cloud trial, 2026-09-22.
+
+  **The other five stay out.** `conversion_exit`, `lowercase`, `sign_exists`,
+  `value_table` and `fixed_values` were never measured, and returning a field
+  on a guess is the same lie in the other direction.
+
+  A minor, not a major: the fields are optional, and the wire is additive too
+  — name none of the three and the POST is byte for byte the one that carried
+  none, which matters because on-premise is not covered by that measurement.
+
+## [4.0.0] - 2026-09-22
+
+### Removed
+
+- **BREAKING: 46 fields across 16 `IXxxConfig` types.** Each was checked the
+  same way — whether `@mcp-abap-adt/adt-clients` reads it at all, now that the
+  compiler had already stripped every line forwarding a field into a parameter
+  object that ignored it. What is left in the configs is what reaches a
+  request.
+
+  Two findings are worse than a dropped value:
+
+  - **`onLock` was declared on nine types and invoked on one.** It is a
+    callback: a caller who passes one was promised a call that, for nine of
+    the ten types, never comes. `IIncludeConfig` keeps it, because `AdtInclude`
+    really does invoke it.
+  - **`sessionId` was declared on five types and read by none.** The low-level
+    locks it was meant for take a parameter named `_sessionId` — the
+    underscore is the author saying it is unused.
+
+  The rest describe the object and never reached the wire: `IDomainConfig`
+  lost the eight that say what a domain IS (the ones behind `DO(251)`),
+  `IDataElementConfig` its type name and all four labels, `IStructureConfig`
+  its `fields` and `includes` (a structure is built from its `ddlCode`),
+  `IFunctionModuleConfig` a `packageName` a module takes from its group, and
+  `ITableTypeConfig` its row-type and primary-key four.
+
+  All 16 are recorded in `tools/surface-changed.json` with the declaration
+  each is expected to have now, so the baseline still guards them: a field
+  added or removed later fails exactly as before.
+
+## [3.0.0] - 2026-09-22
+
+### Removed
+
+- **BREAKING: 84 `ICreate*Params` / `IUpdate*Params` types leave the
+  contract.** They are the argument shapes of the functions that build ADT
+  requests, and checking every repository under `~/prj` found them imported by
+  nobody — four are used outside `adt-clients` (`ICreateDataElementParams`,
+  `ICreateFunctionModuleParams`, `IGetTableContentsParams`,
+  `ISearchObjectsParams`, all by the MCP server) and eight more appear in the
+  signature of a capability interface this package exports. Those twelve stay.
+  The rest were a contract nobody accepted.
+
+- **BREAKING: 85 fields across the 15 parameter types that remain**, declared
+  here and read by nobody. `adt-clients` forwarded them to the function that
+  builds the request, and that function did not look at them — so a caller who
+  filled one in was told it was honoured and it was not.
+
+  Not cosmetic: a domain created with `datatype: 'CHAR', length: 10` came back
+  with `<doma:datatype/>` empty and `<doma:length>000000`, and SAP refused to
+  activate it — `DO(251) Data type ' ' does not exist`. Measured on a cloud
+  trial, 2026-09-22, beside a domain whose type was in the request body, which
+  activated with no messages at all.
+
+  Two causes, neither random: `activate?: boolean` left over from the chains
+  removed in adt-clients 18.0.0 (declared on seven interfaces, read nowhere),
+  and every `IUpdate*Params` field past the name and the transport, left from
+  the read-modify-write updates removed in 19.0.0. `IUpdateDomainParams` loses
+  13 of 15 fields; `IUpdateDataElementParams` 20 of 22.
+
+### Changed
+
+- **Decision 26 is amended, in decision 30.** It said a contract nobody
+  accepts stays in the facade, deprecated, and leaves with its next major —
+  which buys a consumer a release in which their import still works. There is
+  no such consumer here, and the same evidence that says so is what says these
+  are not contracts.
+
+- **The surface guards learned the difference between retired and lost.**
+  `tools/surface-removed.txt` declares each removal with its reason, the way
+  `surface-added.txt` declares an addition, and `tools/surface-changed.json`
+  records the declaration a deliberately changed symbol is expected to have
+  NOW — an earlier version listed the name alone, which would have retired the
+  baseline check for that symbol forever.
 
 ## [2.0.1] - 2026-09-22
 
