@@ -23,7 +23,8 @@ type MyActions = IAdtTransportObjectActions<
   string,
   { number: string },
   string[],
-  MyEntry[]
+  MyEntry[],
+  string
 >;
 
 declare const actions: MyActions;
@@ -63,3 +64,21 @@ actions.createTask('E1K900042');
 
 // @ts-expect-error and naming the options without the user is no better
 actions.createTask('E1K900042', {});
+
+/**
+ * A task's type is the server's small vocabulary, not a string.
+ *
+ * `'Q'` is a real CTS type and is refused on a workbench request; `'K'` and
+ * `'W'` are REQUEST types and are answered as unknown. Declaring the three
+ * that work is what stops a caller discovering the other three from a 400.
+ */
+export const typed: Promise<IAdtResponse<string>> = actions.changeTaskType(
+  'E1K900042',
+  'S',
+);
+
+// @ts-expect-error a request type is not a task type
+actions.changeTaskType('E1K900042', 'K');
+
+// @ts-expect-error nor is a customizing one, which this endpoint refuses
+actions.changeTaskType('E1K900042', 'Q');

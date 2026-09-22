@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.0] - 2026-09-23
+
+### Changed
+
+- **BREAKING: `IAdtTransportObjectActions` takes a sixth type parameter**,
+  `TTaskType`, for the member below.
+
+### Added
+
+- **`changeTaskType`** — a task is created without a type, and the call that
+  creates it cannot supply one.
+
+  Measured against BTP ABAP, 2026-09-23: `tm:type` on a `newtask` is accepted
+  and ignored, and every task on that system — including ones created long
+  before this package existed — reads back as `Unclassified`. CTS assigns the
+  type when the first object lands; a caller who wants it sooner asks here.
+
+  The type is declared as `'S' | 'R' | 'X'` rather than `string`, because the
+  values a caller would otherwise reach for are refused: `'Q'` is a
+  customizing type — *"You can only change the type of tasks in workbench
+  requests"* — and `'K'`/`'W'` are REQUEST types, answered as unknown.
+  Declaring the three that work is what stops a caller learning the other
+  three from a `400`.
+
+  Addressed at the TASK, like `removeObject`: that is where the listing
+  offers the action. And like every action here, the answer says the document
+  was understood — a read is what shows the type.
+
+> **Entries for 3.0.0, 4.0.0 and 4.1.0 are missing.** Those releases bumped
+> `package.json` and nothing else; what they changed is in PRs #96, #97 and
+> #98 and in their commit messages, and belongs here.
+
 ## [2.0.1] - 2026-09-22
 
 ### Changed
