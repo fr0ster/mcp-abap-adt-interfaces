@@ -31,6 +31,5 @@ export interface IIncludeConfig {
   transportRequest?: string; // Only optional parameter
   description?: string; // Required for create/validate operations, optional for others
   sourceCode?: string;
-  sessionId?: string;
   onLock?: (lockHandle: string) => void;
 }

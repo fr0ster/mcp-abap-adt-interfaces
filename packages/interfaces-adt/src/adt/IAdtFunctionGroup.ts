@@ -31,6 +31,4 @@ export interface IFunctionGroupConfig {
   description?: string; // Required for create/validate operations, optional for others
   masterSystem?: string; // SAP system ID (three characters) — required on on-premise where systeminfo endpoint is unavailable
   responsible?: string; // User responsible for the object — falls back to SAP_USERNAME env var
-  sessionId?: string;
-  onLock?: (lockHandle: string) => void;
 }

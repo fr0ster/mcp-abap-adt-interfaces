@@ -34,12 +34,4 @@ export interface IDomainConfig {
   packageName?: string; // Required for create/update operations, optional for others
   transportRequest?: string; // Only optional parameter
   description?: string; // Required for create/update/validate operations, optional for others
-  datatype?: string;
-  length?: number;
-  decimals?: number;
-  conversion_exit?: string;
-  lowercase?: boolean;
-  sign_exists?: boolean;
-  value_table?: string;
-  fixed_values?: IFixedValue[];
 }

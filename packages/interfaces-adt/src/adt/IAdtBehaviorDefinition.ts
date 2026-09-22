@@ -20,7 +20,6 @@ export interface IBehaviorDefinitionConfig {
   implementationType?: 'Managed' | 'Unmanaged' | 'Abstract' | 'Projection'; // Required for create/validate operations, optional for others
   rootEntity?: string; // Required for validate operations, optional for others
   sourceCode?: string;
-  onLock?: (lockHandle: string) => void;
 }
 
 // Result/check helper types — promoted verbatim from adt-clients

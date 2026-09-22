@@ -14,6 +14,4 @@ export interface IDdlConfig {
   transportRequest?: string; // Only optional parameter
   description?: string; // Required for create/validate operations, optional for others
   ddlSource?: string;
-  sessionId?: string;
-  onLock?: (lockHandle: string) => void;
 }

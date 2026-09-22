@@ -7,9 +7,5 @@ export interface IFunctionIncludeConfig {
   includeName: string;
   description?: string;
   transportRequest?: string;
-  masterSystem?: string;
-  responsible?: string;
   sourceCode?: string;
-  sessionId?: string;
-  onLock?: (lockHandle: string) => void;
 }

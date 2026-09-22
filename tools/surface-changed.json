@@ -1,6 +1,70 @@
 {
   "ICreateDataElementParams": {
-    "why": "Seventeen fields the implementation never sent \u2014 the type, the length and every label \u2014 left from before adt-clients 19.0.0. A caller who filled them in got a data element without them.",
+    "why": "Seventeen fields the implementation never sent — the type, the length and every label — left from before adt-clients 19.0.0. A caller who filled them in got a data element without them.",
     "declaration": "export interface ICreateDataElementParams { data_element_name : string ; description ? : string ; package_name : string ; transport_request ? : string ; masterSystem ? : string ; responsible ? : string ; masterLanguage ? : string ; }"
+  },
+  "IAuthorizationFieldConfig": {
+    "why": "Three colSearchhelp fields and an onLock callback nothing invoked.",
+    "declaration": "export interface IAuthorizationFieldConfig { authorizationFieldName : string ; packageName ? : string ; description ? : string ; transportRequest ? : string ; masterSystem ? : string ; responsible ? : string ; fieldName ? : string ; rollName ? : string ; checkTable ? : string ; exitFb ? : string ; abapLanguageVersion ? : string ; search ? : string ; objexit ? : string ; domname ? : string ; outputlen ? : string ; convexit ? : string ; orglvlinfo ? : string ; }"
+  },
+  "IBehaviorDefinitionConfig": {
+    "why": "An onLock callback nothing invoked.",
+    "declaration": "export interface IBehaviorDefinitionConfig { name : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; implementationType ? : 'Managed' | 'Unmanaged' | 'Abstract' | 'Projection' ; rootEntity ? : string ; sourceCode ? : string ; }"
+  },
+  "IDataElementConfig": {
+    "why": "The type name, the four labels and the search-help and parameter fields — none of them reached a request.",
+    "declaration": "export interface IDataElementConfig { document ? : string ; dataElementName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; dataType ? : string ; length ? : number ; typeKind ? : 'domain' | 'predefinedAbapType' | 'refToPredefinedAbapType' | 'refToDictionaryType' | 'refToClifType' ; }"
+  },
+  "IDdlConfig": {
+    "why": "A sessionId nothing read and an onLock callback nothing invoked.",
+    "declaration": "export interface IDdlConfig { ddlName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; ddlSource ? : string ; }"
+  },
+  "IDomainConfig": {
+    "why": "The eight fields that describe what a domain IS, none of which the create sent — which is why a domain came back with an empty data type and could not be activated.",
+    "declaration": "export interface IDomainConfig { document ? : string ; domainName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; }"
+  },
+  "IFeatureToggleConfig": {
+    "why": "An onLock callback nothing invoked.",
+    "declaration": "export interface IFeatureToggleConfig { featureToggleName : string ; packageName ? : string ; description ? : string ; transportRequest ? : string ; masterSystem ? : string ; responsible ? : string ; source ? : IFeatureToggleSource ; }"
+  },
+  "IFunctionGroupConfig": {
+    "why": "A sessionId nothing read and an onLock callback nothing invoked.",
+    "declaration": "export interface IFunctionGroupConfig { document ? : string ; functionGroupName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; masterSystem ? : string ; responsible ? : string ; }"
+  },
+  "IFunctionIncludeConfig": {
+    "why": "masterSystem, responsible, sessionId and an onLock callback, none of them read.",
+    "declaration": "export interface IFunctionIncludeConfig { functionGroupName : string ; includeName : string ; description ? : string ; transportRequest ? : string ; sourceCode ? : string ; }"
+  },
+  "IFunctionModuleConfig": {
+    "why": "packageName, which a function module takes from its group, and an onLock callback nothing invoked.",
+    "declaration": "export interface IFunctionModuleConfig { functionGroupName : string ; functionModuleName : string ; transportRequest ? : string ; description ? : string ; sourceCode ? : string ; masterSystem ? : string ; responsible ? : string ; }"
+  },
+  "IIncludeConfig": {
+    "why": "A sessionId nothing read. This type keeps its onLock: it is the one place the callback is actually invoked.",
+    "declaration": "export interface IIncludeConfig { includeName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; sourceCode ? : string ; onLock ? : ( lockHandle : string ) => void ; }"
+  },
+  "IMetadataExtensionConfig": {
+    "why": "A sessionId nothing read.",
+    "declaration": "export interface IMetadataExtensionConfig { name : string ; description ? : string ; packageName ? : string ; transportRequest ? : string ; sourceCode ? : string ; masterLanguage ? : string ; masterSystem ? : string ; responsible ? : string ; }"
+  },
+  "IPackageConfig": {
+    "why": "updatedDescription and an onLock callback, neither read.",
+    "declaration": "export interface IPackageConfig { document ? : string ; packageName : string ; superPackage ? : string ; description ? : string ; packageType ? : string ; softwareComponent ? : string ; transportLayer ? : string ; transportRequest ? : string ; applicationComponent ? : string ; responsible ? : string ; masterSystem ? : string ; masterLanguage ? : string ; recordChanges ? : boolean ; }"
+  },
+  "IProgramConfig": {
+    "why": "An onLock callback nothing invoked.",
+    "declaration": "export interface IProgramConfig { programName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; programType ? : string ; application ? : string ; sourceCode ? : string ; sessionId ? : string ; }"
+  },
+  "IServiceBindingConfig": {
+    "why": "runTransportCheck, which nothing read.",
+    "declaration": "export interface IServiceBindingConfig { bindingName : string ; packageName ? : string ; description ? : string ; serviceDefinitionName ? : string ; serviceName ? : string ; serviceVersion ? : string ; bindingVariant ? : ServiceBindingVariant ; masterLanguage ? : string ; masterSystem ? : string ; responsible ? : string ; desiredPublicationState ? : DesiredPublicationState ; serviceType ? : GeneratedServiceType ; transportRequest ? : string ; }"
+  },
+  "IStructureConfig": {
+    "why": "fields and includes — a structure is built from its ddlCode — and an onLock callback nothing invoked.",
+    "declaration": "export interface IStructureConfig { structureName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; ddlCode ? : string ; }"
+  },
+  "ITableTypeConfig": {
+    "why": "The row-type kind, the access type and the two primary-key fields, none of which reached a request.",
+    "declaration": "export interface ITableTypeConfig { document ? : string ; tableTypeName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; rowTypeName ? : string ; description ? : string ; }"
   }
 }

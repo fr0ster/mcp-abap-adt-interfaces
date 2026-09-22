@@ -15,5 +15,4 @@ export interface IMetadataExtensionConfig {
   masterLanguage?: string;
   masterSystem?: string;
   responsible?: string;
-  sessionId?: string;
 }

@@ -60,7 +60,6 @@ export interface IFeatureToggleConfig {
   masterSystem?: string;
   responsible?: string;
   source?: IFeatureToggleSource;
-  onLock?: (lockHandle: string) => void;
 }
 
 /**

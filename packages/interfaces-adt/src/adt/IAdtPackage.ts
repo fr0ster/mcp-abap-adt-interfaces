@@ -27,7 +27,6 @@ export interface IPackageConfig {
   packageName: string; // Required
   superPackage?: string; // Required for create operations, optional for others
   description?: string; // Required for create/validate operations, optional for others
-  updatedDescription?: string; // Description to use for update operation
   packageType?: string;
   softwareComponent?: string;
   transportLayer?: string;
@@ -37,5 +36,4 @@ export interface IPackageConfig {
   masterSystem?: string;
   masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE), then EN
   recordChanges?: boolean;
-  onLock?: (lockHandle: string) => void;
 }
