@@ -1,10 +1,3 @@
-export interface ICreateMessageClassParams {
-  name: string;
-  description: string;
-  package_name: string;
-  transport_request?: string;
-  master_language?: string;
-}
 // Nested shapes a message-class read answers with
 // (promoted from adt-clients src/core/messageClass/xml.ts — minimal closure
 // needed to compile the Config/State types below)

@@ -7,48 +7,6 @@ export interface IFixedValue {
   text: string;
 }
 
-export interface ICreateDomainParams {
-  domain_name: string;
-  description?: string;
-  package_name: string;
-  transport_request?: string;
-  masterSystem?: string;
-  responsible?: string;
-  masterLanguage?: string;
-  datatype?: string;
-  length?: number;
-  decimals?: number;
-  conversion_exit?: string;
-  lowercase?: boolean;
-  sign_exists?: boolean;
-  value_table?: string;
-  activate?: boolean;
-  fixed_values?: IFixedValue[];
-}
-
-export interface IUpdateDomainParams {
-  domain_name: string;
-  description?: string;
-  package_name: string;
-  transport_request?: string;
-  masterSystem?: string;
-  responsible?: string;
-  datatype?: string;
-  length?: number;
-  decimals?: number;
-  conversion_exit?: string;
-  lowercase?: boolean;
-  sign_exists?: boolean;
-  value_table?: string;
-  activate?: boolean;
-  fixed_values?: IFixedValue[];
-}
-
-export interface IDeleteDomainParams {
-  domain_name: string;
-  transport_request?: string;
-}
-
 // Builder configuration (camelCase)
 // Note: packageName is required for create/update operations (validated in builder methods)
 // description is required for create/update/validate operations

@@ -65,7 +65,6 @@ export type {
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   IAccessControlConfig,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IActivateServiceBindingParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   IAdtAbapGitClient,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
@@ -173,9 +172,7 @@ export type {
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   IBehaviorDefinitionConfig,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IBehaviorDefinitionCreateParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IBehaviorDefinitionValidationParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   IBehaviorImplementationConfig,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
@@ -195,9 +192,7 @@ export type {
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   ICertificateMaterialLoader,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  ICheckEnhancementParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  ICheckServiceBindingParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   IClassConfig,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
@@ -211,7 +206,6 @@ export type {
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   IClassExecutor,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IClassifyServiceBindingParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   IClassUnitTestDefinition,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
@@ -221,63 +215,39 @@ export type {
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   IConnectionConfig,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  ICreateAccessControlParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   ICreateAndGenerateServiceBindingParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   ICreateAndGenerateServiceBindingParamsLegacy,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  ICreateAppendStructureParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  ICreateAuthorizationFieldParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  ICreateBehaviorImplementationParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  ICreateClassParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   ICreateDataElementParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  ICreateDdlParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  ICreateDomainParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  ICreateEnhancementParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  ICreateFeatureToggleParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  ICreateFunctionGroupParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  ICreateFunctionIncludeParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   ICreateFunctionModuleParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  ICreateIncludeParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  ICreateInterfaceParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  ICreateMessageClassParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  ICreatePackageParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  ICreateProgramParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  ICreateScalarFunctionImplementationParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  ICreateScalarFunctionParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   ICreateServiceBindingParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  ICreateServiceDefinitionParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  ICreateStructureParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  ICreateTableParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  ICreateTableTypeParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  ICreateTransformationParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  ICreateTransportParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   ICriticalSection,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
@@ -293,49 +263,27 @@ export type {
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   IDeferredResponseConnection,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IDeleteAccessControlParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IDeleteAppendStructureParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IDeleteClassParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IDeleteDataElementParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IDeleteDdlParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IDeleteDomainParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IDeleteEnhancementParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IDeleteFeatureToggleParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IDeleteFunctionGroupParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IDeleteFunctionModuleParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IDeleteIncludeParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IDeleteInterfaceParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IDeletePackageParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IDeleteProgramParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IDeleteScalarFunctionImplementationParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IDeleteScalarFunctionParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IDeleteServiceBindingParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IDeleteServiceDefinitionParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IDeleteStructureParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IDeleteTableParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IDeleteTableTypeParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IDeleteTransformationParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   IDomainConfig,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
@@ -371,7 +319,6 @@ export type {
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   IGatewayErrorLog,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IGenerateServiceBindingParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   IGetActivationGraphOptions,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
@@ -385,7 +332,6 @@ export type {
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   IGetNodeContentsOptions,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IGetServiceBindingODataParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   IGetSqlQueryParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
@@ -423,9 +369,7 @@ export type {
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   IMetadataExtensionConfig,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IMetadataExtensionCreateParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IMetadataExtensionValidationParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   IObjectReference,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
@@ -455,11 +399,9 @@ export type {
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   IProgramExecutor,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IPublishODataV2Params,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   IReadOptions,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IReadServiceBindingParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   IRequestProfiling,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
@@ -511,7 +453,6 @@ export type {
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   ITestRunInformation,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IToggleFeatureToggleParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   ITokenProvider,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
@@ -541,7 +482,6 @@ export type {
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   ITransformationConfig,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  ITransportCheckServiceBindingParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   ITransportConfig,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
@@ -557,55 +497,31 @@ export type {
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   IUnitTestScope,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IUnpublishODataV2Params,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IUpdateAccessControlParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IUpdateAppendStructureParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IUpdateBehaviorDefinitionParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IUpdateDataElementParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IUpdateDdlSourceParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IUpdateDomainParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IUpdateEnhancementParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IUpdateFunctionGroupParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IUpdateFunctionModuleParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IUpdateIncludeSourceParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IUpdateInterfaceSourceParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IUpdatePackageParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IUpdateProgramSourceParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IUpdateScalarFunctionImplementationParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IUpdateScalarFunctionParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IUpdateServiceBindingParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IUpdateServiceDefinitionParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IUpdateStructureParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IUpdateTableParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IUpdateTableTypeParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IUpdateTransformationParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   IValidatedAuthConfig,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IValidateEnhancementParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
-  IValidateServiceBindingParams,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */
   IVirtualFoldersPreselection,
   /** @deprecated Import from @mcp-abap-adt/interfaces-adt */

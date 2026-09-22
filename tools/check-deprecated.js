@@ -16,6 +16,18 @@ const surface = fs
   .split('\n')
   .map((l) => l.split(' '));
 
+// Symbols retired at a major rather than deprecated into the facade — see
+// decision 30. The deprecation clause of decision 26 buys a consumer a release
+// in which their import still works; a symbol nobody imports has no such
+// consumer, and there is no package for the facade to point at when the one
+// that accepts it is a consumer of this one.
+const removed = fs
+  .readFileSync(path.join(ROOT, 'tools', 'surface-removed.txt'), 'utf8')
+  .split('\n')
+  .map((line) => line.trim())
+  .filter((line) => line !== '' && !line.startsWith('#'))
+  .map((line) => line.split(/\s+/)[0]);
+
 // Symbols whose package already exists are checked; the rest are still at home.
 const existing = new Set(
   fs
@@ -24,7 +36,9 @@ const existing = new Set(
       fs.existsSync(path.join(ROOT, 'packages', d, 'package.json')),
     ),
 );
-const checked = surface.filter(([name]) => existing.has(map[name]));
+const checked = surface.filter(
+  ([name]) => existing.has(map[name]) && !removed.includes(name),
+);
 
 const dir = fs.mkdtempSync(path.join(ROOT, 'node_modules', '.deprecated-'));
 const consumer = path.join(dir, 'consumer.ts');
@@ -84,5 +98,6 @@ if (problems.length) {
   process.exit(1);
 }
 console.log(
-  `deprecated: all ${checked.length} checked symbols are reported deprecated`,
+  `deprecated: all ${checked.length} checked symbols are reported deprecated` +
+    `, ${removed.length} retired at a major (decision 30)`,
 );

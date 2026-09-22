@@ -14,34 +14,12 @@
  * system will accept the request.
  */
 
-export interface ICreateIncludeParams {
-  includeName: string;
-  description?: string;
-  packageName: string;
-  transportRequest?: string;
-  masterSystem?: string;
-  responsible?: string;
-  masterLanguage?: string;
-  activate?: boolean;
-}
-
 // Deliberately NOT here: a main-program context. A read include carries
 // `include:contextRefCount`, so the system tracks how many programs include
 // this one — but nothing measured says the *create* call accepts a context, and
 // an optional field the server ignores is indistinguishable, to a consumer,
 // from one it honours. It is additive if a capture of Eclipse creating an
 // include shows one.
-
-export interface IUpdateIncludeSourceParams {
-  includeName: string;
-  sourceCode: string;
-  activate?: boolean;
-}
-
-export interface IDeleteIncludeParams {
-  includeName: string;
-  transportRequest?: string;
-}
 
 // Builder configuration (camelCase)
 // Note: packageName is required for create operations (validated in builder methods)

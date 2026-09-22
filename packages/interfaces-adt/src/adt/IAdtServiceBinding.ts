@@ -65,24 +65,6 @@ export interface ICreateServiceBindingParams {
   activateAfterCreate?: boolean;
 }
 
-export interface IReadServiceBindingParams {
-  bindingName: string;
-  version?: 'active' | 'inactive';
-}
-
-export interface IUpdateServiceBindingParams {
-  bindingName: string;
-  desiredPublicationState: DesiredPublicationState;
-  serviceType: GeneratedServiceType;
-  serviceName: string;
-  serviceVersion?: string;
-}
-
-export interface IDeleteServiceBindingParams {
-  bindingName: string;
-  transportRequest?: string;
-}
-
 export interface IServiceBindingConfig {
   bindingName: string;
   packageName?: string;

@@ -2,30 +2,6 @@
  * Program ADT operation parameter interfaces (snake_case, low-level)
  */
 
-export interface ICreateProgramParams {
-  programName: string;
-  description?: string;
-  packageName: string;
-  transportRequest?: string;
-  masterSystem?: string;
-  responsible?: string;
-  masterLanguage?: string;
-  programType?: string;
-  application?: string;
-  activate?: boolean;
-}
-
-export interface IUpdateProgramSourceParams {
-  programName: string;
-  sourceCode: string;
-  activate?: boolean;
-}
-
-export interface IDeleteProgramParams {
-  programName: string;
-  transportRequest?: string;
-}
-
 // Builder configuration (camelCase)
 // Note: packageName is required for create operations (validated in builder methods)
 // description is required for create/validate operations

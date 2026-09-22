@@ -4,30 +4,6 @@
  * CDS views, AMDP table functions, and other DDL sources.
  */
 
-export interface ICreateDdlParams {
-  ddl_name: string;
-  ddl_source?: string;
-  package_name: string;
-  transport_request?: string;
-  description?: string;
-  masterSystem?: string;
-  responsible?: string;
-  masterLanguage?: string;
-}
-
-export interface IUpdateDdlSourceParams {
-  ddl_name: string;
-  ddl_source: string;
-  activate?: boolean;
-  lock_handle?: string;
-  transport_request?: string;
-}
-
-export interface IDeleteDdlParams {
-  ddl_name: string;
-  transport_request?: string;
-}
-
 // Builder configuration (camelCase)
 // Note: packageName is required for create operations (validated in builder methods)
 // description is required for create/validate operations

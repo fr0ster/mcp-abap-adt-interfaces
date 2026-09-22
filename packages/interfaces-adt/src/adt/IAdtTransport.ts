@@ -5,13 +5,6 @@
 import type { IAdtOperationOptions } from './IAdtObject';
 import type { IAdtError, IAdtResponse } from './IAdtResponse';
 
-export interface ICreateTransportParams {
-  transport_type?: string;
-  description: string;
-  target_system?: string;
-  owner?: string;
-}
-
 /**
  * Low level. `configUri` is REQUIRED: this layer requests, it does not resolve.
  *

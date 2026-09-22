@@ -2,16 +2,6 @@
  * Behavior Implementation ADT operation parameter interfaces (snake_case, low-level)
  */
 
-export interface ICreateBehaviorImplementationParams {
-  class_name: string;
-  description?: string;
-  package_name: string;
-  transport_request?: string;
-  master_system?: string;
-  responsible?: string;
-  behavior_definition: string;
-}
-
 // Builder configuration (camelCase)
 export interface IBehaviorImplementationConfig {
   className: string; // Required

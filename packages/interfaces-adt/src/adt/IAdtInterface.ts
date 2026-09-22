@@ -4,27 +4,6 @@
 
 import type { IAdtObjectConfig } from './IAdtObjectState';
 
-export interface ICreateInterfaceParams {
-  interfaceName: string;
-  description: string;
-  packageName: string;
-  transportRequest?: string;
-  masterSystem?: string;
-  responsible?: string;
-  masterLanguage?: string;
-}
-
-export interface IUpdateInterfaceSourceParams {
-  interface_name: string;
-  source_code: string;
-  activate?: boolean;
-}
-
-export interface IDeleteInterfaceParams {
-  interface_name: string;
-  transport_request?: string;
-}
-
 // Builder configuration (camelCase)
 // Note: packageName is required for create operations (validated in builder methods)
 // description is required for create/validate operations

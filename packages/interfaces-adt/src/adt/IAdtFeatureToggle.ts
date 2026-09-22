@@ -52,28 +52,6 @@ export interface IFeatureToggleSource {
   attributes?: IFeatureToggleAttribute[];
 }
 
-export interface ICreateFeatureToggleParams {
-  feature_toggle_name: string;
-  description?: string;
-  package_name: string;
-  transport_request?: string;
-  master_system?: string;
-  responsible?: string;
-  source?: IFeatureToggleSource;
-}
-
-export interface IDeleteFeatureToggleParams {
-  feature_toggle_name: string;
-  transport_request?: string;
-}
-
-export interface IToggleFeatureToggleParams {
-  feature_toggle_name: string;
-  state: 'on' | 'off';
-  is_user_specific: boolean;
-  transport_request?: string;
-}
-
 export interface IFeatureToggleConfig {
   featureToggleName: string;
   packageName?: string;
