@@ -12,7 +12,6 @@ export interface ICreateProgramParams {
   masterLanguage?: string;
   programType?: string;
   application?: string;
-  activate?: boolean;
 }
 
 export interface IUpdateProgramSourceParams {

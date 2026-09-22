@@ -17,11 +17,6 @@ export interface ICreateEnhancementParams {
   transport_request?: string;
   enhancement_spot?: string;
   badi_definition?: string;
-  /**
-   * @deprecated No-op. `create()` posts metadata only; the source is written by
-   * `update()`. Kept for backward compatibility — this field is never read.
-   */
-  source_code?: string;
   masterSystem?: string;
   responsible?: string;
   masterLanguage?: string;

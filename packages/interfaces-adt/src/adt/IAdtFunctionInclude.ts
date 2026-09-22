@@ -7,8 +7,6 @@ export interface ICreateFunctionIncludeParams {
   include_name: string;
   description?: string;
   transport_request?: string;
-  master_system?: string;
-  responsible?: string;
 }
 
 export interface IFunctionIncludeConfig {

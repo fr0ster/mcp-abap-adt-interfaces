@@ -6,7 +6,6 @@
 
 export interface ICreateDdlParams {
   ddl_name: string;
-  ddl_source?: string;
   package_name: string;
   transport_request?: string;
   description?: string;

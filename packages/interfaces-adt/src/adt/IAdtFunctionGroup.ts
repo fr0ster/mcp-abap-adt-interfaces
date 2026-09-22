@@ -14,7 +14,6 @@ export interface ICreateFunctionGroupParams {
 
 export interface IUpdateFunctionGroupParams {
   function_group_name: string;
-  description?: string;
   transport_request?: string;
   lock_handle?: string;
 }

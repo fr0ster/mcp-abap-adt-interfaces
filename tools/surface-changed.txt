@@ -1,0 +1,40 @@
+# Symbols whose declaration has deliberately changed since 44.0.0.
+#
+# `baseline-44.0.0.json` records what each symbol looked like, and the check
+# compares every declaration against it. That is what catches a type drifting
+# by accident — worth keeping — but it also stops a symbol ever being corrected
+# on purpose, and the baseline must NOT simply be regenerated: it is the proof
+# that the split preserved 44.0.0, and a regenerated proof proves nothing.
+#
+# So a deliberate change is declared here, one `<name>` per line with the
+# reason beside it, and becomes an act somebody signed rather than a silent
+# drift. A declaration that changes and is not written here still fails.
+
+# Parameters the implementation never sent. Each of these interfaces declared
+# fields that `@mcp-abap-adt/adt-clients` forwards to a function which does not
+# read them, so a caller who filled them in got an object without them — a
+# domain with `<doma:datatype/>` empty, which SAP then refuses to activate with
+# `DO(251) Data type ' ' does not exist`. Measured on a cloud trial, 2026-09-22.
+#
+# Two causes, both from earlier releases of adt-clients that this contract was
+# never swept after:
+#   - `activate?: boolean` — left from the chains removed in 18.0.0, and read
+#     nowhere in the implementation since;
+#   - every `IUpdate*Params` field beyond the name and the transport — left
+#     from the read-modify-write updates removed in 19.0.0, where the whole
+#     document is now the caller's to send.
+ICreateClassParams
+ICreateDataElementParams
+ICreateDdlParams
+ICreateDomainParams
+ICreateEnhancementParams
+ICreateFeatureToggleParams
+ICreateFunctionIncludeParams
+ICreateIncludeParams
+ICreateProgramParams
+IUpdateDataElementParams
+IUpdateDomainParams
+IUpdateFunctionGroupParams
+IUpdatePackageParams
+IUpdateTableParams
+IUpdateTableTypeParams

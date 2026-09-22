@@ -12,7 +12,6 @@ export interface ICreateClassParams {
   masterLanguage?: string;
   superclass?: string;
   final?: boolean;
-  abstract?: boolean;
   create_protected?: boolean;
   template_xml?: string;
 }

@@ -23,6 +23,14 @@ const added = fs
   .split('\n')
   .map((line) => line.trim())
   .filter((line) => line !== '' && !line.startsWith('#'));
+// Declarations that have deliberately changed since 44.0.0. Same shape as
+// `surface-added.txt` and the same reason: the baseline is a proof, so it is
+// not regenerated, and a change nobody wrote down still fails.
+const changed = fs
+  .readFileSync(path.join(ROOT, 'tools', 'surface-changed.txt'), 'utf8')
+  .split('\n')
+  .map((line) => line.trim())
+  .filter((line) => line !== '' && !line.startsWith('#'));
 const map = JSON.parse(
   fs.readFileSync(path.join(ROOT, 'tools', 'package-map.json'), 'utf8'),
 );
@@ -41,12 +49,20 @@ for (const line of actual)
 for (const line of added)
   if (!actual.includes(line))
     problems.push(`declared as added but not in the facade: ${line}`);
+// A name listed as changed that matches the baseline again is bookkeeping left
+// behind, and it would quietly excuse the next real drift of that symbol.
+for (const name of changed) {
+  const e = entries.find((entry) => entry.name === name);
+  const base = baseline[name];
+  if (e && base && e.declaration === base.declaration)
+    problems.push(`declared as changed but matches 44.0.0: ${name}`);
+}
 
 const runtime = require(path.join(facade, 'index.js'));
 for (const e of entries) {
   const base = baseline[e.name];
   if (!base) continue;
-  if (e.declaration !== base.declaration)
+  if (e.declaration !== base.declaration && !changed.includes(e.name))
     problems.push(`declaration changed: ${e.name}`);
   if ('value' in base && JSON.stringify(runtime[e.name]) !== base.value)
     problems.push(`value changed: ${e.name}`);
@@ -71,5 +87,5 @@ if (problems.length) {
   process.exit(1);
 }
 console.log(
-  `surface: ${actual.length} symbols — ${expected.length} from 44.0.0 in name, kind, declaration and value, ${added.length} declared addition(s)${only ? `; placement ok (${only})` : ''}`,
+  `surface: ${actual.length} symbols — ${expected.length} from 44.0.0 in name, kind, declaration and value, ${added.length} declared addition(s), ${changed.length} declared change(s)${only ? `; placement ok (${only})` : ''}`,
 );

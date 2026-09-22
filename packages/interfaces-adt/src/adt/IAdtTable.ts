@@ -15,7 +15,6 @@ export interface IUpdateTableParams {
   table_name: string;
   ddl_code: string;
   transport_request?: string;
-  activate?: boolean;
 }
 
 export interface IDeleteTableParams {

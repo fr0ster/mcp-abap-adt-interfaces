@@ -22,7 +22,6 @@ export interface ICreateIncludeParams {
   masterSystem?: string;
   responsible?: string;
   masterLanguage?: string;
-  activate?: boolean;
 }
 
 // Deliberately NOT here: a main-program context. A read include carries

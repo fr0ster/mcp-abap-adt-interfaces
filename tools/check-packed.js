@@ -31,6 +31,14 @@ const surface = fs
   .split('\n')
   .map((l) => l.split(' '));
 const baseline = readBaseline();
+// The same declared-change list `check-surface.js` reads. A symbol corrected on
+// purpose differs from 44.0.0 in the packed tarball too, and both guards have
+// to be told once rather than one of them being worked around.
+const changed = fs
+  .readFileSync(path.join(ROOT, 'tools', 'surface-changed.txt'), 'utf8')
+  .split('\n')
+  .map((line) => line.trim())
+  .filter((line) => line !== '' && !line.startsWith('#'));
 const rootManifest = JSON.parse(
   fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'),
 );
@@ -161,7 +169,10 @@ try {
         problems.push(`${name}: not exported by the installed facade`);
         continue;
       }
-      if (normalizedDeclaration(facade) !== baseline[name].declaration)
+      if (
+        normalizedDeclaration(facade) !== baseline[name].declaration &&
+        !changed.includes(name)
+      )
         problems.push(`${name}: published declaration differs from 44.0.0`);
       if (map[name] === 'interfaces') continue;
       if (locals.get(`N_${name}`) !== facade)

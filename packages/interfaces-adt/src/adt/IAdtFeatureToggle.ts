@@ -59,7 +59,6 @@ export interface ICreateFeatureToggleParams {
   transport_request?: string;
   master_system?: string;
   responsible?: string;
-  source?: IFeatureToggleSource;
 }
 
 export interface IDeleteFeatureToggleParams {
