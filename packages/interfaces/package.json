@@ -1,6 +1,6 @@
 {
   "name": "@mcp-abap-adt/interfaces",
-  "version": "46.0.1",
+  "version": "47.0.0",
   "description": "Shared interfaces for MCP ABAP ADT packages",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -48,6 +48,6 @@
     "@mcp-abap-adt/interfaces-utils": "^1.0.0",
     "@mcp-abap-adt/interfaces-network": "^1.0.0",
     "@mcp-abap-adt/interfaces-auth": "^1.0.0",
-    "@mcp-abap-adt/interfaces-adt": "^2.0.1"
+    "@mcp-abap-adt/interfaces-adt": "^3.0.0"
   }
 }
