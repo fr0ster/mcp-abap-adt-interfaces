@@ -20,8 +20,8 @@
     "declaration": "export interface IDdlConfig { ddlName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; ddlSource ? : string ; }"
   },
   "IDomainConfig": {
-    "why": "The eight fields that describe what a domain IS, none of which the create sent — which is why a domain came back with an empty data type and could not be activated.",
-    "declaration": "export interface IDomainConfig { document ? : string ; domainName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; }"
+    "why": "Eight fields left in 4.0.0 because the create did not send them. Three come back — datatype, length, decimals — now that the POST was measured to carry them: 201, the document reads back CHAR/000010, and the activation reports nothing. The other five stay out: they were never measured, and a field returned on a guess is the same lie again.",
+    "declaration": "export interface IDomainConfig { document ? : string ; domainName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; datatype ? : string ; length ? : number ; decimals ? : number ; }"
   },
   "IFeatureToggleConfig": {
     "why": "An onLock callback nothing invoked.",
