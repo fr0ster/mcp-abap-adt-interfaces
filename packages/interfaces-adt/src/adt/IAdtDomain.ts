@@ -7,26 +7,6 @@ export interface IFixedValue {
   text: string;
 }
 
-export interface ICreateDomainParams {
-  domain_name: string;
-  description?: string;
-  package_name: string;
-  transport_request?: string;
-  masterSystem?: string;
-  responsible?: string;
-  masterLanguage?: string;
-}
-
-export interface IUpdateDomainParams {
-  domain_name: string;
-  transport_request?: string;
-}
-
-export interface IDeleteDomainParams {
-  domain_name: string;
-  transport_request?: string;
-}
-
 // Builder configuration (camelCase)
 // Note: packageName is required for create/update operations (validated in builder methods)
 // description is required for create/update/validate operations

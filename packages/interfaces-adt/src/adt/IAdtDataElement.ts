@@ -19,16 +19,6 @@ export interface ICreateDataElementParams {
   masterLanguage?: string;
 }
 
-export interface IUpdateDataElementParams {
-  data_element_name: string;
-  transport_request?: string;
-}
-
-export interface IDeleteDataElementParams {
-  data_element_name: string;
-  transport_request?: string;
-}
-
 // Builder configuration (camelCase)
 // Note: packageName is required for create operations (validated in builder methods)
 // description is required for create/validate operations

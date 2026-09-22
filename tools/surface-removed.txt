@@ -1,0 +1,108 @@
+# Symbols 44.0.0 exported that the facade deliberately no longer does.
+#
+# `surface-44.0.0.txt` is the contract the split had to preserve, and the check
+# reads it in both directions: nothing may appear that is not declared in
+# `surface-added.txt`, and nothing from 44.0.0 may disappear. The second half
+# is what catches a symbol falling out of a package by accident — worth
+# keeping — but it also stops anything ever being retired on purpose.
+#
+# So a removal is declared here, one `<name> <kind>` per line, and becomes an
+# act somebody signed. A symbol that vanishes and is not written here still
+# fails, and a name written here that the facade still exports is reported as
+# stale — it would otherwise excuse that symbol disappearing for real later.
+#
+# These 84 are the request-builder parameter shapes. They were never anything a
+# consumer imported — checked across every sibling repository, where four
+# parameter types are used and these are not among them — and they describe the
+# argument of a function that lives in `@mcp-abap-adt/adt-clients`. A contract
+# is for what crosses a boundary; these never did. They now live beside the
+# code that reads them, which is also the only place that can keep them honest:
+# 85 of their fields were being ignored by that very code.
+#
+# The twelve parameter types that stay are the ones that earn it: four are
+# imported by the MCP server, and eight appear in the signature of a capability
+# interface this package exports.
+IActivateServiceBindingParams type
+IBehaviorDefinitionCreateParams type
+IBehaviorDefinitionValidationParams type
+ICheckEnhancementParams type
+ICheckServiceBindingParams type
+IClassifyServiceBindingParams type
+ICreateAccessControlParams type
+ICreateAppendStructureParams type
+ICreateAuthorizationFieldParams type
+ICreateBehaviorImplementationParams type
+ICreateClassParams type
+ICreateDdlParams type
+ICreateDomainParams type
+ICreateEnhancementParams type
+ICreateFeatureToggleParams type
+ICreateFunctionGroupParams type
+ICreateFunctionIncludeParams type
+ICreateIncludeParams type
+ICreateInterfaceParams type
+ICreateMessageClassParams type
+ICreatePackageParams type
+ICreateProgramParams type
+ICreateScalarFunctionImplementationParams type
+ICreateScalarFunctionParams type
+ICreateServiceDefinitionParams type
+ICreateStructureParams type
+ICreateTableParams type
+ICreateTableTypeParams type
+ICreateTransformationParams type
+ICreateTransportParams type
+IDeleteAccessControlParams type
+IDeleteAppendStructureParams type
+IDeleteClassParams type
+IDeleteDataElementParams type
+IDeleteDdlParams type
+IDeleteDomainParams type
+IDeleteEnhancementParams type
+IDeleteFeatureToggleParams type
+IDeleteFunctionGroupParams type
+IDeleteFunctionModuleParams type
+IDeleteIncludeParams type
+IDeleteInterfaceParams type
+IDeletePackageParams type
+IDeleteProgramParams type
+IDeleteScalarFunctionImplementationParams type
+IDeleteScalarFunctionParams type
+IDeleteServiceBindingParams type
+IDeleteServiceDefinitionParams type
+IDeleteStructureParams type
+IDeleteTableParams type
+IDeleteTableTypeParams type
+IDeleteTransformationParams type
+IGenerateServiceBindingParams type
+IGetServiceBindingODataParams type
+IMetadataExtensionCreateParams type
+IMetadataExtensionValidationParams type
+IPublishODataV2Params type
+IReadServiceBindingParams type
+IToggleFeatureToggleParams type
+ITransportCheckServiceBindingParams type
+IUnpublishODataV2Params type
+IUpdateAccessControlParams type
+IUpdateAppendStructureParams type
+IUpdateBehaviorDefinitionParams type
+IUpdateDataElementParams type
+IUpdateDdlSourceParams type
+IUpdateDomainParams type
+IUpdateEnhancementParams type
+IUpdateFunctionGroupParams type
+IUpdateFunctionModuleParams type
+IUpdateIncludeSourceParams type
+IUpdateInterfaceSourceParams type
+IUpdatePackageParams type
+IUpdateProgramSourceParams type
+IUpdateScalarFunctionImplementationParams type
+IUpdateScalarFunctionParams type
+IUpdateServiceBindingParams type
+IUpdateServiceDefinitionParams type
+IUpdateStructureParams type
+IUpdateTableParams type
+IUpdateTableTypeParams type
+IUpdateTransformationParams type
+IValidateEnhancementParams type
+IValidateServiceBindingParams type

@@ -2,27 +2,6 @@
  * Service Definition ADT operation parameter interfaces (snake_case, low-level)
  */
 
-export interface ICreateServiceDefinitionParams {
-  service_definition_name: string;
-  description?: string;
-  package_name: string;
-  transport_request?: string;
-  masterSystem?: string;
-  responsible?: string;
-  masterLanguage?: string;
-}
-
-export interface IUpdateServiceDefinitionParams {
-  service_definition_name: string;
-  source_code: string;
-  transport_request?: string;
-}
-
-export interface IDeleteServiceDefinitionParams {
-  service_definition_name: string;
-  transport_request?: string;
-}
-
 // Builder configuration (camelCase)
 export interface IServiceDefinitionConfig {
   serviceDefinitionName: string;

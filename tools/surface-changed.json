@@ -1,0 +1,6 @@
+{
+  "ICreateDataElementParams": {
+    "why": "Seventeen fields the implementation never sent \u2014 the type, the length and every label \u2014 left from before adt-clients 19.0.0. A caller who filled them in got a data element without them.",
+    "declaration": "export interface ICreateDataElementParams { data_element_name : string ; description ? : string ; package_name : string ; transport_request ? : string ; masterSystem ? : string ; responsible ? : string ; masterLanguage ? : string ; }"
+  }
+}

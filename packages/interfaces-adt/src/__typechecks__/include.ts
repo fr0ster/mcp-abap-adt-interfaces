@@ -7,37 +7,16 @@
 // post it to a collection that does not accept it.
 
 import type { IAdtContentTypes, IAdtHeaders } from '../adt/IAdtContentTypes';
-import type {
-  ICreateIncludeParams,
-  IDeleteIncludeParams,
-  IIncludeConfig,
-  IUpdateIncludeSourceParams,
-} from '../adt/IAdtInclude';
+import type { IIncludeConfig } from '../adt/IAdtInclude';
 import type { IProgramConfig } from '../adt/IAdtProgram';
 
-/** A consumer's own include handler, spelled out rather than cast. */
-interface IConsumerIncludeHandler {
-  create(params: ICreateIncludeParams): Promise<string>;
-  updateSource(params: IUpdateIncludeSourceParams): Promise<string>;
-  delete(params: IDeleteIncludeParams): Promise<string>;
-}
-
-const _handler: IConsumerIncludeHandler = {
-  create: async (params) => {
-    void params.includeName;
-    void params.packageName;
-    return '';
-  },
-  updateSource: async (params) => {
-    void params.sourceCode;
-    return '';
-  },
-  delete: async (params) => {
-    void params.transportRequest;
-    return '';
-  },
-};
-void _handler;
+// The handler assertion that stood here took `ICreateIncludeParams` and its
+// two neighbours, which are no longer part of this contract: they were the
+// shape of a request builder's argument, read by nothing outside the
+// implementation, and they now live in `@mcp-abap-adt/adt-clients` beside the
+// code that reads them. The assertion went with them. What a consumer needs
+// from this package is the config below and the content types further down,
+// and those are what is still guarded here.
 
 const _config: IIncludeConfig = {
   includeName: 'Z_SOME_INCLUDE',

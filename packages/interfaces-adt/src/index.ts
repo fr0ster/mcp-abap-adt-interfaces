@@ -13,33 +13,14 @@ export type {
   IAdtAbapGitClient,
   IAdtAbapGitClientOptions,
 } from './adt/IAdtAbapGit';
-export type {
-  IAccessControlConfig,
-  ICreateAccessControlParams,
-  IDeleteAccessControlParams,
-  IUpdateAccessControlParams,
-} from './adt/IAdtAccessControl';
-export type {
-  IAppendStructureConfig,
-  ICreateAppendStructureParams,
-  IDeleteAppendStructureParams,
-  IUpdateAppendStructureParams,
-} from './adt/IAdtAppendStructure';
-export type {
-  IAuthorizationFieldConfig,
-  ICreateAuthorizationFieldParams,
-} from './adt/IAdtAuthorizationField';
+export type { IAccessControlConfig } from './adt/IAdtAccessControl';
+export type { IAppendStructureConfig } from './adt/IAdtAppendStructure';
+export type { IAuthorizationFieldConfig } from './adt/IAdtAuthorizationField';
 export type {
   BehaviorDefinitionImplementationType,
   IBehaviorDefinitionConfig,
-  IBehaviorDefinitionCreateParams,
-  IBehaviorDefinitionValidationParams,
-  IUpdateBehaviorDefinitionParams,
 } from './adt/IAdtBehaviorDefinition';
-export type {
-  IBehaviorImplementationConfig,
-  ICreateBehaviorImplementationParams,
-} from './adt/IAdtBehaviorImplementation';
+export type { IBehaviorImplementationConfig } from './adt/IAdtBehaviorImplementation';
 export type {
   IAdtActivatable,
   IAdtCheckable,
@@ -56,8 +37,6 @@ export type {
 } from './adt/IAdtCapabilities';
 export type {
   IClassConfig,
-  ICreateClassParams,
-  IDeleteClassParams,
   ILocalDefinitionsConfig,
   ILocalMacrosConfig,
   ILocalTestClassConfig,
@@ -72,34 +51,17 @@ export type {
   DataElementTypeKind,
   ICreateDataElementParams,
   IDataElementConfig,
-  IDeleteDataElementParams,
-  IUpdateDataElementParams,
 } from './adt/IAdtDataElement';
+export type { IDdlConfig } from './adt/IAdtDdl';
 export type {
-  ICreateDdlParams,
-  IDdlConfig,
-  IDeleteDdlParams,
-  IUpdateDdlSourceParams,
-} from './adt/IAdtDdl';
-export type {
-  ICreateDomainParams,
-  IDeleteDomainParams,
   IDomainConfig,
   IFixedValue,
-  IUpdateDomainParams,
 } from './adt/IAdtDomain';
 export type {
   EnhancementType,
-  ICheckEnhancementParams,
-  ICreateEnhancementParams,
-  IDeleteEnhancementParams,
   IEnhancementConfig,
-  IUpdateEnhancementParams,
-  IValidateEnhancementParams,
 } from './adt/IAdtEnhancement';
 export type {
-  ICreateFeatureToggleParams,
-  IDeleteFeatureToggleParams,
   IFeatureToggleAttribute,
   IFeatureToggleConfig,
   IFeatureToggleHeader,
@@ -108,46 +70,20 @@ export type {
   IFeatureToggleReleasePlan,
   IFeatureToggleRollout,
   IFeatureToggleSource,
-  IToggleFeatureToggleParams,
 } from './adt/IAdtFeatureToggle';
-export type {
-  ICreateFunctionGroupParams,
-  IDeleteFunctionGroupParams,
-  IFunctionGroupConfig,
-  IUpdateFunctionGroupParams,
-} from './adt/IAdtFunctionGroup';
-export type {
-  ICreateFunctionIncludeParams,
-  IFunctionIncludeConfig,
-} from './adt/IAdtFunctionInclude';
+export type { IFunctionGroupConfig } from './adt/IAdtFunctionGroup';
+export type { IFunctionIncludeConfig } from './adt/IAdtFunctionInclude';
 export type {
   ICreateFunctionModuleParams,
-  IDeleteFunctionModuleParams,
   IFunctionModuleConfig,
-  IUpdateFunctionModuleParams,
 } from './adt/IAdtFunctionModule';
+export type { IIncludeConfig } from './adt/IAdtInclude';
+export type { IInterfaceConfig } from './adt/IAdtInterface';
 export type {
-  ICreateIncludeParams,
-  IDeleteIncludeParams,
-  IIncludeConfig,
-  IUpdateIncludeSourceParams,
-} from './adt/IAdtInclude';
-export type {
-  ICreateInterfaceParams,
-  IDeleteInterfaceParams,
-  IInterfaceConfig,
-  IUpdateInterfaceSourceParams,
-} from './adt/IAdtInterface';
-export type {
-  ICreateMessageClassParams,
   IMessageClassConfig,
   IMessageClassMessageConfig,
 } from './adt/IAdtMessageClass';
-export type {
-  IMetadataExtensionConfig,
-  IMetadataExtensionCreateParams,
-  IMetadataExtensionValidationParams,
-} from './adt/IAdtMetadataExtension';
+export type { IMetadataExtensionConfig } from './adt/IAdtMetadataExtension';
 export type {
   IAdtCreateOptions,
   IAdtOperationOptions,
@@ -155,18 +91,8 @@ export type {
 } from './adt/IAdtObject';
 export { AdtObjectErrorCodes } from './adt/IAdtObject';
 export type { IAdtObjectConfig } from './adt/IAdtObjectState';
-export type {
-  ICreatePackageParams,
-  IDeletePackageParams,
-  IPackageConfig,
-  IUpdatePackageParams,
-} from './adt/IAdtPackage';
-export type {
-  ICreateProgramParams,
-  IDeleteProgramParams,
-  IProgramConfig,
-  IUpdateProgramSourceParams,
-} from './adt/IAdtProgram';
+export type { IPackageConfig } from './adt/IAdtPackage';
+export type { IProgramConfig } from './adt/IAdtProgram';
 export type {
   AdtFailureOrigin,
   AdtNoFailure,
@@ -178,38 +104,22 @@ export type {
   IResultStrategy,
 } from './adt/IAdtResponse';
 export { ADT_NO_FAILURE } from './adt/IAdtResponse';
+export type { IScalarFunctionConfig } from './adt/IAdtScalarFunction';
 export type {
-  ICreateScalarFunctionParams,
-  IDeleteScalarFunctionParams,
-  IScalarFunctionConfig,
-  IUpdateScalarFunctionParams,
-} from './adt/IAdtScalarFunction';
-export type {
-  ICreateScalarFunctionImplementationParams,
-  IDeleteScalarFunctionImplementationParams,
   IScalarFunctionImplementationConfig,
-  IUpdateScalarFunctionImplementationParams,
   ScalarFunctionEngine,
 } from './adt/IAdtScalarFunctionImplementation';
 export type {
   DesiredPublicationState,
   GeneratedServiceType,
   ICreateServiceBindingParams,
-  IDeleteServiceBindingParams,
-  IReadServiceBindingParams,
   IServiceBindingConfig,
-  IUpdateServiceBindingParams,
   ServiceBindingType,
   ServiceBindingVariant,
   ServiceBindingVersion,
 } from './adt/IAdtServiceBinding';
 export { SERVICE_BINDING_VARIANT_MAP } from './adt/IAdtServiceBinding';
-export type {
-  ICreateServiceDefinitionParams,
-  IDeleteServiceDefinitionParams,
-  IServiceDefinitionConfig,
-  IUpdateServiceDefinitionParams,
-} from './adt/IAdtServiceDefinition';
+export type { IServiceDefinitionConfig } from './adt/IAdtServiceDefinition';
 export type {
   AdtObjectType,
   AdtObjectTypeLower,
@@ -226,41 +136,26 @@ export type {
   IVirtualFoldersPreselection,
 } from './adt/IAdtShared';
 export type {
-  ICreateStructureParams,
-  IDeleteStructureParams,
   IStructureConfig,
   IStructureField,
   IStructureInclude,
-  IUpdateStructureParams,
 } from './adt/IAdtStructure';
+export type { ITableConfig } from './adt/IAdtTable';
 export type {
-  ICreateTableParams,
-  IDeleteTableParams,
-  ITableConfig,
-  IUpdateTableParams,
-} from './adt/IAdtTable';
-export type {
-  ICreateTableTypeParams,
-  IDeleteTableTypeParams,
   ITableTypeConfig,
-  IUpdateTableTypeParams,
   TableTypeAccessType,
   TableTypePrimaryKeyDefinition,
   TableTypePrimaryKeyKind,
   TableTypeRowKind,
 } from './adt/IAdtTableType';
 export type {
-  ICreateTransformationParams,
-  IDeleteTransformationParams,
   ITransformationConfig,
-  IUpdateTransformationParams,
   TransformationType,
 } from './adt/IAdtTransformation';
 export type {
   IAbapObjectEntry,
   IAdtRequest,
   IAdtTransportObjectActions,
-  ICreateTransportParams,
   IListTransportsOptions,
   IListTransportsParams,
   ITransportConfig,
@@ -436,17 +331,8 @@ export type {
 export type { ISapConfig } from './sap/ISapConfig';
 export type { SapAuthType, SapConnectionType } from './sap/SapAuthType';
 export type {
-  IActivateServiceBindingParams,
-  ICheckServiceBindingParams,
-  IClassifyServiceBindingParams,
   ICreateAndGenerateServiceBindingParams,
   ICreateAndGenerateServiceBindingParamsLegacy,
-  IGenerateServiceBindingParams,
-  IGetServiceBindingODataParams,
-  IPublishODataV2Params,
-  ITransportCheckServiceBindingParams,
-  IUnpublishODataV2Params,
-  IValidateServiceBindingParams,
 } from './service/IAdtService';
 export type { IServiceKeyStore } from './serviceKey/IServiceKeyStore';
 export type { ISessionStore } from './session/ISessionStore';

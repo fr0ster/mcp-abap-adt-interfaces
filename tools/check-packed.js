@@ -31,14 +31,18 @@ const surface = fs
   .split('\n')
   .map((l) => l.split(' '));
 const baseline = readBaseline();
-// The same declared-change list `check-surface.js` reads. A symbol corrected on
-// purpose differs from 44.0.0 in the packed tarball too, and both guards have
-// to be told once rather than one of them being worked around.
-const changed = fs
-  .readFileSync(path.join(ROOT, 'tools', 'surface-changed.txt'), 'utf8')
+// The same two records `check-surface.js` reads. What is true of the built
+// facade has to be true of the tarball a consumer installs, so both guards are
+// told once rather than one of them being worked around.
+const removed = fs
+  .readFileSync(path.join(ROOT, 'tools', 'surface-removed.txt'), 'utf8')
   .split('\n')
   .map((line) => line.trim())
-  .filter((line) => line !== '' && !line.startsWith('#'));
+  .filter((line) => line !== '' && !line.startsWith('#'))
+  .map((line) => line.split(/\s+/)[0]);
+const changed = JSON.parse(
+  fs.readFileSync(path.join(ROOT, 'tools', 'surface-changed.json'), 'utf8'),
+);
 const rootManifest = JSON.parse(
   fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'),
 );
@@ -131,9 +135,13 @@ try {
     // 4. Types, with the published declarations checked too (no skipLibCheck):
     // every moved symbol resolves to one declaration from the facade and from its
     // package, and every symbol's declaration is the 44.0.0 one.
-    moved = surface.filter(([name]) => map[name] !== 'interfaces');
+    // A symbol retired at a major (decision 30) is not importable from
+    // anywhere, so it is left out of the consumer this compiles — asking for it
+    // would fail on purpose and say nothing about the tarballs.
+    const live = surface.filter(([name]) => !removed.includes(name));
+    moved = live.filter(([name]) => map[name] !== 'interfaces');
     const source = [
-      ...surface.map(
+      ...live.map(
         ([name]) =>
           `import type { ${name} as F_${name} } from '@mcp-abap-adt/interfaces';`,
       ),
@@ -166,13 +174,20 @@ try {
     for (const [name] of surface) {
       const facade = locals.get(`F_${name}`);
       if (!facade) {
-        problems.push(`${name}: not exported by the installed facade`);
+        // A declared removal is absent on purpose; anything else absent is the
+        // failure this loop exists for.
+        if (!removed.includes(name))
+          problems.push(`${name}: not exported by the installed facade`);
         continue;
       }
-      if (
-        normalizedDeclaration(facade) !== baseline[name].declaration &&
-        !changed.includes(name)
-      )
+      const record = changed[name];
+      const published = normalizedDeclaration(facade);
+      if (record) {
+        if (published !== record.declaration)
+          problems.push(
+            `${name}: published declaration does not match the recorded change`,
+          );
+      } else if (published !== baseline[name].declaration)
         problems.push(`${name}: published declaration differs from 44.0.0`);
       if (map[name] === 'interfaces') continue;
       if (locals.get(`N_${name}`) !== facade)
@@ -183,7 +198,9 @@ try {
 
     // 5. Runtime: every constant is defined on both paths, is the same object, and
     // holds its 44.0.0 value.
-    values = surface.filter(([, kind]) => kind === 'value');
+    values = surface.filter(
+      ([name, kind]) => kind === 'value' && !removed.includes(name),
+    );
     const script = `
 const facade = require('@mcp-abap-adt/interfaces');
 const expected = ${JSON.stringify(Object.fromEntries(values.map(([n]) => [n, { pkg: map[n], value: baseline[n].value }])))};

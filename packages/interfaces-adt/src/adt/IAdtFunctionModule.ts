@@ -11,20 +11,6 @@ export interface ICreateFunctionModuleParams {
   responsible?: string;
 }
 
-export interface IUpdateFunctionModuleParams {
-  functionGroupName: string;
-  functionModuleName: string;
-  lockHandle: string;
-  sourceCode: string;
-  transportRequest?: string;
-}
-
-export interface IDeleteFunctionModuleParams {
-  function_module_name: string;
-  function_group_name: string;
-  transport_request?: string;
-}
-
 // Builder configuration (camelCase)
 // Note: packageName is required for create operations (validated in builder methods)
 // description is required for create/validate operations

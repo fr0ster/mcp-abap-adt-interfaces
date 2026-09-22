@@ -5,47 +5,6 @@ export type ServiceBindingVersion = 'V2' | 'V4' | '0001' | '0000' | string;
 export type GeneratedServiceType = 'odatav2' | 'odatav4';
 export type DesiredPublicationState = 'published' | 'unpublished' | 'unchanged';
 
-export interface IValidateServiceBindingParams {
-  objname: string;
-  serviceDefinition: string;
-  serviceBindingVersion?: string;
-  description?: string;
-  package?: string;
-}
-
-export interface IGetServiceBindingODataParams {
-  objectname: string;
-  servicename?: string;
-  serviceversion?: string;
-  srvdname?: string;
-}
-
-export interface IPublishODataV2Params {
-  servicename: string;
-  serviceversion?: string;
-}
-
-export interface IUnpublishODataV2Params {
-  servicename: string;
-  serviceversion?: string;
-}
-
-export interface IClassifyServiceBindingParams {
-  objectname: string;
-  bindtype?: string;
-  bindtypeversion?: string;
-  repositoryid?: string;
-  servicename?: string;
-  serviceversion?: string;
-}
-
-export interface ITransportCheckServiceBindingParams {
-  objectName: string;
-  packageName: string;
-  description?: string;
-  operation?: 'I' | 'U' | 'D';
-}
-
 export interface ICreateServiceBindingParams {
   bindingName: string;
   packageName: string;
@@ -60,37 +19,6 @@ export interface ICreateServiceBindingParams {
   transportRequest?: string;
   runTransportCheck?: boolean;
   activateAfterCreate?: boolean;
-}
-
-export interface IReadServiceBindingParams {
-  bindingName: string;
-  version?: 'active' | 'inactive';
-}
-
-export interface IUpdateServiceBindingParams {
-  bindingName: string;
-  desiredPublicationState: DesiredPublicationState;
-  serviceType: GeneratedServiceType;
-  serviceName: string;
-  serviceVersion?: string;
-}
-
-export interface ICheckServiceBindingParams {
-  bindingName: string;
-  version?: 'active' | 'inactive';
-}
-
-export interface IActivateServiceBindingParams {
-  bindingName: string;
-  preauditRequested?: boolean;
-}
-
-export interface IGenerateServiceBindingParams {
-  serviceType: GeneratedServiceType;
-  bindingName: string;
-  serviceName: string;
-  serviceVersion: string;
-  serviceDefinitionName: string;
 }
 
 export type ICreateAndGenerateServiceBindingParams =

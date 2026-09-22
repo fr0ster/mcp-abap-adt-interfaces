@@ -2162,6 +2162,64 @@ insists on.
 
 ---
 
+## 30. A shape only the implementation accepts leaves at a major, without a deprecation cycle
+
+**The problem.** 96 `ICreate*Params` / `IUpdate*Params` types sat in the 44.0.0
+surface. They are the argument shapes of the functions that build ADT requests,
+and checking every dependent repository found four of them imported anywhere —
+`ICreateDataElementParams`, `ICreateFunctionModuleParams`,
+`IGetTableContentsParams`, `ISearchObjectsParams`, all by the MCP server. Eight
+more appear in the signature of a capability interface this package exports.
+The remaining 84 are accepted by nothing outside `@mcp-abap-adt/adt-clients`.
+
+Being nobody's contract had a cost that was not theoretical: **85 of their
+fields were ignored by the very code that took them**. A caller who created a
+domain with `datatype: 'CHAR', length: 10` got `<doma:datatype/>` empty, and SAP
+then refused to activate it — `DO(251) Data type ' ' does not exist`, measured
+on a cloud trial on 2026-09-22. Nothing in this repository could have caught
+that, because the fields are honoured, or not, one repository away.
+
+**Decision 26 already answers where they belong**: a contract lives where it is
+accepted, and these are accepted by the implementation alone. What it also says
+is that a contract nobody accepts *stays in the facade, deprecated, and leaves
+with its next major* — and that is the clause this entry amends, for this case.
+
+**Decided.** They leave now, at a major, with no deprecation cycle. The 84 are
+removed from `interfaces-adt` and from the facade in one release, and declared
+in `tools/surface-removed.txt` so the removal is an act somebody signed rather
+than a symbol quietly falling out of a package.
+
+**Against.** Decision 26's own rule, and the machinery built for it —
+`tools/check-deprecated.js` requires every 44.0.0 symbol to remain importable
+from the facade and to report as deprecated, pointing at its new home.
+
+**Why.** The deprecation clause exists to give a consumer a release in which
+their import still works while they move it. There is no such consumer here:
+these 84 are imported by nobody, which is the same evidence that says they are
+not contracts. A deprecation cycle for an unused symbol buys no one time; it
+only keeps the facade re-exporting a shape the split was meant to relocate, and
+keeps the field-level lie alive for one more release in the one package that
+cannot see it.
+
+There is also no destination the facade could point at. Decision 26's mechanism
+moves a contract between `interfaces-*` packages, and the accepting package here
+is `adt-clients` — a consumer. The facade cannot re-export from it without
+inverting the dependency, so "stay deprecated, pointing at your new package" has
+nothing to name.
+
+**What keeps it true.** `tools/surface-removed.txt` is read by
+`check-surface.js`, `check-packed.js` and `check-deprecated.js`: a symbol that
+disappears and is not written there still fails, and a name written there that
+the facade still exports is reported as stale. Alongside it,
+`tools/surface-changed.json` records the declaration a deliberately changed
+symbol is expected to have **now** — not merely its name, which would have
+retired the baseline check for that symbol forever.
+
+**What would change it.** A consumer outside this workspace importing one of
+the 84. The search covered the repositories under `~/prj` and nothing else, so
+that is the gap this decision is exposed to — the same caveat decision 26
+records for its own evidence.
+
 ## Open, and what would settle it
 
 Not decisions. These are questions this repository has met and deliberately left

@@ -2,26 +2,6 @@
  * Table ADT operation parameter interfaces (snake_case, low-level)
  */
 
-export interface ICreateTableParams {
-  table_name: string;
-  package_name: string;
-  transport_request?: string;
-  masterSystem?: string;
-  responsible?: string;
-  masterLanguage?: string;
-}
-
-export interface IUpdateTableParams {
-  table_name: string;
-  ddl_code: string;
-  transport_request?: string;
-}
-
-export interface IDeleteTableParams {
-  table_name: string;
-  transport_request?: string;
-}
-
 // Builder configuration (camelCase)
 // Note: packageName is required for create operations (validated in builder methods)
 // description is required for create/validate operations

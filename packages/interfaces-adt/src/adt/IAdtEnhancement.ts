@@ -9,47 +9,6 @@ export type EnhancementType =
   | 'enhsxs'
   | 'enhsxsb';
 
-export interface ICreateEnhancementParams {
-  enhancement_name: string;
-  enhancement_type: EnhancementType;
-  description?: string;
-  package_name: string;
-  transport_request?: string;
-  enhancement_spot?: string;
-  badi_definition?: string;
-  masterSystem?: string;
-  responsible?: string;
-  masterLanguage?: string;
-}
-
-export interface IUpdateEnhancementParams {
-  enhancement_name: string;
-  enhancement_type: EnhancementType;
-  source_code: string;
-  lock_handle: string;
-  transport_request?: string;
-}
-
-export interface IDeleteEnhancementParams {
-  enhancement_name: string;
-  enhancement_type: EnhancementType;
-  transport_request?: string;
-}
-
-export interface ICheckEnhancementParams {
-  enhancement_name: string;
-  enhancement_type: EnhancementType;
-  version?: 'active' | 'inactive';
-  source_code?: string;
-}
-
-export interface IValidateEnhancementParams {
-  enhancement_name: string;
-  enhancement_type: EnhancementType;
-  package_name?: string;
-  description?: string;
-}
-
 /**
  * AdtEnhancement configuration (camelCase)
  * Used by the implementation behind the enhancement's capability atoms

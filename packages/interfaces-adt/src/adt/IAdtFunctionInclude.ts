@@ -2,13 +2,6 @@
  * FunctionInclude (FUGR/I) ADT operation parameter interfaces (low-level)
  */
 
-export interface ICreateFunctionIncludeParams {
-  function_group_name: string;
-  include_name: string;
-  description?: string;
-  transport_request?: string;
-}
-
 export interface IFunctionIncludeConfig {
   functionGroupName: string;
   includeName: string;
