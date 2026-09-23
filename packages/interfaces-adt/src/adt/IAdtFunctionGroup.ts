@@ -7,23 +7,15 @@
 // description is required for create/validate operations
 export interface IFunctionGroupConfig {
   /**
-   * The complete payload this write sends — the object’s own document, for a type that is one.
-   *
-   * **An update is a write, not a lock-read-patch-write.** Until 19.0.0 of
-   * `adt-clients` the function-group update locked the group, fetched its
-   * document, patched the description into it, PUT the result and unlocked —
-   * four requests in one member, with the lock window and the merge both
-   * decided there. A caller now locks, reads, edits, writes and unlocks, in
-   * the order they choose, over members that each issue one request.
-   *
-   * The same field is on `IDomainConfig`, `IPackageConfig`,
-   * `IDataElementConfig`, `ITableTypeConfig` and `ITransportConfig` since
-   * 40.0.0, and means the same thing: the fields beside it describe a create,
-   * and a field left out of the document is not preserved.
-   *
-   * Optional because the same config creates, where there is no document yet.
+   * **No `source` here, and that is the point.** This type's write takes its
+   * body from `IAdtOperationOptions.source`, which is where the capability
+   * atoms say a write's body goes. It used to be declared on this config as
+   * well, with a comment telling the caller to pass the document "here" — two
+   * channels, two sentences, and an implementation forced to guess. Nothing on
+   * this type read it but the write: it has no `check` and no `validate` that
+   * compiles a source the server does not hold yet, which is the one job a
+   * `source` on a config still has.
    */
-  source?: string;
   functionGroupName: string; // Required
   masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE), then EN
   packageName?: string; // Required for create operations, optional for others

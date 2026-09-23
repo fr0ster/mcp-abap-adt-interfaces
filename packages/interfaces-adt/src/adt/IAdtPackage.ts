@@ -7,22 +7,15 @@
 // description is required for create/validate operations
 export interface IPackageConfig {
   /**
-   * The complete payload this write sends — the object’s own document, for a type that is one.
-   *
-   * **An update is a write, not a read-modify-write.** Until 19.0.0 of
-   * `adt-clients` the five DDIC-shaped updates fetched the current document,
-   * patched the fields named here into it, and PUT the result — two requests in
-   * one member, and a merge whose rules nobody outside could change. They no
-   * longer do: a caller reads the document with the member that reads it, edits
-   * it, and passes it here.
-   *
-   * So the fields beside this one describe a *create*. On an update they are not
-   * sent, and a field left out of `source` is not preserved — there is nothing
-   * to preserve it from, because nothing was read.
-   *
-   * Optional because the same config creates, where there is no document yet.
+   * **No `source` here, and that is the point.** This type's write takes its
+   * body from `IAdtOperationOptions.source`, which is where the capability
+   * atoms say a write's body goes. It used to be declared on this config as
+   * well, with a comment telling the caller to pass the document "here" — two
+   * channels, two sentences, and an implementation forced to guess. Nothing on
+   * this type read it but the write: it has no `check` and no `validate` that
+   * compiles a source the server does not hold yet, which is the one job a
+   * `source` on a config still has.
    */
-  source?: string;
 
   packageName: string; // Required
   superPackage?: string; // Required for create operations, optional for others

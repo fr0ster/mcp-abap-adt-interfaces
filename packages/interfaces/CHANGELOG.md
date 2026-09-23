@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [51.0.0] - 2026-09-23
+
+### Changed
+
+- **BREAKING: `@mcp-abap-adt/interfaces-adt` ^7.0.0.** `source` leaves
+  `IDomainConfig`, `IDataElementConfig`, `IPackageConfig`, `ITableTypeConfig`,
+  `IFunctionGroupConfig` and `ITransportConfig`: a write's body is
+  `IAdtOperationOptions.source` and nothing else, and those six had no
+  `check`/`validate` to give the config's copy a second reader. Re-exported
+  here, so a consumer holding the facade sees the same break.
+
+  `ADT_TASK_TYPE`, `AdtTaskType` and the retyped `changeTaskType` parameter are
+  **deliberately not re-exported**: every symbol this package forwards is
+  already marked deprecated in favour of importing from the package that
+  declares it, so a new one here would be born deprecated. Import them from
+  `@mcp-abap-adt/interfaces-adt`.
+
 ## [50.0.0] - 2026-09-23
 
 > Recorded as **decision 32** in `docs/architecture/DECISIONS.md`.
