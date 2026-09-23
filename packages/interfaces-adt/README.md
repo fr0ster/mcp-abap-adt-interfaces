@@ -22,7 +22,7 @@ npm install @mcp-abap-adt/interfaces-adt
 |---|---|---|
 | `adt/` | 39 | the object contracts: capability atoms, the object types, `IAdtResponse`, `IAdtError`, the error codes, the transport request's object list |
 | `connection/` | 4 | `IAbapConnection`, `IAbapRequestOptions`, the connection capability atoms, and `ITimeoutConfig` — here since 9.0.0, because `csrf` names an SAP operation rather than a transport primitive. `IAdtWireResponse` extends `IHttpWireResponse` from `-network` |
-| `runtime/` | 11 | runtime analysis: the debugger, profiler traces, application and ATC logs, dumps, memory snapshots |
+| `runtime/` | 11 | runtime analysis: the profiler, ABAP and SQL traces (`ITrace`, `ICrossTrace`, `ISt05Trace`), application, ATC, gateway-error and DDIC-activation logs, `IAtcRun`, runtime dumps, system messages |
 | `execution/` | 3 | class and program execution, with profiling |
 | `feeds/` | 2 | the ADT feed contracts |
 | `service/` | 1 | service definitions and bindings |

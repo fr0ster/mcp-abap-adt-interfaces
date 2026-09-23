@@ -8,12 +8,15 @@
  *
  * `jwt` and `basic` are not SAP's, and are in
  * `@mcp-abap-adt/interfaces-auth` with the tokens, OAuth grants, credentials and
- * stores. The split was computed rather than judged: the files naming XSUAA or
- * UAA in their **code** — comments mentioning ABAP prove nothing — closed
- * transitively over imports, so a file taking one of those types came with it.
+ * the store error codes. The split was computed rather than judged: the files
+ * naming XSUAA or UAA in their **code** — comments mentioning ABAP prove
+ * nothing — closed transitively over imports, so a file taking one of those
+ * types came with it. That is why `ITokenProviderResult` is here and
+ * `ITokenProvider` is not: the result carries an `IConnectionConfig`.
  *
- * Depends on `interfaces-auth` and `interfaces-utils`, and nothing else. No
- * cycle: `auth-sap` → `auth` → `utils`.
+ * **Depends on `interfaces-auth`, and on nothing else.** `interfaces-utils`
+ * reaches this package through it, for `ILogger`, which makes it that package's
+ * dependency rather than this one's. No cycle: `auth-sap` → `auth` → `utils`.
  */
 
 export type { AuthType } from './auth/AuthType';
