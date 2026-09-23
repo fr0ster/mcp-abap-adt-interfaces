@@ -49,7 +49,7 @@ export const TRANSPORT_SEARCH_CONFIGURATIONS_URL =
 // Transport request configuration (camelCase)
 export interface ITransportConfig {
   /**
-   * The complete document to write, when this config is used for an update.
+   * The complete payload this write sends — the object’s own document, for a type that is one.
    *
    * **An update is a write, not a read-modify-write.** Until 19.0.0 of
    * `adt-clients` the five DDIC-shaped updates fetched the current document,
@@ -59,7 +59,7 @@ export interface ITransportConfig {
    * it, and passes it here.
    *
    * So the fields beside this one describe a *create*. On an update they are not
-   * sent, and a field left out of `document` is not preserved — there is nothing
+   * sent, and a field left out of `source` is not preserved — there is nothing
    * to preserve it from, because nothing was read.
    *
    * Optional because the same config creates, where there is no document yet.

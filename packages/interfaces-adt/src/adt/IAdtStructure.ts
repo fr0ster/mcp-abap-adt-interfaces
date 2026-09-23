@@ -20,7 +20,7 @@ export interface IStructureInclude {
 }
 
 // Builder configuration (camelCase)
-// Note: packageName and ddlCode are required for create operations (validated in builder methods)
+// Note: packageName and source are required for create operations (validated in builder methods)
 // description is required for create/validate operations
 export interface IStructureConfig {
   structureName: string;

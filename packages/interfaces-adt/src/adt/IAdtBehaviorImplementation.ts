@@ -12,7 +12,7 @@ export interface IBehaviorImplementationConfig {
   source?: string; // Implementation source code (legacy, use implementationCode instead)
   /**
    * Custom code for implementations include (local handler class) - used in updateImplementations()
-   * If provided, takes precedence over sourceCode and default generated code.
+   * If provided, takes precedence over `source` and the default generated code.
    * Should contain the complete local handler class definition and implementation.
    * Example: "CLASS lhc_Z_I_SOME_ENTITY DEFINITION INHERITING FROM cl_abap_behavior_handler..."
    */

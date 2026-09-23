@@ -181,18 +181,16 @@ export interface IAdtOperationOptions<E extends IAdtError = IAdtError> {
    * described a create that wrote the source itself in a second request. A
    * member is one request now, so where the endpoint does not carry source,
    * writing it is a separate call the caller makes.
-   */
-  sourceCode?: string;
-
-  /**
-   * The body of this member’s request, for the objects whose editor content is
-   * XML rather than source — a domain, a data element, a package, an
-   * authorization field.
    *
-   * Same rule as {@link IAdtOperationOptions.sourceCode}: it is the body of the
-   * one request the member makes, where that endpoint takes one.
+   * **One field, whatever the payload is.** There were two — `sourceCode` and
+   * `xmlContent` — split by what the body happened to contain: ABAP text for a
+   * class, an XML document for a domain. That split asked the caller to
+   * classify their own payload for a library that does not read it. This
+   * package does not demand a particular ABAP body either; what a given type's
+   * XML looks like is documented, and what to put here is the caller's to
+   * know.
    */
-  xmlContent?: string;
+  source?: string;
 
   /**
    * The lock handle to put on the write request.
@@ -242,12 +240,12 @@ export interface IAdtOperationOptions<E extends IAdtError = IAdtError> {
  *
  * **`Omit` alone does not refuse it.** Excess-property checking applies to
  * object literals and nothing else, so `create(config, opts)` where `opts` is a
- * variable of type {@link IAdtOperationOptions} carrying `sourceCode` is
+ * variable of type {@link IAdtOperationOptions} carrying `source` is
  * structurally assignable and compiles — which is the shape real consumer code
- * takes. `sourceCode?: never` is what makes the refusal hold for a variable as
+ * takes. `source?: never` is what makes the refusal hold for a variable as
  * well as a literal.
  */
 export type IAdtCreateOptions<E extends IAdtError = IAdtError> = Omit<
   IAdtOperationOptions<E>,
-  'sourceCode'
-> & { sourceCode?: never };
+  'source'
+> & { source?: never };

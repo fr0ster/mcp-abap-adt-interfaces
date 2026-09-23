@@ -190,16 +190,22 @@ void _demandingUpdate.update({
 
 // **A create takes no source — and the refusal must survive a variable.**
 //
-// `Omit<TConfig, 'sourceCode'>` alone does not do it. Excess-property checking
+// `Omit<TConfig, 'source'>` alone does not do it. Excess-property checking
 // applies to object literals and to nothing else, so a config *variable* that
-// carries `sourceCode` stays structurally assignable and compiles, which is the
+// carries `source` stays structurally assignable and compiles, which is the
 // shape real consumer code takes: a config is built once and passed to create,
 // update and delete alike. Both assertions below compiled before
-// `sourceCode?: never` was added, which is why they are here rather than in a
+// `source?: never` was added, which is why they are here rather than in a
 // literal-shaped example.
+//
+// The field is named `source` because that is what every config calls its
+// payload now. When it was renamed from `sourceCode`, the exclusion went on
+// pointing at the old name for a while — which silently re-opened the hole it
+// exists to close, a create accepting a body its endpoint drops. Caught in
+// review; these assertions are what would have caught it here.
 interface SourcedConfig {
   className: string;
-  sourceCode?: string;
+  source?: string;
 }
 
 declare const creatable: IAdtCreatable<SourcedConfig, void>;
@@ -212,7 +218,7 @@ declare const writeOptions: IAdtOperationOptions;
 void creatable.create(sourcedConfig);
 
 // @ts-expect-error the same, through the options — `IAdtOperationOptions` has
-// `sourceCode` and `IAdtCreateOptions` refuses it
+// `source` and `IAdtCreateOptions` refuses it
 void creatable.create({ className: 'ZC' }, writeOptions);
 
 // The create that does compile: identity and metadata, no source. The source is

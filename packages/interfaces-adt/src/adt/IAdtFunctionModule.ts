@@ -14,7 +14,7 @@ export interface ICreateFunctionModuleParams {
 // Builder configuration (camelCase)
 // Note: packageName is required for create operations (validated in builder methods)
 // description is required for create/validate operations
-// sourceCode is required for create/update operations
+// source is required for create/update operations
 export interface IFunctionModuleConfig {
   functionGroupName: string; // Required
   functionModuleName: string; // Required

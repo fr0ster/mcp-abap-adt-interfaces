@@ -130,5 +130,21 @@
   "IUnitTestConfig": {
     "why": "One name for what a write sends. The payload field carried eleven different names across 35 fields — `sourceCode` in 15 configs, `document` in 6, `ddlCode` and `ddlSource` for the same thing in neighbouring files, `testClassCode` beside `testClassSource`. It is `source` everywhere now: ABAP text for the types that have one, XML for the types that are their own document, and what those XML look like is documented rather than typed.",
     "declaration": "export interface IUnitTestConfig { className : string ; source ? : string ; packageName ? : string ; description ? : string ; classTemplate ? : string ; transportRequest ? : string ; }"
+  },
+  "IInterfaceConfig": {
+    "why": "One name for what a write sends. The payload field carried eleven different names across 35 fields — `sourceCode` in 15 configs, `document` in 6, `ddlCode` and `ddlSource` for the same thing in neighbouring files, `testClassCode` beside `testClassSource`. It is `source` everywhere now: ABAP text for the types that have one, XML for the types that are their own document, and what those XML look like is documented rather than typed.",
+    "declaration": "export type IInterfaceConfig = IAdtObjectConfig & { interfaceName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; source ? : string ; } ;"
+  },
+  "IAdtOperationOptions": {
+    "why": "The payload was two fields split by what the body contained — sourceCode for ABAP text, xmlContent for an XML document — which asked the caller to classify a payload the library never reads. One field, source, whatever it holds.",
+    "declaration": "export interface IAdtOperationOptions < E extends IAdtError = IAdtError > { analyse ? : IAnalyse < E > ; source ? : string ; lockHandle ? : string ; timeout ? : number ; }"
+  },
+  "IAdtCreateOptions": {
+    "why": "It refuses the payload field, and the field is now called source. Left pointing at sourceCode it would have refused a name nothing uses, which is the hole it exists to close.",
+    "declaration": "export type IAdtCreateOptions < E extends IAdtError = IAdtError > = Omit < IAdtOperationOptions < E > , 'source' > & { source ? : never ; } ;"
+  },
+  "IAdtCreatable": {
+    "why": "Its create excludes the payload field, and the field is now called source.",
+    "declaration": "export interface IAdtCreatable < TConfig , TCreated > { create < E extends IAdtError > ( config : Omit < TConfig , 'source' > & { source ? : never ; } , options : IAdtCreateOptions < E > & { analyse : IAnalyse < E > ; } ) : Promise < IAdtResponse < TCreated , E > > ; create ( config : Omit < TConfig , 'source' > & { source ? : never ; } , options ? : IAdtCreateOptions ) : Promise < IAdtResponse < TCreated > > ; }"
   }
 }

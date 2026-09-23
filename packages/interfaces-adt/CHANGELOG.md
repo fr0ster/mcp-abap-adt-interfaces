@@ -21,6 +21,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   demand a particular ABAP body either, and the consumer is the one who knows
   what they are writing.
 
+  **The options carried the same split, and it was worse.** `IAdtOperationOptions`
+  had `sourceCode` *and* `xmlContent`, divided by what the body happened to
+  contain — ABAP text for a class, an XML document for a domain — which asked
+  the caller to classify a payload this library never reads. Both are now
+  `source`. `IAdtCreateOptions` refuses that field, and `IAdtCreatable.create`
+  excludes it from the config: **source is for the write, and a create does not
+  take one.**
+
+  `IInterfaceConfig` is renamed with the rest. It is declared as a type alias
+  rather than an interface, so the first pass missed it — and so did 4.0.0's
+  config clean-up, which is why it still carried `sessionId` and `onLock`. Both
+  are gone with this.
+
   Five fields keep their names because they are not this type's payload:
   `IClassConfig`'s `testClassCode`, `localTypesCode`, `definitionsCode` and
   `macrosCode` address four other resources, each of which already has its own

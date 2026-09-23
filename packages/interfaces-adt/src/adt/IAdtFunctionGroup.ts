@@ -7,7 +7,7 @@
 // description is required for create/validate operations
 export interface IFunctionGroupConfig {
   /**
-   * The complete document to write, when this config is used for an update.
+   * The complete payload this write sends — the object’s own document, for a type that is one.
    *
    * **An update is a write, not a lock-read-patch-write.** Until 19.0.0 of
    * `adt-clients` the function-group update locked the group, fetched its
