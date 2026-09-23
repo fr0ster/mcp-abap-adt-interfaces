@@ -2490,11 +2490,19 @@ to reinvent. `SAP_CONNECTION_HEADERS`, `UAA_HEADERS`, `PRESERVED_HEADERS`,
 names it groups — nothing about `x-mcp-url` is ABAP, and that package already
 held the MCP session headers.
 
-**One had no home, and that is the rule showing its edge.**
-`PROXY_MODIFIED_HEADERS` grouped `HEADER_AUTHORIZATION` from `-network` with
-three SAP names from `-adt`, and neither may import the other. A set spanning
-two domains belongs to whoever composes them — a proxy — not to a contract
-package. It is deleted, and nothing imported it.
+**And one symbol settled where the header names belong.**
+`PROXY_MODIFIED_HEADERS` groups `HEADER_AUTHORIZATION`, declared in `-network`,
+with three SAP names that were in `-adt`. Neither package may import the other,
+so while the halves were split it could exist in neither and was deleted —
+which made the split itself the thing to question rather than the group.
+
+**A header name says how a value travels, not what it means.** All eighteen are
+in `interfaces-network` now, with the five groups over them. The code had been
+saying so all along: nothing in the ADT contract ever used a header name, only
+its index re-exported them, while `mcp-abap-adt-header-validator` imports
+fifteen and nothing else from that package. `AUTH_TYPE_JWT` and its siblings
+stay in `-adt`, because those are values a header carries, not names of
+headers.
 
 **What this costs a consumer.** An import path, at their next dependency
 update, which is a migration anyway. Nothing resolves differently until they

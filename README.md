@@ -11,9 +11,9 @@ Contracts for the MCP ABAP ADT packages: types and constants, no implementations
 | package | holds | depends on |
 |---|---|---|
 | [`@mcp-abap-adt/interfaces-utils`](packages/interfaces-utils) | logging: `ILogger`, `LogLevel` | nothing |
-| [`@mcp-abap-adt/interfaces-network`](packages/interfaces-network) | WebSocket transport, `NETWORK_ERROR_CODES`, `ITimeoutConfig`, generic HTTP, MCP and proxy routing header names | nothing |
+| [`@mcp-abap-adt/interfaces-network`](packages/interfaces-network) | WebSocket transport, `NETWORK_ERROR_CODES`, `ITimeoutConfig`, **every HTTP header name** — generic, MCP, proxy routing and SAP — and the five groups over them | nothing |
 | [`@mcp-abap-adt/interfaces-auth`](packages/interfaces-auth) | `IAuthProvider`, `IRenewableCredential`, `ICertificateMaterial` | nothing |
-| [`@mcp-abap-adt/interfaces-adt`](packages/interfaces-adt) | ADT contracts, the ABAP and Cloud ALM connections, SAP/BTP configuration and authentication | `interfaces-auth`, `interfaces-utils` |
+| [`@mcp-abap-adt/interfaces-adt`](packages/interfaces-adt) | ADT contracts, the ABAP and Cloud ALM connections, SAP/BTP configuration and authentication. No header names: a name says how a value travels, not what it means | `interfaces-auth`, `interfaces-utils` |
 | [`@mcp-abap-adt/interfaces`](packages/interfaces) | nothing, since 52.0.0 — a deprecated facade that stopped forwarding | nothing |
 
 ## Why five packages

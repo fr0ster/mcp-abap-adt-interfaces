@@ -11,15 +11,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **The proxy routing headers, from `@mcp-abap-adt/interfaces-adt` 8.0.0** —
-  `HEADER_BTP_DESTINATION`, `HEADER_MCP_DESTINATION`, `HEADER_MCP_URL`, and
-  `PROXY_ROUTING_HEADERS`, which groups the three.
+- **Every header name, from `@mcp-abap-adt/interfaces-adt` 8.0.0** — the three
+  routing ones (`HEADER_BTP_DESTINATION`, `HEADER_MCP_DESTINATION`,
+  `HEADER_MCP_URL`) and all fifteen SAP and UAA ones, with the five groups:
+  `PROXY_ROUTING_HEADERS`, `SAP_CONNECTION_HEADERS`, `UAA_HEADERS`,
+  `PRESERVED_HEADERS`, `PROXY_MODIFIED_HEADERS`.
 
-  They name where a proxy sends a request; nothing about them is ABAP, and
-  this package already held the MCP session headers. A consumer that reads a
-  routing header — `mcp-abap-adt-header-validator` and `cloud-llm-hub` both do
-  — now depends on a package with one release behind it instead of on the ADT
-  contract.
+  **A header name says how a value travels, not what it means**, which makes it
+  this package's subject whatever system it addresses. The ADT contract never
+  used one — only its index re-exported them — while
+  `mcp-abap-adt-header-validator` imports fifteen and nothing else from it, and
+  `cloud-llm-hub` reads routing headers. Both now depend on a package with one
+  release behind it.
+
+  `PROXY_MODIFIED_HEADERS` arrives for the first time rather than moving: it
+  groups `HEADER_AUTHORIZATION`, declared here, with three SAP names that were
+  declared there, and neither package may import the other, so it could exist
+  in neither.
 
 ## [1.0.0] - 2026-09-16
 

@@ -29,21 +29,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- **BREAKING: the three proxy routing headers leave** —
-  `HEADER_BTP_DESTINATION`, `HEADER_MCP_DESTINATION` and `HEADER_MCP_URL` are
-  in `@mcp-abap-adt/interfaces-network` `1.1.0`, together with
-  `PROXY_ROUTING_HEADERS`, which groups exactly those three.
+- **BREAKING: every header name leaves, and the groups with them.** The three
+  routing names — `HEADER_BTP_DESTINATION`, `HEADER_MCP_DESTINATION`,
+  `HEADER_MCP_URL` — and all fifteen SAP and UAA ones are in
+  `@mcp-abap-adt/interfaces-network` `1.1.0`, together with
+  `PROXY_ROUTING_HEADERS`, `SAP_CONNECTION_HEADERS`, `UAA_HEADERS`,
+  `PRESERVED_HEADERS` and `PROXY_MODIFIED_HEADERS`.
 
-  Nothing about them is ABAP: they name where a proxy sends a request, and
-  that package already held the MCP session headers beside them. Holding them
-  here bound anyone reading a routing header — `mcp-abap-adt-header-validator`
-  and `cloud-llm-hub` both do — to this contract's release rate.
+  **A header name says how a value travels, not what it means.** That is the
+  whole argument, and the code agrees with it: nothing in this contract ever
+  used one — only the index re-exported them. Keeping them here bound
+  `mcp-abap-adt-header-validator`, which imports fifteen of them and nothing
+  else from this package, and `cloud-llm-hub` to the release rate of the ADT
+  contract.
 
-- **`PROXY_MODIFIED_HEADERS` is gone and has no new home.** It grouped
-  `HEADER_AUTHORIZATION`, declared in `-network`, with three SAP names declared
-  here, and neither package may import the other (the dependency graph in
-  `tools/check-graph.js`). A set spanning both domains belongs to whoever
-  composes them — a proxy — and nothing under development imported it.
+  `PROXY_MODIFIED_HEADERS` is the case that proves the placement. It groups
+  `HEADER_AUTHORIZATION` with three SAP names, so while the two halves lived in
+  different packages — and neither may import the other — it could exist in
+  neither and was deleted. With the names where they belong it exists again, in
+  `-network`, beside everything it groups.
+
+  This package keeps `AUTH_TYPE_JWT`, `AUTH_TYPE_BASIC`, `AUTH_TYPE_XSUAA` and
+  `AUTH_TYPES`: those are values a header carries, not names of headers.
 
 ## [7.0.0] - 2026-09-23
 
