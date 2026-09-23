@@ -27,6 +27,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the facade re-exports is already marked *"@deprecated Import from
   @mcp-abap-adt/interfaces-adt"*; a new one there would be born deprecated.
 
+  Both are exported from this package's entry point, and
+  `__typechecks__/transportObjectActions.ts` imports them from there rather
+  than from the file that declares them. That is not tidiness: the first
+  version of this change declared them and forgot the re-export, so the import
+  the paragraph above tells a consumer to write did not resolve and
+  `ADT_TASK_TYPE` was `undefined` in the built package. Nothing caught it —
+  `check-surface.js` reads the facade, and these two are deliberately not
+  there. Found in review.
+
 ### Changed
 
 - **BREAKING: `changeTaskType` takes `AdtTaskType`** instead of the inline

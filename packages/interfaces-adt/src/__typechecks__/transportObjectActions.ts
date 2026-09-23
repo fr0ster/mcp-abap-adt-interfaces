@@ -11,7 +11,12 @@
 // if the requirement is ever loosened again by accident.
 
 import type { IAdtResponse } from '../adt/IAdtResponse';
-import type { IAbapObjectEntry, IAdtTransportObjectActions } from '../index';
+import type {
+  AdtTaskType,
+  IAbapObjectEntry,
+  IAdtTransportObjectActions,
+} from '../index';
+import { ADT_TASK_TYPE } from '../index';
 
 /** A consumer's own readings — the contract declares none. */
 interface MyEntry {
@@ -82,3 +87,26 @@ actions.changeTaskType('E1K900042', 'K');
 
 // @ts-expect-error nor is a customizing one, which this endpoint refuses
 actions.changeTaskType('E1K900042', 'Q');
+
+/**
+ * **The vocabulary reaches a consumer, or it is not a contract.**
+ *
+ * `ADT_TASK_TYPE` and `AdtTaskType` were declared in `IAdtTransport.ts` and
+ * left out of this package's entry point — so the import the changelog told a
+ * consumer to write did not resolve, and `ADT_TASK_TYPE` was `undefined` in
+ * the built package. Nothing caught it: `check-surface.js` reads the *facade*,
+ * and these two are deliberately not re-exported there. Found in review.
+ *
+ * Both are imported from `../index` above for that reason, and not from the
+ * file that declares them: this file compiles against the entry point a
+ * consumer uses.
+ */
+export const fromTheConstant: Promise<IAdtResponse<string>> =
+  actions.changeTaskType('E1K900042', ADT_TASK_TYPE.developmentCorrection);
+
+/** The named type is the parameter's type, not merely assignable to it. */
+export const repair: AdtTaskType = ADT_TASK_TYPE.repair;
+export const unclassified: AdtTaskType = ADT_TASK_TYPE.unclassified;
+
+// @ts-expect-error the constant is frozen by `as const`, not a mutable record
+ADT_TASK_TYPE.repair = 'S';

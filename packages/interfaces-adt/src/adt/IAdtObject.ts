@@ -169,7 +169,7 @@ export interface IAdtOperationOptions<E extends IAdtError = IAdtError> {
    * `adt-clients` 22.0.0 shipped reading both because the contract gave it no
    * way to choose. It does now: `source` on a config is what that type's
    * `check` or `validate` compiles — a source the server does not hold yet —
-   * and the seven types whose config had no such reader no longer declare it.
+   * and the six types whose config had no such reader no longer declare it.
    *
    * This used to name an exception — "a DDL source, a table and a program are
    * created *from* their source, so it is the POST body" — and the exception is
