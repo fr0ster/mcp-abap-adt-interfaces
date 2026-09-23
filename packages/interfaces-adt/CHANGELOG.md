@@ -5,6 +5,86 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.1.0] - 2026-09-22
+
+### Added
+
+- **`datatype`, `length` and `decimals` return to `IDomainConfig`.** They left in
+  4.0.0 because the create accepted them and did not send them; they came back
+  once the endpoint was measured to carry them — a POST with
+  `doma:content/doma:typeInformation` answered `201`, the document read back
+  `CHAR`/`000010`, and the activation reported no messages, beside a domain
+  created without a type which could not be activated at all (`DO(251) Data type
+  ' ' does not exist`). Cloud trial, and on-premise was not covered.
+
+  The other five that left in 4.0.0 — `conversion_exit`, `lowercase`,
+  `sign_exists`, `value_table`, `fixed_values` — stayed out, unmeasured.
+
+  > Withdrawn again in the next major: decision 31 routes the object's shape
+  > through the document, so a create carrying `doma:content` is a deviation
+  > from the flow this library follows. The measurement stands; the route
+  > changed.
+
+## [4.0.0] - 2026-09-22
+
+### Removed
+
+- **46 fields leave 16 `IXxxConfig` types** — the types a consumer writes
+  against. Each was checked against the implementation: whether it is read at
+  all, now that 3.0.0 had made the compiler strip every line forwarding a field
+  into a parameter object that ignored it.
+
+  Two were worse than a dropped value. **`onLock` was declared on nine types and
+  invoked on one** — a callback promising a call that never came; `IIncludeConfig`
+  keeps it, because `AdtInclude` really does invoke it. **`sessionId` was
+  declared on five and read by none**, the low-level locks it was meant for
+  taking a parameter named `_sessionId`.
+
+  The rest never reached the wire: `IDomainConfig` lost the eight that say what a
+  domain is, `IDataElementConfig` its type name and four labels,
+  `IStructureConfig` its `fields` and `includes` (a structure is built from its
+  `ddlCode`), `IFunctionModuleConfig` a `packageName` a module takes from its
+  group, `ITableTypeConfig` the row-type kind, access type and primary-key pair.
+
+### Changed
+
+- All 16 changed declarations are recorded in `tools/surface-changed.json` **with
+  the shape each is expected to have now**, so the baseline check still guards
+  them. Listing the name alone would have retired the check for those symbols.
+
+## [3.0.0] - 2026-09-22
+
+### Removed
+
+- **84 `ICreate*Params` / `IUpdate*Params` types leave the contract.** They are
+  the argument shapes of the functions that build ADT requests, and a search of
+  every dependent repository found them imported by nobody. Twelve parameter
+  types that *are* used stay: four imported by the MCP server, eight named in the
+  signature of a capability interface this package exports.
+
+  Being nobody's contract had a measurable cost: **85 of their fields were
+  ignored by the very code that took them.** A domain created with
+  `datatype: 'CHAR', length: 10` came back with `<doma:datatype/>` empty and SAP
+  refused to activate it. Whether a field is honoured is decided one repository
+  away, which is where these shapes now live.
+
+  Two causes, both left by earlier releases of the consumer: `activate?: boolean`
+  from the chains removed in `adt-clients` 18.0.0, declared in seven interfaces
+  and read nowhere; and every `IUpdate*Params` field past the name and the
+  transport, from the read-modify-write updates removed in 19.0.0.
+
+### Changed
+
+- `ICreateDataElementParams` loses seventeen fields — the type, the length and
+  every label — and its new declaration is recorded in
+  `tools/surface-changed.json`.
+- **The surface guards learnt the difference between retired and lost.**
+  `tools/surface-removed.txt` declares each removal with its reason, the way
+  `surface-added.txt` declares an addition; `check-surface.js`,
+  `check-packed.js` and `check-deprecated.js` all read it.
+  `baseline-44.0.0.json` is untouched: it is the proof that the split preserved
+  44.0.0, and a regenerated proof proves nothing. Recorded as **decision 30**.
+
 ## [2.0.1] - 2026-09-22
 
 ### Changed

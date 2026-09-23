@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [48.1.0] - 2026-09-22
+
+### Added
+
+- Re-pinned to `@mcp-abap-adt/interfaces-adt` `^4.1.0`: `datatype`, `length` and
+  `decimals` return to `IDomainConfig` as optional fields. Additive.
+
+  > Withdrawn again in the next major — see that package's changelog.
+
+## [48.0.0] - 2026-09-22
+
+### Changed
+
+- Re-pinned to `@mcp-abap-adt/interfaces-adt` `^4.0.0`, where 46 fields leave 16
+  `IXxxConfig` types. A major of a dependency does not flow through a caret, so
+  this re-pin is what carries the change to consumers.
+
+## [47.0.0] - 2026-09-22
+
+### Changed
+
+- Re-pinned to `@mcp-abap-adt/interfaces-adt` `^3.0.0`, where 84 request-builder
+  parameter types leave the contract and `ICreateDataElementParams` loses
+  seventeen fields. The facade no longer re-exports the removed types.
+
 ## [46.0.1] - 2026-09-22
 
 ### Changed
