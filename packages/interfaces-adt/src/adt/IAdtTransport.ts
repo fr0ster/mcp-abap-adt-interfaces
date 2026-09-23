@@ -167,7 +167,7 @@ export interface IAbapObjectEntry {
  * `removeObject` the ways out are releasing the whole request, shipping
  * everything else in it, or SE09.
  *
- * Five members and no composite: the order a caller uses them in, and what
+ * Six members and no composite: the order a caller uses them in, and what
  * they do when `addObject` is refused, is theirs. One of them,
  * {@link IAdtTransportObjectActions.readObjects}, is there because
  * {@link IAdtTransportObjectActions.removeObject} needs a value nothing else
@@ -179,6 +179,7 @@ export interface IAdtTransportObjectActions<
   TTask,
   TActionLog,
   TObjects,
+  TTaskType,
 > {
   /**
    * Detach one object from a request or task.
@@ -282,4 +283,30 @@ export interface IAdtTransportObjectActions<
     transportNumber: string,
     options?: IAdtOperationOptions<E>,
   ): Promise<IAdtResponse<TObjects, E>>;
+  /**
+   * Give a task its type.
+   *
+   * **A task is created without one**, and the call that creates it cannot
+   * supply one: measured against BTP ABAP on 2026-09-23, `tm:type` on a
+   * `newtask` is accepted and ignored, and every task on that system —
+   * including ones created long before this contract existed — reads back as
+   * `Unclassified`. CTS assigns the type when the first object lands; a
+   * caller who wants it sooner asks for it here.
+   *
+   * The vocabulary is the server's, and it is small: `'S'`
+   * Development/Correction, `'R'` Repair, `'X'` back to Unclassified. It is
+   * declared as those three rather than as `string` because the other values
+   * a caller might reach for are refused — `'Q'` is a customizing type
+   * ("You can only change the type of tasks in workbench requests") and
+   * `'K'`/`'W'` are REQUEST types, answered as unknown.
+   *
+   * Addressed at the **task**, like `removeObject`: that is where the
+   * listing offers the action. And like every action here, the answer says
+   * the document was understood — a read is what shows the type.
+   */
+  changeTaskType<E extends IAdtError = IAdtError>(
+    taskNumber: string,
+    type: 'S' | 'R' | 'X',
+    options?: IAdtOperationOptions<E>,
+  ): Promise<IAdtResponse<TTaskType, E>>;
 }

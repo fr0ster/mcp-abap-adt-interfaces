@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [49.0.0] - 2026-09-23
+
+### Changed
+
+- **BREAKING: `IAdtTransportObjectActions` gains a sixth type parameter and a
+  `changeTaskType` member**, re-exported from `@mcp-abap-adt/interfaces-adt`
+  5.0.0. That package's changelog holds the measurements.
+
+  A major here because the facade re-exports the type: a consumer holding it
+  through `@mcp-abap-adt/interfaces` sees the same break.
+
 ## [48.1.0] - 2026-09-22
 
 ### Added
