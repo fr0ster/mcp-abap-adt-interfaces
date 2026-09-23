@@ -244,11 +244,11 @@ Every HTTP header name, the groups over them and the HTTP frame
 `IHttpWireResponse` are `@mcp-abap-adt/interfaces-network` — a header name says
 how a value travels, not what it means. The Cloud ALM contracts are
 `@mcp-abap-adt/interfaces-calm`, because Cloud ALM is not ABAP.
-The WebSocket transport, network error codes, timeouts and generic header names
-are `@mcp-abap-adt/interfaces-network`. `IAuthProvider` and
-`ICertificateMaterial` are `@mcp-abap-adt/interfaces-auth`. `storage/` and the
-header groups stay in the deprecated `@mcp-abap-adt/interfaces` facade until its
-next major.
+The WebSocket transport, network error codes and timeouts are
+`@mcp-abap-adt/interfaces-network` too. `IAuthProvider` and
+`ICertificateMaterial` are `@mcp-abap-adt/interfaces-auth`. `storage/` — the
+session state and storage contracts — went to `interfaces-adt` with the facade's
+removal, beside the session and token contracts they belong with.
 
 ### ADT contracts — 97 members, all answering `IAdtResponse`
 
@@ -375,5 +375,5 @@ There is no CI on this repository. What holds instead:
    with itself, or asking a probe file rather than the script, asserted nothing.
    Why the release works this way, and why a check that has never failed is an
    assumption: decision 28.
-   `npm run check` runs 1 and 5–9, and every package's `prepublishOnly` runs
+   `npm run check` runs 1 and 5–8, and every package's `prepublishOnly` runs
    `npm run check`.
