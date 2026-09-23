@@ -2416,6 +2416,44 @@ that the absence of a type is what costs them, rather than the presence of a
 stale one. Then the model belongs in their package, typed against the same
 `source` string this contract passes through.
 
+## 33. A write's body has one channel, and it is the options
+
+**Decided 2026-09-23.** `IAdtOperationOptions.source` is where a write's body
+goes. A config's `source` is not a second way to send it: it is what that
+type's `check` or `validate` compiles — a source the server does not hold yet
+— and the types with no such member do not declare it.
+
+**Why this needed deciding at all.** 6.0.0 shipped the same fact twice, in two
+places, and the two disagreed. The capability atoms documented `options` as
+"`source` for the body", for `update` and `updateMetadata` alike. Every config
+that carried a `source` said the caller "reads the document with the member
+that reads it, edits it, and passes it **here**". Both sentences were in the
+published package.
+
+An implementation cannot honour both. `@mcp-abap-adt/adt-clients` 22.0.0 read
+the config only, which made the call the atom documents send `undefined` and
+write nothing — found by a reviewer, not by a type. The repair it shipped was
+to read both channels with the options winning, and to say in a comment that
+choosing between them was the contract's job, not an implementation's. This is
+that choice.
+
+**What made it decidable rather than a preference.** Measured across all 28
+implementations: besides the write, a config's `source` has exactly one reader,
+`check`/`validate`, and those members have no options channel to take a source
+from — they compile text for a name that may not exist yet. Six types have no
+such member. `domain` passes `undefined` where the source would go,
+`dataElement` and `authorizationField` send none, `tableType` validates a
+description, and `package`, `functionGroup` and `transportRequest` declare
+neither. For those six the field had one reader, the write, and the write has a
+channel of its own. They lose it; the rest keep it for the member that uses it.
+
+**Not a merge, either way.** Nothing about this makes a write read the object
+first. Decision 32 stands: the payload is a string this package passes through.
+
+**What would change it.** Decision 31's per-operation inputs, which make the
+question disappear: a check's config and a write's options stop being two
+shapes with one field name.
+
 ## Open, and what would settle it
 
 Not decisions. These are questions this repository has met and deliberately left

@@ -162,6 +162,15 @@ export interface IAdtOperationOptions<E extends IAdtError = IAdtError> {
   /**
    * The source this member writes. **An update's, and only an update's.**
    *
+   * **This is where a write's body goes, and the only place it is read from.**
+   * That used to be stated here and contradicted in every config, each of
+   * which said a caller "reads the document … and passes it here" — the
+   * config. An implementation honouring one made the other a lie, and
+   * `adt-clients` 22.0.0 shipped reading both because the contract gave it no
+   * way to choose. It does now: `source` on a config is what that type's
+   * `check` or `validate` compiles — a source the server does not hold yet —
+   * and the six types whose config had no such reader no longer declare it.
+   *
    * This used to name an exception — "a DDL source, a table and a program are
    * created *from* their source, so it is the POST body" — and the exception is
    * not real. Measured across all 27 create implementations in

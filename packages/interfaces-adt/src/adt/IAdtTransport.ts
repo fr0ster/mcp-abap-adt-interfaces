@@ -46,25 +46,46 @@ export interface ITransportSearchConfiguration {
 export const TRANSPORT_SEARCH_CONFIGURATIONS_URL =
   '/sap/bc/adt/cts/transportrequests/searchconfiguration/configurations';
 
+/**
+ * The task types CTS accepts, keyed by what each one means.
+ *
+ * **The vocabulary is the server's**, measured against BTP ABAP on
+ * 2026-09-23 by sending each value to `changetasktype` and reading the task
+ * back. It is a constant here rather than a literal at each call site because
+ * SAP chose the letters; a consumer writing `'S'` is repeating a measurement
+ * they did not make.
+ *
+ * The three below are the ones that work. Two more were tried and refused,
+ * and the refusals are worth keeping: `'Q'` is a customizing type — *"You can
+ * only change the type of tasks in workbench requests"* — and `'K'`/`'W'` are
+ * REQUEST types, answered as unknown. The message names the value when one
+ * arrives (`… type K is unknown`), which is how a wrong value was told apart
+ * from an empty one.
+ */
+export const ADT_TASK_TYPE = {
+  /** `S` — the type a task needs before an object can be put in it by hand. */
+  developmentCorrection: 'S',
+  /** `R` — a repair of an object this system does not own. */
+  repair: 'R',
+  /** `X` — back to the state every task is created in. */
+  unclassified: 'X',
+} as const;
+
+/** One of {@link ADT_TASK_TYPE}'s values. */
+export type AdtTaskType = (typeof ADT_TASK_TYPE)[keyof typeof ADT_TASK_TYPE];
+
 // Transport request configuration (camelCase)
 export interface ITransportConfig {
   /**
-   * The complete payload this write sends — the object’s own document, for a type that is one.
-   *
-   * **An update is a write, not a read-modify-write.** Until 19.0.0 of
-   * `adt-clients` the five DDIC-shaped updates fetched the current document,
-   * patched the fields named here into it, and PUT the result — two requests in
-   * one member, and a merge whose rules nobody outside could change. They no
-   * longer do: a caller reads the document with the member that reads it, edits
-   * it, and passes it here.
-   *
-   * So the fields beside this one describe a *create*. On an update they are not
-   * sent, and a field left out of `source` is not preserved — there is nothing
-   * to preserve it from, because nothing was read.
-   *
-   * Optional because the same config creates, where there is no document yet.
+   * **No `source` here, and that is the point.** This type's write takes its
+   * body from `IAdtOperationOptions.source`, which is where the capability
+   * atoms say a write's body goes. It used to be declared on this config as
+   * well, with a comment telling the caller to pass the document "here" — two
+   * channels, two sentences, and an implementation forced to guess. Nothing on
+   * this type read it but the write: it has no `check` and no `validate` that
+   * compiles a source the server does not hold yet, which is the one job a
+   * `source` on a config still has.
    */
-  source?: string;
 
   description: string;
   transportType?: 'workbench' | 'customizing';
@@ -293,12 +314,10 @@ export interface IAdtTransportObjectActions<
    * `Unclassified`. CTS assigns the type when the first object lands; a
    * caller who wants it sooner asks for it here.
    *
-   * The vocabulary is the server's, and it is small: `'S'`
-   * Development/Correction, `'R'` Repair, `'X'` back to Unclassified. It is
-   * declared as those three rather than as `string` because the other values
-   * a caller might reach for are refused — `'Q'` is a customizing type
-   * ("You can only change the type of tasks in workbench requests") and
-   * `'K'`/`'W'` are REQUEST types, answered as unknown.
+   * The vocabulary is the server's and it is small — {@link ADT_TASK_TYPE}
+   * carries it, along with the values that were refused and what they said.
+   * The parameter is that union rather than `string` so a value SAP does not
+   * accept does not compile.
    *
    * Addressed at the **task**, like `removeObject`: that is where the
    * listing offers the action. And like every action here, the answer says
@@ -306,7 +325,7 @@ export interface IAdtTransportObjectActions<
    */
   changeTaskType<E extends IAdtError = IAdtError>(
     taskNumber: string,
-    type: 'S' | 'R' | 'X',
+    type: AdtTaskType,
     options?: IAdtOperationOptions<E>,
   ): Promise<IAdtResponse<TTaskType, E>>;
 }

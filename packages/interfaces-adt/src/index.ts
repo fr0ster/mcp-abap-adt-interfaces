@@ -153,6 +153,7 @@ export type {
   TransformationType,
 } from './adt/IAdtTransformation';
 export type {
+  AdtTaskType,
   IAbapObjectEntry,
   IAdtRequest,
   IAdtTransportObjectActions,
@@ -161,7 +162,10 @@ export type {
   ITransportConfig,
   ITransportSearchConfiguration,
 } from './adt/IAdtTransport';
-export { TRANSPORT_SEARCH_CONFIGURATIONS_URL } from './adt/IAdtTransport';
+export {
+  ADT_TASK_TYPE,
+  TRANSPORT_SEARCH_CONFIGURATIONS_URL,
+} from './adt/IAdtTransport';
 export type {
   ICdsTestDoubleCheckable,
   ICdsUnitTestConfig,

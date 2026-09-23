@@ -7,6 +7,69 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.0.0] - 2026-09-23
+
+### Added
+
+- **`ADT_TASK_TYPE` and `AdtTaskType`** — the task types CTS accepts, as a
+  constant rather than a literal at each call site. `changeTaskType` declared
+  them inline, `'S' | 'R' | 'X'`, which gave a consumer nothing to import: the
+  implementation in `@mcp-abap-adt/adt-clients` had to repeat the union under a
+  local name, and every caller had to repeat the letters.
+
+  **The letters are SAP's, not a choice made here.** They were measured against
+  BTP ABAP on 2026-09-23 by sending each one and reading the task back, and the
+  constant carries what was refused too — `'Q'` ("You can only change the type
+  of tasks in workbench requests") and `'K'`/`'W'`, which are request types.
+  That belongs in the one place a consumer can import it from.
+
+  It is **not** added to the `@mcp-abap-adt/interfaces` facade. Every symbol
+  the facade re-exports is already marked *"@deprecated Import from
+  @mcp-abap-adt/interfaces-adt"*; a new one there would be born deprecated.
+
+  Both are exported from this package's entry point, and
+  `__typechecks__/transportObjectActions.ts` imports them from there rather
+  than from the file that declares them. That is not tidiness: the first
+  version of this change declared them and forgot the re-export, so the import
+  the paragraph above tells a consumer to write did not resolve and
+  `ADT_TASK_TYPE` was `undefined` in the built package. Nothing caught it —
+  `check-surface.js` reads the facade, and these two are deliberately not
+  there. Found in review.
+
+### Changed
+
+- **BREAKING: `changeTaskType` takes `AdtTaskType`** instead of the inline
+  union. The same three values, so a call passing `'S'` still compiles; a
+  declaration that spelled the union out does not.
+
+### Removed
+
+- **BREAKING: `source` leaves six configs** — `IDomainConfig`,
+  `IDataElementConfig`, `IPackageConfig`, `ITableTypeConfig`,
+  `IFunctionGroupConfig` and `ITransportConfig`.
+
+  **The contract said where a write's body goes twice, and differently.**
+  `IAdtUpdatable.update` and `IAdtMetadataUpdatable.updateMetadata` document
+  `options` as "`source` for the body"; every config said the caller "reads the
+  document … and passes it here". An implementation honouring one made the
+  other a lie — `adt-clients` 22.0.0 shipped reading both channels because the
+  contract gave it no way to choose, and said so in a comment.
+
+  It is one channel now, and the split is not arbitrary. Measured across all 28
+  implementations: a config's `source` has exactly one reader besides the
+  write, and that is `check`/`validate`, which compile a source the server does
+  not hold yet and have no options channel to take it from. The six types above
+  have no such member — `domain` passes `undefined` where the source would go,
+  `dataElement` and `authorizationField` send none, `tableType` validates a
+  description, and `package`, `functionGroup` and `transportRequest` have
+  neither member. Nothing read their `source` but the write.
+
+  The configs that keep it are the ones whose `check` or `validate` compiles
+  it. `IAdtOperationOptions.source` now says this outright.
+
+  Not deprecated first: decision 30 — an implementation-only shape leaves at a
+  major.
+
 ## [6.0.0] - 2026-09-23
 
 > Recorded as **decision 32** in `docs/architecture/DECISIONS.md` — why the
