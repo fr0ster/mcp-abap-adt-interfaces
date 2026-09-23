@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-09-23
+
+### Added
+
+- **`HttpError`, from `@mcp-abap-adt/interfaces-adt` 9.0.0** — the shape an HTTP
+  client throws, so a consumer writes `catch (error: unknown)` and narrows
+  instead of `catch (error: any)`.
+
+  Nothing about an HTTP error is ABAP. It was in the ADT contract, which never
+  used it: 14 files in `@mcp-abap-adt/adt-clients` import it, and so does
+  `sap-cloud-alm-odata-mcp`, which speaks no ADT at all.
+
+### Removed
+
+- **BREAKING: `ITimeoutConfig` leaves, for `@mcp-abap-adt/interfaces-adt`
+  9.0.0.** Its three fields are `default`, `csrf` and `long`. **Fetching a CSRF
+  token is an SAP operation, not a transport primitive**, and `long` is a
+  client's policy for a long-polling read rather than anything a network layer
+  knows — so this package held a type whose own fields name operations it does
+  not have, against its README's claim that nothing here is SAP-specific.
+
+  One consumer: `mcp-abap-connection`, in `src/utils/timeouts.ts`, which takes
+  `interfaces-adt` already.
+
 ## [1.1.0] - 2026-09-23
 
 ### Added

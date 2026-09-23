@@ -3,7 +3,7 @@
   "exclude": ["node_modules", "dist", "src/__typechecks__"],
   "references": [
     {
-      "path": "../interfaces-network/tsconfig.build.json"
+      "path": "../interfaces-auth/tsconfig.build.json"
     }
   ]
 }

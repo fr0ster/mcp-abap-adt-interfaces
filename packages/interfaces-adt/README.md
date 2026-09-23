@@ -1,14 +1,14 @@
 # @mcp-abap-adt/interfaces-adt
 
-ADT contracts, the ABAP connection, and SAP/BTP configuration and authentication contracts.
+ADT contracts: object operations, the ABAP connection, runtime analysis, execution, feeds and service bindings.
 
 ## TL;DR
 
-- Everything a package on the SAP side accepts: ADT object operations, runtime analysis, execution, feeds, services, the ABAP connection, SAP/BTP configuration, token providers, SAML assertion validation, session and service-key stores, and header validation.
-- **Two things left in 8.0.0.** Every HTTP header name, and the groups over them, are in [`@mcp-abap-adt/interfaces-network`](../interfaces-network) — a header name says how a value travels, not what it means, and nothing here ever used one. The Cloud ALM contracts are [`@mcp-abap-adt/interfaces-calm`](../interfaces-calm) — Cloud ALM is not ABAP. `AUTH_TYPE_JWT` and its siblings stay: those are values a header carries.
-- `IAdtWireResponse` now extends `IHttpWireResponse` from `-network` and keeps the headers ADT sends (`sap-adt-location`, both spellings of `content-location`). The name and shape are unchanged for a consumer.
-- Depends on `@mcp-abap-adt/interfaces-auth`, `@mcp-abap-adt/interfaces-network` and `@mcp-abap-adt/interfaces-utils`. Types and constants; no implementation.
-- Moved unchanged from `@mcp-abap-adt/interfaces` 44.0.0. Most majors of that package came from these contracts; this package now carries them alone.
+- **Only ADT.** The test is who imports this package: `@mcp-abap-adt/adt-clients` and whatever replaces its objects, and nobody else. Measured against every repository in development — the only others reaching in are `gcts-client` and `cloud-llm-hub`, for `IAbapConnection`, `IAbapRequestOptions` and `IAdtResponse`, which is that test met.
+- What it holds: ADT object operations for 31 object types, the ABAP connection and its capability atoms, runtime analysis, execution, feeds, service bindings, `IAdtResponse` and the error codes.
+- **What left, and where.** Every HTTP header name, the HTTP frame and `HttpError` → [`interfaces-network`](../interfaces-network). Cloud ALM → [`interfaces-calm`](../interfaces-calm). `XmlNode` → [`interfaces-utils`](../interfaces-utils). Authentication in general — credentials, OAuth grants, tokens, interactive login, SAML assertions, `AUTH_TYPE_JWT`/`BASIC` → [`interfaces-auth`](../interfaces-auth). Everything naming SAP or BTP — `ISapConfig`, `SapAuthType`, `SapConnectionType`, `IConfig`, `IConnectionConfig`, `IAuthorizationConfig`, `ICertificateMaterialLoader`, `IServiceKeyStore`, `ISessionStore`, `ITokenProviderResult`, the two validation results and `AUTH_TYPE_XSUAA` with its union → [`interfaces-auth-sap`](../interfaces-auth-sap). `ISessionState` and `ISessionStorage` are deleted, not moved.
+- `IAdtWireResponse` extends `IHttpWireResponse` from `-network` and keeps the headers ADT sends (`sap-adt-location`, both spellings of `content-location`). Name and shape unchanged for a consumer.
+- Depends on `@mcp-abap-adt/interfaces-network`, and on nothing else. Types and constants; no implementation.
 
 ## Install
 
@@ -18,13 +18,17 @@ npm install @mcp-abap-adt/interfaces-adt
 
 ## What it holds
 
-| directory | what |
-|---|---|
-| `adt/`, `runtime/`, `execution/`, `feeds/`, `service/`, `shared/` | the ADT contracts: capability atoms, object types, `IAdtResponse`, runtime analysis, execution |
-| `connection/` | `IAbapConnection`, `IAbapRequestOptions`, the connection capability atoms. `IAdtWireResponse` lives here and extends `IHttpWireResponse` from `-network`; the Cloud ALM contracts left for [`interfaces-calm`](../interfaces-calm) in 8.0.0 |
-| `sap/`, `auth/` | `ISapConfig`, `IConnectionConfig`, `IAuthorizationConfig`, `IConfig`, `IAuthorizationStrategy`, the callback-server contracts, `ICertificateMaterialLoader`, `AuthTypeEnum`; `IAssertionValidator` with `AssertionContext`, `ValidatedAssertion`, `IAssertionReplayStore` and `ASSERTION_ERROR_CODES` |
-| `token/`, `session/`, `serviceKey/`, `store/` | token providers and refreshers, stores and their error codes |
-| `validation/`, `Headers.ts` | header validation; `AUTH_TYPES`, `AuthType`, `AUTH_TYPE_JWT` and its siblings — the *values* a header carries. The header **names** left for [`interfaces-network`](../interfaces-network) in 8.0.0 |
+| directory | files | what |
+|---|---|---|
+| `adt/` | 39 | the object contracts: capability atoms, the object types, `IAdtResponse`, `IAdtError`, the error codes, the transport request's object list |
+| `connection/` | 4 | `IAbapConnection`, `IAbapRequestOptions`, the connection capability atoms, and `ITimeoutConfig` — here since 9.0.0, because `csrf` names an SAP operation rather than a transport primitive. `IAdtWireResponse` extends `IHttpWireResponse` from `-network` |
+| `runtime/` | 11 | runtime analysis: the profiler, ABAP and SQL traces (`ITrace`, `ICrossTrace`, `ISt05Trace`), application, ATC, gateway-error and DDIC-activation logs, `IAtcRun`, runtime dumps, system messages |
+| `execution/` | 3 | class and program execution, with profiling |
+| `feeds/` | 2 | the ADT feed contracts |
+| `service/` | 1 | service definitions and bindings |
+| `shared/` | 1 | what more than one object type needs |
+
+Seven directories, all ADT. `sap/`, `auth/`, `token/`, `session/`, `serviceKey/`, `store/`, `validation/` and `Headers.ts` were here until 9.0.0 and are listed above under what left; `__typechecks__/` holds 21 files that compile shapes this contract must and must not accept, and ships in no tarball.
 
 The contract rules — what a member answers, how a strategy is supplied, how a contract is built — are in [`docs/architecture/ARCHITECTURE.md`](../../docs/architecture/ARCHITECTURE.md). Domain-by-domain documentation with examples used to sit in the facade's README; the facade is deleted, and each package documents its own contracts.
 

@@ -4,6 +4,7 @@
  * Transport contracts, generic HTTP and MCP header names and network error codes for MCP ABAP ADT packages.
  */
 
+export type { HttpError } from './connection/IHttpError';
 export type {
   IHttpHeaderValue,
   IHttpWireResponse,
@@ -48,4 +49,3 @@ export {
   SAP_CONNECTION_HEADERS,
   UAA_HEADERS,
 } from './Headers';
-export type { ITimeoutConfig } from './utils/ITimeoutConfig';

@@ -1,12 +1,13 @@
 # @mcp-abap-adt/interfaces-utils
 
-Logging contracts for the MCP ABAP ADT packages.
+Logging contracts, and the shapes that belong to no one system, for the MCP ABAP ADT packages.
 
 ## TL;DR
 
 - `ILogger` — what a component logs through. `LogLevel` — the levels.
+- `XmlNode` — what an XML parser hands back for one node. Here since 1.1.0: it was in `interfaces-adt` until that package's 9.0.0, and a parser's output shape is not an ADT contract whatever the document contains.
 - Depends on nothing. Types and one enum; no implementation.
-- Moved unchanged from `@mcp-abap-adt/interfaces` 44.0.0.
+- The logging pair moved unchanged from `@mcp-abap-adt/interfaces` 44.0.0.
 
 ## Install
 
@@ -17,7 +18,7 @@ npm install @mcp-abap-adt/interfaces-utils
 ## Use
 
 ```typescript
-import type { ILogger } from '@mcp-abap-adt/interfaces-utils';
+import type { ILogger, XmlNode } from '@mcp-abap-adt/interfaces-utils';
 import { LogLevel } from '@mcp-abap-adt/interfaces-utils';
 ```
 

@@ -1,10 +1,17 @@
 /**
  * @mcp-abap-adt/interfaces-adt
  *
- * ADT contracts, the ABAP and Cloud ALM connections, and SAP/BTP configuration and authentication contracts.
+ * ADT contracts: object operations, the ABAP connection, runtime analysis,
+ * execution, feeds and service bindings.
+ *
+ * **Only ADT.** The test is who imports this package: `@mcp-abap-adt/adt-clients`
+ * and whatever replaces its objects, and nobody else. Everything that failed
+ * that test has left — headers and the HTTP frame to `interfaces-network`, Cloud
+ * ALM to `interfaces-calm`, authentication, tokens and stores to
+ * `interfaces-auth`, the SAP system configuration to `interfaces-auth-sap`,
+ * `HttpError` to `-network` and `XmlNode` to `-utils`.
  */
 
-export type { HttpError, XmlNode } from './adt/AdtTypes';
 export type {
   IAbapGitExternalRepoCredentials,
   IAbapGitLinkArgs,
@@ -191,30 +198,6 @@ export type {
   IAdtWhereUsed,
   IGetNodeContentsOptions,
 } from './adt/IAdtUtilities';
-export type { AssertionErrorCode } from './auth/AssertionErrorCodes';
-export { ASSERTION_ERROR_CODES } from './auth/AssertionErrorCodes';
-export type { AuthType as AuthTypeEnum } from './auth/AuthType';
-export type {
-  AssertionContext,
-  AssertionReplayKey,
-  IAssertionReplayStore,
-  IAssertionValidator,
-  ValidatedAssertion,
-} from './auth/IAssertionValidator';
-export type { IAuthorizationConfig } from './auth/IAuthorizationConfig';
-export type {
-  AuthorizationOutcome,
-  AuthorizationRequest,
-  IAuthorizationStrategy,
-} from './auth/IAuthorizationStrategy';
-export type {
-  CallbackServerFactory,
-  ICallbackServerHandle,
-  ICallbackServerOptions,
-} from './auth/ICallbackServer';
-export type { ICertificateMaterialLoader } from './auth/ICertificateMaterialLoader';
-export type { IConfig } from './auth/IConfig';
-export type { IConnectionConfig } from './auth/IConnectionConfig';
 export type {
   IAbapConnection,
   IAdtWireResponse,
@@ -228,6 +211,7 @@ export type {
   ISessionLifecycleAware,
 } from './connection/IConnectionCapabilities';
 export { ADT_SESSION_ERROR } from './connection/IConnectionCapabilities';
+export type { ITimeoutConfig } from './connection/ITimeoutConfig';
 export type {
   IClassExecuteWithProfilerOptions,
   IClassExecuteWithProfilingOptions,
@@ -248,13 +232,6 @@ export type {
 export type { ITraceScheduling } from './execution/ITraceScheduling';
 export type { IFeedRepository } from './feeds/IFeedRepository';
 export type { IAbapTimestamp, IFeedQueryOptions } from './feeds/types';
-export type { AuthType } from './Headers';
-export {
-  AUTH_TYPE_BASIC,
-  AUTH_TYPE_JWT,
-  AUTH_TYPE_XSUAA,
-  AUTH_TYPES,
-} from './Headers';
 export type {
   IApplicationLog,
   IGetApplicationLogObjectOptions,
@@ -307,37 +284,8 @@ export type {
   ViewOptions,
   ViewResult,
 } from './runtime/ITrace';
-export type { ISapConfig } from './sap/ISapConfig';
-export type { SapAuthType, SapConnectionType } from './sap/SapAuthType';
 export type {
   ICreateAndGenerateServiceBindingParams,
   ICreateAndGenerateServiceBindingParamsLegacy,
 } from './service/IAdtService';
-export type { IServiceKeyStore } from './serviceKey/IServiceKeyStore';
-export type { ISessionStore } from './session/ISessionStore';
 export type { IReadOptions } from './shared/IReadOptions';
-export type { ISessionState } from './store/ISessionState';
-export type { ISessionStorage } from './store/ISessionStorage';
-export type { StoreErrorCode } from './store/StoreErrorCodes';
-export { STORE_ERROR_CODES } from './store/StoreErrorCodes';
-export type { OAuth2GrantType } from './token/AuthType';
-export {
-  AUTH_TYPE_AUTHORIZATION_CODE,
-  AUTH_TYPE_AUTHORIZATION_CODE_PKCE,
-  AUTH_TYPE_CLIENT_CREDENTIALS,
-  AUTH_TYPE_CLIENT_X509,
-  AUTH_TYPE_PASSWORD,
-  AUTH_TYPE_SAML2_BEARER,
-  AUTH_TYPE_USER_TOKEN,
-} from './token/AuthType';
-export type { ITokenProvider } from './token/ITokenProvider';
-export type { ITokenProviderOptions } from './token/ITokenProviderOptions';
-export type { ITokenProviderResult } from './token/ITokenProviderResult';
-export type { ITokenRefresher } from './token/ITokenRefresher';
-export type { ITokenResult } from './token/ITokenResult';
-export type { TokenProviderErrorCode } from './token/TokenProviderErrorCodes';
-export { TOKEN_PROVIDER_ERROR_CODES } from './token/TokenProviderErrorCodes';
-export type { ITokenRefreshResult } from './utils/ITokenRefreshResult';
-export type { IHeaderValidationResult } from './validation/IHeaderValidationResult';
-export type { IValidatedAuthConfig } from './validation/IValidatedAuthConfig';
-export { AuthMethodPriority } from './validation/IValidatedAuthConfig';

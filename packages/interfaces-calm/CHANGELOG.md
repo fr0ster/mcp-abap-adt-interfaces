@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-09-23
+
+### Changed
+
+- `@mcp-abap-adt/interfaces-network` is `^2.0.0`, from `^1.1.0`. Nothing in this
+  package changes: it takes `IHttpWireResponse`, which 2.0.0 did not touch. The
+  range moves so that an install holding both packages resolves **one** copy of
+  `-network` — a range one major behind is what npm answers by silently nesting a
+  second copy.
+
 ## [1.0.0] - 2026-09-23
 
 ### Added

@@ -1,7 +1,7 @@
 {
-  "name": "@mcp-abap-adt/interfaces-network",
-  "version": "2.0.0",
-  "description": "Transport contracts, the HTTP error shape, generic HTTP and MCP header names and network error codes for MCP ABAP ADT packages",
+  "name": "@mcp-abap-adt/interfaces-auth-sap",
+  "version": "1.0.0",
+  "description": "SAP and BTP authorization contracts: service keys, destinations, UAA, SAP connection configuration",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -14,14 +14,14 @@
   "sideEffects": false,
   "author": "Oleksii Kyslytsia <oleksij.kyslytsja@gmail.com>",
   "license": "LGPL-3.0-only",
-  "homepage": "https://github.com/fr0ster/mcp-abap-adt-interfaces/tree/master/packages/interfaces-network#readme",
+  "homepage": "https://github.com/fr0ster/mcp-abap-adt-interfaces/tree/master/packages/interfaces-auth-sap#readme",
   "bugs": {
     "url": "https://github.com/fr0ster/mcp-abap-adt-interfaces/issues"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/fr0ster/mcp-abap-adt-interfaces.git",
-    "directory": "packages/interfaces-network"
+    "directory": "packages/interfaces-auth-sap"
   },
   "publishConfig": {
     "access": "public"
@@ -34,5 +34,8 @@
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@mcp-abap-adt/interfaces-auth": "^1.2.0"
   }
 }

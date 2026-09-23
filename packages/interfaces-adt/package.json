@@ -1,7 +1,7 @@
 {
   "name": "@mcp-abap-adt/interfaces-adt",
-  "version": "8.0.0",
-  "description": "ADT contracts, the ABAP and Cloud ALM connections, and SAP/BTP configuration and authentication contracts",
+  "version": "9.0.0",
+  "description": "ADT contracts: object operations, the ABAP connection, runtime analysis, execution, feeds and service bindings",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -36,8 +36,6 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@mcp-abap-adt/interfaces-auth": "^1.0.0",
-    "@mcp-abap-adt/interfaces-network": "^1.1.0",
-    "@mcp-abap-adt/interfaces-utils": "^1.0.0"
+    "@mcp-abap-adt/interfaces-network": "^2.0.0"
   }
 }

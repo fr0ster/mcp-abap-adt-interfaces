@@ -7,6 +7,90 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [9.0.0] - 2026-09-23
+
+### Added
+
+- **`ITimeoutConfig`, from `@mcp-abap-adt/interfaces-network` 2.0.0** — the
+  deadlines a caller gives an ADT connection: `default`, `csrf`, `long`.
+
+  **Fetching a CSRF token is an SAP operation, not a transport primitive**, and
+  `long` is a client's policy for a long-polling read rather than anything a
+  network layer knows. It sat in `-network` against that package's own README,
+  which says nothing there is SAP-specific. Its one consumer,
+  `mcp-abap-connection`, takes this package already.
+
+### Removed
+
+- **BREAKING: every authentication contract leaves** — 51 symbols out of 30
+  files, split by what each one's fields and values name. Measured against the
+  published 8.0.0 tarball, which exported 262 names; this release exports 210.
+
+  - **32 to `@mcp-abap-adt/interfaces-auth` 1.2.0** — credentials, OAuth
+    grants, tokens, interactive login, SAML assertions, `STORE_ERROR_CODES`,
+    and `AUTH_TYPE_JWT`/`AUTH_TYPE_BASIC`. A bearer token and a user with a
+    password mean the same thing off SAP entirely.
+  - **16 to `@mcp-abap-adt/interfaces-auth-sap` 1.0.0** — `ISapConfig`,
+    `SapAuthType`, `SapConnectionType`, `IConfig`, `IConnectionConfig`,
+    `IAuthorizationConfig`, `ICertificateMaterialLoader`, `IServiceKeyStore`,
+    `ISessionStore`, `ITokenProviderResult`, `IValidatedAuthConfig`,
+    `AuthMethodPriority`, `IHeaderValidationResult`, and `AUTH_TYPE_XSUAA`
+    with the `AuthType`/`AUTH_TYPES` union. XSUAA is a **BTP service**, so a
+    set that includes it describes what a BTP connection accepts.
+  - **`ISessionState` and `ISessionStorage` are deleted**, not moved: cookies,
+    a CSRF token and a cookie store are HTTP session state, which no package's
+    subject names, and nothing under development imports them. They arrived
+    here in 8.0.0 from the facade with *"removed in the next major"* on them;
+    this is that major (decision 30).
+
+  **The criterion is who imports this package**, and it should be
+  `@mcp-abap-adt/adt-clients` and whatever replaces its objects. It was not:
+  `auth-broker`, `auth-stores` and `auth-providers` imported 10, 7 and 17 names
+  from here and **not one was an ADT contract**; `header-validator` took 7 more.
+  They were pinned to the release rate of the ADT contract to describe
+  authentication.
+
+  After this, all four take **zero** from here. What is left reaching in is
+  `gcts-client` and `cloud-llm-hub`, for `IAbapConnection`,
+  `IAbapRequestOptions` and `IAdtResponse` — consumers that speak ADT over a
+  connection, which is the criterion met.
+
+- **BREAKING: `HttpError` leaves, for `@mcp-abap-adt/interfaces-network`
+  2.0.0.** Nothing about an HTTP error is ABAP. This contract declared it and
+  never used it, while 14 files in `@mcp-abap-adt/adt-clients` import it and so
+  does `sap-cloud-alm-odata-mcp`, which speaks no ADT at all.
+
+- **BREAKING: `XmlNode` leaves, for `@mcp-abap-adt/interfaces-utils` 1.1.0.** A
+  parser's output shape is not an ADT contract, whatever the document happens to
+  contain. Declared here, used here by nothing.
+
+- **`@mcp-abap-adt/interfaces-auth` is no longer a dependency.** The last thread
+  was `validation/IValidatedAuthConfig` importing `AuthType`, and `validation/`
+  went with the SAP cluster. This package depends on `interfaces-network` and
+  `interfaces-utils`, and nothing else.
+
+- **`AuthTypeEnum` is dropped.** It was `export type { AuthType as AuthTypeEnum }`
+  — a second name for one type, which no package imported under either name from
+  here. `AuthType` itself is in `interfaces-auth-sap`; the alias is not
+  recreated there, because one contract with two names is what a consumer has to
+  guess between.
+
+### Dependencies
+
+- **`@mcp-abap-adt/interfaces-network` `^2.0.0` is the only dependency.**
+  `interfaces-utils` is gone: it was here for `ILogger` and then for `XmlNode`,
+  and with `XmlNode` in that package no file in `src/` imports it. The
+  `tsconfig` project references went with it — two of them, one still pointing
+  at `interfaces-auth` a release after the last import of it left.
+
+  `tools/check-graph.js` now fails on a declared dependency or a project
+  reference that no file imports, so this cannot recur silently: it checked
+  only that an import was permitted and declared, never that a declaration was
+  used.
+
+- The `-network` range names the version `HttpError` lands in, so an install
+  resolves one copy rather than nesting an older one.
+
 ## [8.0.0] - 2026-09-23
 
 ### Added

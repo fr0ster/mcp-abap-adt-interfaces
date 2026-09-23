@@ -2533,6 +2533,66 @@ question this measurement did open is a different one — 54 of the 57
 Cloud ALM importing `ITokenProvider` refutes the premise decision 26 rested on.
 That is the `interfaces-sap` question below, and it now has numbers.
 
+## 35. A contract lives in the package whose subject its own fields name
+
+**Decided 2026-09-23.** Placement is read off the contract itself — the types
+of its fields, the values of its constants, the operations it names. Not off its
+first accepting package, not off the package a type it references happens to
+live in, and not off which repository asked for it.
+
+**Why the accepting side stopped answering it.** Decision 26 placed a contract
+where it is accepted, and that worked while each contract had one family of
+acceptors. Authentication broke it: `mcp-abap-adt-auth-providers` accepts
+`ITokenProvider` *and* `ISapConfig`, so "who accepts this" put both in the same
+package, and the package it put them in was `interfaces-adt` — which is how
+three repositories came to track the ADT contract's release rate in order to
+describe authentication. Decision 26 is not withdrawn: it still decides *whether
+a contract belongs in this repository at all*. What it no longer decides is
+*which package*.
+
+**The rule, applied to the six cases that forced it.** Each was decided by
+reading the declaration, and each was contested before it was:
+
+| contract | its own fields say | package |
+|---|---|---|
+| `AUTH_TYPE_JWT`, `AUTH_TYPE_BASIC` | a bearer token; a user and a password | `-auth` |
+| `AUTH_TYPE_XSUAA`, `AuthType`, `AUTH_TYPES` | XSUAA is a **BTP service**; a union containing it describes a BTP connection | `-auth-sap` |
+| `IConnectionConfig` | `sapClient`, a `serviceUrl`, an ABAP language, `authType` read as on-premise or cloud | `-auth-sap` |
+| `ITimeoutConfig` | `csrf` — fetching a CSRF token is an SAP operation, not a transport primitive; `long` is a client's long-polling policy | `-adt` |
+| `HttpError` | `response.status`, `statusText`, `headers` — an HTTP failure | `-network` |
+| `XmlNode` | a recursive parser output shape | `-utils` |
+
+**A reference does not move a contract; a vocabulary does.** `IAdtWireResponse`
+extends `IHttpWireResponse` and stays in `-adt`, because what it adds is the
+headers ADT sends. But `ITokenProviderResult` went to `-auth-sap` with
+`IConnectionConfig`, because it *is* the result of authenticating one — the
+reference is its subject, not a detail of it. The test: remove the referenced
+type and see whether the contract still means anything. `IAdtWireResponse` does;
+`ITokenProviderResult` does not.
+
+**When no package's subject names it, and nothing accepts it, it is deleted.**
+`ISessionState` and `ISessionStorage` describe cookies, a CSRF token and a
+cookie store. That is HTTP session state: not a credential, not an SAP contract,
+not a transport primitive — and no repository under development imports either.
+Decision 34 moved them rather than deleting them, on the argument that a
+grouping is cheap to keep; the split showed there was no group to keep, so
+decision 30 applies and they leave at `interfaces-adt` 9.0.0. Under decision 26
+they would still be sitting in the ADT contract, unaccepted, being carried.
+
+**The rule is mechanisable, and that is the point.** For the authentication
+split the boundary was computed, not judged: every file naming XSUAA, UAA or
+`sap-client` **in its code** — a comment mentioning ABAP proves nothing — closed
+transitively over its imports. That produced `-auth-sap` without an argument
+about intent, and it is repeatable by anyone who doubts the result.
+`tools/package-map.json` records the outcome and `tools/check-surface.js` holds
+it: a symbol declared anywhere but its mapped package fails the build.
+
+**What would change it.** A contract whose fields name two subjects genuinely
+equally — at which point the honest answer is two contracts, not a coin toss.
+Or a measurement showing a package's release rate no longer justifies its
+existence, which is how `-auth-sap` came to exist and is the same evidence
+decision 26 rests on.
+
 ## Open, and what would settle it
 
 Not decisions. These are questions this repository has met and deliberately left
@@ -2543,20 +2603,24 @@ design half moved to the `llm-agent` auth-contracts spec when that became the
 single source of truth for the design; these three are about this repository's own
 shape, not about that design.
 
-- **The contracts nobody accepts.** `interfaces` 45.0.0 still carries what no
-  package imports — the five header groups, `ISessionState`, `ISessionStorage`,
-  `ITokenProviderResult` — each marked `@deprecated`. They leave with the facade's
-  next major, together with the re-export (decision 11). **What would settle it:**
-  that major. One caveat on the evidence — only repositories under `~/prj` were
-  searched, so a consumer outside them would not have shown.
+- ~~**The contracts nobody accepts.**~~ **Settled.** The facade is deleted
+  (decision 34); the five header groups are in `interfaces-network` with the
+  names they group, `ITokenProviderResult` is in `interfaces-auth-sap` with the
+  `IConnectionConfig` it carries, and `ISessionState`/`ISessionStorage` are
+  deleted outright — no package's subject names HTTP session state and nothing
+  accepts them (decision 35). The caveat on the evidence stands: only
+  repositories under `~/prj` were searched.
 
-- **A separate `interfaces-sap`.** SAP/BTP configuration and authentication live in
-  `interfaces-adt` because only the ABAP family accepts them (decision 26). If
-  their release rate came to differ from ADT's as much as ADT's differs from the
-  rest, they would deserve their own package. **What would settle it:** measured
-  release cadence, not a guess — the same evidence decision 26 was made on.
+- ~~**A separate `interfaces-sap`.**~~ **Settled: it is
+  `@mcp-abap-adt/interfaces-auth-sap` 1.0.0**, and what settled it was not
+  cadence but placement. The premise — only the ABAP family accepts them — was
+  refuted by measurement: `mcp-calm-*` is not ABAP and imports `ITokenProvider`,
+  `ITokenRefresher` and `ISessionStore`. Authentication in general is
+  `interfaces-auth` 1.2.0; what names an SAP client, a service key, a
+  destination, a UAA client or XSUAA is `interfaces-auth-sap` (decision 35).
 
-- **`IAuthorizationStrategy`'s home.** It describes a generic interactive OAuth
-  login but is accepted only by `auth-providers` today, so decision 26 keeps it in
-  `interfaces-adt`. **What would settle it:** a package outside the SAP side
-  accepting it, at which point it moves to `interfaces-auth`.
+- ~~**`IAuthorizationStrategy`'s home.**~~ **Settled: `interfaces-auth`.** It was
+  waiting on an acceptor outside the SAP side; decision 35 removes the wait,
+  because what it describes — an interactive OAuth login — names nothing SAP
+  owns. Its only acceptor is still `auth-providers`, and that is no longer the
+  question.
