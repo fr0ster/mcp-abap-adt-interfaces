@@ -29,6 +29,7 @@ const map = JSON.parse(
 const packages = [
   'interfaces-adt',
   'interfaces-auth',
+  'interfaces-calm',
   'interfaces-network',
   'interfaces-utils',
 ];

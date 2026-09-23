@@ -1,11 +1,13 @@
 # @mcp-abap-adt/interfaces-adt
 
-ADT contracts, the ABAP and Cloud ALM connections, and SAP/BTP configuration and authentication contracts.
+ADT contracts, the ABAP connection, and SAP/BTP configuration and authentication contracts.
 
 ## TL;DR
 
-- Everything a package on the SAP side accepts: ADT object operations, runtime analysis, execution, feeds, services, the ABAP and Cloud ALM connections, SAP/BTP configuration, token providers, SAML assertion validation, session and service-key stores, header validation, and the SAP/BTP header names.
-- Depends on `@mcp-abap-adt/interfaces-auth` and `@mcp-abap-adt/interfaces-utils` only. Types and constants; no implementation.
+- Everything a package on the SAP side accepts: ADT object operations, runtime analysis, execution, feeds, services, the ABAP connection, SAP/BTP configuration, token providers, SAML assertion validation, session and service-key stores, and header validation.
+- **Two things left in 8.0.0.** Every HTTP header name, and the groups over them, are in [`@mcp-abap-adt/interfaces-network`](../interfaces-network) — a header name says how a value travels, not what it means, and nothing here ever used one. The Cloud ALM contracts are [`@mcp-abap-adt/interfaces-calm`](../interfaces-calm) — Cloud ALM is not ABAP. `AUTH_TYPE_JWT` and its siblings stay: those are values a header carries.
+- `IAdtWireResponse` now extends `IHttpWireResponse` from `-network` and keeps the headers ADT sends (`sap-adt-location`, both spellings of `content-location`). The name and shape are unchanged for a consumer.
+- Depends on `@mcp-abap-adt/interfaces-auth`, `@mcp-abap-adt/interfaces-network` and `@mcp-abap-adt/interfaces-utils`. Types and constants; no implementation.
 - Moved unchanged from `@mcp-abap-adt/interfaces` 44.0.0. Most majors of that package came from these contracts; this package now carries them alone.
 
 ## Install
@@ -108,7 +110,7 @@ Both old call shapes compile against 1.2.0 and cannot work: `createTask(n)` thro
 
 ## Coming from `@mcp-abap-adt/interfaces`
 
-Replace the package name in the import. The facade re-exports every symbol, deprecated, until its next major.
+Replace the package name in the import. The facade is **deleted** as of its 52.0.0, which was never published — npm still serves 51.0.0, with every symbol re-exported and deprecated, to anyone pinned to it. There is nothing further to move to: take the package that declares the name.
 
 ## Licence
 

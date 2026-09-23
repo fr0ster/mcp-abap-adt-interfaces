@@ -156,7 +156,7 @@ try {
     // then for forwarding nothing — and it is deleted.
     const script = `
 const out = [];
-for (const pkg of ['interfaces-adt', 'interfaces-network', 'interfaces-utils', 'interfaces-auth']) {
+for (const pkg of ['interfaces-adt', 'interfaces-auth', 'interfaces-calm', 'interfaces-network', 'interfaces-utils']) {
   try { require('@mcp-abap-adt/' + pkg); } catch (e) { out.push(pkg + ': ' + e.message); }
 }
 console.log(JSON.stringify(out));

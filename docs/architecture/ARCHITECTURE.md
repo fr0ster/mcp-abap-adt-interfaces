@@ -42,16 +42,20 @@ shapes live in `@mcp-abap-adt/adt-clients`, where a consumer takes them from if
 they want `instanceof` as a convenience.
 
 **It depends on no implementation and no runtime package.** Since 45.0.0 the
-contract is five packages, split by who accepts a contract (decision 26). A
-contract package may depend on a sibling contract package, and on nothing else:
+contract is split by who accepts it (decision 26), and since 52.0.0 the
+`interfaces` facade that forwarded them all is deleted (decision 34) — a
+consumer names the package that declares what they use. A contract package may
+depend on a sibling contract package, and on nothing else:
 
 ```
-interfaces-utils      interfaces-network      interfaces-auth
-       ▲                                            ▲
-       └──────────────── interfaces-adt ────────────┘
-                               ▲
-                  interfaces (deprecated facade)
+interfaces-utils    interfaces-auth    interfaces-network
+       ▲                  ▲              ▲          ▲
+       └──────── interfaces-adt ─────────┘    interfaces-calm
 ```
+
+`interfaces-adt` reaches `interfaces-network` for the HTTP frame and nothing
+else; `interfaces-calm` reaches it for the same frame and depends on nothing
+more, Cloud ALM having no ABAP in it.
 
 The arrow to implementations still runs one way:
 
