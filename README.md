@@ -13,9 +13,9 @@ Contracts for the MCP ABAP ADT packages: types and constants, no implementations
 | [`@mcp-abap-adt/interfaces-utils`](packages/interfaces-utils) | logging: `ILogger`, `LogLevel` | nothing |
 | [`@mcp-abap-adt/interfaces-network`](packages/interfaces-network) | WebSocket transport, `NETWORK_ERROR_CODES`, `IHttpWireResponse`, `HttpError`, **every HTTP header name** and the five groups over them | nothing |
 | [`@mcp-abap-adt/interfaces-auth`](packages/interfaces-auth) | authentication: credentials, OAuth grants, tokens, interactive login, SAML assertions, `AUTH_TYPE_JWT`/`BASIC` | `interfaces-utils` |
-| [`@mcp-abap-adt/interfaces-auth-sap`](packages/interfaces-auth-sap) | the SAP and BTP half: `ISapConfig`, `SapAuthType`, `IConnectionConfig`, UAA, service keys, destinations, `AUTH_TYPE_XSUAA` | `interfaces-auth`, `interfaces-utils` |
+| [`@mcp-abap-adt/interfaces-auth-sap`](packages/interfaces-auth-sap) | the SAP and BTP half: `ISapConfig`, `SapAuthType`, `IConnectionConfig`, UAA, service keys, destinations, `AUTH_TYPE_XSUAA` | `interfaces-auth` |
 | [`@mcp-abap-adt/interfaces-calm`](packages/interfaces-calm) | SAP Cloud ALM: `ICalmConnection`, `CalmService`, `ICalmRequestOptions`, `ICalmResponse` | `interfaces-network` |
-| [`@mcp-abap-adt/interfaces-adt`](packages/interfaces-adt) | ADT only: object operations, the ABAP connection, runtime, execution, feeds, service bindings. The test is who imports it — `adt-clients` and whatever replaces its objects | `interfaces-network`, `interfaces-utils` |
+| [`@mcp-abap-adt/interfaces-adt`](packages/interfaces-adt) | ADT only: object operations, the ABAP connection, runtime, execution, feeds, service bindings. The test is who imports it — `adt-clients` and whatever replaces its objects | `interfaces-network` |
 
 ## Why these packages
 

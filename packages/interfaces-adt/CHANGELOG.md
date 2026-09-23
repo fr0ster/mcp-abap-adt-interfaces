@@ -77,9 +77,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Dependencies
 
-- `@mcp-abap-adt/interfaces-network` is `^2.0.0` and `interfaces-utils`
-  `^1.1.0`: the ranges name the versions the two moves above land in, so an
-  install resolves one copy of each rather than nesting an older one.
+- **`@mcp-abap-adt/interfaces-network` `^2.0.0` is the only dependency.**
+  `interfaces-utils` is gone: it was here for `ILogger` and then for `XmlNode`,
+  and with `XmlNode` in that package no file in `src/` imports it. The
+  `tsconfig` project references went with it — two of them, one still pointing
+  at `interfaces-auth` a release after the last import of it left.
+
+  `tools/check-graph.js` now fails on a declared dependency or a project
+  reference that no file imports, so this cannot recur silently: it checked
+  only that an import was permitted and declared, never that a declaration was
+  used.
+
+- The `-network` range names the version `HttpError` lands in, so an install
+  resolves one copy rather than nesting an older one.
 
 ## [8.0.0] - 2026-09-23
 

@@ -43,6 +43,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Dependencies
 
-- `@mcp-abap-adt/interfaces-auth` `^1.2.0`, `@mcp-abap-adt/interfaces-utils`
-  `^1.1.0`. No cycle: `auth-sap` → `auth` → `utils`, checked by
-  `tools/check-graph.js`.
+- **`@mcp-abap-adt/interfaces-auth` `^1.2.0`, and nothing else.**
+  `interfaces-utils` was declared here at first and no file imports it: `auth`
+  takes it for `ILogger`, which makes it that package's business and a
+  transitive detail here. No cycle: `auth-sap` → `auth` → `utils`, checked by
+  `tools/check-graph.js`, which now also rejects a dependency nothing imports.

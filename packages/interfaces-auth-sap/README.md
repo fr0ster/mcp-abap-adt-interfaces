@@ -9,7 +9,7 @@ The SAP and BTP half of authentication: SAP system configuration, service keys, 
 - **What holds the credentials** — `IServiceKeyStore`, `ISessionStore`, `ITokenProviderResult`, `ICertificateMaterialLoader`, `IAuthorizationConfig`.
 - **What a validator answers** — `IValidatedAuthConfig`, `AuthMethodPriority`, `IHeaderValidationResult`.
 - **`AUTH_TYPE_JWT` and `AUTH_TYPE_BASIC` are not here**, and are deliberately not re-exported: a bearer token and a user with a password mean the same thing off SAP, so they are in `interfaces-auth`, and forwarding is the duplication this family removed (decision 34).
-- Depends on `@mcp-abap-adt/interfaces-auth` and `@mcp-abap-adt/interfaces-utils`. Types and constants; no implementation.
+- Depends on `@mcp-abap-adt/interfaces-auth`, and on nothing else — `interfaces-utils` reaches it through that package, for `ILogger`. Types and constants; no implementation.
 
 ## Install
 
