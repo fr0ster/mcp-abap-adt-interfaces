@@ -8,63 +8,143 @@
     "declaration": "export interface IAuthorizationFieldConfig { authorizationFieldName : string ; packageName ? : string ; description ? : string ; transportRequest ? : string ; masterSystem ? : string ; responsible ? : string ; fieldName ? : string ; rollName ? : string ; checkTable ? : string ; exitFb ? : string ; abapLanguageVersion ? : string ; search ? : string ; objexit ? : string ; domname ? : string ; outputlen ? : string ; convexit ? : string ; orglvlinfo ? : string ; }"
   },
   "IBehaviorDefinitionConfig": {
-    "why": "An onLock callback nothing invoked.",
-    "declaration": "export interface IBehaviorDefinitionConfig { name : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; implementationType ? : 'Managed' | 'Unmanaged' | 'Abstract' | 'Projection' ; rootEntity ? : string ; sourceCode ? : string ; }"
+    "why": "One name for what a write sends. The payload field carried eleven different names across 35 fields — `sourceCode` in 15 configs, `document` in 6, `ddlCode` and `ddlSource` for the same thing in neighbouring files, `testClassCode` beside `testClassSource`. It is `source` everywhere now: ABAP text for the types that have one, XML for the types that are their own document, and what those XML look like is documented rather than typed.",
+    "declaration": "export interface IBehaviorDefinitionConfig { name : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; implementationType ? : 'Managed' | 'Unmanaged' | 'Abstract' | 'Projection' ; rootEntity ? : string ; source ? : string ; }"
   },
   "IDataElementConfig": {
-    "why": "The type name, the four labels and the search-help and parameter fields — none of them reached a request.",
-    "declaration": "export interface IDataElementConfig { document ? : string ; dataElementName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; dataType ? : string ; length ? : number ; typeKind ? : 'domain' | 'predefinedAbapType' | 'refToPredefinedAbapType' | 'refToDictionaryType' | 'refToClifType' ; }"
+    "why": "One name for what a write sends. The payload field carried eleven different names across 35 fields — `sourceCode` in 15 configs, `document` in 6, `ddlCode` and `ddlSource` for the same thing in neighbouring files, `testClassCode` beside `testClassSource`. It is `source` everywhere now: ABAP text for the types that have one, XML for the types that are their own document, and what those XML look like is documented rather than typed.",
+    "declaration": "export interface IDataElementConfig { source ? : string ; dataElementName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; dataType ? : string ; length ? : number ; typeKind ? : 'domain' | 'predefinedAbapType' | 'refToPredefinedAbapType' | 'refToDictionaryType' | 'refToClifType' ; }"
   },
   "IDdlConfig": {
-    "why": "A sessionId nothing read and an onLock callback nothing invoked.",
-    "declaration": "export interface IDdlConfig { ddlName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; ddlSource ? : string ; }"
+    "why": "One name for what a write sends. The payload field carried eleven different names across 35 fields — `sourceCode` in 15 configs, `document` in 6, `ddlCode` and `ddlSource` for the same thing in neighbouring files, `testClassCode` beside `testClassSource`. It is `source` everywhere now: ABAP text for the types that have one, XML for the types that are their own document, and what those XML look like is documented rather than typed.",
+    "declaration": "export interface IDdlConfig { ddlName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; source ? : string ; }"
   },
   "IDomainConfig": {
-    "why": "Eight fields left in 4.0.0 because the create did not send them. Three come back — datatype, length, decimals — now that the POST was measured to carry them: 201, the document reads back CHAR/000010, and the activation reports nothing. The other five stay out: they were never measured, and a field returned on a guess is the same lie again.",
-    "declaration": "export interface IDomainConfig { document ? : string ; domainName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; datatype ? : string ; length ? : number ; decimals ? : number ; }"
+    "why": "Three fields nothing sends leave again — decision 31 routes the shape through the document — and the payload field is renamed. One name for what a write sends. The payload field carried eleven different names across 35 fields — `sourceCode` in 15 configs, `document` in 6, `ddlCode` and `ddlSource` for the same thing in neighbouring files, `testClassCode` beside `testClassSource`. It is `source` everywhere now: ABAP text for the types that have one, XML for the types that are their own document, and what those XML look like is documented rather than typed.",
+    "declaration": "export interface IDomainConfig { source ? : string ; domainName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; }"
   },
   "IFeatureToggleConfig": {
     "why": "An onLock callback nothing invoked.",
     "declaration": "export interface IFeatureToggleConfig { featureToggleName : string ; packageName ? : string ; description ? : string ; transportRequest ? : string ; masterSystem ? : string ; responsible ? : string ; source ? : IFeatureToggleSource ; }"
   },
   "IFunctionGroupConfig": {
-    "why": "A sessionId nothing read and an onLock callback nothing invoked.",
-    "declaration": "export interface IFunctionGroupConfig { document ? : string ; functionGroupName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; masterSystem ? : string ; responsible ? : string ; }"
+    "why": "One name for what a write sends. The payload field carried eleven different names across 35 fields — `sourceCode` in 15 configs, `document` in 6, `ddlCode` and `ddlSource` for the same thing in neighbouring files, `testClassCode` beside `testClassSource`. It is `source` everywhere now: ABAP text for the types that have one, XML for the types that are their own document, and what those XML look like is documented rather than typed.",
+    "declaration": "export interface IFunctionGroupConfig { source ? : string ; functionGroupName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; masterSystem ? : string ; responsible ? : string ; }"
   },
   "IFunctionIncludeConfig": {
-    "why": "masterSystem, responsible, sessionId and an onLock callback, none of them read.",
-    "declaration": "export interface IFunctionIncludeConfig { functionGroupName : string ; includeName : string ; description ? : string ; transportRequest ? : string ; sourceCode ? : string ; }"
+    "why": "One name for what a write sends. The payload field carried eleven different names across 35 fields — `sourceCode` in 15 configs, `document` in 6, `ddlCode` and `ddlSource` for the same thing in neighbouring files, `testClassCode` beside `testClassSource`. It is `source` everywhere now: ABAP text for the types that have one, XML for the types that are their own document, and what those XML look like is documented rather than typed.",
+    "declaration": "export interface IFunctionIncludeConfig { functionGroupName : string ; includeName : string ; description ? : string ; transportRequest ? : string ; source ? : string ; }"
   },
   "IFunctionModuleConfig": {
-    "why": "packageName, which a function module takes from its group, and an onLock callback nothing invoked.",
-    "declaration": "export interface IFunctionModuleConfig { functionGroupName : string ; functionModuleName : string ; transportRequest ? : string ; description ? : string ; sourceCode ? : string ; masterSystem ? : string ; responsible ? : string ; }"
+    "why": "One name for what a write sends. The payload field carried eleven different names across 35 fields — `sourceCode` in 15 configs, `document` in 6, `ddlCode` and `ddlSource` for the same thing in neighbouring files, `testClassCode` beside `testClassSource`. It is `source` everywhere now: ABAP text for the types that have one, XML for the types that are their own document, and what those XML look like is documented rather than typed.",
+    "declaration": "export interface IFunctionModuleConfig { functionGroupName : string ; functionModuleName : string ; transportRequest ? : string ; description ? : string ; source ? : string ; masterSystem ? : string ; responsible ? : string ; }"
   },
   "IIncludeConfig": {
-    "why": "A sessionId nothing read. This type keeps its onLock: it is the one place the callback is actually invoked.",
-    "declaration": "export interface IIncludeConfig { includeName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; sourceCode ? : string ; onLock ? : ( lockHandle : string ) => void ; }"
+    "why": "One name for what a write sends. The payload field carried eleven different names across 35 fields — `sourceCode` in 15 configs, `document` in 6, `ddlCode` and `ddlSource` for the same thing in neighbouring files, `testClassCode` beside `testClassSource`. It is `source` everywhere now: ABAP text for the types that have one, XML for the types that are their own document, and what those XML look like is documented rather than typed.",
+    "declaration": "export interface IIncludeConfig { includeName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; source ? : string ; onLock ? : ( lockHandle : string ) => void ; }"
   },
   "IMetadataExtensionConfig": {
-    "why": "A sessionId nothing read.",
-    "declaration": "export interface IMetadataExtensionConfig { name : string ; description ? : string ; packageName ? : string ; transportRequest ? : string ; sourceCode ? : string ; masterLanguage ? : string ; masterSystem ? : string ; responsible ? : string ; }"
+    "why": "One name for what a write sends. The payload field carried eleven different names across 35 fields — `sourceCode` in 15 configs, `document` in 6, `ddlCode` and `ddlSource` for the same thing in neighbouring files, `testClassCode` beside `testClassSource`. It is `source` everywhere now: ABAP text for the types that have one, XML for the types that are their own document, and what those XML look like is documented rather than typed.",
+    "declaration": "export interface IMetadataExtensionConfig { name : string ; description ? : string ; packageName ? : string ; transportRequest ? : string ; source ? : string ; masterLanguage ? : string ; masterSystem ? : string ; responsible ? : string ; }"
   },
   "IPackageConfig": {
-    "why": "updatedDescription and an onLock callback, neither read.",
-    "declaration": "export interface IPackageConfig { document ? : string ; packageName : string ; superPackage ? : string ; description ? : string ; packageType ? : string ; softwareComponent ? : string ; transportLayer ? : string ; transportRequest ? : string ; applicationComponent ? : string ; responsible ? : string ; masterSystem ? : string ; masterLanguage ? : string ; recordChanges ? : boolean ; }"
+    "why": "One name for what a write sends. The payload field carried eleven different names across 35 fields — `sourceCode` in 15 configs, `document` in 6, `ddlCode` and `ddlSource` for the same thing in neighbouring files, `testClassCode` beside `testClassSource`. It is `source` everywhere now: ABAP text for the types that have one, XML for the types that are their own document, and what those XML look like is documented rather than typed.",
+    "declaration": "export interface IPackageConfig { source ? : string ; packageName : string ; superPackage ? : string ; description ? : string ; packageType ? : string ; softwareComponent ? : string ; transportLayer ? : string ; transportRequest ? : string ; applicationComponent ? : string ; responsible ? : string ; masterSystem ? : string ; masterLanguage ? : string ; recordChanges ? : boolean ; }"
   },
   "IProgramConfig": {
-    "why": "An onLock callback nothing invoked.",
-    "declaration": "export interface IProgramConfig { programName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; programType ? : string ; application ? : string ; sourceCode ? : string ; sessionId ? : string ; }"
+    "why": "One name for what a write sends. The payload field carried eleven different names across 35 fields — `sourceCode` in 15 configs, `document` in 6, `ddlCode` and `ddlSource` for the same thing in neighbouring files, `testClassCode` beside `testClassSource`. It is `source` everywhere now: ABAP text for the types that have one, XML for the types that are their own document, and what those XML look like is documented rather than typed.",
+    "declaration": "export interface IProgramConfig { programName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; programType ? : string ; application ? : string ; source ? : string ; sessionId ? : string ; }"
   },
   "IServiceBindingConfig": {
     "why": "runTransportCheck, which nothing read.",
     "declaration": "export interface IServiceBindingConfig { bindingName : string ; packageName ? : string ; description ? : string ; serviceDefinitionName ? : string ; serviceName ? : string ; serviceVersion ? : string ; bindingVariant ? : ServiceBindingVariant ; masterLanguage ? : string ; masterSystem ? : string ; responsible ? : string ; desiredPublicationState ? : DesiredPublicationState ; serviceType ? : GeneratedServiceType ; transportRequest ? : string ; }"
   },
   "IStructureConfig": {
-    "why": "fields and includes — a structure is built from its ddlCode — and an onLock callback nothing invoked.",
-    "declaration": "export interface IStructureConfig { structureName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; ddlCode ? : string ; }"
+    "why": "One name for what a write sends. The payload field carried eleven different names across 35 fields — `sourceCode` in 15 configs, `document` in 6, `ddlCode` and `ddlSource` for the same thing in neighbouring files, `testClassCode` beside `testClassSource`. It is `source` everywhere now: ABAP text for the types that have one, XML for the types that are their own document, and what those XML look like is documented rather than typed.",
+    "declaration": "export interface IStructureConfig { structureName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; source ? : string ; }"
   },
   "ITableTypeConfig": {
-    "why": "The row-type kind, the access type and the two primary-key fields, none of which reached a request.",
-    "declaration": "export interface ITableTypeConfig { document ? : string ; tableTypeName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; rowTypeName ? : string ; description ? : string ; }"
+    "why": "One name for what a write sends. The payload field carried eleven different names across 35 fields — `sourceCode` in 15 configs, `document` in 6, `ddlCode` and `ddlSource` for the same thing in neighbouring files, `testClassCode` beside `testClassSource`. It is `source` everywhere now: ABAP text for the types that have one, XML for the types that are their own document, and what those XML look like is documented rather than typed.",
+    "declaration": "export interface ITableTypeConfig { source ? : string ; tableTypeName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; rowTypeName ? : string ; description ? : string ; }"
+  },
+  "IAccessControlConfig": {
+    "why": "One name for what a write sends. The payload field carried eleven different names across 35 fields — `sourceCode` in 15 configs, `document` in 6, `ddlCode` and `ddlSource` for the same thing in neighbouring files, `testClassCode` beside `testClassSource`. It is `source` everywhere now: ABAP text for the types that have one, XML for the types that are their own document, and what those XML look like is documented rather than typed.",
+    "declaration": "export interface IAccessControlConfig { accessControlName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; source ? : string ; }"
+  },
+  "IAppendStructureConfig": {
+    "why": "One name for what a write sends. The payload field carried eleven different names across 35 fields — `sourceCode` in 15 configs, `document` in 6, `ddlCode` and `ddlSource` for the same thing in neighbouring files, `testClassCode` beside `testClassSource`. It is `source` everywhere now: ABAP text for the types that have one, XML for the types that are their own document, and what those XML look like is documented rather than typed.",
+    "declaration": "export interface IAppendStructureConfig { appendStructureName : string ; baseObject ? : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; source ? : string ; }"
+  },
+  "IBehaviorImplementationConfig": {
+    "why": "One name for what a write sends. The payload field carried eleven different names across 35 fields — `sourceCode` in 15 configs, `document` in 6, `ddlCode` and `ddlSource` for the same thing in neighbouring files, `testClassCode` beside `testClassSource`. It is `source` everywhere now: ABAP text for the types that have one, XML for the types that are their own document, and what those XML look like is documented rather than typed.",
+    "declaration": "export interface IBehaviorImplementationConfig { className : string ; description ? : string ; packageName ? : string ; transportRequest ? : string ; behaviorDefinition : string ; source ? : string ; implementationCode ? : string ; masterSystem ? : string ; responsible ? : string ; }"
+  },
+  "IClassConfig": {
+    "why": "One name for what a write sends. The payload field carried eleven different names across 35 fields — `sourceCode` in 15 configs, `document` in 6, `ddlCode` and `ddlSource` for the same thing in neighbouring files, `testClassCode` beside `testClassSource`. It is `source` everywhere now: ABAP text for the types that have one, XML for the types that are their own document, and what those XML look like is documented rather than typed.",
+    "declaration": "export interface IClassConfig { className : string ; masterLanguage ? : string ; description ? : string ; packageName ? : string ; transportRequest ? : string ; source ? : string ; testClassCode ? : string ; testClassName ? : string ; localTypesCode ? : string ; definitionsCode ? : string ; macrosCode ? : string ; superclass ? : string ; final ? : boolean ; abstract ? : boolean ; createProtected ? : boolean ; masterSystem ? : string ; responsible ? : string ; classTemplate ? : string ; }"
+  },
+  "IEnhancementConfig": {
+    "why": "One name for what a write sends. The payload field carried eleven different names across 35 fields — `sourceCode` in 15 configs, `document` in 6, `ddlCode` and `ddlSource` for the same thing in neighbouring files, `testClassCode` beside `testClassSource`. It is `source` everywhere now: ABAP text for the types that have one, XML for the types that are their own document, and what those XML look like is documented rather than typed.",
+    "declaration": "export interface IEnhancementConfig { enhancementName : string ; masterLanguage ? : string ; enhancementType : EnhancementType ; description ? : string ; packageName ? : string ; transportRequest ? : string ; source ? : string ; enhancementSpot ? : string ; badiDefinition ? : string ; }"
+  },
+  "ILocalDefinitionsConfig": {
+    "why": "One name for what a write sends. The payload field carried eleven different names across 35 fields — `sourceCode` in 15 configs, `document` in 6, `ddlCode` and `ddlSource` for the same thing in neighbouring files, `testClassCode` beside `testClassSource`. It is `source` everywhere now: ABAP text for the types that have one, XML for the types that are their own document, and what those XML look like is documented rather than typed.",
+    "declaration": "export interface ILocalDefinitionsConfig { className : string ; source ? : string ; transportRequest ? : string ; }"
+  },
+  "ILocalMacrosConfig": {
+    "why": "One name for what a write sends. The payload field carried eleven different names across 35 fields — `sourceCode` in 15 configs, `document` in 6, `ddlCode` and `ddlSource` for the same thing in neighbouring files, `testClassCode` beside `testClassSource`. It is `source` everywhere now: ABAP text for the types that have one, XML for the types that are their own document, and what those XML look like is documented rather than typed.",
+    "declaration": "export interface ILocalMacrosConfig { className : string ; source ? : string ; transportRequest ? : string ; }"
+  },
+  "ILocalTestClassConfig": {
+    "why": "One name for what a write sends. The payload field carried eleven different names across 35 fields — `sourceCode` in 15 configs, `document` in 6, `ddlCode` and `ddlSource` for the same thing in neighbouring files, `testClassCode` beside `testClassSource`. It is `source` everywhere now: ABAP text for the types that have one, XML for the types that are their own document, and what those XML look like is documented rather than typed.",
+    "declaration": "export interface ILocalTestClassConfig { className : string ; source ? : string ; transportRequest ? : string ; }"
+  },
+  "ILocalTypesConfig": {
+    "why": "One name for what a write sends. The payload field carried eleven different names across 35 fields — `sourceCode` in 15 configs, `document` in 6, `ddlCode` and `ddlSource` for the same thing in neighbouring files, `testClassCode` beside `testClassSource`. It is `source` everywhere now: ABAP text for the types that have one, XML for the types that are their own document, and what those XML look like is documented rather than typed.",
+    "declaration": "export interface ILocalTypesConfig { className : string ; source ? : string ; transportRequest ? : string ; }"
+  },
+  "IScalarFunctionConfig": {
+    "why": "One name for what a write sends. The payload field carried eleven different names across 35 fields — `sourceCode` in 15 configs, `document` in 6, `ddlCode` and `ddlSource` for the same thing in neighbouring files, `testClassCode` beside `testClassSource`. It is `source` everywhere now: ABAP text for the types that have one, XML for the types that are their own document, and what those XML look like is documented rather than typed.",
+    "declaration": "export interface IScalarFunctionConfig { scalarFunctionName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; source ? : string ; }"
+  },
+  "IScalarFunctionImplementationConfig": {
+    "why": "One name for what a write sends. The payload field carried eleven different names across 35 fields — `sourceCode` in 15 configs, `document` in 6, `ddlCode` and `ddlSource` for the same thing in neighbouring files, `testClassCode` beside `testClassSource`. It is `source` everywhere now: ABAP text for the types that have one, XML for the types that are their own document, and what those XML look like is documented rather than typed.",
+    "declaration": "export interface IScalarFunctionImplementationConfig { implementationName : string ; scalarFunctionName : string ; engineValue ? : ScalarFunctionEngine ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; source ? : string ; }"
+  },
+  "IServiceDefinitionConfig": {
+    "why": "One name for what a write sends. The payload field carried eleven different names across 35 fields — `sourceCode` in 15 configs, `document` in 6, `ddlCode` and `ddlSource` for the same thing in neighbouring files, `testClassCode` beside `testClassSource`. It is `source` everywhere now: ABAP text for the types that have one, XML for the types that are their own document, and what those XML look like is documented rather than typed.",
+    "declaration": "export interface IServiceDefinitionConfig { serviceDefinitionName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; source ? : string ; }"
+  },
+  "ITableConfig": {
+    "why": "One name for what a write sends. The payload field carried eleven different names across 35 fields — `sourceCode` in 15 configs, `document` in 6, `ddlCode` and `ddlSource` for the same thing in neighbouring files, `testClassCode` beside `testClassSource`. It is `source` everywhere now: ABAP text for the types that have one, XML for the types that are their own document, and what those XML look like is documented rather than typed.",
+    "declaration": "export interface ITableConfig { tableName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; source ? : string ; description ? : string ; }"
+  },
+  "ITransformationConfig": {
+    "why": "One name for what a write sends. The payload field carried eleven different names across 35 fields — `sourceCode` in 15 configs, `document` in 6, `ddlCode` and `ddlSource` for the same thing in neighbouring files, `testClassCode` beside `testClassSource`. It is `source` everywhere now: ABAP text for the types that have one, XML for the types that are their own document, and what those XML look like is documented rather than typed.",
+    "declaration": "export interface ITransformationConfig { transformationName : string ; masterLanguage ? : string ; transformationType : TransformationType ; packageName ? : string ; transportRequest ? : string ; description ? : string ; source ? : string ; }"
+  },
+  "ITransportConfig": {
+    "why": "One name for what a write sends. The payload field carried eleven different names across 35 fields — `sourceCode` in 15 configs, `document` in 6, `ddlCode` and `ddlSource` for the same thing in neighbouring files, `testClassCode` beside `testClassSource`. It is `source` everywhere now: ABAP text for the types that have one, XML for the types that are their own document, and what those XML look like is documented rather than typed.",
+    "declaration": "export interface ITransportConfig { source ? : string ; description : string ; transportType ? : 'workbench' | 'customizing' ; targetSystem ? : string ; owner ? : string ; transportNumber ? : string ; }"
+  },
+  "IUnitTestConfig": {
+    "why": "One name for what a write sends. The payload field carried eleven different names across 35 fields — `sourceCode` in 15 configs, `document` in 6, `ddlCode` and `ddlSource` for the same thing in neighbouring files, `testClassCode` beside `testClassSource`. It is `source` everywhere now: ABAP text for the types that have one, XML for the types that are their own document, and what those XML look like is documented rather than typed.",
+    "declaration": "export interface IUnitTestConfig { className : string ; source ? : string ; packageName ? : string ; description ? : string ; classTemplate ? : string ; transportRequest ? : string ; }"
+  },
+  "IInterfaceConfig": {
+    "why": "One name for what a write sends. The payload field carried eleven different names across 35 fields — `sourceCode` in 15 configs, `document` in 6, `ddlCode` and `ddlSource` for the same thing in neighbouring files, `testClassCode` beside `testClassSource`. It is `source` everywhere now: ABAP text for the types that have one, XML for the types that are their own document, and what those XML look like is documented rather than typed.",
+    "declaration": "export type IInterfaceConfig = IAdtObjectConfig & { interfaceName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; source ? : string ; } ;"
+  },
+  "IAdtOperationOptions": {
+    "why": "The payload was two fields split by what the body contained — sourceCode for ABAP text, xmlContent for an XML document — which asked the caller to classify a payload the library never reads. One field, source, whatever it holds.",
+    "declaration": "export interface IAdtOperationOptions < E extends IAdtError = IAdtError > { analyse ? : IAnalyse < E > ; source ? : string ; lockHandle ? : string ; timeout ? : number ; }"
+  },
+  "IAdtCreateOptions": {
+    "why": "It refuses the payload field, and the field is now called source. Left pointing at sourceCode it would have refused a name nothing uses, which is the hole it exists to close.",
+    "declaration": "export type IAdtCreateOptions < E extends IAdtError = IAdtError > = Omit < IAdtOperationOptions < E > , 'source' > & { source ? : never ; } ;"
+  },
+  "IAdtCreatable": {
+    "why": "Its create excludes the payload field, and the field is now called source.",
+    "declaration": "export interface IAdtCreatable < TConfig , TCreated > { create < E extends IAdtError > ( config : Omit < TConfig , 'source' > & { source ? : never ; } , options : IAdtCreateOptions < E > & { analyse : IAnalyse < E > ; } ) : Promise < IAdtResponse < TCreated , E > > ; create ( config : Omit < TConfig , 'source' > & { source ? : never ; } , options ? : IAdtCreateOptions ) : Promise < IAdtResponse < TCreated > > ; }"
   }
 }

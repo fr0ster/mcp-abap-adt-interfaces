@@ -56,7 +56,11 @@ export interface IAdtCreatable<TConfig, TCreated> {
    * order they want: which of six requests failed is knowable that way and was
    * not before.
    *
-   * **It does not take the object's source.** This used to say `sourceCode`
+   * **It does not take the object's source.** The field it excludes is
+   * `source`, which is what every config calls its payload; before the
+   * renaming it was `sourceCode`, and leaving the exclusion pointing at the
+   * old name would have re-opened the hole it was added to close — a create
+   * accepting a payload the endpoint drops. This used to say `sourceCode`
    * applied "where this object's create endpoint carries a body: a DDL source,
    * a table and a program are created from their source". None of the three
    * is: measured across all 27 create implementations in
@@ -73,11 +77,11 @@ export interface IAdtCreatable<TConfig, TCreated> {
    * @returns whatever this implementation’s reading makes of the answer
    */
   create<E extends IAdtError>(
-    config: Omit<TConfig, 'sourceCode'> & { sourceCode?: never },
+    config: Omit<TConfig, 'source'> & { source?: never },
     options: IAdtCreateOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TCreated, E>>;
   create(
-    config: Omit<TConfig, 'sourceCode'> & { sourceCode?: never },
+    config: Omit<TConfig, 'source'> & { source?: never },
     options?: IAdtCreateOptions,
   ): Promise<IAdtResponse<TCreated>>;
 }
@@ -202,7 +206,7 @@ export interface IAdtUpdatable<TConfig, TUpdated> {
    * @param config - taken as given, so an implementation that needs a field can
    *                 require it — a publication needs the protocol that selects
    *                 its endpoint
-   * @param options - `sourceCode`/`xmlContent` for the body, `lockHandle` for
+   * @param options - `source` for the body, `lockHandle` for
    *                  the lock the caller took, `analyse` for the verdict
    * @returns whatever this implementation’s reading makes of the answer
    */
@@ -239,7 +243,7 @@ export interface IAdtMetadataUpdatable<TConfig, TMetadataUpdated> {
    * resource it addresses.
    *
    * @param config - Object configuration with updates
-   * @param options - `xmlContent` for the body, `lockHandle` for the lock the
+   * @param options - `source` for the body, `lockHandle` for the lock the
    *                  caller took, `analyse` for the verdict
    * @returns whatever this implementation's reading makes of the answer
    */

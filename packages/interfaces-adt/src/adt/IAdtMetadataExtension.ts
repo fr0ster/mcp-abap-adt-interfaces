@@ -11,7 +11,7 @@ export interface IMetadataExtensionConfig {
   description?: string; // Required for create/validate operations, optional for others
   packageName?: string; // Required for create/validate operations, optional for others
   transportRequest?: string; // Only optional parameter
-  sourceCode?: string;
+  source?: string;
   masterLanguage?: string;
   masterSystem?: string;
   responsible?: string;

@@ -5,6 +5,56 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **BREAKING: one name for what a write sends.** The payload field carried
+  eleven names across 35 fields — `sourceCode` in 15 configs, `document` in 6,
+  `ddlCode` and `ddlSource` for the same thing in neighbouring files,
+  `testClassCode` beside `testClassSource`. It is **`source`** in all 29 configs
+  that had exactly one.
+
+  `adt-clients` is a cut of endpoints, and a write is a write: for a class the
+  payload is ABAP text, for a domain it is the object's XML document. What those
+  XML look like belongs in documentation, not in a type — the library does not
+  demand a particular ABAP body either, and the consumer is the one who knows
+  what they are writing.
+
+  **The options carried the same split, and it was worse.** `IAdtOperationOptions`
+  had `sourceCode` *and* `xmlContent`, divided by what the body happened to
+  contain — ABAP text for a class, an XML document for a domain — which asked
+  the caller to classify a payload this library never reads. Both are now
+  `source`. `IAdtCreateOptions` refuses that field, and `IAdtCreatable.create`
+  excludes it from the config: **source is for the write, and a create does not
+  take one.**
+
+  `IInterfaceConfig` is renamed with the rest. It is declared as a type alias
+  rather than an interface, so the first pass missed it — and so did 4.0.0's
+  config clean-up, which is why it still carried `sessionId` and `onLock`. Both
+  are gone with this.
+
+  Five fields keep their names because they are not this type's payload:
+  `IClassConfig`'s `testClassCode`, `localTypesCode`, `definitionsCode` and
+  `macrosCode` address four other resources, each of which already has its own
+  config, and `IBehaviorImplementationConfig.implementationCode` is a second
+  payload for a second endpoint. They belong to per-operation inputs —
+  **decision 31** — and are left for that pass rather than flattened here.
+
+### Removed
+
+- **BREAKING: `datatype`, `length` and `decimals` leave `IDomainConfig` again**,
+  a day after 4.1.0 put them back. The measurement that justified them stands —
+  a POST carrying `doma:content/doma:typeInformation` is answered `201`, the
+  document reads back `CHAR`/`000010`, the activation is clean — but the route
+  changed: decision 31 puts the object's shape in the document and has the
+  create post a shell, which is what the server's own POST answer documents
+  (`version="inactive"`, all three groups present and empty).
+
+  Not deprecated first: a field the implementation does not send is the defect
+  3.0.0 and 4.0.0 spent themselves removing, and the fields are a day old with
+  no importer anywhere under `~/prj`.
+
 ## [5.0.0] - 2026-09-23
 
 ### Changed

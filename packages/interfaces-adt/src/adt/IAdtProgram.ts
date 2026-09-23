@@ -13,6 +13,6 @@ export interface IProgramConfig {
   description?: string; // Required for create/validate operations, optional for others
   programType?: string;
   application?: string;
-  sourceCode?: string;
+  source?: string;
   sessionId?: string;
 }

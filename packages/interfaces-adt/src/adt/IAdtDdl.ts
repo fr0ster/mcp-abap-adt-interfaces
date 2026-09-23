@@ -13,5 +13,5 @@ export interface IDdlConfig {
   packageName?: string; // Required for create operations, optional for others
   transportRequest?: string; // Only optional parameter
   description?: string; // Required for create/validate operations, optional for others
-  ddlSource?: string;
+  source?: string;
 }

@@ -10,6 +10,6 @@ export interface ITableConfig {
   masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE), then EN
   packageName?: string; // Required for create operations, optional for others
   transportRequest?: string; // Only optional parameter
-  ddlCode?: string;
+  source?: string;
   description?: string; // Required for create/validate operations, optional for others
 }

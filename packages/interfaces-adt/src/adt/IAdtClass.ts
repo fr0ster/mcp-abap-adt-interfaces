@@ -11,7 +11,7 @@ export interface IClassConfig {
   description?: string; // Required for create/validate operations, optional for others
   packageName?: string; // Required for create operations, optional for others
   transportRequest?: string; // Only optional parameter
-  sourceCode?: string;
+  source?: string;
   testClassCode?: string;
   testClassName?: string;
   localTypesCode?: string; // Local helper classes, interface definitions and type declarations
@@ -35,24 +35,24 @@ export interface ILocalTestClassConfig {
    * Source of the whole testclasses include. ADT addresses the include, not a
    * single test class inside it, so there is no field naming one.
    */
-  testClassCode?: string;
+  source?: string;
   transportRequest?: string;
 }
 
 export interface ILocalTypesConfig {
   className: string;
-  localTypesCode?: string;
+  source?: string;
   transportRequest?: string;
 }
 
 export interface ILocalDefinitionsConfig {
   className: string;
-  definitionsCode?: string;
+  source?: string;
   transportRequest?: string;
 }
 
 export interface ILocalMacrosConfig {
   className: string;
-  macrosCode?: string;
+  source?: string;
   transportRequest?: string;
 }

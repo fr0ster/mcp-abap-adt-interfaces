@@ -7,5 +7,5 @@ export interface IFunctionIncludeConfig {
   includeName: string;
   description?: string;
   transportRequest?: string;
-  sourceCode?: string;
+  source?: string;
 }

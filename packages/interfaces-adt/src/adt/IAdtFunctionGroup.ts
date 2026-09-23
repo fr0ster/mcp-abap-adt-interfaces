@@ -7,7 +7,7 @@
 // description is required for create/validate operations
 export interface IFunctionGroupConfig {
   /**
-   * The complete document to write, when this config is used for an update.
+   * The complete payload this write sends — the object’s own document, for a type that is one.
    *
    * **An update is a write, not a lock-read-patch-write.** Until 19.0.0 of
    * `adt-clients` the function-group update locked the group, fetched its
@@ -23,7 +23,7 @@ export interface IFunctionGroupConfig {
    *
    * Optional because the same config creates, where there is no document yet.
    */
-  document?: string;
+  source?: string;
   functionGroupName: string; // Required
   masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE), then EN
   packageName?: string; // Required for create operations, optional for others
