@@ -5,18 +5,18 @@ Contracts for the MCP ABAP ADT packages: types and constants, no implementations
 ## TL;DR
 
 - **Install the package whose contracts you accept**, not all of them.
-- **`@mcp-abap-adt/interfaces` exports nothing** as of 52.0.0. It was a deprecated facade forwarding the four; forwarding is what bound a consumer to the release rate of contracts it does not use, so it stopped. Nothing is added to it, ever.
+- **`@mcp-abap-adt/interfaces` is gone.** It was a deprecated facade that forwarded the others, and forwarding is what bound a consumer to the release rate of contracts it does not use. npm still serves 51.0.0 for anyone pinned to it; nothing further is published.
 - No package here depends on an implementation or a runtime package.
 
 | package | holds | depends on |
 |---|---|---|
 | [`@mcp-abap-adt/interfaces-utils`](packages/interfaces-utils) | logging: `ILogger`, `LogLevel` | nothing |
-| [`@mcp-abap-adt/interfaces-network`](packages/interfaces-network) | WebSocket transport, `NETWORK_ERROR_CODES`, `ITimeoutConfig`, **every HTTP header name** — generic, MCP, proxy routing and SAP — and the five groups over them | nothing |
+| [`@mcp-abap-adt/interfaces-network`](packages/interfaces-network) | WebSocket transport, `NETWORK_ERROR_CODES`, `ITimeoutConfig`, `IHttpWireResponse`, **every HTTP header name** — generic, MCP, proxy routing and SAP — and the five groups over them | nothing |
 | [`@mcp-abap-adt/interfaces-auth`](packages/interfaces-auth) | `IAuthProvider`, `IRenewableCredential`, `ICertificateMaterial` | nothing |
-| [`@mcp-abap-adt/interfaces-adt`](packages/interfaces-adt) | ADT contracts, the ABAP and Cloud ALM connections, SAP/BTP configuration and authentication. No header names: a name says how a value travels, not what it means | `interfaces-auth`, `interfaces-utils` |
-| [`@mcp-abap-adt/interfaces`](packages/interfaces) | nothing, since 52.0.0 — a deprecated facade that stopped forwarding | nothing |
+| [`@mcp-abap-adt/interfaces-calm`](packages/interfaces-calm) | SAP Cloud ALM: `ICalmConnection`, `CalmService`, `ICalmRequestOptions`, `ICalmResponse` | `interfaces-network` |
+| [`@mcp-abap-adt/interfaces-adt`](packages/interfaces-adt) | ADT contracts, the ABAP connection, SAP/BTP configuration and authentication. No header names and no Cloud ALM: a header name says how a value travels, and Cloud ALM is not ABAP | `interfaces-auth`, `interfaces-network`, `interfaces-utils` |
 
-## Why five packages
+## Why these packages
 
 One version line for every contract meant an ADT major bumped a package that only needed `IAuthProvider`. A contract now lives where it is accepted — decision 26 in [`docs/architecture/DECISIONS.md`](docs/architecture/DECISIONS.md); the design is in [`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md).
 

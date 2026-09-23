@@ -1,7 +1,7 @@
 // Spec §6: what a consumer installs from npm, not what the workspace links.
 // Packs every package, installs the tarballs into a fresh project outside the
 // repository, and checks there that the migration guarantee of spec §5.2 holds
-// and that the facade forwards none of what the four packages declare.
+// and that each package's declarations compile on their own.
 //   npm run build && node tools/check-packed.js
 const fs = require('node:fs');
 const os = require('node:os');
@@ -40,7 +40,7 @@ function cleanup() {
 
 let files = [];
 let checkedTypes = 0;
-let facadeOwn = 0;
+
 try {
   // 1. Pack.
   work = fs.mkdtempSync(path.join(os.tmpdir(), 'interfaces-packed-'));
@@ -151,26 +151,18 @@ try {
         `${d.file ? path.relative(consumer, d.file.fileName) : 'program'}: ${ts.flattenDiagnosticMessageText(d.messageText, ' ')}`,
       );
 
-    // 5. Runtime: the installed facade forwards nothing. Every constant a leaf
-    // publishes must be absent from it — that is the duplication this release
-    // removed, checked against what a consumer actually installs rather than
-    // against the workspace.
-    const constants = Object.entries(map)
-      .filter(([, pkg]) => pkg !== 'interfaces' && pkg !== undefined)
-      .map(([name]) => name);
+    // 5. Runtime: every package that ships a value loads on its own. The
+    // facade used to be interrogated here — first for its 44.0.0 constants,
+    // then for forwarding nothing — and it is deleted.
     const script = `
-const facade = require('@mcp-abap-adt/interfaces');
 const out = [];
-for (const name of ${JSON.stringify(constants)})
-  if (facade[name] !== undefined) out.push(name + ': still forwarded by the facade');
-const own = Object.keys(facade);
-console.log(JSON.stringify(out.length ? out : ['ok:' + own.length]));
+for (const pkg of ['interfaces-adt', 'interfaces-network', 'interfaces-utils', 'interfaces-auth']) {
+  try { require('@mcp-abap-adt/' + pkg); } catch (e) { out.push(pkg + ': ' + e.message); }
+}
+console.log(JSON.stringify(out));
 `;
     fs.writeFileSync(path.join(consumer, 'runtime.js'), script);
-    const answer = JSON.parse(run('node', ['runtime.js'], consumer));
-    if (answer.length === 1 && String(answer[0]).startsWith('ok:'))
-      facadeOwn = Number(String(answer[0]).slice(3));
-    else problems.push(...answer);
+    problems.push(...JSON.parse(run('node', ['runtime.js'], consumer)));
   }
 } catch (error) {
   problems.push(String(error?.message ?? error));
@@ -184,5 +176,5 @@ if (problems.length) {
   process.exit(1);
 }
 console.log(
-  `packed: ${files.length} tarballs install cleanly; ${checkedTypes} declarations compile from the packages that declare them; the installed facade forwards none of them and exports ${facadeOwn} of its own`,
+  `packed: ${files.length} tarballs install cleanly, load on their own, and ${checkedTypes} declarations compile from the packages that declare them`,
 );

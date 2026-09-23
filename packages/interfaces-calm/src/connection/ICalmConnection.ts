@@ -1,8 +1,16 @@
+import type { IHttpWireResponse } from '@mcp-abap-adt/interfaces-network';
 import type { CalmService } from './CalmService';
-import type { IAdtWireResponse } from './IAbapConnection';
 import type { ICalmRequestOptions } from './ICalmRequestOptions';
 
-export type ICalmResponse<T = unknown, D = unknown> = IAdtWireResponse<T, D>;
+/**
+ * What a Cloud ALM call answers: the HTTP frame, unchanged.
+ *
+ * It used to alias `IAdtWireResponse` — an *ADT* type — which is the whole
+ * reason these contracts sat in the ADT package. The frame is
+ * `IHttpWireResponse` in `@mcp-abap-adt/interfaces-network`, and nothing about
+ * Cloud ALM needs ADT.
+ */
+export type ICalmResponse<T = unknown, D = unknown> = IHttpWireResponse<T, D>;
 
 /**
  * Minimal connection interface for SAP Cloud ALM HTTP APIs.

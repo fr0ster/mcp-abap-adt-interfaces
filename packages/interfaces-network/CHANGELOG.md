@@ -24,6 +24,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `cloud-llm-hub` reads routing headers. Both now depend on a package with one
   release behind it.
 
+- **`IHttpWireResponse` and `IHttpHeaderValue`** — what came off an HTTP
+  connection, before anyone read it: `data`, `status`, `statusText`, `headers`.
+
+  It was `IAdtWireResponse` in `@mcp-abap-adt/interfaces-adt`, and naming a
+  plain HTTP frame after one protocol on top of HTTP had a visible cost:
+  `ICalmResponse`, in the Cloud ALM contracts, was an alias of an *ADT* type,
+  which is why those contracts could not leave that package. `IAdtWireResponse`
+  still exists and still narrows `headers` with the keys ADT sends
+  (`sap-adt-location`, both spellings of `content-location`) — it extends this
+  shape rather than repeating it, so no consumer renames anything.
+
   `PROXY_MODIFIED_HEADERS` arrives for the first time rather than moving: it
   groups `HEADER_AUTHORIZATION`, declared here, with three SAP names that were
   declared there, and neither package may import the other, so it could exist

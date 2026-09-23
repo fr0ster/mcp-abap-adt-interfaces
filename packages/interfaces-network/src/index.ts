@@ -5,6 +5,10 @@
  */
 
 export type {
+  IHttpHeaderValue,
+  IHttpWireResponse,
+} from './connection/IHttpWireResponse';
+export type {
   IWebSocketCloseInfo,
   IWebSocketConnectOptions,
   IWebSocketMessageEnvelope,

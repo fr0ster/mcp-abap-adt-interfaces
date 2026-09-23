@@ -52,6 +52,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   This package keeps `AUTH_TYPE_JWT`, `AUTH_TYPE_BASIC`, `AUTH_TYPE_XSUAA` and
   `AUTH_TYPES`: those are values a header carries, not names of headers.
 
+- **BREAKING: the Cloud ALM contracts leave** — `CalmService`, `CALM_SERVICES`,
+  `ICalmConnection`, `ICalmRequestOptions` and `ICalmResponse` are
+  `@mcp-abap-adt/interfaces-calm` `1.0.0`.
+
+  Cloud ALM is not ABAP, and the only thing holding them here was one line:
+  `ICalmResponse` was an alias of `IAdtWireResponse`. `mcp-calm-client` and
+  `mcp-calm-server` therefore tracked the ADT contract's releases to describe a
+  service that has nothing to do with ADT.
+
+### Changed
+
+- **`IAdtWireResponse` narrows a shape it no longer declares.** The HTTP frame
+  — `data`, `status`, `statusText`, `config`, `request` — is
+  `IHttpWireResponse` in `@mcp-abap-adt/interfaces-network`; this type extends
+  it and keeps the `headers` ADT actually sends. `IAdtHeaderValue` is an alias
+  of `IHttpHeaderValue`.
+
+  **Nothing renames.** Both names still exist here with the same meaning, so a
+  consumer holding `IAdtWireResponse` — 335 files in
+  `@mcp-abap-adt/adt-clients` do — changes nothing. What changes is that a
+  package needing only an HTTP frame no longer has to come here for it.
+
+  This package now depends on `interfaces-network`, which it did not before.
+  That edge is honest: ADT speaks HTTP.
+
 ## [7.0.0] - 2026-09-23
 
 ### Added

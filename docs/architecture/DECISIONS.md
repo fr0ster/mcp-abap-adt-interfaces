@@ -2504,10 +2504,23 @@ fifteen and nothing else from that package. `AUTH_TYPE_JWT` and its siblings
 stay in `-adt`, because those are values a header carries, not names of
 headers.
 
-**What this costs a consumer.** An import path, at their next dependency
-update, which is a migration anyway. Nothing resolves differently until they
-choose to move: they are pinned, so the empty 52.0.0 reaches nobody who has not
-decided to come and get it.
+**The package is deleted, not shipped empty.** Emptying it and publishing
+52.0.0 would have put a package on the registry whose only content is a note.
+npm keeps serving 51.0.0, with all the re-exports, to everyone pinned to it —
+which is everyone — so nothing resolves differently until a consumer chooses
+to move, and when they do there is nothing to move *to*: they take the
+packages by name.
+
+**And two things followed it out of `interfaces-adt`, for the same reason.** A
+header name says how a value travels, so all eighteen went to
+`interfaces-network` with the five groups over them. Cloud ALM is not ABAP, so
+`CalmService`, `ICalmConnection`, `ICalmRequestOptions` and `ICalmResponse` are
+`interfaces-calm`. The second was held in place by a single line —
+`ICalmResponse` aliased `IAdtWireResponse` — and that line was itself the
+misplacement: an HTTP frame named after one protocol on top of HTTP.
+`IHttpWireResponse` is in `interfaces-network`; `IAdtWireResponse` extends it
+with the headers ADT sends, so no consumer renames anything, and a package
+that needs only a frame no longer comes to the ADT contract for one.
 
 **What would change it.** Nothing about the facade; it has no job left. The
 question this measurement did open is a different one — 54 of the 57

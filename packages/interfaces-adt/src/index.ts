@@ -215,18 +215,11 @@ export type {
 export type { ICertificateMaterialLoader } from './auth/ICertificateMaterialLoader';
 export type { IConfig } from './auth/IConfig';
 export type { IConnectionConfig } from './auth/IConnectionConfig';
-export type { CalmService } from './connection/CalmService';
-export { CALM_SERVICES } from './connection/CalmService';
 export type {
   IAbapConnection,
   IAdtWireResponse,
 } from './connection/IAbapConnection';
 export type { IAbapRequestOptions } from './connection/IAbapRequestOptions';
-export type {
-  ICalmConnection,
-  ICalmResponse,
-} from './connection/ICalmConnection';
-export type { ICalmRequestOptions } from './connection/ICalmRequestOptions';
 export type {
   AdtSessionErrorCode,
   ICriticalSection,

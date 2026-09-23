@@ -164,7 +164,10 @@ function latestTag(name) {
 
 /** The release tag this package's version is published from. */
 function tagFor(dir, version) {
-  return dir === 'interfaces' ? `v${version}` : `${dir}-v${version}`;
+  // Every package is tagged `<dir>-v<version>`. The bare `v<version>` form was
+  // the facade's, which had the repository's name; it is deleted, and no
+  // package inherits the plain tag.
+  return `${dir}-v${version}`;
 }
 
 /** True when `git <args>` exits 0; for the questions git answers by status. */
