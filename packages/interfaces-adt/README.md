@@ -66,9 +66,12 @@ text the server does not hold yet and has no options channel to take it from,
 which is the one job a `source` on a config still has. The six types above
 have no such member, so nothing read theirs but the write.
 
-`'S'` still compiles — `AdtTaskType` is those three values — so the second
-change is only a break for code that spelled the union out in a declaration of
-its own. `ADT_TASK_TYPE` and `AdtTaskType` are exported from this package and
+`'S'` still compiles, and so does a declaration that spells the union out:
+`AdtTaskType` is an alias for those three values, and TypeScript compares
+types structurally, so the two are mutually assignable. **The second change
+breaks nothing at the type level** — it is here because the letters now have
+one home, not because a caller must react to it. The break in 7.0.0 is the
+first change, the six configs. `ADT_TASK_TYPE` and `AdtTaskType` are exported from this package and
 **not** from the `@mcp-abap-adt/interfaces` facade: everything the facade
 forwards is deprecated in favour of importing from the package that declares
 it, so a new symbol there would be born deprecated.

@@ -2430,12 +2430,12 @@ that carried a `source` said the caller "reads the document with the member
 that reads it, edits it, and passes it **here**". Both sentences were in the
 published package.
 
-An implementation cannot honour both. `@mcp-abap-adt/adt-clients` 22.0.0 read
-the config only, which made the call the atom documents send `undefined` and
-write nothing — found by a reviewer, not by a type. The repair it shipped was
-to read both channels with the options winning, and to say in a comment that
-choosing between them was the contract's job, not an implementation's. This is
-that choice.
+An implementation cannot honour both. `@mcp-abap-adt/adt-clients` read the
+config only, which made the call the atom documents send `undefined` and write
+nothing — found by a reviewer, not by a type. Its repair reads both channels
+with the options winning, and says in a comment that choosing between them was
+the contract's job, not an implementation's. This is that choice, made before
+that repair reaches a release.
 
 **What made it decidable rather than a preference.** Measured across all 26
 configs that declared a `source`, and the implementations in

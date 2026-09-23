@@ -52,13 +52,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `IAdtUpdatable.update` and `IAdtMetadataUpdatable.updateMetadata` document
   `options` as "`source` for the body"; every config said the caller "reads the
   document … and passes it here". An implementation honouring one made the
-  other a lie — `adt-clients` 22.0.0 shipped reading both channels because the
-  contract gave it no way to choose, and said so in a comment.
+  other a lie — `adt-clients` read the config only, so the call the atom
+  documents sent `undefined` and wrote nothing. Its repair reads both channels
+  with the options winning and says in a comment that choosing between them is
+  the contract's job; that repair is on its `main` and not released, so no
+  published version of it has ever honoured the atom's sentence.
 
-  It is one channel now, and the split is not arbitrary. Measured across all 28
-  implementations: a config's `source` has exactly one reader besides the
-  write, and that is `check`/`validate`, which compile a source the server does
-  not hold yet and have no options channel to take it from. The six types above
+  It is one channel now, and the split is not arbitrary. Measured across the 26
+  configs that declared a `source`, and the implementations in `adt-clients`
+  that read them: the field has exactly one reader besides the write, and that
+  is `check`/`validate`, which compile a source the server does not hold yet
+  and have no options channel to take it from. Six of the 26 lose the field
+  here; 20 keep it. The six types above
   have no such member — `domain` passes `undefined` where the source would go,
   `dataElement` and `authorizationField` send none, `tableType` validates a
   description, and `package`, `functionGroup` and `transportRequest` have

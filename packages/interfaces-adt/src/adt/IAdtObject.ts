@@ -166,7 +166,7 @@ export interface IAdtOperationOptions<E extends IAdtError = IAdtError> {
    * That used to be stated here and contradicted in every config, each of
    * which said a caller "reads the document … and passes it here" — the
    * config. An implementation honouring one made the other a lie, and
-   * `adt-clients` 22.0.0 shipped reading both because the contract gave it no
+   * `adt-clients` repaired it by reading both, because the contract gave it no
    * way to choose. It does now: `source` on a config is what that type's
    * `check` or `validate` compiles — a source the server does not hold yet —
    * and the six types whose config had no such reader no longer declare it.
