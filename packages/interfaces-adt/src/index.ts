@@ -211,6 +211,7 @@ export type {
   ISessionLifecycleAware,
 } from './connection/IConnectionCapabilities';
 export { ADT_SESSION_ERROR } from './connection/IConnectionCapabilities';
+export type { ITimeoutConfig } from './connection/ITimeoutConfig';
 export type {
   IClassExecuteWithProfilerOptions,
   IClassExecuteWithProfilingOptions,

@@ -4,9 +4,10 @@ Transport contracts, generic HTTP and MCP header names and network error codes f
 
 ## TL;DR
 
-- Nothing here is SAP- or ADT-specific.
+- **Nothing here is ADT-specific**, and that is checked rather than claimed: `ITimeoutConfig` left for `interfaces-adt` in 2.0.0 because its `csrf` field names an SAP operation, not a transport primitive.
+- **Every HTTP header name** lives here, SAP's included — a header name says how a value travels, not what it means — with the five groups over them.
+- `IHttpWireResponse` and `HttpError`: what came off an HTTP connection, and what a client throws. `IAdtWireResponse` in `interfaces-adt` extends the first.
 - Depends on nothing. Types and string constants; no implementation.
-- Moved unchanged from `@mcp-abap-adt/interfaces` 44.0.0.
 
 ## Install
 
@@ -20,13 +21,13 @@ npm install @mcp-abap-adt/interfaces-network
 |---|---|
 | `IWebSocketTransport`, `IWebSocketConnectOptions`, `IWebSocketMessageEnvelope`, `IWebSocketMessageHandler`, `IWebSocketCloseInfo` | a realtime transport a connection can use |
 | `NETWORK_ERROR_CODES`, `NetworkErrorCode` | the network failure vocabulary |
-| `ITimeoutConfig` | timeouts a transport is configured with |
 | `HEADER_AUTHORIZATION`, `HEADER_CONTENT_TYPE`, `HEADER_ACCEPT` | standard HTTP header names |
 | `HEADER_SESSION_ID`, `HEADER_MCP_SESSION_ID`, `HEADER_X_MCP_SESSION_ID` | session header names |
 
 | `HEADER_SAP_*`, `HEADER_UAA_*`, `HEADER_BTP_DESTINATION`, `HEADER_MCP_*` | SAP, UAA and proxy routing header names — here since 1.1.0 |
 | `SAP_CONNECTION_HEADERS`, `UAA_HEADERS`, `PRESERVED_HEADERS`, `PROXY_ROUTING_HEADERS`, `PROXY_MODIFIED_HEADERS` | the groups over them |
 | `IHttpWireResponse`, `IHttpHeaderValue` | what came off an HTTP connection, before anyone read it |
+| `HttpError` | what an HTTP client throws — here since 2.0.0 |
 
 **Every HTTP header name is here**, whatever system it addresses. They were in
 `@mcp-abap-adt/interfaces-adt` until its 8.0.0, on the reading that an `x-sap-*`

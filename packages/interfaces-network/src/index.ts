@@ -49,4 +49,3 @@ export {
   SAP_CONNECTION_HEADERS,
   UAA_HEADERS,
 } from './Headers';
-export type { ITimeoutConfig } from './utils/ITimeoutConfig';

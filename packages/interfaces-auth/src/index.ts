@@ -41,14 +41,11 @@ export type {
   ICallbackServerOptions,
 } from './auth/ICallbackServer';
 export type { ICertificateMaterial } from './auth/ICertificateMaterial';
-export type { IConnectionConfig } from './auth/IConnectionConfig';
 export type {
   IApiKeyCredential,
   IBearerCredential,
   ISecretLoginCredential,
 } from './auth/ICredentials';
-export type { ISessionState } from './store/ISessionState';
-export type { ISessionStorage } from './store/ISessionStorage';
 export type { StoreErrorCode } from './store/StoreErrorCodes';
 export { STORE_ERROR_CODES } from './store/StoreErrorCodes';
 export type { OAuth2GrantType } from './token/AuthType';
@@ -63,7 +60,6 @@ export {
 } from './token/AuthType';
 export type { ITokenProvider } from './token/ITokenProvider';
 export type { ITokenProviderOptions } from './token/ITokenProviderOptions';
-export type { ITokenProviderResult } from './token/ITokenProviderResult';
 export type { ITokenRefresher } from './token/ITokenRefresher';
 export type { ITokenRefreshResult } from './token/ITokenRefreshResult';
 export type { ITokenResult } from './token/ITokenResult';

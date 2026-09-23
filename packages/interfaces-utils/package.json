@@ -1,7 +1,7 @@
 {
   "name": "@mcp-abap-adt/interfaces-utils",
-  "version": "1.0.0",
-  "description": "Logging contracts for MCP ABAP ADT packages",
+  "version": "1.1.0",
+  "description": "Logging contracts and system-independent shapes for MCP ABAP ADT packages",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [

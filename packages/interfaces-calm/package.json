@@ -1,6 +1,6 @@
 {
   "name": "@mcp-abap-adt/interfaces-calm",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Contracts for SAP Cloud ALM HTTP APIs",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -36,6 +36,6 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@mcp-abap-adt/interfaces-network": "^1.1.0"
+    "@mcp-abap-adt/interfaces-network": "^2.0.0"
   }
 }

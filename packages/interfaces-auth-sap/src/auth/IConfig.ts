@@ -3,7 +3,7 @@
  * Can contain either authorization config, or connection config, or both
  */
 
-import type { IConnectionConfig } from '@mcp-abap-adt/interfaces-auth';
+import type { IConnectionConfig } from '../auth/IConnectionConfig';
 import type { IAuthorizationConfig } from './IAuthorizationConfig';
 
 export type IConfig = Partial<IAuthorizationConfig> &
