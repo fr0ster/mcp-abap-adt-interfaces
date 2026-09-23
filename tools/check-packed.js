@@ -20,9 +20,9 @@ const problems = [];
 const map = JSON.parse(
   fs.readFileSync(path.join(ROOT, 'tools', 'package-map.json'), 'utf8'),
 );
-// The same two records `check-surface.js` reads. What is true of the built
-// facade has to be true of the tarball a consumer installs, so both guards are
-// told once rather than one of them being worked around.
+// The removals `check-surface.js` used to read too. A symbol retired at a major
+// is importable from nowhere, so it is left out of the consumer this compiles:
+// asking for it would fail on purpose and say nothing about the tarballs.
 const removed = fs
   .readFileSync(path.join(ROOT, 'tools', 'surface-removed.txt'), 'utf8')
   .split('\n')
@@ -121,12 +121,11 @@ try {
     // 4. Types: a consumer compiles against the packages that declare the
     // names, with the published declarations checked too (no skipLibCheck).
     //
-    // This used to import every 44.0.0 name from the facade as well, and check
-    // that both paths resolved to one declaration. The facade forwards nothing
-    // since 52.0.0, so that import would simply fail to resolve and would say
-    // nothing about the tarballs. What is worth proving now is the opposite:
-    // the leaves are installable and self-sufficient, and the facade carries
-    // none of them.
+    // This used to import every 44.0.0 name from the `@mcp-abap-adt/interfaces`
+    // facade as well, and check that both paths resolved to one declaration.
+    // That facade is deleted, so the import would not resolve and would say
+    // nothing about the tarballs. What is worth proving is the opposite: each
+    // package is installable and self-sufficient.
     const sample = Object.entries(map)
       .filter(([, pkg]) => pkg !== 'interfaces' && pkg !== undefined)
       .filter(([name]) => !removed.includes(name));
