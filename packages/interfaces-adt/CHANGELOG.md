@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [6.0.0] - 2026-09-23
 
+> Recorded as **decision 32** in `docs/architecture/DECISIONS.md` — why the
+> payload is a string this package passes through rather than a document it
+> models, and why a create does not take one. It withdraws the half of decision
+> 31 that called for a typed document model.
+
 ### Changed
 
 - **BREAKING: one name for what a write sends.** The payload field carried

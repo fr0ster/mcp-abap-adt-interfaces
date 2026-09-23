@@ -294,8 +294,11 @@ This package is responsible for:
   - Since 17.0.0 **no interface in this package declares a capability the object does not have**, and since 30.0.0 **no contract extends another at all** (decision 23). `IFeatureToggleObject` no longer inherits the atoms it satisfies: a consumer spells the composition they need, so an implementation that only switches a toggle is a legitimate one instead of owing eight members it does not have. `IAdtServiceBinding` went further and is gone — a binding has no interface of its own at all, which is where that reasoning ends up when followed: if a consumer spells what they need, the aggregate has nothing left to do. That is asserted rather than believed: a guard in `@mcp-abap-adt/adt-clients` compares all 37 factory return types against the 12 atoms in both directions, and calls every declared method to check it issues the request its capability names.
   - There is no atom for "everything but versions" — a capability vocabulary states what an object supports, never what it lacks. A handler that is the full set minus `IAdtVersionable` lists the atoms it does honour (see the [15.0.0 CHANGELOG entry](CHANGELOG.md) for why the earlier `IAdtNonVersionedObject` composite was removed).
 - `IAdtOperationOptions` - Unified options for create and update operations
-  - Fields: `analyse`, `sourceCode`, `xmlContent`, `lockHandle`, `timeout` — the
-    error strategy, the body, and what goes on the request. Nothing about what a
+  - Fields: `analyse`, `source`, `lockHandle`, `timeout` — the error strategy,
+    the body, and what goes on the request. The body is **one** field since
+    50.0.0: it was `sourceCode` and `xmlContent`, split by whether the payload
+    was ABAP text or an XML document, which asked the caller to classify
+    something this package never reads (decision 32). Nothing about what a
     member should do *after* it: `activateOnCreate`, `activateOnUpdate` and
     `deleteOnFailure` were removed, because they asked the caller to compose the
     member out of steps, and steps are the implementation's. `activate` is a

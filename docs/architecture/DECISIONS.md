@@ -2230,8 +2230,9 @@ same input. Measured on the implementation, `AdtClass` reads from its config
 
 - on `create`: `superclass`, `final`, `createProtected`, `classTemplate`,
   `packageName`, `masterLanguage`, `masterSystem`, `responsible`, `description`;
-- on `update`: `sourceCode`, `definitionsCode`, `localTypesCode`,
-  `macrosCode`, `testClassCode`.
+- on `update`: `source`, `definitionsCode`, `localTypesCode`, `macrosCode`,
+  `testClassCode` — the last four addressing other resources, each of which
+  has its own config.
 
 The intersection is `className` and `transportRequest`. Two different inputs
 wearing one type.
@@ -2331,25 +2332,87 @@ changes that were entirely about what an ADT config holds; under this decision
 they are one major of one package. The question "is this field dead" also becomes
 decidable, and decidable by a script rather than by hand.
 
-**What has to go with it.** A per-operation input is the place the document model
-belongs, and without it the split delivers little: `IDomainUpdateConfig` would
-hold `document?: string` and nothing else, which is the typing the library has
-today — that is, none. Reading `XFELD`, `SPRAS` and a Z domain in both of its
-states shows what the document holds and the type does not: `outputInformation`
-with its own `length` (a `LANG(1)` shown as 2), `style`, `conversionExit`,
-`signExists`, `lowercase`, `ampmFormat`; `valueInformation` with either a
-`valueTableRef` — a reference with `uri`/`type`/`name`, not a string — **or**
-`fixValues`, never both; and each `fixValue` with `position`, `low`, `high` and
-`text`, where an empty `low` is a legitimate value. `IFixedValue` is
-`{ low, text }`. A data element's document is the same story: four labels, each
-with a `Length` **and** a `MaxLength`.
+**What had to go with it — and what answered it instead.** This entry first said
+a per-operation input is where a *document model* belongs, because otherwise
+`IDomainUpdateConfig` would hold one string and nothing else, which is the
+typing the library had: none. **Decision 32 answered that without a model**, in
+50.0.0: the payload is `source`, one field for every type, and what a given
+type's XML looks like is documented rather than typed. So the split no longer
+waits on a model, and the part of this decision that promised one is withdrawn.
 
-So the two land together, in one major, or not at all.
+What that model would have had to carry is still worth knowing, because it is
+what a consumer assembling a domain document faces, and it is written down in
+the `adt-clients` spec rather than here: `outputInformation` with its own
+`length` (a `LANG(1)` shown as 2), `style`, `conversionExit`, `signExists`,
+`lowercase`, `ampmFormat`; `valueInformation` with either a `valueTableRef` —
+a reference with `uri`/`type`/`name`, not a string — **or** `fixValues`, never
+both; each `fixValue` with `position`, `low`, `high` and `text`, where an empty
+`low` is a legitimate value. A data element's four labels each carry a `Length`
+**and** a `MaxLength`.
 
 **What would change it.** A consumer typed against the atoms alone, with its own
 configs, that needs to interoperate with `adt-clients` objects — then the
 concrete configs are accepted in two places and decision 26 puts them back in
 the contract. Nothing like that exists today.
+
+## 32. A write sends a source; the library does not ask what is in it
+
+**The problem.** The payload a write carries had **eleven names across 35
+config fields** — `sourceCode` in 15, `document` in 6, `ddlCode` *and*
+`ddlSource` for the same thing in neighbouring files, `testClassCode` beside
+`testClassSource`, plus `localTypesCode`, `definitionsCode`, `macrosCode`,
+`implementationCode`. The write **options** split it again, and by a different
+principle: `sourceCode` for ABAP text and `xmlContent` for an XML document.
+
+That second split is the one that gives the game away. It asks the caller to
+classify a payload this package never reads, in order to choose a field that is
+passed through unchanged either way.
+
+**Decided.** One field, `source`, in every config that has a payload and in
+`IAdtOperationOptions`. What it contains is the caller's business: ABAP for a
+class, the object's own XML document for a domain. Shipped in `interfaces-adt`
+6.0.0 / facade 50.0.0.
+
+**And a create does not take one.** `IAdtCreatable.create` excludes `source`
+from the config and `IAdtCreateOptions` refuses it in the options: measured
+across all 27 create implementations in `@mcp-abap-adt/adt-clients`, every one
+posts a metadata document and not one carries a body for source. The source
+belongs to the write that follows.
+
+**Against.** Typing the document — a modelled `IDomainDocument` with the three
+groups a domain's `doma:content` holds, so a caller assembling one has the
+compiler's help. Decision 31 originally called for exactly that, and this entry
+withdraws that half of it.
+
+**Why.** `adt-clients` is a cut of endpoints. It does not demand a particular
+ABAP body for a class — it does not parse one, and a consumer who wants theirs
+checked has a syntax check member to call. Demanding a particular XML for a
+domain while accepting any ABAP for a class is the same library holding two
+standards, and the stricter one is on the payload it understands *less*.
+
+The cost of the strictness would also land in the wrong place. A modelled
+document has to be modelled for all six document-only types, kept in step with
+whatever SAP adds to those documents, and re-released whenever it drifts — and
+the drift is invisible from here, because the document is the server's. Read as
+a string it cannot drift.
+
+What the consumer loses is compiler help while assembling XML, and what they
+gain is that nothing in this package can be wrong about what SAP accepts.
+Documentation is the honest form for that knowledge: it can say what a domain
+document looks like without claiming to be normative.
+
+**What keeps it true.** The typecheck in
+`packages/interfaces-adt/src/__typechecks__/capabilityAtoms.ts`: a config
+variable carrying `source` is refused by `create`, for a variable and not only
+for a literal. It was written when the exclusion named `sourceCode`, and when
+the field was renamed the exclusion went on pointing at a name nothing used —
+re-opening the hole it exists to close, caught in review. The assertion now
+names `source`.
+
+**What would change it.** A consumer who assembles these documents often enough
+that the absence of a type is what costs them, rather than the presence of a
+stale one. Then the model belongs in their package, typed against the same
+`source` string this contract passes through.
 
 ## Open, and what would settle it
 
