@@ -2220,6 +2220,103 @@ the 84. The search covered the repositories under `~/prj` and nothing else, so
 that is the gap this decision is exposed to — the same caveat decision 26
 records for its own evidence.
 
+## 31. The contract holds the parameterised atom; the implementation holds its own input types
+
+**The problem.** One `IXxxConfig` per object type serves every member of that
+type's handler — ten for a domain, twelve for a class, fourteen for a table:
+`validate`, `create`, `read`, `update`, `check`, `checkDeletion`, `delete`,
+`activate`, `lock`, `unlock` and the version readers. Their inputs are not the
+same input. Measured on the implementation, `AdtClass` reads from its config
+
+- on `create`: `superclass`, `final`, `createProtected`, `classTemplate`,
+  `packageName`, `masterLanguage`, `masterSystem`, `responsible`, `description`;
+- on `update`: `sourceCode`, `definitionsCode`, `localTypesCode`,
+  `macrosCode`, `testClassCode`.
+
+The intersection is `className` and `transportRequest`. Two different inputs
+wearing one type.
+
+**What it cost, concretely.** A release spent asking, field by field, whether
+each was dead — and the question turned out to be *unanswerable as posed*, because
+a field is dead for one member and live for another. `IUpdatePackageParams` does
+not read `superPackage`; `validate` and `create` do. Two sweeps over the same
+files disagreed with each other, and the first one removed `description` from a
+table type's *create* because it was dead on the *update* — caught in review, one
+step from shipping an object described by its own name.
+
+The type also has to explain itself in prose. `IDomainConfig` carries the
+sentence *"the fields beside this one describe a create; on an update they are
+not sent"*, which is a type telling the reader what it could have told the
+compiler.
+
+**Decided.** Two changes, and they are one change:
+
+1. **Inputs are per operation, not per type.** `IDomainCreateConfig`,
+   `IDomainUpdateConfig`, and so on — each carrying what its own endpoint
+   accepts. This is what the capability atoms were already built for: every one
+   of them takes its own `TConfig` — `IAdtCreatable<TConfig, TCreated>`,
+   `IAdtUpdatable<TConfig, TUpdated>`, `IAdtMetadataUpdatable<…>`,
+   `IAdtValidatable<…>` — and the implementation substitutes the same type into
+   all the slots. Splitting does not fight the shape; it finally uses it.
+
+2. **The concrete input and result types live in the implementation package.**
+   `@mcp-abap-adt/interfaces-adt` keeps the parameterised atoms; the concrete
+   `TConfig` and `TCreated` for a domain, a class and their twenty-six
+   neighbours live in `@mcp-abap-adt/adt-clients`, beside the code that reads
+   them.
+
+**Against.** Decision 26 — a contract lives where it is accepted — and the
+principle that everything a consumer needs is in `interfaces`, so any
+implementation can be swapped for their own.
+
+**Why it does not contradict either.** The consumers already do it this way, and
+the evidence is in their import statements. Counted across every repository
+under `~/prj`: **58** imports of an `*Config` come from
+`@mcp-abap-adt/adt-clients` — every ADT object config, the whole of the
+backuper's traversal — and **55** come from `@mcp-abap-adt/interfaces`, all of
+them auth or network (`IAuthorizationConfig`, `IConfig`, `IConnectionConfig`,
+`ISapConfig`, `ITimeoutConfig`). `mcp-abap-adt-backup` has no dependency on
+`@mcp-abap-adt/interfaces` at all: it declares `@mcp-abap-adt/adt-clients`
+alone and writes `import type { IDomainConfig } from '@mcp-abap-adt/adt-clients'`.
+So for the ADT configs the rule was already not being followed, and nobody
+noticed because nothing broke — which is the definition of a rule that is not
+load-bearing.
+
+Swappability survives, and at the level where it belongs. A consumer who
+replaces the implementation pulls the same `interfaces` for the atoms and their
+own package for the concrete types; the atom is what makes two implementations
+interchangeable, and it is generic precisely so the config need not be shared.
+What would not survive is a consumer's code being portable between two
+implementations without change — and that is already untrue, since the
+backuper's code is typed against `adt-clients`.
+
+**What it buys.** The treadmill. Decision 26 was written because `interfaces`
+had 108 versions and 41 majors, 28 of them ADT — and the ADT configs are the
+churning part. On 2026-09-22 three majors of the contract shipped in one day for
+changes that were entirely about what an ADT config holds; under this decision
+they are one major of one package. The question "is this field dead" also becomes
+decidable, and decidable by a script rather than by hand.
+
+**What has to go with it.** A per-operation input is the place the document model
+belongs, and without it the split delivers little: `IDomainUpdateConfig` would
+hold `document?: string` and nothing else, which is the typing the library has
+today — that is, none. Reading `XFELD`, `SPRAS` and a Z domain in both of its
+states shows what the document holds and the type does not: `outputInformation`
+with its own `length` (a `LANG(1)` shown as 2), `style`, `conversionExit`,
+`signExists`, `lowercase`, `ampmFormat`; `valueInformation` with either a
+`valueTableRef` — a reference with `uri`/`type`/`name`, not a string — **or**
+`fixValues`, never both; and each `fixValue` with `position`, `low`, `high` and
+`text`, where an empty `low` is a legitimate value. `IFixedValue` is
+`{ low, text }`. A data element's document is the same story: four labels, each
+with a `Length` **and** a `MaxLength`.
+
+So the two land together, in one major, or not at all.
+
+**What would change it.** A consumer typed against the atoms alone, with its own
+configs, that needs to interoperate with `adt-clients` objects — then the
+concrete configs are accepted in two places and decision 26 puts them back in
+the contract. Nothing like that exists today.
+
 ## Open, and what would settle it
 
 Not decisions. These are questions this repository has met and deliberately left
