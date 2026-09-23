@@ -20,8 +20,8 @@
     "declaration": "export interface IDdlConfig { ddlName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; ddlSource ? : string ; }"
   },
   "IDomainConfig": {
-    "why": "Eight fields left in 4.0.0 because the create did not send them. Three come back — datatype, length, decimals — now that the POST was measured to carry them: 201, the document reads back CHAR/000010, and the activation reports nothing. The other five stay out: they were never measured, and a field returned on a guess is the same lie again.",
-    "declaration": "export interface IDomainConfig { document ? : string ; domainName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; datatype ? : string ; length ? : number ; decimals ? : number ; }"
+    "why": "Eight fields left in 4.0.0 because the create did not send them. Three were brought back in 4.1.0 once the POST was measured to carry them, and are gone again in 5.0.0: decision 31 routes the object’s shape through the document, so a create that carries doma:content is a deviation from the flow this library follows. Where they belong is settled there — on IDomainCreateConfig, with the document model, in one pass. A field nothing sends does not wait in the contract in the meantime.",
+    "declaration": "export interface IDomainConfig { document ? : string ; domainName : string ; masterLanguage ? : string ; packageName ? : string ; transportRequest ? : string ; description ? : string ; }"
   },
   "IFeatureToggleConfig": {
     "why": "An onLock callback nothing invoked.",
