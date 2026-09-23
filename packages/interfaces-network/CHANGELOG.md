@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-09-23
+
+### Added
+
+- **Every header name, from `@mcp-abap-adt/interfaces-adt` 8.0.0** — the three
+  routing ones (`HEADER_BTP_DESTINATION`, `HEADER_MCP_DESTINATION`,
+  `HEADER_MCP_URL`) and all fifteen SAP and UAA ones, with the five groups:
+  `PROXY_ROUTING_HEADERS`, `SAP_CONNECTION_HEADERS`, `UAA_HEADERS`,
+  `PRESERVED_HEADERS`, `PROXY_MODIFIED_HEADERS`.
+
+  **A header name says how a value travels, not what it means**, which makes it
+  this package's subject whatever system it addresses. The ADT contract never
+  used one — only its index re-exported them — while
+  `mcp-abap-adt-header-validator` imports fifteen and nothing else from it, and
+  `cloud-llm-hub` reads routing headers. Both now depend on a package with one
+  release behind it.
+
+- **`IHttpWireResponse` and `IHttpHeaderValue`** — what came off an HTTP
+  connection, before anyone read it: `data`, `status`, `statusText`, `headers`.
+
+  It was `IAdtWireResponse` in `@mcp-abap-adt/interfaces-adt`, and naming a
+  plain HTTP frame after one protocol on top of HTTP had a visible cost:
+  `ICalmResponse`, in the Cloud ALM contracts, was an alias of an *ADT* type,
+  which is why those contracts could not leave that package. `IAdtWireResponse`
+  still exists and still narrows `headers` with the keys ADT sends
+  (`sap-adt-location`, both spellings of `content-location`) — it extends this
+  shape rather than repeating it, so no consumer renames anything.
+
+  `PROXY_MODIFIED_HEADERS` arrives for the first time rather than moving: it
+  groups `HEADER_AUTHORIZATION`, declared here, with three SAP names that were
+  declared there, and neither package may import the other, so it could exist
+  in neither.
+
 ## [1.0.0] - 2026-09-16
 
 ### Added

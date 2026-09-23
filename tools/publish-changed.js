@@ -26,7 +26,7 @@
 // publish that failed. Nothing is lost either way, because re-running skips
 // whatever is already there.
 //
-// It also runs `npm run check` ONCE. Publishing five workspaces ran every
+// It also runs `npm run check` ONCE. Publishing every workspace ran every
 // package's prepublishOnly, which is the same full check five times over; the
 // publishes here pass --ignore-scripts because the check has already run.
 //
@@ -164,7 +164,10 @@ function latestTag(name) {
 
 /** The release tag this package's version is published from. */
 function tagFor(dir, version) {
-  return dir === 'interfaces' ? `v${version}` : `${dir}-v${version}`;
+  // Every package is tagged `<dir>-v<version>`. The bare `v<version>` form was
+  // the facade's, which had the repository's name; it is deleted, and no
+  // package inherits the plain tag.
+  return `${dir}-v${version}`;
 }
 
 /** True when `git <args>` exits 0; for the questions git answers by status. */
@@ -381,8 +384,8 @@ for (const p of pending) {
   // registry has been asked to the end and still does not have it.
   //
   // It stops then because what follows depends on it: these packages are
-  // published in dependency order, and a facade whose dependency was never
-  // accepted would point at a version nobody can install.
+  // published in dependency order, and a package whose dependency was never
+  // accepted would declare a version nobody can install.
   if (!entry.refused) continue;
   console.log(
     `\n${p.name}@${p.local} was refused. Asking the registry whether it is ` +

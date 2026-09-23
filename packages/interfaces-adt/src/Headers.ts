@@ -9,41 +9,23 @@
  */
 
 /**
- * Proxy Routing Headers
- * Used by the proxy to determine routing and authentication
+ * The proxy routing headers moved to `@mcp-abap-adt/interfaces-network` in
+ * 8.0.0 — `HEADER_BTP_DESTINATION`, `HEADER_MCP_DESTINATION` and
+ * `HEADER_MCP_URL`, together with `PROXY_ROUTING_HEADERS`, which groups them.
+ * They name a proxy's routing, not anything ABAP, and that package already
+ * held the MCP session headers beside them.
  */
-export const HEADER_BTP_DESTINATION = 'x-btp-destination';
-export const HEADER_MCP_DESTINATION = 'x-mcp-destination';
-export const HEADER_MCP_URL = 'x-mcp-url';
 /**
- * SAP ABAP Connection Headers
- * Used for SAP ABAP system connection
+ * The SAP connection and UAA header names moved to
+ * `@mcp-abap-adt/interfaces-network` in 8.0.0, with the three groups built from
+ * them — `SAP_CONNECTION_HEADERS`, `UAA_HEADERS`, `PRESERVED_HEADERS` — and
+ * `PROXY_MODIFIED_HEADERS`, which could not exist while they were split across
+ * two packages.
+ *
+ * A header name says how a value travels, not what it means, and nothing in
+ * this contract ever used one: only the index re-exported them.
  */
-export const HEADER_SAP_DESTINATION = 'x-sap-destination';
-/**
- * SAP Destination Header (for Cloud ABAP connection via SAP destination service)
- * This header is used to specify the SAP destination name for connecting to ABAP systems on SAP Cloud.
- * The URL is automatically derived from the destination service key.
- * This is a separate constant to emphasize its specific purpose for SAP destination service.
- */
-export const HEADER_SAP_DESTINATION_SERVICE = 'x-sap-destination';
-export const HEADER_SAP_URL = 'x-sap-url';
-export const HEADER_SAP_JWT_TOKEN = 'x-sap-jwt-token';
-export const HEADER_SAP_AUTH_TYPE = 'x-sap-auth-type';
-export const HEADER_SAP_CLIENT = 'x-sap-client';
-export const HEADER_SAP_LOGIN = 'x-sap-login';
-export const HEADER_SAP_PASSWORD = 'x-sap-password';
-export const HEADER_SAP_REFRESH_TOKEN = 'x-sap-refresh-token';
-/**
- * UAA/XSUAA Headers
- * Used for UAA/XSUAA authentication
- */
-export const HEADER_SAP_UAA_URL = 'x-sap-uaa-url';
-export const HEADER_UAA_URL = 'uaa-url'; // Alternative name
-export const HEADER_SAP_UAA_CLIENT_ID = 'x-sap-uaa-client-id';
-export const HEADER_UAA_CLIENT_ID = 'uaa-client-id'; // Alternative name
-export const HEADER_SAP_UAA_CLIENT_SECRET = 'x-sap-uaa-client-secret';
-export const HEADER_UAA_CLIENT_SECRET = 'uaa-client-secret'; // Alternative name
+
 /**
  * Authentication type values
  */

@@ -42,16 +42,20 @@ shapes live in `@mcp-abap-adt/adt-clients`, where a consumer takes them from if
 they want `instanceof` as a convenience.
 
 **It depends on no implementation and no runtime package.** Since 45.0.0 the
-contract is five packages, split by who accepts a contract (decision 26). A
-contract package may depend on a sibling contract package, and on nothing else:
+contract is split by who accepts it (decision 26), and since 52.0.0 the
+`interfaces` facade that forwarded them all is deleted (decision 34) — a
+consumer names the package that declares what they use. A contract package may
+depend on a sibling contract package, and on nothing else:
 
 ```
-interfaces-utils      interfaces-network      interfaces-auth
-       ▲                                            ▲
-       └──────────────── interfaces-adt ────────────┘
-                               ▲
-                  interfaces (deprecated facade)
+interfaces-utils    interfaces-auth    interfaces-network
+       ▲                  ▲              ▲          ▲
+       └──────── interfaces-adt ─────────┘    interfaces-calm
 ```
+
+`interfaces-adt` reaches `interfaces-network` for the HTTP frame and nothing
+else; `interfaces-calm` reaches it for the same frame and depends on nothing
+more, Cloud ALM having no ABAP in it.
 
 The arrow to implementations still runs one way:
 
@@ -233,14 +237,18 @@ it seemed likely.
 `src/` is organised by what a family *is*, not by layer. Two groups, and the
 distinction decides which rules above apply.
 
-**Which package holds them** (decision 26). The ADT contracts, and every
-infrastructure contract accepted only on the SAP side, are in
+**Which package holds them** (decision 26, refined by 34). The ADT contracts,
+and every infrastructure contract accepted only on the SAP side, are in
 `@mcp-abap-adt/interfaces-adt`. `logging/` is `@mcp-abap-adt/interfaces-utils`.
-The WebSocket transport, network error codes, timeouts and generic header names
-are `@mcp-abap-adt/interfaces-network`. `IAuthProvider` and
-`ICertificateMaterial` are `@mcp-abap-adt/interfaces-auth`. `storage/` and the
-header groups stay in the deprecated `@mcp-abap-adt/interfaces` facade until its
-next major.
+Every HTTP header name, the groups over them and the HTTP frame
+`IHttpWireResponse` are `@mcp-abap-adt/interfaces-network` — a header name says
+how a value travels, not what it means. The Cloud ALM contracts are
+`@mcp-abap-adt/interfaces-calm`, because Cloud ALM is not ABAP.
+The WebSocket transport, network error codes and timeouts are
+`@mcp-abap-adt/interfaces-network` too. `IAuthProvider` and
+`ICertificateMaterial` are `@mcp-abap-adt/interfaces-auth`. `storage/` — the
+session state and storage contracts — went to `interfaces-adt` with the facade's
+removal, beside the session and token contracts they belong with.
 
 ### ADT contracts — 97 members, all answering `IAdtResponse`
 
@@ -330,24 +338,26 @@ There is no CI on this repository. What holds instead:
    name the release promises must be present. This check exists because it was
    needed: 30.0.0 announced three aliases as removed while they were still
    exported.
-5. **The 44.0.0 contract** — `npm run check:surface` compares what
-   `@mcp-abap-adt/interfaces` exports with `tools/surface-44.0.0.txt` (names and
-   kinds) and `tools/baseline-44.0.0.json` (each declaration's tokens, without
-   comments or layout, and each constant's value), and the package that declares
-   each symbol with `tools/package-map.json`. After an intentional contract
-   change, the baseline is regenerated with `node tools/generate-baseline.js`
-   and the rewrite of those two files is reviewed in the diff before it is
-   committed.
+5. **Placement** — `npm run check:surface` checks each symbol against the
+   package `tools/package-map.json` assigns it to. It used to do more: it proved
+   the `@mcp-abap-adt/interfaces` facade exported exactly the 44.0.0 contract,
+   against `tools/surface-44.0.0.txt` and `tools/baseline-44.0.0.json`, with
+   every addition, removal and change since the split written down one by one.
+   The facade is deleted (decision 34), so that half is gone with its baseline
+   files and `generate-baseline.js`; git holds what they proved. Placement is
+   the half that never depended on the facade, and it is the question the split
+   exists to keep answerable.
 6. **The package graph** — `npm run check:graph`: every import is one the graph
    in §1 allows, and is declared in that package's `package.json`.
-7. **The deprecations** — `npm run check:deprecated`: importing any facade
-   symbol reports TS6385.
-8. **What npm installs** — `npm run check:packed` packs every package, installs
+7. **What npm installs** — `npm run check:packed` packs every package, installs
    the tarballs into a clean project with Node's types and no workspace links,
-   type-checks the published `.d.ts` files without `skipLibCheck`, and checks that
-   their declarations and constant values are the 44.0.0 ones and that the facade
-   and each package give one declaration and one constant object.
-9. **The release tool** — `npm run check:publish` runs `tools/publish-changed.js`
+   type-checks the published `.d.ts` files without `skipLibCheck`, and requires
+   each package to load on its own. It used to compare every declaration and
+   constant against the 44.0.0 baseline on both the facade's path and the
+   package's; there is no facade path any more. `check:deprecated` was the
+   eighth guard — every forwarded symbol had to report TS6385 — and went with
+   the facade it interrogated.
+8. **The release tool** — `npm run check:publish` runs `tools/publish-changed.js`
    against throwaway git repositories with a fake `npm` first on `PATH`, and
    checks what it does with the publish it cannot otherwise be given: the
    arguments, the order, that a failure stops the run before the next package,
@@ -365,5 +375,5 @@ There is no CI on this repository. What holds instead:
    with itself, or asking a probe file rather than the script, asserted nothing.
    Why the release works this way, and why a check that has never failed is an
    assumption: decision 28.
-   `npm run check` runs 1 and 5–9, and every package's `prepublishOnly` runs
+   `npm run check` runs 1 and 5–8, and every package's `prepublishOnly` runs
    `npm run check`.

@@ -1,19 +1,14 @@
 // Spec §6: what a consumer installs from npm, not what the workspace links.
 // Packs every package, installs the tarballs into a fresh project outside the
 // repository, and checks there that the migration guarantee of spec §5.2 holds
-// and that the published contract is the 44.0.0 one.
+// and that each package's declarations compile on their own.
 //   npm run build && node tools/check-packed.js
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const ts = require('typescript');
-const {
-  ROOT,
-  COMPILER_OPTIONS,
-  normalizedDeclaration,
-  readBaseline,
-} = require('./lib/exports');
+const { ROOT, COMPILER_OPTIONS } = require('./lib/exports');
 
 const run = (cmd, args, cwd) =>
   execFileSync(cmd, args, {
@@ -25,24 +20,15 @@ const problems = [];
 const map = JSON.parse(
   fs.readFileSync(path.join(ROOT, 'tools', 'package-map.json'), 'utf8'),
 );
-const surface = fs
-  .readFileSync(path.join(ROOT, 'tools', 'surface-44.0.0.txt'), 'utf8')
-  .trim()
-  .split('\n')
-  .map((l) => l.split(' '));
-const baseline = readBaseline();
-// The same two records `check-surface.js` reads. What is true of the built
-// facade has to be true of the tarball a consumer installs, so both guards are
-// told once rather than one of them being worked around.
+// The removals `check-surface.js` used to read too. A symbol retired at a major
+// is importable from nowhere, so it is left out of the consumer this compiles:
+// asking for it would fail on purpose and say nothing about the tarballs.
 const removed = fs
   .readFileSync(path.join(ROOT, 'tools', 'surface-removed.txt'), 'utf8')
   .split('\n')
   .map((line) => line.trim())
   .filter((line) => line !== '' && !line.startsWith('#'))
   .map((line) => line.split(/\s+/)[0]);
-const changed = JSON.parse(
-  fs.readFileSync(path.join(ROOT, 'tools', 'surface-changed.json'), 'utf8'),
-);
 const rootManifest = JSON.parse(
   fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'),
 );
@@ -53,8 +39,8 @@ function cleanup() {
 }
 
 let files = [];
-let moved = [];
-let values = [];
+let checkedTypes = 0;
+
 try {
   // 1. Pack.
   work = fs.mkdtempSync(path.join(os.tmpdir(), 'interfaces-packed-'));
@@ -132,22 +118,22 @@ try {
         );
     }
 
-    // 4. Types, with the published declarations checked too (no skipLibCheck):
-    // every moved symbol resolves to one declaration from the facade and from its
-    // package, and every symbol's declaration is the 44.0.0 one.
-    // A symbol retired at a major (decision 30) is not importable from
-    // anywhere, so it is left out of the consumer this compiles — asking for it
-    // would fail on purpose and say nothing about the tarballs.
-    const live = surface.filter(([name]) => !removed.includes(name));
-    moved = live.filter(([name]) => map[name] !== 'interfaces');
+    // 4. Types: a consumer compiles against the packages that declare the
+    // names, with the published declarations checked too (no skipLibCheck).
+    //
+    // This used to import every 44.0.0 name from the `@mcp-abap-adt/interfaces`
+    // facade as well, and check that both paths resolved to one declaration.
+    // That facade is deleted, so the import would not resolve and would say
+    // nothing about the tarballs. What is worth proving is the opposite: each
+    // package is installable and self-sufficient.
+    const sample = Object.entries(map)
+      .filter(([, pkg]) => pkg !== 'interfaces' && pkg !== undefined)
+      .filter(([name]) => !removed.includes(name));
+    checkedTypes = sample.length;
     const source = [
-      ...live.map(
-        ([name]) =>
-          `import type { ${name} as F_${name} } from '@mcp-abap-adt/interfaces';`,
-      ),
-      ...moved.map(
-        ([name]) =>
-          `import type { ${name} as N_${name} } from '@mcp-abap-adt/${map[name]}';`,
+      ...sample.map(
+        ([name, pkg]) =>
+          `import type { ${name} as N_${name} } from '@mcp-abap-adt/${pkg}';`,
       ),
       '',
     ].join('\n');
@@ -159,60 +145,18 @@ try {
       types: ['node'],
       skipLibCheck: false,
     });
-    const checker = program.getTypeChecker();
     for (const d of ts.getPreEmitDiagnostics(program))
       problems.push(
         `${d.file ? path.relative(consumer, d.file.fileName) : 'program'}: ${ts.flattenDiagnosticMessageText(d.messageText, ' ')}`,
       );
-    const locals = new Map();
-    for (const st of program.getSourceFile(entry).statements) {
-      for (const el of st.importClause.namedBindings.elements) {
-        const alias = checker.getSymbolAtLocation(el.name);
-        locals.set(el.name.text, checker.getAliasedSymbol(alias));
-      }
-    }
-    for (const [name] of surface) {
-      const facade = locals.get(`F_${name}`);
-      if (!facade) {
-        // A declared removal is absent on purpose; anything else absent is the
-        // failure this loop exists for.
-        if (!removed.includes(name))
-          problems.push(`${name}: not exported by the installed facade`);
-        continue;
-      }
-      const record = changed[name];
-      const published = normalizedDeclaration(facade);
-      if (record) {
-        if (published !== record.declaration)
-          problems.push(
-            `${name}: published declaration does not match the recorded change`,
-          );
-      } else if (published !== baseline[name].declaration)
-        problems.push(`${name}: published declaration differs from 44.0.0`);
-      if (map[name] === 'interfaces') continue;
-      if (locals.get(`N_${name}`) !== facade)
-        problems.push(
-          `${name}: the facade and @mcp-abap-adt/${map[name]} resolve to different declarations`,
-        );
-    }
 
-    // 5. Runtime: every constant is defined on both paths, is the same object, and
-    // holds its 44.0.0 value.
-    values = surface.filter(
-      ([name, kind]) => kind === 'value' && !removed.includes(name),
-    );
+    // 5. Runtime: every package that ships a value loads on its own. The
+    // facade used to be interrogated here — first for its 44.0.0 constants,
+    // then for forwarding nothing — and it is deleted.
     const script = `
-const facade = require('@mcp-abap-adt/interfaces');
-const expected = ${JSON.stringify(Object.fromEntries(values.map(([n]) => [n, { pkg: map[n], value: baseline[n].value }])))};
 const out = [];
-for (const [name, { pkg, value }] of Object.entries(expected)) {
-  const a = facade[name];
-  if (a === undefined) { out.push(name + ': undefined on the facade'); continue; }
-  if (JSON.stringify(a) !== value) out.push(name + ': published value differs from 44.0.0');
-  if (pkg === 'interfaces') continue;
-  const b = require('@mcp-abap-adt/' + pkg)[name];
-  if (b === undefined) out.push(name + ': undefined on @mcp-abap-adt/' + pkg);
-  else if (a !== b) out.push(name + ': the facade holds a copy, not the same object');
+for (const pkg of ['interfaces-adt', 'interfaces-auth', 'interfaces-calm', 'interfaces-network', 'interfaces-utils']) {
+  try { require('@mcp-abap-adt/' + pkg); } catch (e) { out.push(pkg + ': ' + e.message); }
 }
 console.log(JSON.stringify(out));
 `;
@@ -231,5 +175,5 @@ if (problems.length) {
   process.exit(1);
 }
 console.log(
-  `packed: ${files.length} tarballs install cleanly; ${surface.length} published declarations and ${values.length} constant values match 44.0.0; ${moved.length} moved symbols are one declaration on both paths`,
+  `packed: ${files.length} tarballs install cleanly, load on their own, and ${checkedTypes} declarations compile from the packages that declare them`,
 );

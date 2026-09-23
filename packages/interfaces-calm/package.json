@@ -1,7 +1,7 @@
 {
-  "name": "@mcp-abap-adt/interfaces",
-  "version": "51.0.0",
-  "description": "Shared interfaces for MCP ABAP ADT packages",
+  "name": "@mcp-abap-adt/interfaces-calm",
+  "version": "1.0.0",
+  "description": "Contracts for SAP Cloud ALM HTTP APIs",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -11,25 +11,17 @@
     "LICENSE",
     "COPYING"
   ],
-  "keywords": [
-    "abap",
-    "sap",
-    "adt",
-    "interfaces",
-    "types",
-    "mcp",
-    "abap-adt"
-  ],
+  "sideEffects": false,
   "author": "Oleksii Kyslytsia <oleksij.kyslytsja@gmail.com>",
   "license": "LGPL-3.0-only",
-  "homepage": "https://github.com/fr0ster/mcp-abap-adt-interfaces/tree/master/packages/interfaces#readme",
+  "homepage": "https://github.com/fr0ster/mcp-abap-adt-interfaces/tree/master/packages/interfaces-calm#readme",
   "bugs": {
     "url": "https://github.com/fr0ster/mcp-abap-adt-interfaces/issues"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/fr0ster/mcp-abap-adt-interfaces.git",
-    "directory": "packages/interfaces"
+    "directory": "packages/interfaces-calm"
   },
   "publishConfig": {
     "access": "public"
@@ -43,11 +35,7 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "sideEffects": false,
   "dependencies": {
-    "@mcp-abap-adt/interfaces-utils": "^1.0.0",
-    "@mcp-abap-adt/interfaces-network": "^1.0.0",
-    "@mcp-abap-adt/interfaces-auth": "^1.0.0",
-    "@mcp-abap-adt/interfaces-adt": "^7.0.0"
+    "@mcp-abap-adt/interfaces-network": "^1.1.0"
   }
 }

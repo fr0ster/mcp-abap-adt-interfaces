@@ -6,8 +6,8 @@
     "packages/interfaces-utils",
     "packages/interfaces-network",
     "packages/interfaces-auth",
-    "packages/interfaces-adt",
-    "packages/interfaces"
+    "packages/interfaces-calm",
+    "packages/interfaces-adt"
   ],
   "scripts": {
     "chrono": "./tools/version-stats.sh",
@@ -15,12 +15,11 @@
     "lint": "biome check --write packages tools",
     "lint:check": "biome check packages tools",
     "format": "biome format --write packages tools",
-    "build": "npm run clean --workspaces && biome check packages tools --diagnostic-level=error && tsc -b packages/interfaces/tsconfig.build.json",
+    "build": "npm run clean --workspaces && biome check packages tools --diagnostic-level=error && tsc -b packages/interfaces-calm/tsconfig.build.json packages/interfaces-adt/tsconfig.build.json packages/interfaces-network/tsconfig.build.json",
     "test:check": "npm run test:check --workspaces",
     "check:surface": "node tools/check-surface.js --placement all",
     "check:graph": "node tools/check-graph.js",
-    "check:deprecated": "node tools/check-deprecated.js",
-    "check": "npm run build && npm run test:check && npm run check:surface && npm run check:graph && npm run check:deprecated && npm run check:packed && npm run check:publish",
+    "check": "npm run build && npm run test:check && npm run check:surface && npm run check:graph && npm run check:packed && npm run check:publish",
     "check:packed": "node tools/check-packed.js",
     "check:publish": "node tools/test-publish-changed.js",
     "release:publish": "node tools/publish-changed.js"

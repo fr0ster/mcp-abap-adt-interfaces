@@ -1,33 +1,24 @@
-import type { IAbapRequestOptions } from './IAbapRequestOptions';
-
 /**
  * Minimal response type for ADT requests.
  */
-export type IAdtHeaderValue =
-  | string
-  | string[]
-  | number
-  | boolean
-  | null
-  | undefined
-  | object;
+import type {
+  IHttpHeaderValue,
+  IHttpWireResponse,
+} from '@mcp-abap-adt/interfaces-network';
+import type { IAbapRequestOptions } from './IAbapRequestOptions';
 
-/**
- * The transport frame: status, headers, body — what HTTP or RFC hands back.
- *
- * Renamed from `IAdtWireResponse`, which now names the **answer** a member gives
- * (`adt/IAdtResponse.ts`). This is the wire, and it belongs exactly here: at the
- * connection boundary, where decision 14 says an envelope is legitimate and
- * everywhere above it is not.
- *
- * The old name was the whole problem in miniature — the same type served as
- * "what came off the wire" and "what a caller gets", so 94 members answered a
- * frame and no member could name its result.
- */
-export interface IAdtWireResponse<T = any, D = any> {
-  data: T;
-  status: number;
-  statusText: string;
+export type IAdtHeaderValue = IHttpHeaderValue;
+
+export interface IAdtWireResponse<T = any, D = any>
+  extends Omit<IHttpWireResponse<T, D>, 'headers'> {
+  /**
+   * **The generic shape, narrowed by the headers ADT actually sends.** The
+   * frame itself — `data`, `status`, `statusText`, `config`, `request` — is
+   * `IHttpWireResponse` in `@mcp-abap-adt/interfaces-network`, because nothing
+   * about it is ABAP. What stays here is this list: `sap-adt-location` and the
+   * two spellings of `content-location` are where ADT puts the URI of what it
+   * just created, and a caller reads them by name.
+   */
   headers: Record<string, IAdtHeaderValue> & {
     location?: string;
     Location?: string;
@@ -35,8 +26,6 @@ export interface IAdtWireResponse<T = any, D = any> {
     'Content-Location'?: IAdtHeaderValue;
     'sap-adt-location'?: IAdtHeaderValue;
   };
-  config?: D;
-  request?: unknown;
 }
 
 /**

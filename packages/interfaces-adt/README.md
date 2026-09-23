@@ -1,11 +1,13 @@
 # @mcp-abap-adt/interfaces-adt
 
-ADT contracts, the ABAP and Cloud ALM connections, and SAP/BTP configuration and authentication contracts.
+ADT contracts, the ABAP connection, and SAP/BTP configuration and authentication contracts.
 
 ## TL;DR
 
-- Everything a package on the SAP side accepts: ADT object operations, runtime analysis, execution, feeds, services, the ABAP and Cloud ALM connections, SAP/BTP configuration, token providers, SAML assertion validation, session and service-key stores, header validation, and the SAP/BTP header names.
-- Depends on `@mcp-abap-adt/interfaces-auth` and `@mcp-abap-adt/interfaces-utils` only. Types and constants; no implementation.
+- Everything a package on the SAP side accepts: ADT object operations, runtime analysis, execution, feeds, services, the ABAP connection, SAP/BTP configuration, token providers, SAML assertion validation, session and service-key stores, and header validation.
+- **Two things left in 8.0.0.** Every HTTP header name, and the groups over them, are in [`@mcp-abap-adt/interfaces-network`](../interfaces-network) — a header name says how a value travels, not what it means, and nothing here ever used one. The Cloud ALM contracts are [`@mcp-abap-adt/interfaces-calm`](../interfaces-calm) — Cloud ALM is not ABAP. `AUTH_TYPE_JWT` and its siblings stay: those are values a header carries.
+- `IAdtWireResponse` now extends `IHttpWireResponse` from `-network` and keeps the headers ADT sends (`sap-adt-location`, both spellings of `content-location`). The name and shape are unchanged for a consumer.
+- Depends on `@mcp-abap-adt/interfaces-auth`, `@mcp-abap-adt/interfaces-network` and `@mcp-abap-adt/interfaces-utils`. Types and constants; no implementation.
 - Moved unchanged from `@mcp-abap-adt/interfaces` 44.0.0. Most majors of that package came from these contracts; this package now carries them alone.
 
 ## Install
@@ -19,14 +21,14 @@ npm install @mcp-abap-adt/interfaces-adt
 | directory | what |
 |---|---|
 | `adt/`, `runtime/`, `execution/`, `feeds/`, `service/`, `shared/` | the ADT contracts: capability atoms, object types, `IAdtResponse`, runtime analysis, execution |
-| `connection/` | `IAbapConnection`, `IAbapRequestOptions`, the connection capability atoms, `ICalmConnection`, `CalmService` |
+| `connection/` | `IAbapConnection`, `IAbapRequestOptions`, the connection capability atoms. `IAdtWireResponse` lives here and extends `IHttpWireResponse` from `-network`; the Cloud ALM contracts left for [`interfaces-calm`](../interfaces-calm) in 8.0.0 |
 | `sap/`, `auth/` | `ISapConfig`, `IConnectionConfig`, `IAuthorizationConfig`, `IConfig`, `IAuthorizationStrategy`, the callback-server contracts, `ICertificateMaterialLoader`, `AuthTypeEnum`; `IAssertionValidator` with `AssertionContext`, `ValidatedAssertion`, `IAssertionReplayStore` and `ASSERTION_ERROR_CODES` |
 | `token/`, `session/`, `serviceKey/`, `store/` | token providers and refreshers, stores and their error codes |
-| `validation/`, `Headers.ts` | header validation; `HEADER_SAP_*`, `HEADER_UAA_*`, `HEADER_BTP_DESTINATION`, `HEADER_MCP_DESTINATION`, `HEADER_MCP_URL`, `AUTH_TYPES`, `AuthType` |
+| `validation/`, `Headers.ts` | header validation; `AUTH_TYPES`, `AuthType`, `AUTH_TYPE_JWT` and its siblings — the *values* a header carries. The header **names** left for [`interfaces-network`](../interfaces-network) in 8.0.0 |
 
-The contract rules — what a member answers, how a strategy is supplied, how a contract is built — are in [`docs/architecture/ARCHITECTURE.md`](../../docs/architecture/ARCHITECTURE.md). Domain-by-domain documentation with examples stays in the [`@mcp-abap-adt/interfaces` README](../interfaces/README.md); the contracts it describes are these.
+The contract rules — what a member answers, how a strategy is supplied, how a contract is built — are in [`docs/architecture/ARCHITECTURE.md`](../../docs/architecture/ARCHITECTURE.md). Domain-by-domain documentation with examples used to sit in the facade's README; the facade is deleted, and each package documents its own contracts.
 
-**The facade is pinned to its 44.0.0 surface, not frozen against additions.** This said the opposite until 2.0.0, and 45.1.0 had already disproved it: `IAbapObjectEntry` and `IAdtTransportObjectActions` were added here and re-exported there. `tools/check-surface.js` compares the built facade against `surface-44.0.0.txt` in both directions — nothing from 44.0.0 may disappear and nothing may appear — and an addition is made deliberate rather than impossible by being written into `tools/surface-added.txt`, one `<name> <kind>` per line. A symbol added here and not written there fails the check; a line written there for a symbol the facade does not export fails too.
+**There is no facade to stay compatible with.** It was pinned to its 44.0.0 surface in both directions — nothing from that release could disappear from it and nothing could appear without being written down — and `tools/check-surface.js`, `surface-44.0.0.txt`, `baseline-44.0.0.json` and `surface-added.txt` existed to enforce exactly that. The facade is deleted in its 52.0.0 (decision 34), so the property is gone along with the files that proved it; git holds them. What `check-surface.js` still asks is the half that never depended on it: is each symbol declared in the package `tools/package-map.json` assigns it to.
 
 ## The transport request's object list
 
@@ -108,7 +110,7 @@ Both old call shapes compile against 1.2.0 and cannot work: `createTask(n)` thro
 
 ## Coming from `@mcp-abap-adt/interfaces`
 
-Replace the package name in the import. The facade re-exports every symbol, deprecated, until its next major.
+Replace the package name in the import. The facade is **deleted** as of its 52.0.0, which was never published — npm still serves 51.0.0, with every symbol re-exported and deprecated, to anyone pinned to it. There is nothing further to move to: take the package that declares the name.
 
 ## Licence
 

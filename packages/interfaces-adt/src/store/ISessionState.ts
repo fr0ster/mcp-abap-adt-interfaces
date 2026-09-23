@@ -2,7 +2,7 @@
  * Session state interface for stateful connections
  * Contains cookies and CSRF token that need to be preserved across requests
  */
-/** @deprecated No package imports this; it is removed in the next major of `@mcp-abap-adt/interfaces`. */
+/** Nothing imports this yet; it sits with the session and token contracts it belongs to. */
 export interface ISessionState {
   cookies: string | null;
   csrfToken: string | null;

@@ -7,6 +7,76 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [8.0.0] - 2026-09-23
+
+### Added
+
+- **The SAP header groups live with the headers they group** —
+  `SAP_CONNECTION_HEADERS`, `UAA_HEADERS`, `PRESERVED_HEADERS`, and the
+  `ISessionState`, `ISessionStorage` and `ITokenProviderResult` contracts.
+
+  All six were declared in the `@mcp-abap-adt/interfaces` facade, which
+  declares no header name of its own: it imported all eighteen from here to
+  build the groups, and `ITokenProviderResult` imported `IConnectionConfig`
+  from here too. A grouping one package away from what it groups, and a token
+  result one package away from the token contracts. They are beside
+  `ISessionStore` and `ITokenProvider` now.
+
+  Each carried *"No package imports this; it is removed in the next major"*,
+  and the premise held — nothing under development imports them. They moved
+  rather than being deleted because where they belong is not in doubt, and a
+  grouping is cheap to keep and expensive to reinvent.
+
+### Removed
+
+- **BREAKING: every header name leaves, and the groups with them.** The three
+  routing names — `HEADER_BTP_DESTINATION`, `HEADER_MCP_DESTINATION`,
+  `HEADER_MCP_URL` — and all fifteen SAP and UAA ones are in
+  `@mcp-abap-adt/interfaces-network` `1.1.0`, together with
+  `PROXY_ROUTING_HEADERS`, `SAP_CONNECTION_HEADERS`, `UAA_HEADERS`,
+  `PRESERVED_HEADERS` and `PROXY_MODIFIED_HEADERS`.
+
+  **A header name says how a value travels, not what it means.** That is the
+  whole argument, and the code agrees with it: nothing in this contract ever
+  used one — only the index re-exported them. Keeping them here bound
+  `mcp-abap-adt-header-validator`, which imports fifteen of them and nothing
+  else from this package, and `cloud-llm-hub` to the release rate of the ADT
+  contract.
+
+  `PROXY_MODIFIED_HEADERS` is the case that proves the placement. It groups
+  `HEADER_AUTHORIZATION` with three SAP names, so while the two halves lived in
+  different packages — and neither may import the other — it could exist in
+  neither and was deleted. With the names where they belong it exists again, in
+  `-network`, beside everything it groups.
+
+  This package keeps `AUTH_TYPE_JWT`, `AUTH_TYPE_BASIC`, `AUTH_TYPE_XSUAA` and
+  `AUTH_TYPES`: those are values a header carries, not names of headers.
+
+- **BREAKING: the Cloud ALM contracts leave** — `CalmService`, `CALM_SERVICES`,
+  `ICalmConnection`, `ICalmRequestOptions` and `ICalmResponse` are
+  `@mcp-abap-adt/interfaces-calm` `1.0.0`.
+
+  Cloud ALM is not ABAP, and the only thing holding them here was one line:
+  `ICalmResponse` was an alias of `IAdtWireResponse`. `mcp-calm-client` and
+  `mcp-calm-server` therefore tracked the ADT contract's releases to describe a
+  service that has nothing to do with ADT.
+
+### Changed
+
+- **`IAdtWireResponse` narrows a shape it no longer declares.** The HTTP frame
+  — `data`, `status`, `statusText`, `config`, `request` — is
+  `IHttpWireResponse` in `@mcp-abap-adt/interfaces-network`; this type extends
+  it and keeps the `headers` ADT actually sends. `IAdtHeaderValue` is an alias
+  of `IHttpHeaderValue`.
+
+  **Nothing renames.** Both names still exist here with the same meaning, so a
+  consumer holding `IAdtWireResponse` — 335 files in
+  `@mcp-abap-adt/adt-clients` do — changes nothing. What changes is that a
+  package needing only an HTTP frame no longer has to come here for it.
+
+  This package now depends on `interfaces-network`, which it did not before.
+  That edge is honest: ADT speaks HTTP.
+
 ## [7.0.0] - 2026-09-23
 
 ### Added

@@ -215,18 +215,11 @@ export type {
 export type { ICertificateMaterialLoader } from './auth/ICertificateMaterialLoader';
 export type { IConfig } from './auth/IConfig';
 export type { IConnectionConfig } from './auth/IConnectionConfig';
-export type { CalmService } from './connection/CalmService';
-export { CALM_SERVICES } from './connection/CalmService';
 export type {
   IAbapConnection,
   IAdtWireResponse,
 } from './connection/IAbapConnection';
 export type { IAbapRequestOptions } from './connection/IAbapRequestOptions';
-export type {
-  ICalmConnection,
-  ICalmResponse,
-} from './connection/ICalmConnection';
-export type { ICalmRequestOptions } from './connection/ICalmRequestOptions';
 export type {
   AdtSessionErrorCode,
   ICriticalSection,
@@ -261,24 +254,6 @@ export {
   AUTH_TYPE_JWT,
   AUTH_TYPE_XSUAA,
   AUTH_TYPES,
-  HEADER_BTP_DESTINATION,
-  HEADER_MCP_DESTINATION,
-  HEADER_MCP_URL,
-  HEADER_SAP_AUTH_TYPE,
-  HEADER_SAP_CLIENT,
-  HEADER_SAP_DESTINATION,
-  HEADER_SAP_DESTINATION_SERVICE,
-  HEADER_SAP_JWT_TOKEN,
-  HEADER_SAP_LOGIN,
-  HEADER_SAP_PASSWORD,
-  HEADER_SAP_REFRESH_TOKEN,
-  HEADER_SAP_UAA_CLIENT_ID,
-  HEADER_SAP_UAA_CLIENT_SECRET,
-  HEADER_SAP_UAA_URL,
-  HEADER_SAP_URL,
-  HEADER_UAA_CLIENT_ID,
-  HEADER_UAA_CLIENT_SECRET,
-  HEADER_UAA_URL,
 } from './Headers';
 export type {
   IApplicationLog,
@@ -341,6 +316,8 @@ export type {
 export type { IServiceKeyStore } from './serviceKey/IServiceKeyStore';
 export type { ISessionStore } from './session/ISessionStore';
 export type { IReadOptions } from './shared/IReadOptions';
+export type { ISessionState } from './store/ISessionState';
+export type { ISessionStorage } from './store/ISessionStorage';
 export type { StoreErrorCode } from './store/StoreErrorCodes';
 export { STORE_ERROR_CODES } from './store/StoreErrorCodes';
 export type { OAuth2GrantType } from './token/AuthType';
@@ -355,6 +332,7 @@ export {
 } from './token/AuthType';
 export type { ITokenProvider } from './token/ITokenProvider';
 export type { ITokenProviderOptions } from './token/ITokenProviderOptions';
+export type { ITokenProviderResult } from './token/ITokenProviderResult';
 export type { ITokenRefresher } from './token/ITokenRefresher';
 export type { ITokenResult } from './token/ITokenResult';
 export type { TokenProviderErrorCode } from './token/TokenProviderErrorCodes';

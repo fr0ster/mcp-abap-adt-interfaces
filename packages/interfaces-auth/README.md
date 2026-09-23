@@ -32,7 +32,7 @@ Only contracts accepted by packages of more than one family (the ABAP family and
 
 ## Coming from `@mcp-abap-adt/interfaces`
 
-Replace the package name in the import. The facade re-exports every symbol, deprecated, until its next major.
+Replace the package name in the import. The facade is **deleted** as of its 52.0.0, which was never published — npm still serves 51.0.0, with every symbol re-exported and deprecated, to anyone pinned to it. There is nothing further to move to: take the package that declares the name.
 
 ## Licence
 

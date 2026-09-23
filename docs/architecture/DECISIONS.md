@@ -2207,13 +2207,18 @@ is `adt-clients` — a consumer. The facade cannot re-export from it without
 inverting the dependency, so "stay deprecated, pointing at your new package" has
 nothing to name.
 
-**What keeps it true.** `tools/surface-removed.txt` is read by
-`check-surface.js`, `check-packed.js` and `check-deprecated.js`: a symbol that
-disappears and is not written there still fails, and a name written there that
-the facade still exports is reported as stale. Alongside it,
-`tools/surface-changed.json` records the declaration a deliberately changed
-symbol is expected to have **now** — not merely its name, which would have
-retired the baseline check for that symbol forever.
+**What kept it true, while there was a facade to keep it true about.**
+`tools/surface-removed.txt` was read by `check-surface.js`, `check-packed.js`
+and `check-deprecated.js`: a symbol that disappeared without being written there
+failed, and a name written there that the facade still exported was reported as
+stale. `tools/surface-changed.json` recorded the declaration a deliberately
+changed symbol was expected to have **now**, rather than merely its name, which
+would have retired the baseline check for that symbol forever.
+
+Decision 34 deleted the facade, and with it the baseline apparatus these two
+files served — `check-deprecated.js` included. The reasoning above is why the
+84 left at a major rather than being deprecated, and it stands; what enforced
+it no longer has a subject.
 
 **What would change it.** A consumer outside this workspace importing one of
 the 84. The search covered the repositories under `~/prj` and nothing else, so
@@ -2458,6 +2463,75 @@ first. Decision 32 stands: the payload is a string this package passes through.
 **What would change it.** Decision 31's per-operation inputs, which make the
 question disappear: a check's config and a write's options stop being two
 shapes with one field name.
+
+## 34. The facade forwards nothing, and a contract lives where it is used
+
+**Decided 2026-09-23.** `@mcp-abap-adt/interfaces` exports nothing. The 297
+re-exports are gone, the eight symbols it declared itself moved to the packages
+that own their neighbours, and it has no dependencies.
+
+**Why forwarding had to end.** Decision 11 kept the facade as a deprecated
+compatibility layer so a pre-split consumer would keep compiling, and decision
+26 put each contract where it is accepted. Both held. What neither predicted is
+what forwarding does to a release: every change to any of the four made a
+release here, and a consumer holding this package moved at the pace of
+contracts it does not use.
+
+Measured across every repository under development: twelve take the facade, two
+take the leaves. The twelve are pinned at facade majors 2, 5, 7, 11, 39 and 46
+against a facade at 51. **They did not churn — they froze**, because one step
+forward costs them every other package's history.
+`mcp-abap-adt-logger` imports exactly `ILogger` and `LogLevel` and is stuck in
+the thirties. A compatibility layer that makes updating unaffordable is not
+compatibility.
+
+**The eight moved rather than being deleted.** Each said *"No package imports
+this; it is removed in the next major"*, and the premise was true — but where
+they belong was never in doubt, and a grouping is cheap to keep and expensive
+to reinvent. `SAP_CONNECTION_HEADERS`, `UAA_HEADERS`, `PRESERVED_HEADERS`,
+`ISessionState`, `ISessionStorage` and `ITokenProviderResult` went to
+`interfaces-adt`, beside the names and contracts they were built from.
+`PROXY_ROUTING_HEADERS` went to `interfaces-network` with the three routing
+names it groups — nothing about `x-mcp-url` is ABAP, and that package already
+held the MCP session headers.
+
+**And one symbol settled where the header names belong.**
+`PROXY_MODIFIED_HEADERS` groups `HEADER_AUTHORIZATION`, declared in `-network`,
+with three SAP names that were in `-adt`. Neither package may import the other,
+so while the halves were split it could exist in neither and was deleted —
+which made the split itself the thing to question rather than the group.
+
+**A header name says how a value travels, not what it means.** All eighteen are
+in `interfaces-network` now, with the five groups over them. The code had been
+saying so all along: nothing in the ADT contract ever used a header name, only
+its index re-exported them, while `mcp-abap-adt-header-validator` imports
+fifteen and nothing else from that package. `AUTH_TYPE_JWT` and its siblings
+stay in `-adt`, because those are values a header carries, not names of
+headers.
+
+**The package is deleted, not shipped empty.** Emptying it and publishing
+52.0.0 would have put a package on the registry whose only content is a note.
+npm keeps serving 51.0.0, with all the re-exports, to everyone pinned to it —
+which is everyone — so nothing resolves differently until a consumer chooses
+to move, and when they do there is nothing to move *to*: they take the
+packages by name.
+
+**And two things followed it out of `interfaces-adt`, for the same reason.** A
+header name says how a value travels, so all eighteen went to
+`interfaces-network` with the five groups over them. Cloud ALM is not ABAP, so
+`CalmService`, `ICalmConnection`, `ICalmRequestOptions` and `ICalmResponse` are
+`interfaces-calm`. The second was held in place by a single line —
+`ICalmResponse` aliased `IAdtWireResponse` — and that line was itself the
+misplacement: an HTTP frame named after one protocol on top of HTTP.
+`IHttpWireResponse` is in `interfaces-network`; `IAdtWireResponse` extends it
+with the headers ADT sends, so no consumer renames anything, and a package
+that needs only a frame no longer comes to the ADT contract for one.
+
+**What would change it.** Nothing about the facade; it has no job left. The
+question this measurement did open is a different one — 54 of the 57
+`interfaces-adt` symbols that non-ADT consumers import are not ADT at all, and
+Cloud ALM importing `ITokenProvider` refutes the premise decision 26 rested on.
+That is the `interfaces-sap` question below, and it now has numbers.
 
 ## Open, and what would settle it
 

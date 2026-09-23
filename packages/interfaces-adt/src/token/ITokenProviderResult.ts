@@ -1,9 +1,9 @@
 /**
  * Result from token provider
  */
-import type { IConnectionConfig } from '@mcp-abap-adt/interfaces-adt';
+import type { IConnectionConfig } from '../auth/IConnectionConfig';
 
-/** @deprecated No package imports this; it is removed in the next major of `@mcp-abap-adt/interfaces`. */
+/** Nothing imports this yet; it sits with the session and token contracts it belongs to. */
 export interface ITokenProviderResult {
   /** Connection configuration with authorization token */
   connectionConfig: IConnectionConfig;

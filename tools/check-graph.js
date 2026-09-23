@@ -9,12 +9,11 @@ const ALLOWED = {
   'interfaces-utils': [],
   'interfaces-network': [],
   'interfaces-auth': [],
-  'interfaces-adt': ['interfaces-auth', 'interfaces-utils'],
-  interfaces: [
-    'interfaces-utils',
-    'interfaces-network',
+  'interfaces-calm': ['interfaces-network'],
+  'interfaces-adt': [
     'interfaces-auth',
-    'interfaces-adt',
+    'interfaces-network',
+    'interfaces-utils',
   ],
 };
 
