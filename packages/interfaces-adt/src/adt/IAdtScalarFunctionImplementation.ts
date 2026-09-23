@@ -12,5 +12,5 @@ export interface IScalarFunctionImplementationConfig {
   packageName?: string;
   transportRequest?: string;
   description?: string;
-  sourceCode?: string;
+  source?: string;
 }

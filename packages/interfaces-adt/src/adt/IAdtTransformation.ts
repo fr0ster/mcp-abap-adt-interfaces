@@ -12,7 +12,7 @@ export interface ITransformationConfig {
   packageName?: string;
   transportRequest?: string;
   description?: string;
-  sourceCode?: string;
+  source?: string;
 }
 
 // The state types were removed in 29.0.0: each member answers what its own

@@ -19,7 +19,7 @@ export interface IBehaviorDefinitionConfig {
   description?: string; // Required for create/validate operations, optional for others
   implementationType?: 'Managed' | 'Unmanaged' | 'Abstract' | 'Projection'; // Required for create/validate operations, optional for others
   rootEntity?: string; // Required for validate operations, optional for others
-  sourceCode?: string;
+  source?: string;
 }
 
 // Result/check helper types — promoted verbatim from adt-clients

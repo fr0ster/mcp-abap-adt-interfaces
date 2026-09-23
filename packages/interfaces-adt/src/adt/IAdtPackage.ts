@@ -22,7 +22,7 @@ export interface IPackageConfig {
    *
    * Optional because the same config creates, where there is no document yet.
    */
-  document?: string;
+  source?: string;
 
   packageName: string; // Required
   superPackage?: string; // Required for create operations, optional for others

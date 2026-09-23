@@ -9,5 +9,5 @@ export interface IAppendStructureConfig {
   packageName?: string;
   transportRequest?: string;
   description?: string;
-  sourceCode?: string;
+  source?: string;
 }

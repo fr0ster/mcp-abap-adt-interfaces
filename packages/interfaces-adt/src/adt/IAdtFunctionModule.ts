@@ -20,7 +20,7 @@ export interface IFunctionModuleConfig {
   functionModuleName: string; // Required
   transportRequest?: string; // Only optional parameter
   description?: string; // Required for create/validate operations, optional for others
-  sourceCode?: string; // Required for create/update operations, optional for others
+  source?: string; // Required for create/update operations, optional for others
   masterSystem?: string; // SAP system ID (three characters) — required on on-premise
   responsible?: string; // User responsible for the object
 }

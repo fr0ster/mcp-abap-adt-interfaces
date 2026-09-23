@@ -28,5 +28,5 @@ export interface IStructureConfig {
   packageName?: string; // Required for create operations, optional for others
   transportRequest?: string; // Only optional parameter
   description?: string; // Required for create/validate operations, optional for others
-  ddlCode?: string; // Required for create operation - DDL SQL source code for structure
+  source?: string; // Required for create operation - DDL SQL source code for structure
 }

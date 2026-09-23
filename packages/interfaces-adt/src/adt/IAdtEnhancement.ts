@@ -20,7 +20,7 @@ export interface IEnhancementConfig {
   description?: string;
   packageName?: string;
   transportRequest?: string;
-  sourceCode?: string;
+  source?: string;
   enhancementSpot?: string;
   badiDefinition?: string;
 }

@@ -51,7 +51,7 @@ export interface IUnitTestConfig {
    * empty one. A field naming a single test class would promise an addressing
    * this contract does not have.
    */
-  testClassSource?: string;
+  source?: string;
 
   /** Where the container class goes, when `create` has to make it. */
   packageName?: string;

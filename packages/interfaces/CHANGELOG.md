@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Re-pinned to `@mcp-abap-adt/interfaces-adt`, where the payload field becomes
+  `source` in 29 configs and three fields leave `IDomainConfig`. Both breaking;
+  see that package's changelog.
+
+
 ## [49.0.0] - 2026-09-23
 
 ### Changed

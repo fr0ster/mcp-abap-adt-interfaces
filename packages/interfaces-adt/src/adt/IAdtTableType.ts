@@ -47,7 +47,7 @@ export interface ITableTypeConfig {
    *
    * Optional because the same config creates, where there is no document yet.
    */
-  document?: string;
+  source?: string;
 
   tableTypeName: string;
   masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE), then EN

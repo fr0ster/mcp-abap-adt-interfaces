@@ -23,7 +23,7 @@ export interface IFunctionGroupConfig {
    *
    * Optional because the same config creates, where there is no document yet.
    */
-  document?: string;
+  source?: string;
   functionGroupName: string; // Required
   masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE), then EN
   packageName?: string; // Required for create operations, optional for others

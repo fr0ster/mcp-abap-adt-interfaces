@@ -64,7 +64,7 @@ export interface ITransportConfig {
    *
    * Optional because the same config creates, where there is no document yet.
    */
-  document?: string;
+  source?: string;
 
   description: string;
   transportType?: 'workbench' | 'customizing';

@@ -9,5 +9,5 @@ export interface IServiceDefinitionConfig {
   packageName?: string; // Required for create operations, optional for others
   transportRequest?: string; // Only optional parameter
   description?: string; // Required for create/validate operations, optional for others
-  sourceCode?: string; // Service definition source code (CDS service definition syntax)
+  source?: string; // Service definition source code (CDS service definition syntax)
 }
