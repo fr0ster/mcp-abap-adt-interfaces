@@ -243,7 +243,7 @@ export interface IAdtMetadataUpdatable<TConfig, TMetadataUpdated> {
    * resource it addresses.
    *
    * @param config - Object configuration with updates
-   * @param options - `xmlContent` for the body, `lockHandle` for the lock the
+   * @param options - `source` for the body, `lockHandle` for the lock the
    *                  caller took, `analyse` for the verdict
    * @returns whatever this implementation's reading makes of the answer
    */
