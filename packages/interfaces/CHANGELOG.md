@@ -35,7 +35,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   see that package's changelog.
 
 
-## [49.0.0] - 2026-09-23
+## [49.0.0] - 2026-09-23 — never published, superseded by 50.0.0
+
+> **Never published.** 50.0.0 was tagged before this version reached the
+> registry, so npm goes 48.1.0 → 50.0.0 and everything below arrived there.
+> The entry stays because the change is real and dated; a consumer looking for
+> `changeTaskType` wants **50.0.0**, not this.
 
 ### Changed
 

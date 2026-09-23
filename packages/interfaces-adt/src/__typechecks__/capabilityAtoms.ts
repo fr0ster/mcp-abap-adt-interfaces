@@ -198,7 +198,7 @@ void _demandingUpdate.update({
 // `source?: never` was added, which is why they are here rather than in a
 // literal-shaped example.
 //
-// The field is named `source` because that is what every config calls its
+// The field is named `source` because that is what a config calls its
 // payload now. When it was renamed from `sourceCode`, the exclusion went on
 // pointing at the old name for a while — which silently re-opened the hole it
 // exists to close, a create accepting a body its endpoint drops. Caught in

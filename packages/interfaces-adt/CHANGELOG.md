@@ -38,9 +38,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **BREAKING: `changeTaskType` takes `AdtTaskType`** instead of the inline
-  union. The same three values, so a call passing `'S'` still compiles; a
-  declaration that spelled the union out does not.
+- **`changeTaskType` takes `AdtTaskType`** instead of the inline union. **Not
+  a break.** The alias is those same three values and TypeScript compares
+  types structurally, so a call passing `'S'` compiles and so does a
+  declaration that spells the union out — the two are mutually assignable.
+  This entry called it breaking and said such a declaration would stop
+  compiling; both were wrong, caught in review. What makes 7.0.0 a major is
+  the removal below.
 
 ### Removed
 
@@ -50,22 +54,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   **The contract said where a write's body goes twice, and differently.**
   `IAdtUpdatable.update` and `IAdtMetadataUpdatable.updateMetadata` document
-  `options` as "`source` for the body"; every config said the caller "reads the
-  document … and passes it here". An implementation honouring one made the
-  other a lie — `adt-clients` 22.0.0 shipped reading both channels because the
-  contract gave it no way to choose, and said so in a comment.
+  `options` as "`source` for the body"; each of the 26 configs that carried a
+  `source` said the caller "reads the document … and passes it here". An implementation honouring one made the
+  other a lie — `adt-clients` read the config only, so the call the atom
+  documents sent `undefined` and wrote nothing. Its repair reads both channels
+  with the options winning and says in a comment that choosing between them is
+  the contract's job; that repair is on its `main` and not released, so no
+  published version of it has ever honoured the atom's sentence.
 
-  It is one channel now, and the split is not arbitrary. Measured across all 28
-  implementations: a config's `source` has exactly one reader besides the
-  write, and that is `check`/`validate`, which compile a source the server does
-  not hold yet and have no options channel to take it from. The six types above
-  have no such member — `domain` passes `undefined` where the source would go,
-  `dataElement` and `authorizationField` send none, `tableType` validates a
-  description, and `package`, `functionGroup` and `transportRequest` have
-  neither member. Nothing read their `source` but the write.
+  It is one channel now, and the split is not arbitrary. Measured across the 26
+  configs that declared a `source`, and the implementations in `adt-clients`
+  that read them: the field has exactly one reader besides the write, and that
+  is `check`/`validate`, which compile a source the server does not hold yet
+  and have no options channel to take it from. Six of the 26 lose the field
+  here; 20 keep it. None of the six has such a member — `domain` passes
+  `undefined` where the source would go, `dataElement` sends none, `tableType`
+  validates a description, and `package`, `functionGroup` and
+  `transportRequest` have neither. Nothing read their `source` but the write.
+
+  `IAuthorizationFieldConfig` is in the same position and is deliberately
+  **not** in the count: it never declared a `source`, so it is outside the 26
+  and has nothing to lose here.
 
   The configs that keep it are the ones whose `check` or `validate` compiles
   it. `IAdtOperationOptions.source` now says this outright.
+
+  **Migrating.** A write that passed the body in the config moves it to the
+  options; a call that already passed it there is unaffected.
+
+  ```diff
+  - await domain.updateMetadata({ domainName, source: edited }, { lockHandle });
+  + await domain.updateMetadata({ domainName }, { source: edited, lockHandle });
+  ```
+
+  A `check` or `validate` keeps passing its source in the config — that is the
+  reader the field is left for.
 
   Not deprecated first: decision 30 — an implementation-only shape leaves at a
   major.
@@ -125,7 +148,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   3.0.0 and 4.0.0 spent themselves removing, and the fields are a day old with
   no importer anywhere under `~/prj`.
 
-## [5.0.0] - 2026-09-23
+## [5.0.0] - 2026-09-23 — never published, superseded by 6.0.0
+
+> **Never published.** 6.0.0 was tagged before this version reached the
+> registry, so npm goes 4.1.0 → 6.0.0 and everything below arrived there. A
+> consumer looking for `changeTaskType` wants **6.0.0 or later**, not this.
 
 ### Changed
 
