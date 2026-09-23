@@ -22,31 +22,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **`IDomainConfig` says what a domain is again** — `datatype`, `length` and
-  `decimals`, re-exported from `@mcp-abap-adt/interfaces-adt` 4.1.0. Optional
-  fields, so a minor. That package's changelog has the measurement that
-  brought them back.
+- Re-pinned to `@mcp-abap-adt/interfaces-adt` `^4.1.0`: `datatype`, `length` and
+  `decimals` return to `IDomainConfig` as optional fields. Additive.
+
+  > Withdrawn again in the next major — see that package's changelog.
 
 ## [48.0.0] - 2026-09-22
 
-### Removed
+### Changed
 
-- **BREAKING: 46 fields across 16 `IXxxConfig` types**, from
-  `@mcp-abap-adt/interfaces-adt` 4.0.0 — the fields the implementation does
-  not read, including an `onLock` callback promised on nine types and invoked
-  on one. A major here because the facade re-exports those types.
+- Re-pinned to `@mcp-abap-adt/interfaces-adt` `^4.0.0`, where 46 fields leave 16
+  `IXxxConfig` types. A major of a dependency does not flow through a caret, so
+  this re-pin is what carries the change to consumers.
 
 ## [47.0.0] - 2026-09-22
 
-### Removed
+### Changed
 
-- **BREAKING: 84 `ICreate*Params` / `IUpdate*Params` types, and 85 fields from
-  the twelve that stay**, from `@mcp-abap-adt/interfaces-adt` 3.0.0 — argument
-  shapes nobody outside `adt-clients` imported, carrying fields the request
-  builder never sent. A major here for the same reason: they were re-exported.
-
-  Decision 26's clause about a deprecated release before removal is amended
-  rather than ignored, in decision 30.
+- Re-pinned to `@mcp-abap-adt/interfaces-adt` `^3.0.0`, where 84 request-builder
+  parameter types leave the contract and `ICreateDataElementParams` loses
+  seventeen fields. The facade no longer re-exports the removed types.
 
 ## [46.0.1] - 2026-09-22
 

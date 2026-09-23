@@ -37,101 +37,81 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **`datatype`, `length` and `decimals` return to `IDomainConfig`.** They left
-  in 4.0.0 for a good reason — the create accepted them and did not send them,
-  so a domain asked for as `CHAR(10)` came back with `<doma:datatype/>` empty
-  and SAP refused to activate it, `DO(251) Data type ' ' does not exist`.
-  Removing a field the implementation ignores was right; what was missing was
-  the other half of the measurement.
+- **`datatype`, `length` and `decimals` return to `IDomainConfig`.** They left in
+  4.0.0 because the create accepted them and did not send them; they came back
+  once the endpoint was measured to carry them — a POST with
+  `doma:content/doma:typeInformation` answered `201`, the document read back
+  `CHAR`/`000010`, and the activation reported no messages, beside a domain
+  created without a type which could not be activated at all (`DO(251) Data type
+  ' ' does not exist`). Cloud trial, and on-premise was not covered.
 
-  That half now exists: a POST carrying `doma:content/doma:typeInformation` is
-  answered `201`, the document reads back as `CHAR`/`000010`, and the
-  activation reports no messages at all — beside a domain created without it,
-  which does not activate. Cloud trial, 2026-09-22.
+  The other five that left in 4.0.0 — `conversion_exit`, `lowercase`,
+  `sign_exists`, `value_table`, `fixed_values` — stayed out, unmeasured.
 
-  **The other five stay out.** `conversion_exit`, `lowercase`, `sign_exists`,
-  `value_table` and `fixed_values` were never measured, and returning a field
-  on a guess is the same lie in the other direction.
-
-  A minor, not a major: the fields are optional, and the wire is additive too
-  — name none of the three and the POST is byte for byte the one that carried
-  none, which matters because on-premise is not covered by that measurement.
+  > Withdrawn again in the next major: decision 31 routes the object's shape
+  > through the document, so a create carrying `doma:content` is a deviation
+  > from the flow this library follows. The measurement stands; the route
+  > changed.
 
 ## [4.0.0] - 2026-09-22
 
 ### Removed
 
-- **BREAKING: 46 fields across 16 `IXxxConfig` types.** Each was checked the
-  same way — whether `@mcp-abap-adt/adt-clients` reads it at all, now that the
-  compiler had already stripped every line forwarding a field into a parameter
-  object that ignored it. What is left in the configs is what reaches a
-  request.
+- **46 fields leave 16 `IXxxConfig` types** — the types a consumer writes
+  against. Each was checked against the implementation: whether it is read at
+  all, now that 3.0.0 had made the compiler strip every line forwarding a field
+  into a parameter object that ignored it.
 
-  Two findings are worse than a dropped value:
+  Two were worse than a dropped value. **`onLock` was declared on nine types and
+  invoked on one** — a callback promising a call that never came; `IIncludeConfig`
+  keeps it, because `AdtInclude` really does invoke it. **`sessionId` was
+  declared on five and read by none**, the low-level locks it was meant for
+  taking a parameter named `_sessionId`.
 
-  - **`onLock` was declared on nine types and invoked on one.** It is a
-    callback: a caller who passes one was promised a call that, for nine of
-    the ten types, never comes. `IIncludeConfig` keeps it, because `AdtInclude`
-    really does invoke it.
-  - **`sessionId` was declared on five types and read by none.** The low-level
-    locks it was meant for take a parameter named `_sessionId` — the
-    underscore is the author saying it is unused.
+  The rest never reached the wire: `IDomainConfig` lost the eight that say what a
+  domain is, `IDataElementConfig` its type name and four labels,
+  `IStructureConfig` its `fields` and `includes` (a structure is built from its
+  `ddlCode`), `IFunctionModuleConfig` a `packageName` a module takes from its
+  group, `ITableTypeConfig` the row-type kind, access type and primary-key pair.
 
-  The rest describe the object and never reached the wire: `IDomainConfig`
-  lost the eight that say what a domain IS (the ones behind `DO(251)`),
-  `IDataElementConfig` its type name and all four labels, `IStructureConfig`
-  its `fields` and `includes` (a structure is built from its `ddlCode`),
-  `IFunctionModuleConfig` a `packageName` a module takes from its group, and
-  `ITableTypeConfig` its row-type and primary-key four.
+### Changed
 
-  All 16 are recorded in `tools/surface-changed.json` with the declaration
-  each is expected to have now, so the baseline still guards them: a field
-  added or removed later fails exactly as before.
+- All 16 changed declarations are recorded in `tools/surface-changed.json` **with
+  the shape each is expected to have now**, so the baseline check still guards
+  them. Listing the name alone would have retired the check for those symbols.
 
 ## [3.0.0] - 2026-09-22
 
 ### Removed
 
-- **BREAKING: 84 `ICreate*Params` / `IUpdate*Params` types leave the
-  contract.** They are the argument shapes of the functions that build ADT
-  requests, and checking every repository under `~/prj` found them imported by
-  nobody — four are used outside `adt-clients` (`ICreateDataElementParams`,
-  `ICreateFunctionModuleParams`, `IGetTableContentsParams`,
-  `ISearchObjectsParams`, all by the MCP server) and eight more appear in the
-  signature of a capability interface this package exports. Those twelve stay.
-  The rest were a contract nobody accepted.
+- **84 `ICreate*Params` / `IUpdate*Params` types leave the contract.** They are
+  the argument shapes of the functions that build ADT requests, and a search of
+  every dependent repository found them imported by nobody. Twelve parameter
+  types that *are* used stay: four imported by the MCP server, eight named in the
+  signature of a capability interface this package exports.
 
-- **BREAKING: 85 fields across the 15 parameter types that remain**, declared
-  here and read by nobody. `adt-clients` forwarded them to the function that
-  builds the request, and that function did not look at them — so a caller who
-  filled one in was told it was honoured and it was not.
+  Being nobody's contract had a measurable cost: **85 of their fields were
+  ignored by the very code that took them.** A domain created with
+  `datatype: 'CHAR', length: 10` came back with `<doma:datatype/>` empty and SAP
+  refused to activate it. Whether a field is honoured is decided one repository
+  away, which is where these shapes now live.
 
-  Not cosmetic: a domain created with `datatype: 'CHAR', length: 10` came back
-  with `<doma:datatype/>` empty and `<doma:length>000000`, and SAP refused to
-  activate it — `DO(251) Data type ' ' does not exist`. Measured on a cloud
-  trial, 2026-09-22, beside a domain whose type was in the request body, which
-  activated with no messages at all.
-
-  Two causes, neither random: `activate?: boolean` left over from the chains
-  removed in adt-clients 18.0.0 (declared on seven interfaces, read nowhere),
-  and every `IUpdate*Params` field past the name and the transport, left from
-  the read-modify-write updates removed in 19.0.0. `IUpdateDomainParams` loses
-  13 of 15 fields; `IUpdateDataElementParams` 20 of 22.
+  Two causes, both left by earlier releases of the consumer: `activate?: boolean`
+  from the chains removed in `adt-clients` 18.0.0, declared in seven interfaces
+  and read nowhere; and every `IUpdate*Params` field past the name and the
+  transport, from the read-modify-write updates removed in 19.0.0.
 
 ### Changed
 
-- **Decision 26 is amended, in decision 30.** It said a contract nobody
-  accepts stays in the facade, deprecated, and leaves with its next major —
-  which buys a consumer a release in which their import still works. There is
-  no such consumer here, and the same evidence that says so is what says these
-  are not contracts.
-
-- **The surface guards learned the difference between retired and lost.**
+- `ICreateDataElementParams` loses seventeen fields — the type, the length and
+  every label — and its new declaration is recorded in
+  `tools/surface-changed.json`.
+- **The surface guards learnt the difference between retired and lost.**
   `tools/surface-removed.txt` declares each removal with its reason, the way
-  `surface-added.txt` declares an addition, and `tools/surface-changed.json`
-  records the declaration a deliberately changed symbol is expected to have
-  NOW — an earlier version listed the name alone, which would have retired the
-  baseline check for that symbol forever.
+  `surface-added.txt` declares an addition; `check-surface.js`,
+  `check-packed.js` and `check-deprecated.js` all read it.
+  `baseline-44.0.0.json` is untouched: it is the proof that the split preserved
+  44.0.0, and a regenerated proof proves nothing. Recorded as **decision 30**.
 
 ## [2.0.1] - 2026-09-22
 
