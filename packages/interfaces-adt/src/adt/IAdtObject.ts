@@ -163,9 +163,9 @@ export interface IAdtOperationOptions<E extends IAdtError = IAdtError> {
    * The source this member writes. **An update's, and only an update's.**
    *
    * **This is where a write's body goes, and the only place it is read from.**
-   * That used to be stated here and contradicted in every config, each of
-   * which said a caller "reads the document … and passes it here" — the
-   * config. An implementation honouring one made the other a lie, and
+   * That used to be stated here and contradicted in each of the 26 configs
+   * that carried a `source` of their own, every one of which said a caller
+   * "reads the document … and passes it here" — the config. An implementation honouring one made the other a lie, and
    * `adt-clients` repaired it by reading both, because the contract gave it no
    * way to choose. It does now: `source` on a config is what that type's
    * `check` or `validate` compiles — a source the server does not hold yet —

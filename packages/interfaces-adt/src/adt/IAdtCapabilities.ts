@@ -57,7 +57,8 @@ export interface IAdtCreatable<TConfig, TCreated> {
    * not before.
    *
    * **It does not take the object's source.** The field it excludes is
-   * `source`, which is what every config calls its payload; before the
+   * `source`, which is what a config calls its payload where it has one;
+   * before the
    * renaming it was `sourceCode`, and leaving the exclusion pointing at the
    * old name would have re-opened the hole it was added to close — a create
    * accepting a payload the endpoint drops. This used to say `sourceCode`

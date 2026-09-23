@@ -2443,11 +2443,14 @@ configs that declared a `source`, and the implementations in
 exactly one reader, `check`/`validate`, and those members have no options
 channel to take a source from — they compile text for a name that may not
 exist yet. Six of the 26 have no such member, and 20 are left declaring it.
-`domain` passes `undefined` where the source would go,
-`dataElement` and `authorizationField` send none, `tableType` validates a
-description, and `package`, `functionGroup` and `transportRequest` declare
-neither. For those six the field had one reader, the write, and the write has a
-channel of its own. They lose it; the rest keep it for the member that uses it.
+`domain` passes `undefined` where the source would go, `dataElement` sends
+none, `tableType` validates a description, and `package`, `functionGroup` and
+`transportRequest` declare neither member. For those six the field had one
+reader, the write, and the write has a channel of its own. They lose it; the
+rest keep it for the member that uses it.
+
+`IAuthorizationFieldConfig` is in the same position and is outside the count
+entirely: it never declared a `source`, so there was nothing to take off it.
 
 **Not a merge, either way.** Nothing about this makes a write read the object
 first. Decision 32 stands: the payload is a string this package passes through.

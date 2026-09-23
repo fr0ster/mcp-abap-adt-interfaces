@@ -54,8 +54,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   **The contract said where a write's body goes twice, and differently.**
   `IAdtUpdatable.update` and `IAdtMetadataUpdatable.updateMetadata` document
-  `options` as "`source` for the body"; every config said the caller "reads the
-  document … and passes it here". An implementation honouring one made the
+  `options` as "`source` for the body"; each of the 26 configs that carried a
+  `source` said the caller "reads the document … and passes it here". An implementation honouring one made the
   other a lie — `adt-clients` read the config only, so the call the atom
   documents sent `undefined` and wrote nothing. Its repair reads both channels
   with the options winning and says in a comment that choosing between them is
