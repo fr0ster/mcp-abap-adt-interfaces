@@ -15,7 +15,7 @@
     "lint": "biome check --write packages tools",
     "lint:check": "biome check packages tools",
     "format": "biome format --write packages tools",
-    "build": "npm run clean --workspaces && biome check packages tools --diagnostic-level=error && tsc -b packages/interfaces-calm/tsconfig.build.json packages/interfaces-adt/tsconfig.build.json packages/interfaces-network/tsconfig.build.json",
+    "build": "npm run clean --workspaces && biome check packages tools --diagnostic-level=error && tsc -b packages/interfaces-auth/tsconfig.build.json packages/interfaces-calm/tsconfig.build.json packages/interfaces-adt/tsconfig.build.json packages/interfaces-network/tsconfig.build.json",
     "test:check": "npm run test:check --workspaces",
     "check:surface": "node tools/check-surface.js --placement all",
     "check:graph": "node tools/check-graph.js",

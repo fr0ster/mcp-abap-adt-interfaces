@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [9.0.0] - 2026-09-23
+
+### Removed
+
+- **BREAKING: every authentication contract leaves** — 42 symbols in 23 files,
+  to `@mcp-abap-adt/interfaces-auth` `2.0.0`: `auth/`, `token/`, `session/`,
+  `serviceKey/`, `store/`, `sap/` and `validation/`, together with `AuthType`,
+  `AUTH_TYPES` and `AUTH_TYPE_JWT`/`BASIC`/`XSUAA`.
+
+  **The criterion is who imports this package**, and it should be
+  `@mcp-abap-adt/adt-clients` and whatever replaces its objects. It was not:
+  `auth-broker`, `auth-stores` and `auth-providers` imported 10, 7 and 17 names
+  from here and **not one was an ADT contract**; `header-validator` took 7 more.
+  They were pinned to the release rate of the ADT contract to describe
+  authentication.
+
+  After this, all four take **zero** from here. What is left reaching in is
+  `gcts-client` and `cloud-llm-hub`, for `IAbapConnection`,
+  `IAbapRequestOptions` and `IAdtResponse` — consumers that speak ADT over a
+  connection, which is the criterion met.
+
+- **`@mcp-abap-adt/interfaces-auth` is no longer a dependency.** The last thread
+  was `validation/IValidatedAuthConfig` importing `AuthType`, and `validation/`
+  went with the cluster. This package depends on `interfaces-network` and
+  `interfaces-utils`, and nothing else.
+
+- `AuthTypeEnum` is gone from `tools/package-map.json`. It existed in no
+  package's `src` or `dist` — a mapped name nothing declared and nothing
+  checked.
+
 ## [8.0.0] - 2026-09-23
 
 ### Added

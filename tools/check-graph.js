@@ -8,13 +8,9 @@ const { ROOT } = require('./lib/exports');
 const ALLOWED = {
   'interfaces-utils': [],
   'interfaces-network': [],
-  'interfaces-auth': [],
+  'interfaces-auth': ['interfaces-utils'],
   'interfaces-calm': ['interfaces-network'],
-  'interfaces-adt': [
-    'interfaces-auth',
-    'interfaces-network',
-    'interfaces-utils',
-  ],
+  'interfaces-adt': ['interfaces-network', 'interfaces-utils'],
 };
 
 function tsFiles(dir) {
