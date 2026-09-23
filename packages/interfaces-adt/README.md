@@ -21,14 +21,14 @@ npm install @mcp-abap-adt/interfaces-adt
 | directory | what |
 |---|---|
 | `adt/`, `runtime/`, `execution/`, `feeds/`, `service/`, `shared/` | the ADT contracts: capability atoms, object types, `IAdtResponse`, runtime analysis, execution |
-| `connection/` | `IAbapConnection`, `IAbapRequestOptions`, the connection capability atoms, `ICalmConnection`, `CalmService` |
+| `connection/` | `IAbapConnection`, `IAbapRequestOptions`, the connection capability atoms. `IAdtWireResponse` lives here and extends `IHttpWireResponse` from `-network`; the Cloud ALM contracts left for [`interfaces-calm`](../interfaces-calm) in 8.0.0 |
 | `sap/`, `auth/` | `ISapConfig`, `IConnectionConfig`, `IAuthorizationConfig`, `IConfig`, `IAuthorizationStrategy`, the callback-server contracts, `ICertificateMaterialLoader`, `AuthTypeEnum`; `IAssertionValidator` with `AssertionContext`, `ValidatedAssertion`, `IAssertionReplayStore` and `ASSERTION_ERROR_CODES` |
 | `token/`, `session/`, `serviceKey/`, `store/` | token providers and refreshers, stores and their error codes |
-| `validation/`, `Headers.ts` | header validation; `HEADER_SAP_*`, `HEADER_UAA_*`, `HEADER_BTP_DESTINATION`, `HEADER_MCP_DESTINATION`, `HEADER_MCP_URL`, `AUTH_TYPES`, `AuthType` |
+| `validation/`, `Headers.ts` | header validation; `AUTH_TYPES`, `AuthType`, `AUTH_TYPE_JWT` and its siblings — the *values* a header carries. The header **names** left for [`interfaces-network`](../interfaces-network) in 8.0.0 |
 
-The contract rules — what a member answers, how a strategy is supplied, how a contract is built — are in [`docs/architecture/ARCHITECTURE.md`](../../docs/architecture/ARCHITECTURE.md). Domain-by-domain documentation with examples stays in the [`@mcp-abap-adt/interfaces` README](../interfaces/README.md); the contracts it describes are these.
+The contract rules — what a member answers, how a strategy is supplied, how a contract is built — are in [`docs/architecture/ARCHITECTURE.md`](../../docs/architecture/ARCHITECTURE.md). Domain-by-domain documentation with examples used to sit in the facade's README; the facade is deleted, and each package documents its own contracts.
 
-**The facade is pinned to its 44.0.0 surface, not frozen against additions.** This said the opposite until 2.0.0, and 45.1.0 had already disproved it: `IAbapObjectEntry` and `IAdtTransportObjectActions` were added here and re-exported there. `tools/check-surface.js` compares the built facade against `surface-44.0.0.txt` in both directions — nothing from 44.0.0 may disappear and nothing may appear — and an addition is made deliberate rather than impossible by being written into `tools/surface-added.txt`, one `<name> <kind>` per line. A symbol added here and not written there fails the check; a line written there for a symbol the facade does not export fails too.
+**There is no facade to stay compatible with.** It was pinned to its 44.0.0 surface in both directions — nothing from that release could disappear from it and nothing could appear without being written down — and `tools/check-surface.js`, `surface-44.0.0.txt`, `baseline-44.0.0.json` and `surface-added.txt` existed to enforce exactly that. The facade is deleted in its 52.0.0 (decision 34), so the property is gone along with the files that proved it; git holds them. What `check-surface.js` still asks is the half that never depended on it: is each symbol declared in the package `tools/package-map.json` assigns it to.
 
 ## The transport request's object list
 

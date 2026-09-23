@@ -21,11 +21,21 @@ export interface IHttpWireResponse<T = unknown, D = unknown> {
   request?: unknown;
 }
 
-/** What a header can hold once a client has parsed the response. */
+/**
+ * What a header can hold once a client has parsed the response.
+ *
+ * `object` is in the union because axios puts one there: a `set-cookie` or a
+ * parsed header can arrive as something other than a string, and the shape this
+ * replaced — `IAdtHeaderValue` — allowed it. Dropping it narrowed the contract
+ * silently, which review caught: an implementation with an object-valued header
+ * stopped satisfying it while the migration note claimed the shapes were
+ * identical. They are.
+ */
 export type IHttpHeaderValue =
   | string
   | string[]
   | number
   | boolean
   | null
-  | undefined;
+  | undefined
+  | object;

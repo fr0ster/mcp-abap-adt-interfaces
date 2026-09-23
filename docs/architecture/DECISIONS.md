@@ -2207,13 +2207,18 @@ is `adt-clients` — a consumer. The facade cannot re-export from it without
 inverting the dependency, so "stay deprecated, pointing at your new package" has
 nothing to name.
 
-**What keeps it true.** `tools/surface-removed.txt` is read by
-`check-surface.js`, `check-packed.js` and `check-deprecated.js`: a symbol that
-disappears and is not written there still fails, and a name written there that
-the facade still exports is reported as stale. Alongside it,
-`tools/surface-changed.json` records the declaration a deliberately changed
-symbol is expected to have **now** — not merely its name, which would have
-retired the baseline check for that symbol forever.
+**What kept it true, while there was a facade to keep it true about.**
+`tools/surface-removed.txt` was read by `check-surface.js`, `check-packed.js`
+and `check-deprecated.js`: a symbol that disappeared without being written there
+failed, and a name written there that the facade still exported was reported as
+stale. `tools/surface-changed.json` recorded the declaration a deliberately
+changed symbol was expected to have **now**, rather than merely its name, which
+would have retired the baseline check for that symbol forever.
+
+Decision 34 deleted the facade, and with it the baseline apparatus these two
+files served — `check-deprecated.js` included. The reasoning above is why the
+84 left at a major rather than being deprecated, and it stands; what enforced
+it no longer has a subject.
 
 **What would change it.** A consumer outside this workspace importing one of
 the 84. The search covered the repositories under `~/prj` and nothing else, so
