@@ -67,6 +67,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   The configs that keep it are the ones whose `check` or `validate` compiles
   it. `IAdtOperationOptions.source` now says this outright.
 
+  **Migrating.** A write that passed the body in the config moves it to the
+  options; a call that already passed it there is unaffected.
+
+  ```diff
+  - await domain.updateMetadata({ domainName, source: edited }, { lockHandle });
+  + await domain.updateMetadata({ domainName }, { source: edited, lockHandle });
+  ```
+
+  A `check` or `validate` keeps passing its source in the config — that is the
+  reader the field is left for.
+
   Not deprecated first: decision 30 — an implementation-only shape leaves at a
   major.
 

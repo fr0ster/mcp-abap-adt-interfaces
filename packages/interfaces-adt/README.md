@@ -45,6 +45,38 @@ So `createTask` requires `targetUser` and `removeObject` requires `position`, an
 
 `addObject` still takes an entry without a position — one that does not exist yet has none.
 
+## Migrating to 7.0.0
+
+Two changes.
+
+```ts
+// 1. The write's body goes in the options, and only there. Six configs —
+//    domain, data element, package, table type, function group, transport
+//    request — no longer declare `source`.
+- await domain.updateMetadata({ domainName, source: edited }, { lockHandle });
++ await domain.updateMetadata({ domainName }, { source: edited, lockHandle });
+
+// 2. The task types are a constant, so nobody repeats the letters.
+- await actions.changeTaskType(task, 'S');
++ await actions.changeTaskType(task, ADT_TASK_TYPE.developmentCorrection);
+```
+
+A `check` or `validate` keeps taking its source in the config: it compiles
+text the server does not hold yet and has no options channel to take it from,
+which is the one job a `source` on a config still has. The six types above
+have no such member, so nothing read theirs but the write.
+
+`'S'` still compiles — `AdtTaskType` is those three values — so the second
+change is only a break for code that spelled the union out in a declaration of
+its own. `ADT_TASK_TYPE` and `AdtTaskType` are exported from this package and
+**not** from the `@mcp-abap-adt/interfaces` facade: everything the facade
+forwards is deprecated in favour of importing from the package that declares
+it, so a new symbol there would be born deprecated.
+
+Decision 33 in the repository's `docs/architecture/DECISIONS.md` says why the
+body has one channel, and what measurement decided which configs keep the
+field.
+
 ## Migrating to 2.0.0
 
 Three changes, all of them in `IAdtTransportObjectActions`. An implementation or a caller on 1.2.0 does this:

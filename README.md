@@ -5,7 +5,8 @@ Contracts for the MCP ABAP ADT packages: types and constants, no implementations
 ## TL;DR
 
 - **Install the package whose contracts you accept**, not all of them.
-- `@mcp-abap-adt/interfaces` still exports everything, but it is a deprecated facade: each symbol names the package it lives in now.
+- `@mcp-abap-adt/interfaces` still exports everything it exported at 44.0.0, but it is a deprecated facade: each symbol names the package it lives in now.
+- **A contract added since the split is not on the facade.** It would be born deprecated there, and forwarding it would drag every facade consumer through a major that is not theirs — which is the thing the split exists to stop. `ADT_TASK_TYPE` is the first: it is in `interfaces-adt` and nowhere else.
 - No package here depends on an implementation or a runtime package.
 
 | package | holds | depends on |
