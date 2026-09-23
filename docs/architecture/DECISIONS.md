@@ -2282,6 +2282,19 @@ compiler.
    base carries only what surrounds it; normalising to `name` is a separate
    decision, and a larger one.
 
+**And it gives the implementation somewhere to put its own plumbing.** Every
+type here is composite, so an implementation that needs one more field for its
+own machinery can extend its own config — and a consumer of `adt-clients` never
+sees an extension it has no use for. Today there is nowhere else to put such a
+field, and the consequence is on the record: `onLock` is a callback the
+implementation invokes, and it was declared on **nine** config types in the
+contract while exactly one implementation ever called it; `sessionId` was
+declared on five and read by none, the low-level locks it was meant for taking a
+parameter named `_sessionId`. `IIncludeConfig` still carries `onLock` — a public
+contract field for one implementation's convenience. Neither leaked out of
+carelessness: the concrete config lived in the shared package, so any need the
+implementation had became public the moment it was written down.
+
 **Against.** Decision 26 — a contract lives where it is accepted — and the
 principle that everything a consumer needs is in `interfaces`, so any
 implementation can be swapped for their own.
