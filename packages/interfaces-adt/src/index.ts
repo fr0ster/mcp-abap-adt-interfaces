@@ -261,9 +261,6 @@ export {
   AUTH_TYPE_JWT,
   AUTH_TYPE_XSUAA,
   AUTH_TYPES,
-  HEADER_BTP_DESTINATION,
-  HEADER_MCP_DESTINATION,
-  HEADER_MCP_URL,
   HEADER_SAP_AUTH_TYPE,
   HEADER_SAP_CLIENT,
   HEADER_SAP_DESTINATION,
@@ -280,6 +277,11 @@ export {
   HEADER_UAA_CLIENT_SECRET,
   HEADER_UAA_URL,
 } from './Headers';
+export {
+  PRESERVED_HEADERS,
+  SAP_CONNECTION_HEADERS,
+  UAA_HEADERS,
+} from './headers/HeaderGroups';
 export type {
   IApplicationLog,
   IGetApplicationLogObjectOptions,
@@ -341,6 +343,8 @@ export type {
 export type { IServiceKeyStore } from './serviceKey/IServiceKeyStore';
 export type { ISessionStore } from './session/ISessionStore';
 export type { IReadOptions } from './shared/IReadOptions';
+export type { ISessionState } from './store/ISessionState';
+export type { ISessionStorage } from './store/ISessionStorage';
 export type { StoreErrorCode } from './store/StoreErrorCodes';
 export { STORE_ERROR_CODES } from './store/StoreErrorCodes';
 export type { OAuth2GrantType } from './token/AuthType';
@@ -355,6 +359,7 @@ export {
 } from './token/AuthType';
 export type { ITokenProvider } from './token/ITokenProvider';
 export type { ITokenProviderOptions } from './token/ITokenProviderOptions';
+export type { ITokenProviderResult } from './token/ITokenProviderResult';
 export type { ITokenRefresher } from './token/ITokenRefresher';
 export type { ITokenResult } from './token/ITokenResult';
 export type { TokenProviderErrorCode } from './token/TokenProviderErrorCodes';

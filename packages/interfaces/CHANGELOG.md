@@ -7,6 +7,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [52.0.0] - 2026-09-23
+
+### Removed
+
+- **BREAKING: this package exports nothing.** All 297 re-exports of
+  `@mcp-abap-adt/interfaces-adt`, `-auth`, `-network` and `-utils` are gone, and
+  so are the eight symbols it declared itself. It has no dependencies left.
+
+  **Forwarding was duplication with a cost.** Every change to any of the four
+  made a release here, and a consumer holding this package moved at the pace of
+  contracts it does not use. Measured across the repositories under
+  development, the effect was not churn but freezing: they sit on facade majors
+  2, 5, 7, 11, 39 and 46, because one step forward costs them every other
+  package's history. `mcp-abap-adt-logger` imports exactly `ILogger` and
+  `LogLevel` and is pinned to a major in the thirties.
+
+  Import from the package that declares the name:
+
+  | what you want | where it lives |
+  |---|---|
+  | ADT contracts, the ABAP and Cloud ALM connections, SAP/BTP configuration and authentication | `@mcp-abap-adt/interfaces-adt` |
+  | `IAuthProvider`, `IRenewableCredential`, `ICertificateMaterial` | `@mcp-abap-adt/interfaces-auth` |
+  | WebSocket transport, `ITimeoutConfig`, HTTP, MCP and proxy routing header names | `@mcp-abap-adt/interfaces-network` |
+  | `ILogger`, `LogLevel` | `@mcp-abap-adt/interfaces-utils` |
+
+  Every symbol here already said so: each re-export carried *"@deprecated
+  Import from …"*, and each of the eight own ones *"No package imports this; it
+  is removed in the next major"*. This is that major, and the premise was
+  checked across every repository under development before acting on it.
+
+- **The eight moved rather than vanishing**, because where they belong was not
+  in doubt. `SAP_CONNECTION_HEADERS`, `UAA_HEADERS`, `PRESERVED_HEADERS`,
+  `ISessionState`, `ISessionStorage` and `ITokenProviderResult` are in
+  `interfaces-adt` 8.0.0, beside the header names and the session and token
+  contracts they were built from. `PROXY_ROUTING_HEADERS` is in
+  `interfaces-network` 1.1.0 with the three routing names it groups, which moved
+  with it.
+
+  `PROXY_MODIFIED_HEADERS` is the exception and is simply gone: it grouped
+  `HEADER_AUTHORIZATION` from `-network` with three SAP names from `-adt`, and
+  neither package may import the other. A set spanning both domains belongs to
+  whoever composes them.
+
+### Changed
+
+- **The guards check the new rule instead of the old one.**
+  `tools/check-surface.js` proved this package exported exactly the 44.0.0
+  contract; it now proves it forwards nothing, and keeps the placement half,
+  which never depended on the facade. `check-packed.js` proved the published
+  contract was 44.0.0 on both paths; it now proves the four packages install and
+  compile on their own and that the installed facade carries none of them.
+  `check-deprecated.js` walked every forwarded symbol; it now guards against
+  this package gaining an export by accident.
+
+  `baseline-44.0.0.json`, `surface-44.0.0.txt`, `surface-added.txt`,
+  `surface-changed.json` and `generate-baseline.js` are deleted. They existed to
+  prove the property this release abolishes; git holds what they proved.
+
 ## [51.0.0] - 2026-09-23
 
 ### Changed

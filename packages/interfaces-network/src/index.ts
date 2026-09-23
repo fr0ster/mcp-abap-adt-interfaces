@@ -16,9 +16,13 @@ export { NETWORK_ERROR_CODES } from './connection/NetworkErrors';
 export {
   HEADER_ACCEPT,
   HEADER_AUTHORIZATION,
+  HEADER_BTP_DESTINATION,
   HEADER_CONTENT_TYPE,
+  HEADER_MCP_DESTINATION,
   HEADER_MCP_SESSION_ID,
+  HEADER_MCP_URL,
   HEADER_SESSION_ID,
   HEADER_X_MCP_SESSION_ID,
+  PROXY_ROUTING_HEADERS,
 } from './Headers';
 export type { ITimeoutConfig } from './utils/ITimeoutConfig';

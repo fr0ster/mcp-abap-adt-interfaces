@@ -90,18 +90,10 @@ function exportsOf(entry, options = COMPILER_OPTIONS) {
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
-/** The 44.0.0 baseline: { [name]: { declaration, value? } }, value as JSON. */
-function readBaseline() {
-  return JSON.parse(
-    fs.readFileSync(path.join(ROOT, 'tools', 'baseline-44.0.0.json'), 'utf8'),
-  );
-}
-
 module.exports = {
   ROOT,
   COMPILER_OPTIONS,
   exportsOf,
   normalizedDeclaration,
   packageDirOf,
-  readBaseline,
 };

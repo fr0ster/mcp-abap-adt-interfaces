@@ -9,12 +9,12 @@
  */
 
 /**
- * Proxy Routing Headers
- * Used by the proxy to determine routing and authentication
+ * The proxy routing headers moved to `@mcp-abap-adt/interfaces-network` in
+ * 8.0.0 — `HEADER_BTP_DESTINATION`, `HEADER_MCP_DESTINATION` and
+ * `HEADER_MCP_URL`, together with `PROXY_ROUTING_HEADERS`, which groups them.
+ * They name a proxy's routing, not anything ABAP, and that package already
+ * held the MCP session headers beside them.
  */
-export const HEADER_BTP_DESTINATION = 'x-btp-destination';
-export const HEADER_MCP_DESTINATION = 'x-mcp-destination';
-export const HEADER_MCP_URL = 'x-mcp-url';
 /**
  * SAP ABAP Connection Headers
  * Used for SAP ABAP system connection

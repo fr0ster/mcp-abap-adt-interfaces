@@ -7,6 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [8.0.0] - 2026-09-23
+
+### Added
+
+- **The SAP header groups live with the headers they group** —
+  `SAP_CONNECTION_HEADERS`, `UAA_HEADERS`, `PRESERVED_HEADERS`, and the
+  `ISessionState`, `ISessionStorage` and `ITokenProviderResult` contracts.
+
+  All six were declared in the `@mcp-abap-adt/interfaces` facade, which
+  declares no header name of its own: it imported all eighteen from here to
+  build the groups, and `ITokenProviderResult` imported `IConnectionConfig`
+  from here too. A grouping one package away from what it groups, and a token
+  result one package away from the token contracts. They are beside
+  `ISessionStore` and `ITokenProvider` now.
+
+  Each carried *"No package imports this; it is removed in the next major"*,
+  and the premise held — nothing under development imports them. They moved
+  rather than being deleted because where they belong is not in doubt, and a
+  grouping is cheap to keep and expensive to reinvent.
+
+### Removed
+
+- **BREAKING: the three proxy routing headers leave** —
+  `HEADER_BTP_DESTINATION`, `HEADER_MCP_DESTINATION` and `HEADER_MCP_URL` are
+  in `@mcp-abap-adt/interfaces-network` `1.1.0`, together with
+  `PROXY_ROUTING_HEADERS`, which groups exactly those three.
+
+  Nothing about them is ABAP: they name where a proxy sends a request, and
+  that package already held the MCP session headers beside them. Holding them
+  here bound anyone reading a routing header — `mcp-abap-adt-header-validator`
+  and `cloud-llm-hub` both do — to this contract's release rate.
+
+- **`PROXY_MODIFIED_HEADERS` is gone and has no new home.** It grouped
+  `HEADER_AUTHORIZATION`, declared in `-network`, with three SAP names declared
+  here, and neither package may import the other (the dependency graph in
+  `tools/check-graph.js`). A set spanning both domains belongs to whoever
+  composes them — a proxy — and nothing under development imported it.
+
 ## [7.0.0] - 2026-09-23
 
 ### Added

@@ -2459,6 +2459,54 @@ first. Decision 32 stands: the payload is a string this package passes through.
 question disappear: a check's config and a write's options stop being two
 shapes with one field name.
 
+## 34. The facade forwards nothing, and a contract lives where it is used
+
+**Decided 2026-09-23.** `@mcp-abap-adt/interfaces` exports nothing. The 297
+re-exports are gone, the eight symbols it declared itself moved to the packages
+that own their neighbours, and it has no dependencies.
+
+**Why forwarding had to end.** Decision 11 kept the facade as a deprecated
+compatibility layer so a pre-split consumer would keep compiling, and decision
+26 put each contract where it is accepted. Both held. What neither predicted is
+what forwarding does to a release: every change to any of the four made a
+release here, and a consumer holding this package moved at the pace of
+contracts it does not use.
+
+Measured across every repository under development: twelve take the facade, two
+take the leaves. The twelve are pinned at facade majors 2, 5, 7, 11, 39 and 46
+against a facade at 51. **They did not churn — they froze**, because one step
+forward costs them every other package's history.
+`mcp-abap-adt-logger` imports exactly `ILogger` and `LogLevel` and is stuck in
+the thirties. A compatibility layer that makes updating unaffordable is not
+compatibility.
+
+**The eight moved rather than being deleted.** Each said *"No package imports
+this; it is removed in the next major"*, and the premise was true — but where
+they belong was never in doubt, and a grouping is cheap to keep and expensive
+to reinvent. `SAP_CONNECTION_HEADERS`, `UAA_HEADERS`, `PRESERVED_HEADERS`,
+`ISessionState`, `ISessionStorage` and `ITokenProviderResult` went to
+`interfaces-adt`, beside the names and contracts they were built from.
+`PROXY_ROUTING_HEADERS` went to `interfaces-network` with the three routing
+names it groups — nothing about `x-mcp-url` is ABAP, and that package already
+held the MCP session headers.
+
+**One had no home, and that is the rule showing its edge.**
+`PROXY_MODIFIED_HEADERS` grouped `HEADER_AUTHORIZATION` from `-network` with
+three SAP names from `-adt`, and neither may import the other. A set spanning
+two domains belongs to whoever composes them — a proxy — not to a contract
+package. It is deleted, and nothing imported it.
+
+**What this costs a consumer.** An import path, at their next dependency
+update, which is a migration anyway. Nothing resolves differently until they
+choose to move: they are pinned, so the empty 52.0.0 reaches nobody who has not
+decided to come and get it.
+
+**What would change it.** Nothing about the facade; it has no job left. The
+question this measurement did open is a different one — 54 of the 57
+`interfaces-adt` symbols that non-ADT consumers import are not ADT at all, and
+Cloud ALM importing `ITokenProvider` refutes the premise decision 26 rested on.
+That is the `interfaces-sap` question below, and it now has numbers.
+
 ## Open, and what would settle it
 
 Not decisions. These are questions this repository has met and deliberately left

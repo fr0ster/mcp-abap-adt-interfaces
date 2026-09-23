@@ -5,17 +5,16 @@ Contracts for the MCP ABAP ADT packages: types and constants, no implementations
 ## TL;DR
 
 - **Install the package whose contracts you accept**, not all of them.
-- `@mcp-abap-adt/interfaces` is a deprecated facade, and each symbol on it names the package it lives in now. It forwards **297** of the 381 symbols 44.0.0 exported; the other 84 left at majors, each one written down in `tools/surface-removed.txt` with its reason (decision 30).
-- **A contract added from now on is not forwarded here.** It would be born deprecated, and forwarding it would drag every facade consumer through a major that is not theirs — which is the thing the split exists to stop. Two were added before this rule was stated — `IAbapObjectEntry` and `IAdtTransportObjectActions`, both in `tools/surface-added.txt` — and `ADT_TASK_TYPE` is the first deliberately left off: it is in `interfaces-adt` and nowhere else.
+- **`@mcp-abap-adt/interfaces` exports nothing** as of 52.0.0. It was a deprecated facade forwarding the four; forwarding is what bound a consumer to the release rate of contracts it does not use, so it stopped. Nothing is added to it, ever.
 - No package here depends on an implementation or a runtime package.
 
 | package | holds | depends on |
 |---|---|---|
 | [`@mcp-abap-adt/interfaces-utils`](packages/interfaces-utils) | logging: `ILogger`, `LogLevel` | nothing |
-| [`@mcp-abap-adt/interfaces-network`](packages/interfaces-network) | WebSocket transport, `NETWORK_ERROR_CODES`, `ITimeoutConfig`, generic HTTP and MCP header names | nothing |
+| [`@mcp-abap-adt/interfaces-network`](packages/interfaces-network) | WebSocket transport, `NETWORK_ERROR_CODES`, `ITimeoutConfig`, generic HTTP, MCP and proxy routing header names | nothing |
 | [`@mcp-abap-adt/interfaces-auth`](packages/interfaces-auth) | `IAuthProvider`, `IRenewableCredential`, `ICertificateMaterial` | nothing |
 | [`@mcp-abap-adt/interfaces-adt`](packages/interfaces-adt) | ADT contracts, the ABAP and Cloud ALM connections, SAP/BTP configuration and authentication | `interfaces-auth`, `interfaces-utils` |
-| [`@mcp-abap-adt/interfaces`](packages/interfaces) | deprecated facade: re-exports the four, plus what no package imports | all four |
+| [`@mcp-abap-adt/interfaces`](packages/interfaces) | nothing, since 52.0.0 — a deprecated facade that stopped forwarding | nothing |
 
 ## Why five packages
 

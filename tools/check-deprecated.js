@@ -1,103 +1,57 @@
-// Every symbol a consumer imports from @mcp-abap-adt/interfaces is reported
-// deprecated (TS6385) — the moved ones point at their new package, the
-// unaccepted ones announce their removal. Run after `npm run build`.
+// Every symbol @mcp-abap-adt/interfaces still exports is reported deprecated
+// (TS6385). Run after `npm run build`.
 //   node tools/check-deprecated.js
+//
+// **What this used to check.** Until 52.0.0 the facade forwarded the whole
+// 44.0.0 contract, and this walked all of it: each moved symbol had to carry a
+// `@deprecated` clause naming the package that declares it, so a consumer's
+// editor told them where to go. That was the deprecation clause of decision 26
+// kept honest, symbol by symbol.
+//
+// The facade forwards nothing now, so no moved symbol is left here to point
+// anywhere, and what it declared itself went with them. The check survives
+// because the package might gain an export by accident: anything that appears
+// here must say it is deprecated, and the count in the summary is the evidence
+// that the answer is still nothing.
 const fs = require('node:fs');
 const path = require('node:path');
 const ts = require('typescript');
 const { ROOT, COMPILER_OPTIONS } = require('./lib/exports');
 
-const map = JSON.parse(
-  fs.readFileSync(path.join(ROOT, 'tools', 'package-map.json'), 'utf8'),
-);
-const surface = fs
-  .readFileSync(path.join(ROOT, 'tools', 'surface-44.0.0.txt'), 'utf8')
-  .trim()
-  .split('\n')
-  .map((l) => l.split(' '));
+const entry = path.join(ROOT, 'packages', 'interfaces', 'dist', 'index.d.ts');
+if (!fs.existsSync(entry)) {
+  console.error('the facade is not built');
+  process.exit(1);
+}
 
-// Symbols retired at a major rather than deprecated into the facade — see
-// decision 30. The deprecation clause of decision 26 buys a consumer a release
-// in which their import still works; a symbol nobody imports has no such
-// consumer, and there is no package for the facade to point at when the one
-// that accepts it is a consumer of this one.
-const removed = fs
-  .readFileSync(path.join(ROOT, 'tools', 'surface-removed.txt'), 'utf8')
-  .split('\n')
-  .map((line) => line.trim())
-  .filter((line) => line !== '' && !line.startsWith('#'))
-  .map((line) => line.split(/\s+/)[0]);
-
-// Symbols whose package already exists are checked; the rest are still at home.
-const existing = new Set(
-  fs
-    .readdirSync(path.join(ROOT, 'packages'))
-    .filter((d) =>
-      fs.existsSync(path.join(ROOT, 'packages', d, 'package.json')),
-    ),
-);
-const checked = surface.filter(
-  ([name]) => existing.has(map[name]) && !removed.includes(name),
+const program = ts.createProgram([entry], COMPILER_OPTIONS);
+const checker = program.getTypeChecker();
+const source = program.getSourceFile(entry);
+const exported = checker.getExportsOfModule(
+  checker.getSymbolAtLocation(source),
 );
 
-const dir = fs.mkdtempSync(path.join(ROOT, 'node_modules', '.deprecated-'));
-const consumer = path.join(dir, 'consumer.ts');
-const types = checked.filter(([, k]) => k === 'type').map(([n]) => n);
-const values = checked.filter(([, k]) => k === 'value').map(([n]) => n);
-fs.writeFileSync(
-  consumer,
-  [
-    `import type { ${types.join(', ')} } from '@mcp-abap-adt/interfaces';`,
-    `import { ${values.join(', ')} } from '@mcp-abap-adt/interfaces';`,
-    '',
-  ].join('\n'),
-);
-
-const host = {
-  getScriptFileNames: () => [consumer],
-  getScriptVersion: () => '1',
-  getScriptSnapshot: (f) =>
-    fs.existsSync(f)
-      ? ts.ScriptSnapshot.fromString(fs.readFileSync(f, 'utf8'))
-      : undefined,
-  getCurrentDirectory: () => ROOT,
-  getCompilationSettings: () => COMPILER_OPTIONS,
-  getDefaultLibFileName: (o) => ts.getDefaultLibFilePath(o),
-  fileExists: ts.sys.fileExists,
-  readFile: ts.sys.readFile,
-  readDirectory: ts.sys.readDirectory,
-  directoryExists: ts.sys.directoryExists,
-  getDirectories: ts.sys.getDirectories,
-};
-const service = ts.createLanguageService(host);
-const errors = service.getSemanticDiagnostics(consumer);
-const reported = new Set(
-  service
-    .getSuggestionDiagnostics(consumer)
-    .filter((d) => d.code === 6385)
-    .map(
-      (d) =>
-        ts
-          .flattenDiagnosticMessageText(d.messageText, ' ')
-          .match(/'([^']+)'/)[1],
-    ),
-);
-fs.rmSync(dir, { recursive: true, force: true });
-
-const problems = errors.map(
-  (d) =>
-    `consumer does not compile: ${ts.flattenDiagnosticMessageText(d.messageText, ' ')}`,
-);
-for (const [name] of checked)
-  if (!reported.has(name))
-    problems.push(`not deprecated in the facade: ${name}`);
+const problems = [];
+for (const symbol of exported) {
+  const target =
+    symbol.flags & ts.SymbolFlags.Alias
+      ? checker.getAliasedSymbol(symbol)
+      : symbol;
+  const tags = [
+    ...symbol.getJsDocTags(checker),
+    ...target.getJsDocTags(checker),
+  ];
+  if (!tags.some((t) => t.name === 'deprecated'))
+    problems.push(`not deprecated: ${symbol.name}`);
+}
 
 if (problems.length) {
-  console.error(problems.join('\n'));
+  for (const p of problems) console.error(p);
   console.error(`${problems.length} problem(s)`);
   process.exit(1);
 }
+
 console.log(
-  `deprecated: all ${checked.length} checked symbols are reported deprecated` +
-    `, ${removed.length} retired at a major (decision 30)`,
+  `deprecated: the facade exports ${exported.length} symbol(s)` +
+    (exported.length ? ', all of them deprecated' : ' — nothing to deprecate'),
 );
