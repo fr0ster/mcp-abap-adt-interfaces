@@ -6,3 +6,4 @@
 
 export type { ILogger } from './logging/ILogger';
 export { LogLevel } from './logging/LogLevel';
+export type { XmlNode } from './xml/XmlNode';

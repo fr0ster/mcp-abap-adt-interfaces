@@ -21,13 +21,7 @@
 
 export type { AssertionErrorCode } from './auth/AssertionErrorCodes';
 export { ASSERTION_ERROR_CODES } from './auth/AssertionErrorCodes';
-export type { AuthType } from './auth/AuthType';
-export {
-  AUTH_TYPE_BASIC,
-  AUTH_TYPE_JWT,
-  AUTH_TYPE_XSUAA,
-  AUTH_TYPES,
-} from './auth/AuthType';
+export { AUTH_TYPE_BASIC, AUTH_TYPE_JWT } from './auth/AuthMethod';
 export type {
   AssertionContext,
   AssertionReplayKey,
@@ -35,7 +29,6 @@ export type {
   IAssertionValidator,
   ValidatedAssertion,
 } from './auth/IAssertionValidator';
-export type { IAuthorizationConfig } from './auth/IAuthorizationConfig';
 export type {
   AuthorizationOutcome,
   AuthorizationRequest,
@@ -48,21 +41,12 @@ export type {
   ICallbackServerOptions,
 } from './auth/ICallbackServer';
 export type { ICertificateMaterial } from './auth/ICertificateMaterial';
-export type { ICertificateMaterialLoader } from './auth/ICertificateMaterialLoader';
-export type { IConfig } from './auth/IConfig';
 export type { IConnectionConfig } from './auth/IConnectionConfig';
 export type {
   IApiKeyCredential,
   IBearerCredential,
   ISecretLoginCredential,
 } from './auth/ICredentials';
-export type { ISapConfig } from './sap/ISapConfig';
-export type {
-  SapAuthType,
-  SapConnectionType,
-} from './sap/SapAuthType';
-export type { IServiceKeyStore } from './serviceKey/IServiceKeyStore';
-export type { ISessionStore } from './session/ISessionStore';
 export type { ISessionState } from './store/ISessionState';
 export type { ISessionStorage } from './store/ISessionStorage';
 export type { StoreErrorCode } from './store/StoreErrorCodes';
@@ -85,6 +69,3 @@ export type { ITokenRefreshResult } from './token/ITokenRefreshResult';
 export type { ITokenResult } from './token/ITokenResult';
 export type { TokenProviderErrorCode } from './token/TokenProviderErrorCodes';
 export { TOKEN_PROVIDER_ERROR_CODES } from './token/TokenProviderErrorCodes';
-export type { IHeaderValidationResult } from './validation/IHeaderValidationResult';
-export type { IValidatedAuthConfig } from './validation/IValidatedAuthConfig';
-export { AuthMethodPriority } from './validation/IValidatedAuthConfig';

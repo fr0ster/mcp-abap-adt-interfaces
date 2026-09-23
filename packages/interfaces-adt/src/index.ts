@@ -1,10 +1,17 @@
 /**
  * @mcp-abap-adt/interfaces-adt
  *
- * ADT contracts, the ABAP and Cloud ALM connections, and SAP/BTP configuration and authentication contracts.
+ * ADT contracts: object operations, the ABAP connection, runtime analysis,
+ * execution, feeds and service bindings.
+ *
+ * **Only ADT.** The test is who imports this package: `@mcp-abap-adt/adt-clients`
+ * and whatever replaces its objects, and nobody else. Everything that failed
+ * that test has left — headers and the HTTP frame to `interfaces-network`, Cloud
+ * ALM to `interfaces-calm`, authentication, tokens and stores to
+ * `interfaces-auth`, the SAP system configuration to `interfaces-auth-sap`,
+ * `HttpError` to `-network` and `XmlNode` to `-utils`.
  */
 
-export type { HttpError, XmlNode } from './adt/AdtTypes';
 export type {
   IAbapGitExternalRepoCredentials,
   IAbapGitLinkArgs,

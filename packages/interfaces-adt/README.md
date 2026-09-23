@@ -1,14 +1,14 @@
 # @mcp-abap-adt/interfaces-adt
 
-ADT contracts, the ABAP connection, and SAP/BTP configuration and authentication contracts.
+ADT contracts: object operations, the ABAP connection, runtime analysis, execution, feeds and service bindings.
 
 ## TL;DR
 
-- Everything a package on the SAP side accepts: ADT object operations, runtime analysis, execution, feeds, services, the ABAP connection, SAP/BTP configuration, token providers, SAML assertion validation, session and service-key stores, and header validation.
-- **Two things left in 8.0.0.** Every HTTP header name, and the groups over them, are in [`@mcp-abap-adt/interfaces-network`](../interfaces-network) — a header name says how a value travels, not what it means, and nothing here ever used one. The Cloud ALM contracts are [`@mcp-abap-adt/interfaces-calm`](../interfaces-calm) — Cloud ALM is not ABAP. `AUTH_TYPE_JWT` and its siblings stay: those are values a header carries.
-- `IAdtWireResponse` now extends `IHttpWireResponse` from `-network` and keeps the headers ADT sends (`sap-adt-location`, both spellings of `content-location`). The name and shape are unchanged for a consumer.
-- Depends on `@mcp-abap-adt/interfaces-auth`, `@mcp-abap-adt/interfaces-network` and `@mcp-abap-adt/interfaces-utils`. Types and constants; no implementation.
-- Moved unchanged from `@mcp-abap-adt/interfaces` 44.0.0. Most majors of that package came from these contracts; this package now carries them alone.
+- **Only ADT.** The test is who imports this package: `@mcp-abap-adt/adt-clients` and whatever replaces its objects, and nobody else. Measured against every repository in development — the only others reaching in are `gcts-client` and `cloud-llm-hub`, for `IAbapConnection`, `IAbapRequestOptions` and `IAdtResponse`, which is that test met.
+- What it holds: ADT object operations for 31 object types, the ABAP connection and its capability atoms, runtime analysis, execution, feeds, service bindings, `IAdtResponse` and the error codes.
+- **What left, and where.** Every HTTP header name and the HTTP frame → [`interfaces-network`](../interfaces-network). Cloud ALM → [`interfaces-calm`](../interfaces-calm). Authentication, tokens, credential stores, header validation → [`interfaces-auth`](../interfaces-auth). The SAP system configuration — `ISapConfig`, `SapAuthType`, `SapConnectionType` — → [`interfaces-auth-sap`](../interfaces-auth-sap). `HttpError` → `-network`, `XmlNode` → `-utils`.
+- `IAdtWireResponse` extends `IHttpWireResponse` from `-network` and keeps the headers ADT sends (`sap-adt-location`, both spellings of `content-location`). Name and shape unchanged for a consumer.
+- Depends on `@mcp-abap-adt/interfaces-network` and `@mcp-abap-adt/interfaces-utils`. Types and constants; no implementation.
 
 ## Install
 
