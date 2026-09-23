@@ -38,9 +38,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **BREAKING: `changeTaskType` takes `AdtTaskType`** instead of the inline
-  union. The same three values, so a call passing `'S'` still compiles; a
-  declaration that spelled the union out does not.
+- **`changeTaskType` takes `AdtTaskType`** instead of the inline union. **Not
+  a break.** The alias is those same three values and TypeScript compares
+  types structurally, so a call passing `'S'` compiles and so does a
+  declaration that spells the union out — the two are mutually assignable.
+  This entry called it breaking and said such a declaration would stop
+  compiling; both were wrong, caught in review. What makes 7.0.0 a major is
+  the removal below.
 
 ### Removed
 
@@ -63,11 +67,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   that read them: the field has exactly one reader besides the write, and that
   is `check`/`validate`, which compile a source the server does not hold yet
   and have no options channel to take it from. Six of the 26 lose the field
-  here; 20 keep it. The six types above
-  have no such member — `domain` passes `undefined` where the source would go,
-  `dataElement` and `authorizationField` send none, `tableType` validates a
-  description, and `package`, `functionGroup` and `transportRequest` have
-  neither member. Nothing read their `source` but the write.
+  here; 20 keep it. None of the six has such a member — `domain` passes
+  `undefined` where the source would go, `dataElement` sends none, `tableType`
+  validates a description, and `package`, `functionGroup` and
+  `transportRequest` have neither. Nothing read their `source` but the write.
+
+  `IAuthorizationFieldConfig` is in the same position and is deliberately
+  **not** in the count: it never declared a `source`, so it is outside the 26
+  and has nothing to lose here.
 
   The configs that keep it are the ones whose `check` or `validate` compiles
   it. `IAdtOperationOptions.source` now says this outright.

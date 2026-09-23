@@ -2442,7 +2442,8 @@ configs that declared a `source`, and the implementations in
 `@mcp-abap-adt/adt-clients` that read them: besides the write, the field has
 exactly one reader, `check`/`validate`, and those members have no options
 channel to take a source from — they compile text for a name that may not
-exist yet. Six of the 26 have no such member, and 20 are left declaring it. `domain` passes `undefined` where the source would go,
+exist yet. Six of the 26 have no such member, and 20 are left declaring it.
+`domain` passes `undefined` where the source would go,
 `dataElement` and `authorizationField` send none, `tableType` validates a
 description, and `package`, `functionGroup` and `transportRequest` declare
 neither. For those six the field had one reader, the write, and the write has a

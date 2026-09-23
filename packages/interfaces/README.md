@@ -299,10 +299,10 @@ This package is responsible for:
     50.0.0: it was `sourceCode` and `xmlContent`, split by whether the payload
     was ABAP text or an XML document, which asked the caller to classify
     something this package never reads (decision 32). Since 51.0.0 it is also
-    the **only** place a write's body is read from (decision 33): every config
-    used to declare a `source` too and tell the caller to pass it there, so an
-    implementation had two channels and one of the two sentences was always a
-    lie. A config's `source` is what that type's `check` or `validate`
+    the **only** place a write's body is read from (decision 33): 26 configs
+    declared a `source` of their own and told the caller to pass it there, so
+    for those an implementation had two channels and one of the two sentences
+    was always a lie. A config's `source` is what that type's `check` or `validate`
     compiles — a source the server does not hold yet — and the six types with
     no such member no longer declare it. Nothing about what a
     member should do *after* it: `activateOnCreate`, `activateOnUpdate` and
