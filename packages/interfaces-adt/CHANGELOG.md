@@ -136,7 +136,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   3.0.0 and 4.0.0 spent themselves removing, and the fields are a day old with
   no importer anywhere under `~/prj`.
 
-## [5.0.0] - 2026-09-23
+## [5.0.0] - 2026-09-23 — never published, superseded by 6.0.0
+
+> **Never published.** 6.0.0 was tagged before this version reached the
+> registry, so npm goes 4.1.0 → 6.0.0 and everything below arrived there. A
+> consumer looking for `changeTaskType` wants **6.0.0 or later**, not this.
 
 ### Changed
 
