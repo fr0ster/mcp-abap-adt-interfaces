@@ -2259,11 +2259,28 @@ compiler.
    `IAdtValidatable<…>` — and the implementation substitutes the same type into
    all the slots. Splitting does not fight the shape; it finally uses it.
 
-2. **The concrete input and result types live in the implementation package.**
-   `@mcp-abap-adt/interfaces-adt` keeps the parameterised atoms; the concrete
-   `TConfig` and `TCreated` for a domain, a class and their twenty-six
-   neighbours live in `@mcp-abap-adt/adt-clients`, beside the code that reads
+2. **The contract holds the agnostic shape; the implementation holds its
+   realisation.** `@mcp-abap-adt/interfaces-adt` keeps the parameterised atoms
+   *and* the general input and result interfaces they are parameterised with —
+   what any ADT create takes, what any write takes, what any of them answers.
+   The concrete `IDomainCreateConfig` and its twenty-seven neighbours extend
+   those and live in `@mcp-abap-adt/adt-clients`, beside the code that reads
    them.
+
+   The agnostic layer is not a guess at what might be shared: it is already
+   written out by hand, 39 times. Counted across the ADT configs,
+   `transportRequest` appears in **34**, `description` in **31**,
+   `packageName` in **27**, `masterLanguage` in 22, `masterSystem` and
+   `responsible` in 9 each — and **not one of the 39 extends anything**. That
+   repetition is the shape the contract should be holding.
+
+   One thing resists it, and is recorded rather than solved: the object's own
+   name. It is `className`, `includeName`, `tableName`,
+   `serviceDefinitionName`, `scalarFunctionName` — a different field per type,
+   so no agnostic base can carry it without renaming twenty-eight types. The
+   cheapest reading is that the name stays the concrete type's business and the
+   base carries only what surrounds it; normalising to `name` is a separate
+   decision, and a larger one.
 
 **Against.** Decision 26 — a contract lives where it is accepted — and the
 principle that everything a consumer needs is in `interfaces`, so any
@@ -2282,9 +2299,13 @@ So for the ADT configs the rule was already not being followed, and nobody
 noticed because nothing broke — which is the definition of a rule that is not
 load-bearing.
 
-Swappability survives, and at the level where it belongs. A consumer who
-replaces the implementation pulls the same `interfaces` for the atoms and their
-own package for the concrete types; the atom is what makes two implementations
+Swappability survives, and at the level where it belongs — it is the point of
+the arrangement rather than a casualty of it. A consumer who replaces the
+implementation pulls the same `interfaces` for the atoms **and for the agnostic
+input shapes**, and their own package for the realisation: code written against
+the general interface keeps working across implementations, and each
+implementation adds what only it knows. Network and authentication already work
+this way, in `interfaces-network` and `interfaces-auth`; the atom is what makes two implementations
 interchangeable, and it is generic precisely so the config need not be shared.
 What would not survive is a consumer's code being portable between two
 implementations without change — and that is already untrue, since the
