@@ -22,7 +22,7 @@ npm install @mcp-abap-adt/interfaces-adt
 |---|---|---|
 | `adt/` | 39 | the object contracts: capability atoms, the object types, `IAdtResponse`, `IAdtError`, the error codes, the transport request's object list |
 | `connection/` | 4 | `IAbapConnection`, `IAbapRequestOptions`, the connection capability atoms, and `ITimeoutConfig` — here since 9.0.0, because `csrf` names an SAP operation rather than a transport primitive. `IAdtWireResponse` extends `IHttpWireResponse` from `-network` |
-| `runtime/` | 11 | runtime analysis: the profiler, ABAP and SQL traces (`ITrace`, `ICrossTrace`, `ISt05Trace`), application, ATC, gateway-error and DDIC-activation logs, `IAtcRun`, runtime dumps, system messages |
+| `runtime/` | 11 | runtime analysis: `IProfiler`, the trace contracts (`ITraceListing`/`ITraceReading`, `ICrossTrace`, `ISt05Trace`), `IApplicationLog`, `IAtcLog` and the ATC run (`IAtcRunOptions`, `IAtcFindings`), `IDdicActivation`, `IGatewayErrorLog`, `IRuntimeDumps`, `ISystemMessages` |
 | `execution/` | 3 | class and program execution, with profiling |
 | `feeds/` | 2 | the ADT feed contracts |
 | `service/` | 1 | service definitions and bindings |
@@ -50,6 +50,50 @@ Two of the signatures say things a capture cannot. 1.2.0 was declared from captu
 So `createTask` requires `targetUser` and `removeObject` requires `position`, and `readObjects` was added because otherwise the second would require a value this package offers no way to obtain — leaving a caller to parse a transport document themselves for a `tm:position`. It is its own member because it answers its own thing: entries, each with its position as a value, rather than a document. What an implementation sends to get them is its own business; the contract says what must come back.
 
 `addObject` still takes an entry without a position — one that does not exist yet has none.
+
+## Migrating to 9.0.0
+
+Nothing changed shape. Every break is an import moving to the package that
+declares the name now, so `tsc` finds all of them and none of them silently.
+
+```ts
+// Authentication in general — 32 names, among them:
+- import type { IAuthProvider, ITokenProvider, ITokenRefresher } from '@mcp-abap-adt/interfaces-adt';
++ import type { IAuthProvider, ITokenProvider, ITokenRefresher } from '@mcp-abap-adt/interfaces-auth';
+
+// Authentication that names SAP or BTP — 16 names, among them:
+- import type { ISapConfig, IConnectionConfig, ISessionStore } from '@mcp-abap-adt/interfaces-adt';
++ import type { ISapConfig, IConnectionConfig, ISessionStore } from '@mcp-abap-adt/interfaces-auth-sap';
+- import { AUTH_TYPE_XSUAA, AUTH_TYPES } from '@mcp-abap-adt/interfaces-adt';
++ import { AUTH_TYPE_XSUAA, AUTH_TYPES } from '@mcp-abap-adt/interfaces-auth-sap';
++ import { AUTH_TYPE_JWT, AUTH_TYPE_BASIC } from '@mcp-abap-adt/interfaces-auth';   // not re-exported
+
+// An HTTP failure, and a parsed node:
+- import type { HttpError, XmlNode } from '@mcp-abap-adt/interfaces-adt';
++ import type { HttpError } from '@mcp-abap-adt/interfaces-network';
++ import type { XmlNode } from '@mcp-abap-adt/interfaces-utils';
+
+// And one arriving here, from interfaces-network:
+- import type { ITimeoutConfig } from '@mcp-abap-adt/interfaces-network';
++ import type { ITimeoutConfig } from '@mcp-abap-adt/interfaces-adt';
+```
+
+**Three names are not anywhere.** `ISessionState` and `ISessionStorage` are
+deleted — cookies, a CSRF token and a cookie store are HTTP session state, which
+no package's subject names and which no repository under development imports; a
+consumer that wants them declares them, since what a cookie jar holds is an
+implementation's business. `AuthTypeEnum` was an alias of `AuthType`, and one
+contract with two names is something a consumer has to guess between: take
+`AuthType` from `interfaces-auth-sap`.
+
+**Ranges, so an install resolves one copy of each package.** A range one major
+behind is what npm answers by silently nesting a second copy, so a consumer on
+this release takes `interfaces-network@^2.0.0`, `interfaces-auth@^1.2.0`,
+`interfaces-auth-sap@^1.0.0` and `interfaces-utils@^1.1.0` — whichever of them it
+imports from.
+
+Decision 35 in the repository's `docs/architecture/DECISIONS.md` says why each
+name went where it did, and why the accepting package stopped deciding it.
 
 ## Migrating to 7.0.0
 

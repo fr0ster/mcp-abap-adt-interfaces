@@ -15,12 +15,17 @@ Measured against the tree at 30.0.0. Numbers here are counted from the emitted
 
 ## 1. What this package is
 
-`@mcp-abap-adt/interfaces` is **the contract, and nothing else**. 346 exported
-symbols, of which 51 carry runtime values: 43 string constants (`HEADER_*`,
-`AUTH_TYPE_*`, `ADT_NO_FAILURE`), 6 maps of codes (`AdtObjectErrorCodes`,
-`NETWORK_ERROR_CODES`, `SERVICE_BINDING_VARIANT_MAP` and three more) and 2 enums
-(`AuthMethodPriority`, `LogLevel`). Everything else is a type. It emits **no class and no function** —
-every other module compiles to an empty JavaScript file.
+This repository is **the contract, and nothing else** — six packages, no
+facade over them since decision 34. **311 exported symbols**, of which 53 carry
+runtime values: 36 string constants (24 `HEADER_*`, 10 `AUTH_TYPE_*`,
+`ADT_NO_FAILURE`, `TRANSPORT_SEARCH_CONFIGURATIONS_URL`), 8 maps of codes or
+letters (`AdtObjectErrorCodes`, `ADT_SESSION_ERROR`, `ADT_TASK_TYPE`,
+`SERVICE_BINDING_VARIANT_MAP`, `NETWORK_ERROR_CODES`, `ASSERTION_ERROR_CODES`,
+`STORE_ERROR_CODES`, `TOKEN_PROVIDER_ERROR_CODES`), 7 groups over other
+constants (the five header groups, `AUTH_TYPES`, `CALM_SERVICES`) and 2 enums
+(`AuthMethodPriority`, `LogLevel`). Everything else is a type. It emits **no
+class and no function** — every other module compiles to an empty JavaScript
+file.
 
 That is a design constraint, not an accident of scope. A contract says what a
 thing *is*; shipping one way of being it makes "use your own implementation"
@@ -48,14 +53,23 @@ consumer names the package that declares what they use. A contract package may
 depend on a sibling contract package, and on nothing else:
 
 ```
-interfaces-utils    interfaces-auth    interfaces-network
-       ▲                  ▲              ▲          ▲
-       └──────── interfaces-adt ─────────┘    interfaces-calm
+interfaces-utils          interfaces-network
+       ▲                   ▲            ▲
+interfaces-auth      interfaces-adt   interfaces-calm
+       ▲
+interfaces-auth-sap
 ```
 
+Five edges, and each one is the only dependency its package has.
 `interfaces-adt` reaches `interfaces-network` for the HTTP frame and nothing
-else; `interfaces-calm` reaches it for the same frame and depends on nothing
-more, Cloud ALM having no ABAP in it.
+else; `interfaces-calm` reaches it for the same frame, Cloud ALM having no ABAP
+in it; `interfaces-auth` reaches `interfaces-utils` for `ILogger`, and
+`interfaces-auth-sap` reaches `interfaces-auth` — `utils` arrives through it,
+which makes it that package's dependency rather than its own.
+
+**A dependency nothing imports is a defect, not a spare edge**, and
+`npm run check:graph` fails on one: two of these were declared after the last
+import of them left, one of them in a `tsconfig` project reference alone.
 
 The arrow to implementations still runs one way:
 
@@ -237,28 +251,47 @@ it seemed likely.
 `src/` is organised by what a family *is*, not by layer. Two groups, and the
 distinction decides which rules above apply.
 
-**Which package holds them** (decision 26, refined by 34). The ADT contracts,
-and every infrastructure contract accepted only on the SAP side, are in
-`@mcp-abap-adt/interfaces-adt`. `logging/` is `@mcp-abap-adt/interfaces-utils`.
-Every HTTP header name, the groups over them and the HTTP frame
-`IHttpWireResponse` are `@mcp-abap-adt/interfaces-network` — a header name says
-how a value travels, not what it means. The Cloud ALM contracts are
-`@mcp-abap-adt/interfaces-calm`, because Cloud ALM is not ABAP.
-The WebSocket transport, network error codes and timeouts are
-`@mcp-abap-adt/interfaces-network` too. `IAuthProvider` and
-`ICertificateMaterial` are `@mcp-abap-adt/interfaces-auth`. `storage/` — the
-session state and storage contracts — went to `interfaces-adt` with the facade's
-removal, beside the session and token contracts they belong with.
+**Which package holds them** (decision 26 for whether a contract belongs here at
+all, decision 35 for which package). A contract lives where its **own fields**
+put it, not with its first acceptor:
 
-### ADT contracts — 97 members, all answering `IAdtResponse`
+- `@mcp-abap-adt/interfaces-adt` — the ADT contracts and the ABAP connection,
+  and nothing else. `ITimeoutConfig` is here rather than in `-network` because
+  `csrf` names an SAP operation.
+- `@mcp-abap-adt/interfaces-network` — the HTTP frame `IHttpWireResponse`,
+  `HttpError`, the WebSocket transport, the network error codes, and **every**
+  header name with the five groups over them: a header name says how a value
+  travels, not what it means.
+- `@mcp-abap-adt/interfaces-auth` — authentication anywhere: credentials, OAuth
+  grants, tokens, interactive login, SAML assertions, `AUTH_TYPE_JWT`,
+  `AUTH_TYPE_BASIC`.
+- `@mcp-abap-adt/interfaces-auth-sap` — authentication that names something SAP
+  or BTP owns: `ISapConfig`, `IConnectionConfig` (it carries `sapClient`),
+  service keys, destinations, UAA, and `AUTH_TYPE_XSUAA` with the union over all
+  three, XSUAA being a BTP service.
+- `@mcp-abap-adt/interfaces-calm` — Cloud ALM, which is not ABAP.
+- `@mcp-abap-adt/interfaces-utils` — `ILogger`, `LogLevel`, `XmlNode`: what
+  belongs to no one system.
+
+`storage/` is gone rather than placed: `ISessionState` and `ISessionStorage`
+described cookies and a CSRF token, which no package's subject names and no
+consumer imports, so they were deleted in `interfaces-adt` 9.0.0.
+
+### ADT contracts — every member answering `IAdtResponse`
+
+Over 110 of them, counted as method signatures declared in the directories
+below; the exact figure moves with every object type, which is why the interest
+is in the shape rather than the number.
 
 | directory | what it holds |
 |---|---|
-| `adt/` (40 files) | the capability atoms (`IAdtCreatable`, `IAdtReadable`, …), one file per ADT object type with its config and low-level params, the cross-cutting utilities (`IAdtInformationSystem` and the four atoms it composes, `IAdtRepositoryStructure`, `IAdtGroupLifecycle`, `IAdtDataPreview`, `IAdtDiscovery`, `IAdtObjectAccess`), transport, abapGit, client options, content types |
-| `runtime/` (12) | what a system says about itself after the fact — profiler and traces, dumps, ATC, application log, DDIC activation, gateway errors, system messages |
+| `adt/` (39 files) | the capability atoms (`IAdtCreatable`, `IAdtReadable`, …), one file per ADT object type with its config and low-level params, the cross-cutting utilities (`IAdtInformationSystem` and the four atoms it composes, `IAdtRepositoryStructure`, `IAdtGroupLifecycle`, `IAdtDataPreview`, `IAdtDiscovery`, `IAdtObjectAccess`), transport, abapGit, client options, content types |
+| `runtime/` (11) | what a system says about itself after the fact — the profiler, the ABAP and SQL traces, dumps, ATC (log and run), application log, DDIC activation, gateway errors, system messages |
 | `service/` (1) | the service binding: what it has that the atoms do not cover |
 | `feeds/` (2) | the ADT feed repository |
 | `execution/` (3) | being run: `IAdtRunnable`, the two profiler atoms, trace scheduling, and the two executors composed from them |
+| `connection/` (4) | `IAbapConnection`, `IAbapRequestOptions`, the connection capability atoms, `ITimeoutConfig` |
+| `shared/` (1) | what more than one object type needs |
 
 An object type is **not** a wide interface. A handler declares the atoms it
 honours, and a type states what is supported, never what is lacking (decision 2)
@@ -266,8 +299,12 @@ honours, and a type states what is supported, never what is lacking (decision 2)
 
 ### Infrastructure — not ADT contracts
 
-`auth/`, `connection/`, `session/`, `serviceKey/`, `storage/`, `store/`,
-`token/`, `logging/`, `sap/`, `validation/`, `shared/`, `utils/`.
+They are not in `interfaces-adt` any more, which is the point of 9.0.0:
+`auth/`, `token/`, `store/` and the assertion contracts are `interfaces-auth`;
+`sap/`, `session/`, `serviceKey/` and `validation/` are `interfaces-auth-sap`;
+the header names, the HTTP frame and the WebSocket transport are
+`interfaces-network`; `logging/` and `XmlNode` are `interfaces-utils`. What stays
+here is `connection/` — the ABAP connection itself is an ADT contract.
 
 These describe how a connection is made and kept, not what ADT answered. The
 two-axis model does not apply to them: there is no server answer to shape and no
@@ -295,7 +332,7 @@ implementation package:
 | a whole family | your own implementation of those atoms |
 
 The last row is the test the package is built to pass, and it is asserted rather
-than assumed: `src/__typechecks__/` contains 22 files whose job is to prove that
+than assumed: `interfaces-adt/src/__typechecks__/` contains 21 files whose job is to prove that
 something written **outside** this package can satisfy each contract — one family
 alone, composed families, a consumer's own readings, and the shapes that must
 *not* compile.
@@ -325,10 +362,10 @@ There is no CI on this repository. What holds instead:
 
 1. **The compiler** — `npm run build` and `npm run test:check` (`tsc --noEmit`
    over every package's `src/`, which includes its typechecks).
-2. **The typechecks** — 23 files of compile-only assertions (22 in
-   `interfaces-adt`, one in `interfaces-auth`), including the ones that must
-   *fail* (`@ts-expect-error`). They are the tests of a package that has
-   nothing to run.
+2. **The typechecks** — 25 files of compile-only assertions (21 in
+   `interfaces-adt`, 3 in `interfaces-auth`, 1 in `interfaces-auth-sap`),
+   including the ones that must *fail* (`@ts-expect-error`). They are the tests
+   of a package that has nothing to run.
 3. **Enumerate, edit, count** — a removal is verified by listing the targets,
    editing, then grepping every touched symbol across `src`, `README.md` and
    `docs/`, and comparing counts. Six review rounds on #63 found zero defects in
@@ -348,7 +385,12 @@ There is no CI on this repository. What holds instead:
    the half that never depended on the facade, and it is the question the split
    exists to keep answerable.
 6. **The package graph** — `npm run check:graph`: every import is one the graph
-   in §1 allows, and is declared in that package's `package.json`.
+   in §1 allows and is declared in that package's `package.json`, **and every
+   declared dependency is imported**. The second half was added after a review
+   found `interfaces-utils` declared by two packages that import nothing from it,
+   and a `tsconfig` project reference outliving the import that justified it by a
+   release: checking one direction only says a dependency is permitted, never
+   that it is used.
 7. **What npm installs** — `npm run check:packed` packs every package, installs
    the tarballs into a clean project with Node's types and no workspace links,
    type-checks the published `.d.ts` files without `skipLibCheck`, and requires

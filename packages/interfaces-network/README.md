@@ -36,6 +36,23 @@ travels, not what it means — and nothing in the ADT contract ever used one.
 `AUTH_TYPE_JWT` and its siblings stayed there: those are values a header
 carries, not names of headers.
 
+## Migrating to 2.0.0
+
+One import moves, and it moves *out* of this package.
+
+```ts
+- import type { ITimeoutConfig } from '@mcp-abap-adt/interfaces-network';
++ import type { ITimeoutConfig } from '@mcp-abap-adt/interfaces-adt';
+```
+
+Its fields are `default`, `csrf` and `long`: fetching a CSRF token is an SAP
+operation rather than a transport primitive, and `long` is a client's policy for
+a long-polling read, so the type named operations this package does not have. Its
+one consumer, `mcp-abap-connection`, takes `interfaces-adt` already.
+
+Nothing else changed, and `HttpError` arrived from `interfaces-adt` 9.0.0 — so a
+consumer that took it from there repoints that import here.
+
 ## Coming from `@mcp-abap-adt/interfaces`
 
 Replace the package name in the import. The facade is **deleted** as of its 52.0.0, which was never published — npm still serves 51.0.0, with every symbol re-exported and deprecated, to anyone pinned to it. There is nothing further to move to: take the package that declares the name.

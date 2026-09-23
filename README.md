@@ -10,7 +10,7 @@ Contracts for the MCP ABAP ADT packages: types and constants, no implementations
 
 | package | holds | depends on |
 |---|---|---|
-| [`@mcp-abap-adt/interfaces-utils`](packages/interfaces-utils) | logging: `ILogger`, `LogLevel` | nothing |
+| [`@mcp-abap-adt/interfaces-utils`](packages/interfaces-utils) | what belongs to no one system: `ILogger`, `LogLevel`, `XmlNode` | nothing |
 | [`@mcp-abap-adt/interfaces-network`](packages/interfaces-network) | WebSocket transport, `NETWORK_ERROR_CODES`, `IHttpWireResponse`, `HttpError`, **every HTTP header name** and the five groups over them | nothing |
 | [`@mcp-abap-adt/interfaces-auth`](packages/interfaces-auth) | authentication: credentials, OAuth grants, tokens, interactive login, SAML assertions, `AUTH_TYPE_JWT`/`BASIC` | `interfaces-utils` |
 | [`@mcp-abap-adt/interfaces-auth-sap`](packages/interfaces-auth-sap) | the SAP and BTP half: `ISapConfig`, `SapAuthType`, `IConnectionConfig`, UAA, service keys, destinations, `AUTH_TYPE_XSUAA` | `interfaces-auth` |
@@ -19,7 +19,7 @@ Contracts for the MCP ABAP ADT packages: types and constants, no implementations
 
 ## Why these packages
 
-One version line for every contract meant an ADT major bumped a package that only needed `IAuthProvider`. A contract now lives where it is accepted — decision 26 in [`docs/architecture/DECISIONS.md`](docs/architecture/DECISIONS.md); the design is in [`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md).
+One version line for every contract meant an ADT major bumped a package that only needed `IAuthProvider`. Decision 26 in [`docs/architecture/DECISIONS.md`](docs/architecture/DECISIONS.md) says whether a contract belongs in this repository at all; **decision 35 says which package holds it — the one whose subject the contract's own fields name**, not the one its first acceptor happens to be, because `auth-providers` accepts both `ITokenProvider` and `ISapConfig` and the accepting side therefore answers nothing. The design is in [`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md).
 
 ## Working in this repository
 
