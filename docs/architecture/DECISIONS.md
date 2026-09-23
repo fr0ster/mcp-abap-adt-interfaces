@@ -2363,7 +2363,8 @@ config fields** — `sourceCode` in 15, `document` in 6, `ddlCode` *and*
 `testClassSource`, plus `localTypesCode`, `definitionsCode`, `macrosCode`,
 `implementationCode` — and `source` itself, which one config already used. The
 eleventh name is the one the other ten became. The write **options** split it
-again, and by a different principle: `sourceCode` for ABAP text and `xmlContent` for an XML document.
+again, and by a different principle: `sourceCode` for ABAP text and
+`xmlContent` for an XML document.
 
 That second split is the one that gives the game away. It asks the caller to
 classify a payload this package never reads, in order to choose a field that is
