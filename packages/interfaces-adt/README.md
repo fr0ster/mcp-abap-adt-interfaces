@@ -88,9 +88,10 @@ contract with two names is something a consumer has to guess between: take
 
 **Ranges, so an install resolves one copy of each package.** A range one major
 behind is what npm answers by silently nesting a second copy, so a consumer on
-this release takes `interfaces-network@^2.0.0`, `interfaces-auth@^1.2.0`,
-`interfaces-auth-sap@^1.0.0` and `interfaces-utils@^1.1.0` — whichever of them it
-imports from.
+this release takes `interfaces-network@^2.0.0` and the current major of whichever
+of `interfaces-auth`, `interfaces-auth-sap` and `interfaces-utils` it imports
+from — at the time of writing `interfaces-auth@^2.0.0`, `interfaces-auth-sap@^1.0.1`
+and `interfaces-utils@^1.1.0`.
 
 Decision 35 in the repository's `docs/architecture/DECISIONS.md` says why each
 name went where it did, and why the accepting package stopped deciding it.
