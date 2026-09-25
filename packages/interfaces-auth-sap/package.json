@@ -1,6 +1,6 @@
 {
   "name": "@mcp-abap-adt/interfaces-auth-sap",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "SAP and BTP authorization contracts: service keys, destinations, UAA, SAP connection configuration",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -36,6 +36,6 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@mcp-abap-adt/interfaces-auth": "^1.2.0"
+    "@mcp-abap-adt/interfaces-auth": "^1.2.0 || ^2.0.0"
   }
 }

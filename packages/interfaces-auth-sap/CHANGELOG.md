@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-09-25
+
+### Changed
+
+- **`@mcp-abap-adt/interfaces-auth` accepted as `^1.2.0 || ^2.0.0`.** This
+  package uses `AUTH_TYPE_BASIC`, `AUTH_TYPE_JWT` and `ICertificateMaterial`,
+  none of which 2.0.0 changes (it made `AssertionContext.expectedInResponseTo`
+  optional). With `^1.2.0` alone, a consumer on `interfaces-auth` 2.0.0 got a
+  second, private copy of 1.x installed under this package. Nothing in this
+  package's own declarations changes.
+
 ## [1.0.0] - 2026-09-23
 
 ### Added
