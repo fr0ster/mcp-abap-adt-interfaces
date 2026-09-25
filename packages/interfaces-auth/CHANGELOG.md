@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking: `AssertionContext.expectedInResponseTo` is optional.** Absent
+  means the login was declared IdP-initiated — no AuthnRequest was sent — and
+  a validator must then refuse an assertion carrying `InResponseTo` at all,
+  not skip the check. The reason is measured: UAA and XSUAA refuse, on the
+  saml2-bearer grant, any assertion carrying `InResponseTo`, so an
+  IdP-initiated assertion is the only kind a bearer flow can use.
+
+  **An implementer of `IAssertionValidator` must now handle `undefined`**:
+  compare `InResponseTo` when the field is present, require it absent when
+  the field is absent. A caller building an `AssertionContext` is unaffected.
+
+- `ValidatedAssertion.raw` is documented as the validator's unchanged input —
+  a Response, or a bare Assertion where the validator accepts one — and no
+  longer promises that a flow forwards it verbatim. `validate`'s parameter is
+  documented to match. Documentation only.
+
 ## [1.2.0] - 2026-09-23
 
 ### Added

@@ -11,8 +11,12 @@ import type { ILogger } from '@mcp-abap-adt/interfaces-utils';
 
 /** What the provider knows about the login the assertion is answering. */
 export interface AssertionContext {
-  /** The AuthnRequest ID this response must answer. */
-  readonly expectedInResponseTo: string;
+  /**
+   * The AuthnRequest ID this response must answer. Absent for a login declared
+   * IdP-initiated: then no request was sent, and a validator must refuse an
+   * assertion that carries `InResponseTo` at all.
+   */
+  readonly expectedInResponseTo?: string;
   /** Our entity ID, which the AudienceRestriction must name. */
   readonly audience: string;
   /** The ACS the response arrived at; Recipient and Destination must match. */
@@ -42,13 +46,15 @@ export interface ValidatedAssertion {
   readonly sessionIndex?: string;
   readonly attributes?: Readonly<Record<string, readonly string[]>>;
   /**
-   * The response exactly as it arrived, for a flow that must forward it
-   * verbatim.
+   * The validator's input, unchanged: a whole `samlp:Response`, or a bare
+   * `saml:Assertion` where the validator accepts one. It promises nothing
+   * about what a flow forwards afterwards — a flow may send it on as it is,
+   * or extract the one Assertion from it.
    *
-   * **The wire payload, not a validated artifact.** It is the whole
-   * `samlp:Response`, and under `createSignedAssertionValidator` that includes
-   * `Status`, `Response/Issuer` and `Destination`, which nothing read and
-   * nothing checked. Holding a `ValidatedAssertion` does not make every byte
+   * **The wire payload, not a validated artifact.** When it is a Response
+   * validated by `createSignedAssertionValidator`, it includes `Status`,
+   * `Response/Issuer` and `Destination`, which nothing read and nothing
+   * checked. Holding a `ValidatedAssertion` does not make every byte
    * of `raw` trustworthy.
    */
   readonly raw: string;
@@ -66,10 +72,15 @@ export interface ValidatedAssertion {
 
 /**
  * Establishes that an assertion is genuine, addressed to us, currently valid,
- * and answers a request we made. Rejects by throwing, with a reason naming the
- * check that failed.
+ * and answers a request we made — or, for a login declared IdP-initiated,
+ * answers none. Rejects by throwing, with a reason naming the check that
+ * failed.
  */
 export interface IAssertionValidator {
+  /**
+   * @param samlResponse base64 of a `samlp:Response`, or of a bare
+   *   `saml:Assertion` for a validator that accepts one.
+   */
   validate(
     samlResponse: string,
     context: AssertionContext,
