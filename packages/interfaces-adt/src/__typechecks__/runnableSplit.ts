@@ -13,10 +13,11 @@
  * intersection where a runner has all three.
  *
  * Proved load-bearing 2026-08-14: making `options` required in `IAdtRunnable`
- * makes `_ExecutorRunTakesExactlyTarget` fail with TS2344, and reverting that
- * one edit makes it pass again.
+ * made the assertion on its parameter list fail with TS2344, and reverting that
+ * one edit made it pass again. The same assertion now pins the 10.0.0 list.
  */
 
+import type { IAdtAnalyseOptions } from '../adt/IAdtObject';
 import type { IAdtResponse } from '../adt/IAdtResponse';
 import type { IAdtWireResponse } from '../connection/IAbapConnection';
 import type {
@@ -104,18 +105,27 @@ export type _ProfilingAtomIsOneMethod = Assert<
  * `Parameters<IAdtRunnable['run']>`, or building a wrapper from tuple types,
  * would have seen a signature change that every other assertion here called
  * unchanged. Found in review of PR #36.
+ *
+ * **10.0.0 changed it on purpose, and this is where that is stated.** Until then
+ * a runner without options took exactly its target. Every member takes the
+ * error strategy with the call now (decision 36), so the second parameter is
+ * always there and carries `analyse`. `Parameters` of an overloaded member reads
+ * the last overload, which is the one a caller without a strategy uses.
  */
-export type _ExecutorRunTakesExactlyTarget = Assert<
-  Equal<Parameters<Executor['run']>, [target: { name: string }]>
+export type _ExecutorRunTakesTargetAndTheErrorStrategy = Assert<
+  Equal<
+    Parameters<Executor['run']>,
+    [target: { name: string }, options?: IAdtAnalyseOptions]
+  >
 >;
 
-/** And a flavour that has options still declares them. */
+/** And a flavour that has options still declares them, beside `analyse`. */
 export type _RunnableKeepsItsOptions = Assert<
   Equal<
     Parameters<
       IAdtRunnable<{ name: string }, IAdtWireResponse, { deep: true }>['run']
     >,
-    [target: { name: string }, options?: { deep: true }]
+    [target: { name: string }, options?: { deep: true } & IAdtAnalyseOptions]
   >
 >;
 

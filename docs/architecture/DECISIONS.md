@@ -1620,6 +1620,13 @@ as optional functions on the `IAdtOperationOptions` handlers already accept. The
 error one is given both the default's verdict and the raw answer, so a consumer
 can overrule in either direction.
 
+> **Superseded in where each arrives.** The result strategy moved to
+> construction in decision 22. The error strategy stays with the call and, by
+> decision 36, is taken by **every** member rather than those that happened to
+> accept `IAdtOperationOptions`, through `IAdtAnalyseOptions`; the "default's
+> verdict" it is handed is the transport's, since an implementation ships no
+> reading of its own.
+
 **Why the choice cannot be replaced by a better default.** ADT answers a request
 for a missing object with 200 and an empty body rather than a refusal. The same
 bytes mean opposite things depending on the caller: a read-modify-write must
@@ -2592,6 +2599,89 @@ equally — at which point the honest answer is two contracts, not a coin toss.
 Or a measurement showing a package's release rate no longer justifies its
 existence, which is how `-auth-sap` came to exist and is the same evidence
 decision 26 rests on.
+
+## 36. The result strategy at construction, the error strategy with every call
+
+**Decided 2026-09-26, in `interfaces-adt` 10.0.0.**
+
+**The problem.** A refusal SAP wrote inside a 200 could only be read by the
+implementation, for most members. Of the 96 members that answer an
+`IAdtResponse`, 17 took `analyse` with the call — eleven capability atoms and six
+transport object actions. The other 79 took no options at all: `lock`,
+`getVersions`, every runtime and feed reader, the executors, abapGit, and the
+group operations `deleteObjectsGroup` and `checkDeletionGroup`. A caller had no
+way to say what counts as a failure there, so the implementation said it for
+them. **[adt-clients]** did, in thirteen places measured at
+[`beb24ea`](https://github.com/fr0ster/mcp-abap-adt-clients/tree/beb24eacdba4041057a96c7679b093d21999f6c7):
+seven members substituted a reading of their own when none was passed
+([`AdtPackage.delete`](https://github.com/fr0ster/mcp-abap-adt-clients/blob/beb24eacdba4041057a96c7679b093d21999f6c7/src/core/package/AdtPackage.ts#L391)
+among them), three hard-wired one with no way to replace it
+([`AdtUnitTest.run`](https://github.com/fr0ster/mcp-abap-adt-clients/blob/beb24eacdba4041057a96c7679b093d21999f6c7/src/core/unitTest/AdtUnitTest.ts#L315)),
+and three threw from inside a request function on the body's content
+([`deleteObjectsGroup`](https://github.com/fr0ster/mcp-abap-adt-clients/blob/beb24eacdba4041057a96c7679b093d21999f6c7/src/core/shared/groupDeletion.ts#L233)).
+One of those readings took only the first `del:message` of an object and lost
+SAP's reason when there were two — adt-clients issue #172 — and a consumer could
+not replace it with a correct one, because the member had nowhere to receive it.
+
+**Decided.** Each strategy has one place, and every member offers it:
+
+- **The result strategy is given when the implementation is constructed**
+  (decision 22, unchanged). A member's result type is a type parameter of its
+  interface.
+- **The error strategy is given with every call.** Every member answering an
+  `IAdtResponse` takes `options` carrying `analyse`, as the overload pair the
+  atoms already had — one inferring the failure type `E` from the strategy
+  passed, one without. The new `IAdtAnalyseOptions<E>` holds `analyse` and
+  nothing else; `IAdtOperationOptions` extends it.
+- **An implementation given no `analyse` interprets nothing.** It answers what
+  the transport saw; a refusal inside a 200 stays a document until a strategy
+  reads it. The readings are strategies a consumer passes, not defaults an
+  implementation ships.
+
+**Why the two axes are placed differently.** They vary with different things.
+What a result should look like depends on **who the consumer is** — a backup
+wants documents whole, a model-facing server wants them small — and that does
+not change between calls, which is decision 22's argument. Whether an answer is
+a failure depends on **what the caller is doing with it**. The recorded answers
+in `adt-clients/corpus/adt` and `mcp-abap-adt/tests/fixtures/adt` (74 answers,
+38 endpoints) show the form: a refusal arrives as a non-2xx with `exc:exception`,
+or as a 200 carrying a message of type `E` — activation `msg`, `del:message`,
+`checkMessage`, `SEVERITY` in validation, a `critical` alert in a unit-test
+result — in a document whose shape is the endpoint's own. Where that message is
+a **warning**, whether to stop is the caller's call for this operation, not a
+property of the endpoint. And a read answering 200 with an empty body is a
+failure to a read-modify-write and not to a caller looking at what is there.
+
+**Rejected: both at construction.** The corpus alone would allow it — the form
+of a refusal depends on the member and the system, both known when an
+implementation is built. It fails on the second point above: a consumer whose
+verdict differs by operation would hold one implementation per verdict, for
+every family it touches.
+
+**Rejected: both with the call.** Decision 22 already rejected the result
+strategy at the call site, and nothing here reopens it.
+
+**Why a type of its own.** `IAdtOperationOptions` carries `source` and
+`lockHandle`, which only a write honours. Offering them to a lock, a version
+listing or a trace would permit a call that cannot work — decision 29.
+
+**What this costs.** Every member now has the overload pair, which is the
+"second signature every implementer must provide" that decision 22 counted
+against a per-call result strategy. It is accepted here because the error
+strategy is the one the caller varies per call; the result strategy is not.
+An implementation that satisfies the pair by ignoring `options` still
+type-checks — TypeScript accepts a function with fewer parameters — so whether
+an implementation *honours* `analyse` is asserted in that implementation's own
+tests, not here. What is asserted here is that the contract offers it:
+`__typechecks__/errorStrategyOnEveryMember.ts` fails to compile if a member of
+any of the 45 contracts stops taking `analyse`, and was shown to fail by
+removing `lock`'s options.
+
+**What would change it.** A measurement across consumers showing that none
+varies the verdict between calls to the same member — then the error strategy
+moves to construction beside the result strategy, and the overload pairs go.
+Or a member whose answer carries nothing a strategy could read, where `analyse`
+would be a seam with nothing behind it.
 
 ## Open, and what would settle it
 

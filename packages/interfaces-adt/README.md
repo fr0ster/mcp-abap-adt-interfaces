@@ -28,7 +28,7 @@ npm install @mcp-abap-adt/interfaces-adt
 | `service/` | 1 | service definitions and bindings |
 | `shared/` | 1 | what more than one object type needs |
 
-Seven directories, all ADT. `sap/`, `auth/`, `token/`, `session/`, `serviceKey/`, `store/`, `validation/` and `Headers.ts` were here until 9.0.0 and are listed above under what left; `__typechecks__/` holds 21 files that compile shapes this contract must and must not accept, and ships in no tarball.
+Seven directories, all ADT. `sap/`, `auth/`, `token/`, `session/`, `serviceKey/`, `store/`, `validation/` and `Headers.ts` were here until 9.0.0 and are listed above under what left; `__typechecks__/` holds 22 files that compile shapes this contract must and must not accept, and ships in no tarball.
 
 The contract rules — what a member answers, how a strategy is supplied, how a contract is built — are in [`docs/architecture/ARCHITECTURE.md`](../../docs/architecture/ARCHITECTURE.md). Domain-by-domain documentation with examples used to sit in the facade's README; the facade is deleted, and each package documents its own contracts.
 
@@ -50,6 +50,53 @@ Two of the signatures say things a capture cannot. 1.2.0 was declared from captu
 So `createTask` requires `targetUser` and `removeObject` requires `position`, and `readObjects` was added because otherwise the second would require a value this package offers no way to obtain — leaving a caller to parse a transport document themselves for a `tm:position`. It is its own member because it answers its own thing: entries, each with its position as a value, rather than a document. What an implementation sends to get them is its own business; the contract says what must come back.
 
 `addObject` still takes an entry without a position — one that does not exist yet has none.
+
+## Migrating to 10.0.0
+
+Every member that answers an `IAdtResponse` takes the error strategy with the
+call now — `options` carrying `analyse`. A **caller** changes nothing: the new
+parameter is optional, and a call without it compiles as before. What changes is
+that a caller *can* pass one everywhere:
+
+```ts
+const answer = await utils.deleteObjectsGroup(objects, transport, {
+  analyse: analyseDeletion,   // reads del:isDeleted and every del:message
+});
+```
+
+An **implementation** changes each member it offers from the list in the
+changelog: accept the options, and hand `analyse` to whatever turns the answer
+into an `IAdtResponse`.
+
+```ts
+// before
+lock(config: Partial<TConfig>): Promise<IAdtResponse<string>>;
+// after — the pair every atom has
+lock<E extends IAdtError>(
+  config: Partial<TConfig>,
+  options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+): Promise<IAdtResponse<string, E>>;
+lock(config: Partial<TConfig>, options?: IAdtAnalyseOptions): Promise<IAdtResponse<string>>;
+```
+
+An implementation that keeps the old one-parameter signature still type-checks —
+TypeScript accepts a function with fewer parameters — and silently drops the
+caller's strategy. Test that it is honoured; the contract cannot.
+
+Three signatures changed shape rather than growing a parameter:
+
+- `IAdtRunnable.run` always has a second parameter; a flavour without options
+  gets `options?: IAdtAnalyseOptions`.
+- `ViewArgs` always yields one, so `ITraceReading.read` on a view without
+  options takes `options?: IAdtAnalyseOptions`.
+- `ITraceListing<TEntry, TOptions, TList = TEntry[]>` — `list` answers `TList`.
+  Existing instantiations keep their meaning.
+
+An implementation also stops interpreting on its own: with no `analyse`, it
+answers what the transport saw, and a refusal SAP wrote inside a 200 is a
+document until a strategy reads it. Decision 36 in the repository's
+`docs/architecture/DECISIONS.md` says why the error strategy travels with the
+call while the result strategy is given at construction.
 
 ## Migrating to 9.0.0
 

@@ -2,7 +2,11 @@
  * Transport ADT operation parameter interfaces (snake_case, low-level)
  */
 
-import type { IAdtOperationOptions } from './IAdtObject';
+import type {
+  IAdtAnalyseOptions,
+  IAdtOperationOptions,
+  IAnalyse,
+} from './IAdtObject';
 import type { IAdtError, IAdtResponse } from './IAdtResponse';
 
 /**
@@ -126,7 +130,13 @@ export interface IAdtRequest<TList> {
    * `configUri` is required by the layer beneath — see `IListTransportsParams`,
    * where the measurement is. This resolves it; that one does not.
    */
-  list(options?: IListTransportsOptions): Promise<IAdtResponse<TList>>;
+  list<E extends IAdtError>(
+    options: IListTransportsOptions &
+      IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TList, E>>;
+  list(
+    options?: IListTransportsOptions & IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<TList>>;
 }
 
 /**

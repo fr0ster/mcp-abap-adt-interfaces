@@ -137,32 +137,34 @@ readings, and neither is the library's to impose.
 
 | axis | shape | supplied |
 |---|---|---|
-| error | `(verdict, answer?) => IAdtError \| AdtNoFailure` | to the implementation at construction, and — on the eleven members that take `IAdtOperationOptions` — overruled per call through `analyse` |
+| error | `(verdict, answer?) => IAdtError \| AdtNoFailure` | **with every call**, through `analyse` in the member's options (decision 36) |
 | result | `IResultStrategy<T>` = `(answer: IAdtWireResponse) => T` | to the implementation at construction; the member's result type follows it |
 
 Both are handed the whole answer — status, headers, body — because a reading may
 need any of it.
 
-**The two axes are not equally visible in the contract, and that is worth saying
-plainly.** The result axis is: a member's result type is a type parameter of its
-interface, so what a given implementation answers is written in its type. The
-error axis is not. `IAdtOperationOptions.analyse` reaches exactly eleven members —
-`create`, `read`, `readMetadata`, `update`, `updateMetadata`, `delete`,
-`checkDeletion`, `validate`, `check`, `activate` and `readTransport`, all on the
-capability atoms.
-The other 88 take no options at all; `ITraceDeletion.delete(traceId)` is the plain case, one argument
-and no seam.
+**Each axis has one place, and every member offers it.** The result strategy is
+given when the implementation is constructed, and a member's result type is a type
+parameter of its interface, so what an implementation answers is written in its
+type. The error strategy is given with the call: every member that answers an
+`IAdtResponse` takes `options` carrying `analyse` (`IAdtAnalyseOptions`), and the
+failure type it names flows into the answer — `IAdtResponse<TValue, E>`, inferred
+from the strategy passed.
 
-For those, the reading is the implementation's, chosen when it is constructed,
-and this package does not name that constructor — `@mcp-abap-adt/adt-clients`
-does, because a contract that described how a default is composed would have
-stopped being a contract (decision 20). What the contract does carry is the
-*shape* every strategy must answer, `IAdtError`, and the room to say a fuller one
-comes back: `IAdtResponse<TValue, TError extends IAdtError>`. No interface
-instantiates that second parameter today, so a consumer whose failures carry more
-than `IAdtError` states it at their own boundary rather than in ours. Named here
-rather than left to be discovered; whether it should change is a question for a
-later release, not a gap this one hides.
+An implementation given no `analyse` interprets nothing. It answers what the
+transport saw — a status that was not 2xx, a host that did not answer — and a
+refusal SAP wrote inside a 200 stays a document until a strategy reads it. The
+readings that find those refusals are not the implementation's to ship; they are
+strategies a consumer passes, from their own code or from a package of them.
+
+Until 10.0.0 this was lopsided, and this section said so: of the 96 members
+that answer an `IAdtResponse`, `analyse` reached 17 — eleven on the capability
+atoms and six on the transport request's object actions — and the other 79 took
+no options at all, so for them the reading was whatever the implementation had
+been built with and the caller had no say. (This section used to count "eleven
+and 88"; the count above is the compiler's, over every exported interface.) A lock, a version listing, a dump, a trace and a group deletion
+all had that gap. `__typechecks__/errorStrategyOnEveryMember.ts` now fails to
+compile if a member answering an `IAdtResponse` stops taking `analyse`.
 
 ### Where a strategy is supplied
 
@@ -325,14 +327,13 @@ implementation package:
 | to change | supply |
 |---|---|
 | what an answer becomes | an `IResultStrategy`, at construction |
-| what counts as a failure, everywhere | the error strategy the implementation is constructed with |
-| what counts as a failure, for one call | `analyse`, on the eleven capability members that take `IAdtOperationOptions` |
+| what counts as a failure | `analyse`, with the call — every member takes it |
 | the headers a request carries | your own `IAdtContentTypes` |
 | how a request is made at all | your own `IAbapConnection` |
 | a whole family | your own implementation of those atoms |
 
 The last row is the test the package is built to pass, and it is asserted rather
-than assumed: `interfaces-adt/src/__typechecks__/` contains 21 files whose job is to prove that
+than assumed: `interfaces-adt/src/__typechecks__/` contains 22 files whose job is to prove that
 something written **outside** this package can satisfy each contract — one family
 alone, composed families, a consumer's own readings, and the shapes that must
 *not* compile.

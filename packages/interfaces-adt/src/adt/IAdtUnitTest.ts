@@ -2,7 +2,8 @@
  * Unit Test ADT operation parameter interfaces (snake_case, low-level)
  */
 
-import type { IAdtResponse } from './IAdtResponse';
+import type { IAdtAnalyseOptions, IAnalyse } from './IAdtObject';
+import type { IAdtError, IAdtResponse } from './IAdtResponse';
 
 /**
  * Which tests a run covers.
@@ -119,15 +120,26 @@ export interface ITestRunInformation<TStatus, TResult> {
    * @param runId the run to ask about
    * @param withLongPolling let ADT hold the request until the run progresses
    */
+  getStatus<E extends IAdtError>(
+    runId: string,
+    withLongPolling: boolean | undefined,
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TStatus, E>>;
   getStatus(
     runId: string,
     withLongPolling?: boolean,
+    options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TStatus>>;
 
   /** Fetch the result document of a finished run. */
+  getResult<E extends IAdtError>(
+    runId: string,
+    options: IUnitTestResultOptions &
+      IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TResult, E>>;
   getResult(
     runId: string,
-    options?: IUnitTestResultOptions,
+    options?: IUnitTestResultOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TResult>>;
 }
 
@@ -142,5 +154,12 @@ export interface ICdsTestDoubleCheckable<TResult> {
    * Check whether a CDS view can be tested with test doubles.
    * @param cdsViewName the view to inspect
    */
-  checkCdsTestDoubles(cdsViewName: string): Promise<IAdtResponse<TResult>>;
+  checkCdsTestDoubles<E extends IAdtError>(
+    cdsViewName: string,
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TResult, E>>;
+  checkCdsTestDoubles(
+    cdsViewName: string,
+    options?: IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<TResult>>;
 }

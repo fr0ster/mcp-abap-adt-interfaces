@@ -1,4 +1,5 @@
-import type { IAdtResponse } from '../adt/IAdtResponse';
+import type { IAdtAnalyseOptions, IAnalyse } from '../adt/IAdtObject';
+import type { IAdtError, IAdtResponse } from '../adt/IAdtResponse';
 import type { IFeedQueryOptions } from '../feeds/types';
 
 export interface ISystemMessages<TList, TMessage> {
@@ -6,7 +7,20 @@ export interface ISystemMessages<TList, TMessage> {
   readonly kind: 'systemMessages';
 
   /** The messages this system is showing. */
-  list(options?: IFeedQueryOptions): Promise<IAdtResponse<TList>>;
+  list<E extends IAdtError>(
+    options: IFeedQueryOptions &
+      IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TList, E>>;
+  list(
+    options?: IFeedQueryOptions & IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<TList>>;
 
-  getById(messageId: string): Promise<IAdtResponse<TMessage>>;
+  getById<E extends IAdtError>(
+    messageId: string,
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TMessage, E>>;
+  getById(
+    messageId: string,
+    options?: IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<TMessage>>;
 }

@@ -4,6 +4,7 @@
 // not a constraint, and each of the four refusals below is one this design was
 // written to produce.
 
+import type { IAdtAnalyseOptions } from '../adt/IAdtObject';
 import type { IAdtResponse } from '../adt/IAdtResponse';
 
 type Assert<T extends true> = T;
@@ -237,7 +238,11 @@ const _atc: IAdtRunnable<
   { worklistId: string },
   IAtcRunOptions
 > = {
-  run: async (target, options) => {
+  // Typed by hand: an overloaded member gives a literal no contextual type.
+  run: async (
+    target: IAtcRunTarget,
+    options?: IAtcRunOptions & IAdtAnalyseOptions,
+  ) => {
     void target;
     void options;
     return undefined as never;
