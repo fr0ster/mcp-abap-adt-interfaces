@@ -1,7 +1,7 @@
 {
   "name": "@mcp-abap-adt/interfaces-adt",
   "version": "11.0.0",
-  "description": "ADT contracts: object operations, the ABAP connection, runtime analysis, execution, feeds and service bindings",
+  "description": "ADT contracts: object operations, runtime analysis, execution, feeds and service bindings",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [

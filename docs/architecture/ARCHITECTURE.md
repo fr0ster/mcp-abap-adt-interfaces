@@ -54,18 +54,21 @@ depend on a sibling contract package, and on nothing else:
 
 ```
 interfaces-utils          interfaces-network
-       ▲                   ▲            ▲
-interfaces-auth      interfaces-adt   interfaces-calm
-       ▲
-interfaces-auth-sap
+       ▲                        ▲            ▲
+interfaces-auth   interfaces-adt-connection   interfaces-calm
+       ▲                        ▲
+interfaces-auth-sap       interfaces-adt
 ```
 
 Five edges, and each one is the only dependency its package has.
-`interfaces-adt` reaches `interfaces-network` for the HTTP frame and nothing
-else; `interfaces-calm` reaches it for the same frame, Cloud ALM having no ABAP
-in it; `interfaces-auth` reaches `interfaces-utils` for `ILogger`, and
-`interfaces-auth-sap` reaches `interfaces-auth` — `utils` arrives through it,
-which makes it that package's dependency rather than its own.
+`interfaces-adt-connection` reaches `interfaces-network` for the HTTP frame and
+nothing else; `interfaces-adt` reaches the connection, because its strategies
+are handed an `IAdtWireResponse`, and gets the frame through it — since 11.0.0
+it has no edge to `interfaces-network` of its own (decision 38).
+`interfaces-calm` reaches `interfaces-network` for the same frame, Cloud ALM
+having no ABAP in it; `interfaces-auth` reaches `interfaces-utils` for
+`ILogger`, and `interfaces-auth-sap` reaches `interfaces-auth` — `utils` arrives
+through it, which makes it that package's dependency rather than its own.
 
 **A dependency nothing imports is a defect, not a spare edge**, and
 `npm run check:graph` fails on one: two of these were declared after the last

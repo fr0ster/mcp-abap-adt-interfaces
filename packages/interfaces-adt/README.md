@@ -1,10 +1,10 @@
 # @mcp-abap-adt/interfaces-adt
 
-ADT contracts: object operations, the ABAP connection, runtime analysis, execution, feeds and service bindings.
+ADT contracts: object operations, runtime analysis, execution, feeds and service bindings. The ABAP connection they are sent through is [`interfaces-adt-connection`](../interfaces-adt-connection).
 
 ## TL;DR
 
-- **Only ADT.** The test is who imports this package: `@mcp-abap-adt/adt-clients` and whatever replaces its objects, and nobody else. Measured against every repository in development — the only others reaching in are `gcts-client` and `cloud-llm-hub`, for `IAbapConnection`, `IAbapRequestOptions` and `IAdtResponse`, which is that test met.
+- **Only ADT.** The test is who imports this package: `@mcp-abap-adt/adt-clients` and whatever replaces its objects, and nobody else. Measured against every repository in development before 11.0.0 — the only others reaching in were `gcts-client` and `cloud-llm-hub`, for `IAbapConnection`, `IAbapRequestOptions` and `IAdtResponse`. Since 11.0.0 the first two come from `interfaces-adt-connection`; `IAdtResponse` is still here.
 - What it holds: ADT object operations for 31 object types, runtime analysis, execution, feeds, service bindings, `IAdtResponse` and the error codes. **The ABAP connection** — `IAbapConnection`, `IAdtWireResponse`, its capability atoms, `ITimeoutConfig` — is [`interfaces-adt-connection`](../interfaces-adt-connection) since 11.0.0, and is not re-exported here.
 - **What left, and where.** Every HTTP header name, the HTTP frame and `HttpError` → [`interfaces-network`](../interfaces-network). Cloud ALM → [`interfaces-calm`](../interfaces-calm). `XmlNode` → [`interfaces-utils`](../interfaces-utils). Authentication in general — credentials, OAuth grants, tokens, interactive login, SAML assertions, `AUTH_TYPE_JWT`/`BASIC` → [`interfaces-auth`](../interfaces-auth). Everything naming SAP or BTP — `ISapConfig`, `SapAuthType`, `SapConnectionType`, `IConfig`, `IConnectionConfig`, `IAuthorizationConfig`, `ICertificateMaterialLoader`, `IServiceKeyStore`, `ISessionStore`, `ITokenProviderResult`, the two validation results and `AUTH_TYPE_XSUAA` with its union → [`interfaces-auth-sap`](../interfaces-auth-sap). `ISessionState` and `ISessionStorage` are deleted, not moved.
 - `IAdtWireResponse` extends `IHttpWireResponse` from `-network` and keeps the headers ADT sends (`sap-adt-location`, both spellings of `content-location`). It lives in `interfaces-adt-connection` since 11.0.0, name and shape unchanged.
