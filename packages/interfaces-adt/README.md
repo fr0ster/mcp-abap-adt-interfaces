@@ -51,6 +51,33 @@ So `createTask` requires `targetUser` and `removeObject` requires `position`, an
 
 `addObject` still takes an entry without a position — one that does not exist yet has none.
 
+## Migrating to 11.0.0
+
+Each member is one request, addressed by a value the server already gave you.
+
+```ts
+// Transport requests: name the saved search.
+- await requests.list();
++ const configs = await searches.searchConfigurations();   // IAdtTransportSearchConfigurations
++ await requests.list({ configUri: /* the one you choose */ });
+
+// abapGit: take the key and the log link from listRepos.
+- await git.unlink({ package: 'ZPKG' });
+- await git.getErrorLog('ZPKG');
+- await git.getRepo('ZPKG');
++ await git.unlink({ repositoryId: repo.key });
++ await git.getErrorLog(repo.logLink);
++ // getRepo is gone: read listRepos and take the entry you want.
+
+// Feature toggles: one result type per answer.
+- IFeatureToggleObject<MyState>
++ IFeatureToggleObject<{ switched: void; runtimeState: MyState; checkState: MyCheck; source: string }>
+```
+
+`IAdtAbapGitClient` lost its second type parameter with `getRepo`. Decision 37
+in `docs/architecture/DECISIONS.md` says why a member no longer looks up what a
+caller can pass.
+
 ## Migrating to 10.0.0
 
 Every member that answers an `IAdtResponse` takes the error strategy with the

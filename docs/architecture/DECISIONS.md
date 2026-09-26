@@ -2683,6 +2683,54 @@ moves to construction beside the result strategy, and the overload pairs go.
 Or a member whose answer carries nothing a strategy could read, where `analyse`
 would be a seam with nothing behind it.
 
+## 37. A member does not look up what the caller can pass
+
+**Decided 2026-09-26, in `interfaces-adt` 11.0.0.**
+
+**The problem.** An audit of **[adt-clients]** at
+[`beb24ea`](https://github.com/fr0ster/mcp-abap-adt-clients/tree/beb24eacdba4041057a96c7679b093d21999f6c7),
+done for decision 36, found members that made a request of their own before
+the one they are named for, to find a value the server had already given the
+caller:
+
+- `IAdtAbapGitClient.unlink({ package })` listed every repository to find the
+  key `DELETE /abapgit/repos/{key}` is addressed by, and composed "repository
+  not found" from its own search.
+- `getErrorLog(packageName)` did the same to find the log link.
+- `getRepo(packageName)` listed the repositories and picked one — a filter over
+  a document, which is a reading.
+- `IAdtRequest.list()` without a `configUri` read the saved searches, chose
+  one, and refused when there were none or several.
+
+Each is two requests where the contract promises one (decision 16), and each
+decides something the caller would decide differently: which repository a
+package means, which saved search to run. And the "not found" each could raise
+was the library's sentence about its own lookup, not anything SAP said — so it
+could not reach the caller through the error strategy at all.
+
+**Decided.** A member takes the value it is addressed by, as the server gave it:
+
+- `unlink` takes `repositoryId`, the key `listRepos` reports.
+- `getErrorLog` takes `logLink`, the href `listRepos` reports.
+- `getRepo` is removed; a caller reads `listRepos` through their result
+  strategy and takes the entry they want.
+- `IListTransportsOptions.configUri` is required, and
+  `IAdtTransportSearchConfigurations` is added so the contract offers what it
+  now requires (decision 29).
+
+**Also here, because it is the same audit and decision 22's rule:**
+`IFeatureToggleObject` answered one `TState` from five members that answer four
+different documents, so a result strategy could shape only one of them. It
+takes a record, `IFeatureToggleObjectResults`, one slot per answer.
+
+**Rejected: keep the lookups and return their "not found" through the
+strategy.** It would stop the throw, but not the second request or the choice
+made for the caller.
+
+**What would change it.** A member whose address the server does not hand the
+caller anywhere — then the lookup is the only way in, and belongs to the
+implementation.
+
 ## Open, and what would settle it
 
 Not decisions. These are questions this repository has met and deliberately left

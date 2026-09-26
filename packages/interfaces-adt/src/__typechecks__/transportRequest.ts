@@ -48,7 +48,7 @@ class MyOwnRequests implements IAdtRequest<MyTree> {
   ): Promise<IAdtResponse<void>> {
     return answered(undefined);
   }
-  async list(_options?: IListTransportsOptions): Promise<IAdtResponse<MyTree>> {
+  async list(_options: IListTransportsOptions): Promise<IAdtResponse<MyTree>> {
     return answered({ attributes: {}, requests: [] });
   }
 }
@@ -56,7 +56,13 @@ class MyOwnRequests implements IAdtRequest<MyTree> {
 declare const requests: IAdtRequest<MyTree>;
 
 /** The default tree, from the contract alone. */
-const tree: Promise<IAdtResponse<MyTree>> = requests.list();
+const tree: Promise<IAdtResponse<MyTree>> = requests.list({
+  configUri:
+    '/sap/bc/adt/cts/transportrequests/searchconfiguration/configurations/7E5B',
+});
+
+// @ts-expect-error since 11.0.0 the caller names the saved search to run
+void requests.list();
 
 /**
  * A consumer's own shape, chosen when the implementation was constructed — the
@@ -67,7 +73,9 @@ interface MyShape {
   ids: string[];
 }
 declare const mineRequests: IAdtRequest<MyShape>;
-const mine: Promise<IAdtResponse<MyShape>> = mineRequests.list();
+const mine: Promise<IAdtResponse<MyShape>> = mineRequests.list({
+  configUri: '/x',
+});
 
 /**
  * The CRUD half is composed, not inherited.

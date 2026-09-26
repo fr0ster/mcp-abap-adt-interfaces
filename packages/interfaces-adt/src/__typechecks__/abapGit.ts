@@ -19,13 +19,7 @@ interface MyRepo {
   key: string;
   branch: string;
 }
-type MyClient = IAdtAbapGitClient<
-  MyRepo[],
-  MyRepo | undefined,
-  string[],
-  void,
-  string
->;
+type MyClient = IAdtAbapGitClient<MyRepo[], string[], void, string>;
 
 /** One member alone, implemented by something that knows nothing of the rest. */
 const _client: Pick<MyClient, 'listRepos'> = {
@@ -37,7 +31,7 @@ void _client;
  * A pull is started, not awaited.
  *
  * The link comes from `listRepos`, and what happens after the POST — how long
- * to poll `getRepo`, whether to give up, what to do then — is written by the
+ * to poll `listRepos`, whether to give up, what to do then — is written by the
  * caller, because it is about their application rather than about ADT.
  */
 declare const client: MyClient;
@@ -48,6 +42,19 @@ void client.pull({
 
 // @ts-expect-error a pull cannot be started without the link it posts to
 void client.pull({ package: 'ZPKG' });
+
+/**
+ * One request per member since 11.0.0: each is addressed by what `listRepos`
+ * reported, and none looks a package up in the list first.
+ */
+void client.unlink({ repositoryId: 'K' });
+void client.getErrorLog('/sap/bc/adt/abapgit/repos/K/log');
+
+// @ts-expect-error unlink is addressed by the repository's key, not its package
+void client.unlink({ package: 'ZPKG' });
+
+// @ts-expect-error getRepo left: it filtered listRepos, which is a reading
+void client.getRepo('ZPKG');
 
 /** Request arguments stayed: a caller cannot call without them. */
 const _link: IAbapGitLinkArgs = {} as IAbapGitLinkArgs;

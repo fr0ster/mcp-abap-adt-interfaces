@@ -32,6 +32,7 @@ import type {
   IAdtRunnable,
   IAdtTransportAware,
   IAdtTransportObjectActions,
+  IAdtTransportSearchConfigurations,
   IAdtTypeCatalogue,
   IAdtUpdatable,
   IAdtValidatable,
@@ -47,6 +48,7 @@ import type {
   ICrossTraceResults,
   IDdicActivation,
   IFeatureToggleObject,
+  IFeatureToggleObjectResults,
   IFeedRepository,
   IGatewayErrorLog,
   IRunnableWithProfiler,
@@ -108,7 +110,7 @@ type EveryMemberTakesAnalyse<I> = false extends {
   : true;
 
 export type _IAdtAbapGitClient = Assert<
-  EveryMemberTakesAnalyse<IAdtAbapGitClient<Probe, Probe, Probe, Probe, Probe>>
+  EveryMemberTakesAnalyse<IAdtAbapGitClient<Probe, Probe, Probe, Probe>>
 >;
 export type _IAdtCreatable = Assert<
   EveryMemberTakesAnalyse<IAdtCreatable<Probe, Probe>>
@@ -147,7 +149,7 @@ export type _IAdtTransportAware = Assert<
   EveryMemberTakesAnalyse<IAdtTransportAware<Probe, Probe>>
 >;
 export type _IFeatureToggleObject = Assert<
-  EveryMemberTakesAnalyse<IFeatureToggleObject<Probe>>
+  EveryMemberTakesAnalyse<IFeatureToggleObject<IFeatureToggleObjectResults>>
 >;
 export type _IAdtRequest = Assert<EveryMemberTakesAnalyse<IAdtRequest<Probe>>>;
 export type _IAdtTransportObjectActions = Assert<
@@ -242,3 +244,6 @@ export type _ITraceReading = Assert<
   EveryMemberTakesAnalyse<ITraceReading<ProbeViews>>
 >;
 export type _ITraceDeletion = Assert<EveryMemberTakesAnalyse<ITraceDeletion>>;
+export type _IAdtTransportSearchConfigurations = Assert<
+  EveryMemberTakesAnalyse<IAdtTransportSearchConfigurations<Probe>>
+>;

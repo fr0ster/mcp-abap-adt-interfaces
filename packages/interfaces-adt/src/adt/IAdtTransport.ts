@@ -24,9 +24,17 @@ export interface IListTransportsParams {
   configUri: string;
 }
 
-/** High level. Omitting `configUri` opts into the resolution rule in `AdtRequest`. */
+/**
+ * What listing needs: the saved search to run.
+ *
+ * **Required since 11.0.0.** It was optional, and an implementation left
+ * without one read the configurations itself, picked one, and refused when
+ * there were none or several — two requests, and a choice among the server's
+ * searches that is the caller's. {@link IAdtTransportSearchConfigurations}
+ * answers what there is to choose from.
+ */
 export interface IListTransportsOptions {
-  configUri?: string;
+  configUri: string;
 }
 
 /**
@@ -108,9 +116,8 @@ export interface ITransportConfig {
  * capability guard with nothing to compare the manifest against, because the
  * declared type *was* the implementation.
  *
- * The CRUD half is the four atoms with the transport's own config; the two
- * methods below are the transport's alone, and neither has an atom because
- * nothing else lists a collection this way.
+ * The CRUD half is the four atoms with the transport's own config; the listing
+ * below is the transport's alone.
  */
 export interface IAdtRequest<TList> {
   /**
@@ -127,16 +134,35 @@ export interface IAdtRequest<TList> {
    * the **language** a request holds — none of which a consumer could reach
    * before without re-fetching and parsing the document themselves.
    *
-   * `configUri` is required by the layer beneath — see `IListTransportsParams`,
-   * where the measurement is. This resolves it; that one does not.
+   * `configUri` is required — see `IListTransportsParams`, where the
+   * measurement is. One request: the listing, run by the search the caller
+   * names.
    */
   list<E extends IAdtError>(
     options: IListTransportsOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TList, E>>;
   list(
-    options?: IListTransportsOptions & IAdtAnalyseOptions,
+    options: IListTransportsOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TList>>;
+}
+
+/**
+ * The saved transport searches the server holds — what `configUri` is chosen
+ * from.
+ *
+ * Its own atom because {@link IAdtRequest.list} now requires a `configUri`, and
+ * a contract that requires a value must offer the way to obtain it (decision
+ * 29). It answers the configurations document at
+ * {@link TRANSPORT_SEARCH_CONFIGURATIONS_URL}; which one to run is the caller's.
+ */
+export interface IAdtTransportSearchConfigurations<TConfigurations> {
+  searchConfigurations<E extends IAdtError>(
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TConfigurations, E>>;
+  searchConfigurations(
+    options?: IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<TConfigurations>>;
 }
 
 /**
