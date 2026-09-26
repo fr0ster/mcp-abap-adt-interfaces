@@ -2731,6 +2731,49 @@ made for the caller.
 caller anywhere — then the lookup is the only way in, and belongs to the
 implementation.
 
+## 38. The ABAP connection is its own package, because it releases on its own
+
+**Decided 2026-09-26, in `interfaces-adt` 11.0.0 and
+`interfaces-adt-connection` 1.0.0.**
+
+**The problem.** `@mcp-abap-adt/connection` implements `IAbapConnection` and
+imports eight symbols from this repository — `IAbapConnection`,
+`IAbapRequestOptions`, `IAdtWireResponse`, `ISessionLifecycleAware`,
+`IRequestProfiling`, `ICriticalSection`, `ITimeoutConfig`, `ADT_SESSION_ERROR`
+(measured in its published `dist`, 9.2.2). All eight lived in
+`interfaces-adt/src/connection/`. On 2026-09-26 `interfaces-adt` released 9.0.0,
+10.0.0 and 11.0.0; none touched `connection/`, and each left the connector a
+choice between releasing only to raise a range, and a tree holding two copies of
+the contract — the harm the split in 9.0.0 was made to prevent. The user's words:
+fix ADT, then update the connector, then update a pile more.
+
+**Decided.** `connection/` is the package `@mcp-abap-adt/interfaces-adt-connection`,
+moved unchanged. It depends on `interfaces-network`; `interfaces-adt` depends on
+it, and on nothing else; a connector depends on it alone. It is not re-exported
+from `interfaces-adt` (decision 34).
+
+**Why not `interfaces-network`.** Its rule is that nothing there is
+ADT-specific, and `ITimeoutConfig` left it in 9.0.0 on exactly that ground. The
+connection is ADT through and through — `makeAdtRequest`, the stateful session,
+CSRF, the `sap-adt-*` headers — so decision 35 places it with ADT, and this
+decision keeps that: the new package is still ADT's, and says so in its name.
+
+**What decision 35 did not ask.** Its test is the subject a contract's fields
+name, and by that test the connection and the object contracts are one
+subject. It names release rate as what would change it; this is that
+measurement. Three majors in a day on one side and none on the other is two
+schedules, and one package forces them into one.
+
+**Why it could move without cost.** The split plan measured `connection/` as a
+leaf: nothing in it imports any other group. The one edge the other way —
+`interfaces-adt` handing strategies an `IAdtWireResponse` — is why the object
+contracts stand on the connection rather than beside it, and the connection
+changes rarely enough to be stood on.
+
+**What would change it.** The connection starting to move with the object
+contracts — a release of one regularly needing the other. Then they are one
+schedule again, and one package is the honest shape.
+
 ## Open, and what would settle it
 
 Not decisions. These are questions this repository has met and deliberately left

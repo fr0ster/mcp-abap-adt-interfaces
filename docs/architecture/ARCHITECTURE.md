@@ -292,7 +292,6 @@ is in the shape rather than the number.
 | `service/` (1) | the service binding: what it has that the atoms do not cover |
 | `feeds/` (2) | the ADT feed repository |
 | `execution/` (3) | being run: `IAdtRunnable`, the two profiler atoms, trace scheduling, and the two executors composed from them |
-| `connection/` (4) | `IAbapConnection`, `IAbapRequestOptions`, the connection capability atoms, `ITimeoutConfig` |
 | `shared/` (1) | what more than one object type needs |
 
 An object type is **not** a wide interface. A handler declares the atoms it
@@ -305,8 +304,10 @@ They are not in `interfaces-adt` any more, which is the point of 9.0.0:
 `auth/`, `token/`, `store/` and the assertion contracts are `interfaces-auth`;
 `sap/`, `session/`, `serviceKey/` and `validation/` are `interfaces-auth-sap`;
 the header names, the HTTP frame and the WebSocket transport are
-`interfaces-network`; `logging/` and `XmlNode` are `interfaces-utils`. What stays
-here is `connection/` — the ABAP connection itself is an ADT contract.
+`interfaces-network`; `logging/` and `XmlNode` are `interfaces-utils`. The ABAP
+connection itself — `IAbapConnection`, its capability atoms, `IAdtWireResponse`,
+`ITimeoutConfig` — is an ADT contract, and since 11.0.0 it is its own package,
+`interfaces-adt-connection`, which `interfaces-adt` stands on (decision 38).
 
 These describe how a connection is made and kept, not what ADT answered. The
 two-axis model does not apply to them: there is no server answer to shape and no

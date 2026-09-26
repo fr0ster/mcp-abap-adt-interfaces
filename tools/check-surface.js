@@ -28,6 +28,7 @@ const map = JSON.parse(
 );
 const packages = [
   'interfaces-adt',
+  'interfaces-adt-connection',
   'interfaces-auth',
   'interfaces-auth-sap',
   'interfaces-calm',

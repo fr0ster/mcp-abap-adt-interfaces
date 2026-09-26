@@ -9,8 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [11.0.0] - 2026-09-26
 
-One request per member, each addressed by what the server gave the caller.
-Decision 37.
+One request per member, each addressed by what the server gave the caller
+(decision 37), and the ABAP connection in a package of its own (decision 38).
 
 ### Added
 
@@ -35,6 +35,14 @@ Decision 37.
 
 ### Removed
 
+- **BREAKING: the ABAP connection moved to
+  `@mcp-abap-adt/interfaces-adt-connection` 1.0.0**, unchanged and not
+  re-exported: `IAbapConnection`, `IAdtWireResponse`, `IAbapRequestOptions`,
+  `ISessionLifecycleAware`, `ICriticalSection`, `IRequestProfiling`,
+  `IDeferredResponseConnection`, `ADT_SESSION_ERROR`, `AdtSessionErrorCode`,
+  `ITimeoutConfig`. This package now depends on that one instead of
+  `interfaces-network`. A connector depends on the connection alone and stops
+  following every major here. Decision 38.
 - **BREAKING: `IAdtAbapGitClient.getRepo`**, and with it the second type
   parameter: `IAdtAbapGitClient<TRepos, TErrorLog, TPull, TExternalRepo>`. It
   filtered `listRepos`, which is a reading; a caller takes the entry from

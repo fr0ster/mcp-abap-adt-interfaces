@@ -6,6 +6,7 @@
 // `undefined`, so the absence of a strategy and a strategy's verdict of "fine"
 // cannot be confused — which they were until 31.0.0.
 
+import type { IAdtWireResponse } from '@mcp-abap-adt/interfaces-adt-connection';
 import type {
   AdtNoFailure,
   IAdtActivatable,
@@ -15,7 +16,6 @@ import type {
   IAdtOperationOptions,
   IAdtReadable,
   IAdtUpdatable,
-  IAdtWireResponse,
   IAnalyse,
 } from '../index';
 import { ADT_NO_FAILURE } from '../index';

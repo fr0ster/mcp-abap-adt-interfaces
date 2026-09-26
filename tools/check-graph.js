@@ -19,7 +19,8 @@ const ALLOWED = {
   'interfaces-auth': ['interfaces-utils'],
   'interfaces-auth-sap': ['interfaces-auth'],
   'interfaces-calm': ['interfaces-network'],
-  'interfaces-adt': ['interfaces-network'],
+  'interfaces-adt-connection': ['interfaces-network'],
+  'interfaces-adt': ['interfaces-adt-connection'],
 };
 
 function tsFiles(dir) {

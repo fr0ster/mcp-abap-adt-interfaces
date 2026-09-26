@@ -32,7 +32,7 @@
  * `instanceof` as a convenience.
  */
 
-import type { IAdtWireResponse } from '../connection/IAbapConnection';
+import type { IAdtWireResponse } from '@mcp-abap-adt/interfaces-adt-connection';
 
 /**
  * What an error strategy answers when the answer is **not** a failure.

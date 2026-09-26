@@ -1,7 +1,7 @@
 {
-  "name": "@mcp-abap-adt/interfaces-adt",
-  "version": "11.0.0",
-  "description": "ADT contracts: object operations, the ABAP connection, runtime analysis, execution, feeds and service bindings",
+  "name": "@mcp-abap-adt/interfaces-adt-connection",
+  "version": "1.0.0",
+  "description": "The ABAP connection contract: IAbapConnection, its capability atoms, the wire response and the session error codes",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -14,14 +14,14 @@
   "sideEffects": false,
   "author": "Oleksii Kyslytsia <oleksij.kyslytsja@gmail.com>",
   "license": "LGPL-3.0-only",
-  "homepage": "https://github.com/fr0ster/mcp-abap-adt-interfaces/tree/master/packages/interfaces-adt#readme",
+  "homepage": "https://github.com/fr0ster/mcp-abap-adt-interfaces/tree/master/packages/interfaces-adt-connection#readme",
   "bugs": {
     "url": "https://github.com/fr0ster/mcp-abap-adt-interfaces/issues"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/fr0ster/mcp-abap-adt-interfaces.git",
-    "directory": "packages/interfaces-adt"
+    "directory": "packages/interfaces-adt-connection"
   },
   "publishConfig": {
     "access": "public"
@@ -36,6 +36,6 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@mcp-abap-adt/interfaces-adt-connection": "^1.0.0"
+    "@mcp-abap-adt/interfaces-network": "^2.0.0"
   }
 }

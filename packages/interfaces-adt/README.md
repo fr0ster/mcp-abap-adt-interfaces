@@ -5,10 +5,10 @@ ADT contracts: object operations, the ABAP connection, runtime analysis, executi
 ## TL;DR
 
 - **Only ADT.** The test is who imports this package: `@mcp-abap-adt/adt-clients` and whatever replaces its objects, and nobody else. Measured against every repository in development — the only others reaching in are `gcts-client` and `cloud-llm-hub`, for `IAbapConnection`, `IAbapRequestOptions` and `IAdtResponse`, which is that test met.
-- What it holds: ADT object operations for 31 object types, the ABAP connection and its capability atoms, runtime analysis, execution, feeds, service bindings, `IAdtResponse` and the error codes.
+- What it holds: ADT object operations for 31 object types, runtime analysis, execution, feeds, service bindings, `IAdtResponse` and the error codes. **The ABAP connection** — `IAbapConnection`, `IAdtWireResponse`, its capability atoms, `ITimeoutConfig` — is [`interfaces-adt-connection`](../interfaces-adt-connection) since 11.0.0, and is not re-exported here.
 - **What left, and where.** Every HTTP header name, the HTTP frame and `HttpError` → [`interfaces-network`](../interfaces-network). Cloud ALM → [`interfaces-calm`](../interfaces-calm). `XmlNode` → [`interfaces-utils`](../interfaces-utils). Authentication in general — credentials, OAuth grants, tokens, interactive login, SAML assertions, `AUTH_TYPE_JWT`/`BASIC` → [`interfaces-auth`](../interfaces-auth). Everything naming SAP or BTP — `ISapConfig`, `SapAuthType`, `SapConnectionType`, `IConfig`, `IConnectionConfig`, `IAuthorizationConfig`, `ICertificateMaterialLoader`, `IServiceKeyStore`, `ISessionStore`, `ITokenProviderResult`, the two validation results and `AUTH_TYPE_XSUAA` with its union → [`interfaces-auth-sap`](../interfaces-auth-sap). `ISessionState` and `ISessionStorage` are deleted, not moved.
-- `IAdtWireResponse` extends `IHttpWireResponse` from `-network` and keeps the headers ADT sends (`sap-adt-location`, both spellings of `content-location`). Name and shape unchanged for a consumer.
-- Depends on `@mcp-abap-adt/interfaces-network`, and on nothing else. Types and constants; no implementation.
+- `IAdtWireResponse` extends `IHttpWireResponse` from `-network` and keeps the headers ADT sends (`sap-adt-location`, both spellings of `content-location`). It lives in `interfaces-adt-connection` since 11.0.0, name and shape unchanged.
+- Depends on `@mcp-abap-adt/interfaces-adt-connection`, and on nothing else. Types and constants; no implementation.
 
 ## Install
 
@@ -21,14 +21,13 @@ npm install @mcp-abap-adt/interfaces-adt
 | directory | files | what |
 |---|---|---|
 | `adt/` | 39 | the object contracts: capability atoms, the object types, `IAdtResponse`, `IAdtError`, the error codes, the transport request's object list |
-| `connection/` | 4 | `IAbapConnection`, `IAbapRequestOptions`, the connection capability atoms, and `ITimeoutConfig` — here since 9.0.0, because `csrf` names an SAP operation rather than a transport primitive. `IAdtWireResponse` extends `IHttpWireResponse` from `-network` |
 | `runtime/` | 11 | runtime analysis: `IProfiler`, the trace contracts (`ITraceListing`/`ITraceReading`, `ICrossTrace`, `ISt05Trace`), `IApplicationLog`, `IAtcLog` and the ATC run (`IAtcRunOptions`, `IAtcFindings`), `IDdicActivation`, `IGatewayErrorLog`, `IRuntimeDumps`, `ISystemMessages` |
 | `execution/` | 3 | class and program execution, with profiling |
 | `feeds/` | 2 | the ADT feed contracts |
 | `service/` | 1 | service definitions and bindings |
 | `shared/` | 1 | what more than one object type needs |
 
-Seven directories, all ADT. `sap/`, `auth/`, `token/`, `session/`, `serviceKey/`, `store/`, `validation/` and `Headers.ts` were here until 9.0.0 and are listed above under what left; `__typechecks__/` holds 22 files that compile shapes this contract must and must not accept, and ships in no tarball.
+Six directories, all ADT. `connection/` left for `interfaces-adt-connection` in 11.0.0. `sap/`, `auth/`, `token/`, `session/`, `serviceKey/`, `store/`, `validation/` and `Headers.ts` were here until 9.0.0 and are listed above under what left; `__typechecks__/` holds 21 files that compile shapes this contract must and must not accept, and ships in no tarball.
 
 The contract rules — what a member answers, how a strategy is supplied, how a contract is built — are in [`docs/architecture/ARCHITECTURE.md`](../../docs/architecture/ARCHITECTURE.md). Domain-by-domain documentation with examples used to sit in the facade's README; the facade is deleted, and each package documents its own contracts.
 
@@ -73,6 +72,19 @@ Each member is one request, addressed by a value the server already gave you.
 - IFeatureToggleObject<MyState>
 + IFeatureToggleObject<{ switched: void; runtimeState: MyState; checkState: MyCheck; source: string }>
 ```
+
+**The connection moved.** Import it from its own package; nothing here
+re-exports it.
+
+```ts
+- import type { IAbapConnection, IAdtWireResponse } from '@mcp-abap-adt/interfaces-adt';
++ import type { IAbapConnection, IAdtWireResponse } from '@mcp-abap-adt/interfaces-adt-connection';
+```
+
+The same holds for `IAbapRequestOptions`, the capability atoms
+(`ISessionLifecycleAware`, `ICriticalSection`, `IRequestProfiling`,
+`IDeferredResponseConnection`), `ADT_SESSION_ERROR`/`AdtSessionErrorCode` and
+`ITimeoutConfig`. A connector depends on that package alone.
 
 `IAdtAbapGitClient` lost its second type parameter with `getRepo`. Decision 37
 in `docs/architecture/DECISIONS.md` says why a member no longer looks up what a

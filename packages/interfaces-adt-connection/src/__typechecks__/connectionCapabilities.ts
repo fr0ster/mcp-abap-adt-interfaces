@@ -1,16 +1,13 @@
 // Compile-only assertions. If these stop compiling, the types regressed.
 
-import type {
-  IAbapConnection,
-  IAdtWireResponse,
-} from '../connection/IAbapConnection';
+import type { IAbapConnection, IAdtWireResponse } from '../IAbapConnection';
 import {
   ADT_SESSION_ERROR,
   type AdtSessionErrorCode,
   type ICriticalSection,
   type IRequestProfiling,
   type ISessionLifecycleAware,
-} from '../connection/IConnectionCapabilities';
+} from '../IConnectionCapabilities';
 
 // The point of the split: a transport that owns no HTTP session is STILL a
 // valid IAbapConnection. If the atom ever migrates into IAbapConnection, this
@@ -70,7 +67,7 @@ void _codes;
 
 // A batch recorder is a legitimate IAbapConnection whose responses arrive late.
 // The atom says so; nothing in IAbapConnection can.
-import type { IDeferredResponseConnection } from '../connection/IConnectionCapabilities';
+import type { IDeferredResponseConnection } from '../IConnectionCapabilities';
 
 const _deferring: IAbapConnection & IDeferredResponseConnection = {
   ..._sessionless,

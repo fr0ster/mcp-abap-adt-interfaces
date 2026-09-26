@@ -15,11 +15,12 @@ Contracts for the MCP ABAP ADT packages: types and constants, no implementations
 | [`@mcp-abap-adt/interfaces-auth`](packages/interfaces-auth) | authentication: credentials, OAuth grants, tokens, interactive login, SAML assertions, `AUTH_TYPE_JWT`/`BASIC` | `interfaces-utils` |
 | [`@mcp-abap-adt/interfaces-auth-sap`](packages/interfaces-auth-sap) | the SAP and BTP half: `ISapConfig`, `SapAuthType`, `IConnectionConfig`, UAA, service keys, destinations, `AUTH_TYPE_XSUAA` | `interfaces-auth` |
 | [`@mcp-abap-adt/interfaces-calm`](packages/interfaces-calm) | SAP Cloud ALM: `ICalmConnection`, `CalmService`, `ICalmRequestOptions`, `ICalmResponse` | `interfaces-network` |
-| [`@mcp-abap-adt/interfaces-adt`](packages/interfaces-adt) | ADT only: object operations, the ABAP connection, runtime, execution, feeds, service bindings. The test is who imports it — `adt-clients` and whatever replaces its objects | `interfaces-network` |
+| [`@mcp-abap-adt/interfaces-adt-connection`](packages/interfaces-adt-connection) | the ABAP connection: `IAbapConnection`, `IAbapRequestOptions`, `IAdtWireResponse`, the connection capability atoms, `ITimeoutConfig`, `ADT_SESSION_ERROR`. What a connector implements | `interfaces-network` |
+| [`@mcp-abap-adt/interfaces-adt`](packages/interfaces-adt) | ADT only: object operations, runtime, execution, feeds, service bindings. The test is who imports it — `adt-clients` and whatever replaces its objects | `interfaces-adt-connection` |
 
 ## Why these packages
 
-One version line for every contract meant an ADT major bumped a package that only needed `IAuthProvider`. Decision 26 in [`docs/architecture/DECISIONS.md`](docs/architecture/DECISIONS.md) says whether a contract belongs in this repository at all; **decision 35 says which package holds it — the one whose subject the contract's own fields name**, not the one its first acceptor happens to be, because `auth-providers` accepts both `ITokenProvider` and `ISapConfig` and the accepting side therefore answers nothing. The design is in [`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md).
+One version line for every contract meant an ADT major bumped a package that only needed `IAuthProvider`. Decision 26 in [`docs/architecture/DECISIONS.md`](docs/architecture/DECISIONS.md) says whether a contract belongs in this repository at all; **decision 35 says which package holds it — the one whose subject the contract's own fields name**, not the one its first acceptor happens to be, because `auth-providers` accepts both `ITokenProvider` and `ISapConfig` and the accepting side therefore answers nothing. **Decision 38** adds the case the subject does not settle: the ABAP connection is ADT, and has its own package because it releases on its own schedule — a connector should not follow every major of the object contracts. The design is in [`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md).
 
 ## Working in this repository
 
