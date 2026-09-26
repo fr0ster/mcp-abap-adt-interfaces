@@ -225,3 +225,44 @@ void creatable.create({ className: 'ZC' }, writeOptions);
 // `update`'s, after `lock`.
 void creatable.create({ className: 'ZC' });
 void creatable.create({ className: 'ZC' }, { timeout: 45_000 });
+
+// ── A feature toggle names one result per answer (11.0.0) ───────────────────
+//
+// All five members answered one `TState`, so a result strategy given at
+// construction could shape only one of four different documents. Each answer
+// now has its own slot, and these fail if two of them are ever joined again.
+import type {
+  IFeatureToggleObject,
+  IFeatureToggleObjectResults,
+} from '../adt/IAdtFeatureToggle';
+
+interface ToggleShapes extends IFeatureToggleObjectResults {
+  switched: 'switched';
+  runtimeState: { active: boolean };
+  checkState: { allowed: boolean };
+  source: string;
+}
+declare const toggle: IFeatureToggleObject<ToggleShapes>;
+async function _eachAnswerIsItsOwn(): Promise<void> {
+  const on = await toggle.switchOn({}, { transportRequest: 'T' });
+  const state = await toggle.getRuntimeState({});
+  const checked = await toggle.checkState({});
+  const source = await toggle.readSource({});
+  if (on.ok) {
+    const v: 'switched' = on.getResult().value;
+    void v;
+  }
+  if (state.ok) {
+    const v: { active: boolean } = state.getResult().value;
+    void v;
+  }
+  if (checked.ok) {
+    const v: { allowed: boolean } = checked.getResult().value;
+    void v;
+  }
+  if (source.ok) {
+    const v: string = source.getResult().value;
+    void v;
+  }
+}
+void _eachAnswerIsItsOwn;

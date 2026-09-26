@@ -11,7 +11,7 @@
  * {@link IAdtError.code}.
  */
 
-import type { IAdtWireResponse } from '../connection/IAbapConnection';
+import type { IAdtWireResponse } from '@mcp-abap-adt/interfaces-adt-connection';
 import type { AdtNoFailure, IAdtError } from './IAdtResponse';
 
 /**

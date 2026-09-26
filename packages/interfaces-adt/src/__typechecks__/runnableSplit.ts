@@ -17,9 +17,9 @@
  * one edit made it pass again. The same assertion now pins the 10.0.0 list.
  */
 
+import type { IAdtWireResponse } from '@mcp-abap-adt/interfaces-adt-connection';
 import type { IAdtAnalyseOptions } from '../adt/IAdtObject';
 import type { IAdtResponse } from '../adt/IAdtResponse';
-import type { IAdtWireResponse } from '../connection/IAbapConnection';
 import type {
   IAdtRunnable,
   IRunnableWithProfiler,

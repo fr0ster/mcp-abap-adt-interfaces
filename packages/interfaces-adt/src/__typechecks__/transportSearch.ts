@@ -15,7 +15,10 @@ void _low;
 const _lowEmpty: IListTransportsParams = {};
 void _lowEmpty;
 
-// The high level may omit it, which opts into resolution.
+// The high level requires it too since 11.0.0: an implementation left without
+// one used to read the configurations and pick one, which is the caller's
+// choice and a second request.
+// @ts-expect-error configUri is required at the high level as well.
 const _highEmpty: IListTransportsOptions = {};
 const _highNamed: IListTransportsOptions = { configUri: '/sap/bc/adt/cts/x' };
 void _highEmpty;

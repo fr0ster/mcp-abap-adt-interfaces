@@ -4,7 +4,8 @@
 // here and a function there: this package emits nothing, so the assertions below
 // stand in for the implementations `@mcp-abap-adt/adt-clients` ships.
 
-import type { IAdtWireResponse, IResultStrategy } from '../index';
+import type { IAdtWireResponse } from '@mcp-abap-adt/interfaces-adt-connection';
+import type { IResultStrategy } from '../index';
 
 const answer: IAdtWireResponse = {
   data: '<pak:package/>',

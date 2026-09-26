@@ -1,8 +1,10 @@
 /**
  * @mcp-abap-adt/interfaces-adt
  *
- * ADT contracts: object operations, the ABAP connection, runtime analysis,
- * execution, feeds and service bindings.
+ * ADT contracts: object operations, runtime analysis, execution, feeds and
+ * service bindings. The ABAP connection they are sent through is
+ * `@mcp-abap-adt/interfaces-adt-connection` since 11.0.0, and is not re-exported
+ * here (decision 34).
  *
  * **Only ADT.** The test is who imports this package: `@mcp-abap-adt/adt-clients`
  * and whatever replaces its objects, and nobody else. Everything that failed
@@ -76,6 +78,7 @@ export type {
   IFeatureToggleConfig,
   IFeatureToggleHeader,
   IFeatureToggleObject,
+  IFeatureToggleObjectResults,
   IFeatureTogglePlanning,
   IFeatureToggleReleasePlan,
   IFeatureToggleRollout,
@@ -168,6 +171,7 @@ export type {
   IAbapObjectEntry,
   IAdtRequest,
   IAdtTransportObjectActions,
+  IAdtTransportSearchConfigurations,
   IListTransportsOptions,
   IListTransportsParams,
   ITransportConfig,
@@ -202,20 +206,6 @@ export type {
   IAdtWhereUsed,
   IGetNodeContentsOptions,
 } from './adt/IAdtUtilities';
-export type {
-  IAbapConnection,
-  IAdtWireResponse,
-} from './connection/IAbapConnection';
-export type { IAbapRequestOptions } from './connection/IAbapRequestOptions';
-export type {
-  AdtSessionErrorCode,
-  ICriticalSection,
-  IDeferredResponseConnection,
-  IRequestProfiling,
-  ISessionLifecycleAware,
-} from './connection/IConnectionCapabilities';
-export { ADT_SESSION_ERROR } from './connection/IConnectionCapabilities';
-export type { ITimeoutConfig } from './connection/ITimeoutConfig';
 export type {
   IClassExecuteWithProfilerOptions,
   IClassExecuteWithProfilingOptions,

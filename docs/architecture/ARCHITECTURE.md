@@ -54,18 +54,21 @@ depend on a sibling contract package, and on nothing else:
 
 ```
 interfaces-utils          interfaces-network
-       ▲                   ▲            ▲
-interfaces-auth      interfaces-adt   interfaces-calm
-       ▲
-interfaces-auth-sap
+       ▲                        ▲            ▲
+interfaces-auth   interfaces-adt-connection   interfaces-calm
+       ▲                        ▲
+interfaces-auth-sap       interfaces-adt
 ```
 
 Five edges, and each one is the only dependency its package has.
-`interfaces-adt` reaches `interfaces-network` for the HTTP frame and nothing
-else; `interfaces-calm` reaches it for the same frame, Cloud ALM having no ABAP
-in it; `interfaces-auth` reaches `interfaces-utils` for `ILogger`, and
-`interfaces-auth-sap` reaches `interfaces-auth` — `utils` arrives through it,
-which makes it that package's dependency rather than its own.
+`interfaces-adt-connection` reaches `interfaces-network` for the HTTP frame and
+nothing else; `interfaces-adt` reaches the connection, because its strategies
+are handed an `IAdtWireResponse`, and gets the frame through it — since 11.0.0
+it has no edge to `interfaces-network` of its own (decision 38).
+`interfaces-calm` reaches `interfaces-network` for the same frame, Cloud ALM
+having no ABAP in it; `interfaces-auth` reaches `interfaces-utils` for
+`ILogger`, and `interfaces-auth-sap` reaches `interfaces-auth` — `utils` arrives
+through it, which makes it that package's dependency rather than its own.
 
 **A dependency nothing imports is a defect, not a spare edge**, and
 `npm run check:graph` fails on one: two of these were declared after the last
@@ -292,7 +295,6 @@ is in the shape rather than the number.
 | `service/` (1) | the service binding: what it has that the atoms do not cover |
 | `feeds/` (2) | the ADT feed repository |
 | `execution/` (3) | being run: `IAdtRunnable`, the two profiler atoms, trace scheduling, and the two executors composed from them |
-| `connection/` (4) | `IAbapConnection`, `IAbapRequestOptions`, the connection capability atoms, `ITimeoutConfig` |
 | `shared/` (1) | what more than one object type needs |
 
 An object type is **not** a wide interface. A handler declares the atoms it
@@ -305,8 +307,10 @@ They are not in `interfaces-adt` any more, which is the point of 9.0.0:
 `auth/`, `token/`, `store/` and the assertion contracts are `interfaces-auth`;
 `sap/`, `session/`, `serviceKey/` and `validation/` are `interfaces-auth-sap`;
 the header names, the HTTP frame and the WebSocket transport are
-`interfaces-network`; `logging/` and `XmlNode` are `interfaces-utils`. What stays
-here is `connection/` — the ABAP connection itself is an ADT contract.
+`interfaces-network`; `logging/` and `XmlNode` are `interfaces-utils`. The ABAP
+connection itself — `IAbapConnection`, its capability atoms, `IAdtWireResponse`,
+`ITimeoutConfig` — is an ADT contract, and since 11.0.0 it is its own package,
+`interfaces-adt-connection`, which `interfaces-adt` stands on (decision 38).
 
 These describe how a connection is made and kept, not what ADT answered. The
 two-axis model does not apply to them: there is no server answer to shape and no

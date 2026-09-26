@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [11.0.0] - 2026-09-26
+
+One request per member, each addressed by what the server gave the caller
+(decision 37), and the ABAP connection in a package of its own (decision 38).
+
+### Added
+
+- **`IAdtTransportSearchConfigurations<TConfigurations>`** — the saved
+  transport searches, one member. `IAdtRequest.list` now requires the
+  `configUri` this answers.
+- **`IFeatureToggleObjectResults`** — one result slot per answer a feature
+  toggle gives: `switched`, `runtimeState`, `checkState`, `source`.
+
+### Changed
+
+- **BREAKING: `IListTransportsOptions.configUri` is required**, and so is
+  `IAdtRequest.list`'s options. An implementation left without one read the
+  configurations and chose; the choice is the caller's.
+- **BREAKING: `IAbapGitUnlinkArgs` takes `repositoryId`** — the key
+  `listRepos` reports — instead of `package`.
+- **BREAKING: `IAdtAbapGitClient.getErrorLog` takes `logLink`** — the href
+  `listRepos` reports — instead of a package name.
+- **BREAKING: `IFeatureToggleObject<TState>` is
+  `IFeatureToggleObject<R extends IFeatureToggleObjectResults>`.** Each member
+  answers its own slot rather than one type shared by four documents.
+
+### Removed
+
+- **BREAKING: the ABAP connection moved to
+  `@mcp-abap-adt/interfaces-adt-connection` 1.0.0**, unchanged and not
+  re-exported: `IAbapConnection`, `IAdtWireResponse`, `IAbapRequestOptions`,
+  `ISessionLifecycleAware`, `ICriticalSection`, `IRequestProfiling`,
+  `IDeferredResponseConnection`, `ADT_SESSION_ERROR`, `AdtSessionErrorCode`,
+  `ITimeoutConfig`. This package now depends on that one instead of
+  `interfaces-network`. A connector depends on the connection alone and stops
+  following every major here. Decision 38.
+- **BREAKING: `IAdtAbapGitClient.getRepo`**, and with it the second type
+  parameter: `IAdtAbapGitClient<TRepos, TErrorLog, TPull, TExternalRepo>`. It
+  filtered `listRepos`, which is a reading; a caller takes the entry from
+  `listRepos`.
+
 ## [10.0.0] - 2026-09-26
 
 The error strategy is taken with the call by **every** member that answers an
