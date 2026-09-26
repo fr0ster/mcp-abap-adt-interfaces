@@ -112,8 +112,11 @@ export interface IAssertionReplayStore {
    * race, and it is precisely the race a replay exploits.
    *
    * `retainUntil` is the last instant a validator would still accept the
-   * assertion — its expiry plus any clock skew allowed — not its expiry. An
-   * entry dropped earlier reopens the window in which a replay is accepted.
+   * assertion. That can be later than the expiry it reports: a session may
+   * end with the earliest window an assertion states while a later one still
+   * admits the same assertion, and any clock skew allowed widens it again.
+   * An entry dropped earlier reopens the window in which a replay is
+   * accepted.
    */
   recordIfUnseen(key: AssertionReplayKey, retainUntil: Date): Promise<boolean>;
 }
