@@ -68,6 +68,7 @@ export {
   AUTH_TYPE_SAML2_BEARER,
   AUTH_TYPE_USER_TOKEN,
 } from './token/AuthType';
+export type { IRefreshableTokenProvider } from './token/IRefreshableTokenProvider';
 export type { ITokenProvider } from './token/ITokenProvider';
 export type { ITokenProviderOptions } from './token/ITokenProviderOptions';
 export type { ITokenRefresher } from './token/ITokenRefresher';

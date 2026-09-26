@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-09-26
+
+### Added
+
+- **`IRefreshableTokenProvider`** — `ITokenProvider` plus `refreshTokens()`,
+  which obtains a new token and never answers from the cache. `getTokens()`
+  answers from the cache while the token looks valid, so a caller holding a
+  401 had no way to ask for another: `@mcp-abap-adt/auth-broker`'s
+  `refreshToken()` called `getToken()` and got the refused token back, which
+  broke the "always a new token" promise of `ITokenRefresher.refreshToken()`.
+  A separate interface rather than an option on `getTokens()`, so a caller
+  that needs the refresh requires it in its type instead of trusting that a
+  provider honours a flag. Decision 39.
+
 ## [2.0.1] - 2026-09-26
 
 ### Changed

@@ -5,7 +5,7 @@ Authentication: credentials, OAuth grants, tokens and the contracts around them.
 ## TL;DR
 
 - **Credentials** — `IAuthProvider`, `IRenewableCredential`, `ICertificateMaterial`, `IApiKeyCredential`, `IBearerCredential`, `ISecretLoginCredential`.
-- **Tokens and grants** — `ITokenProvider`, `ITokenRefresher`, `ITokenResult`, `ITokenRefreshResult`, `ITokenProviderOptions`, `TOKEN_PROVIDER_ERROR_CODES`, `OAuth2GrantType` and the OAuth2 grant constants.
+- **Tokens and grants** — `ITokenProvider`, `IRefreshableTokenProvider`, `ITokenRefresher`, `ITokenResult`, `ITokenRefreshResult`, `ITokenProviderOptions`, `TOKEN_PROVIDER_ERROR_CODES`, `OAuth2GrantType` and the OAuth2 grant constants.
 - **Interactive login** — `IAuthorizationStrategy`, the callback-server contracts.
 - **SAML assertions** — `IAssertionValidator`, `ASSERTION_ERROR_CODES`. Since 2.0.0 `AssertionContext.expectedInResponseTo` is optional: absent means a login declared IdP-initiated, and a validator must then **refuse** an assertion carrying `InResponseTo`, not skip the check.
 - **`AUTH_TYPE_JWT` and `AUTH_TYPE_BASIC`** — a bearer token and a user with a password. `AUTH_TYPE_XSUAA` is *not* here: XSUAA is a BTP service, so it and the union over all three are in `interfaces-auth-sap`.
