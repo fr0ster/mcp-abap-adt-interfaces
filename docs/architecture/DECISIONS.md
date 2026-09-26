@@ -2774,6 +2774,40 @@ changes rarely enough to be stood on.
 contracts — a release of one regularly needing the other. Then they are one
 schedule again, and one package is the honest shape.
 
+## 39. A forced refresh is its own interface, not a flag on `getTokens()`
+
+**Decided 2026-09-26, in `interfaces-auth` 2.1.0.**
+
+**The problem.** `ITokenProvider` has one way to get a token, `getTokens()`, and
+it answers from the provider's cache while the cached token looks valid. A
+caller holding a 401 knows better than the cache, and had no way to say so.
+`ITokenRefresher.refreshToken()` promises "always obtains new token from
+provider, regardless of current token validity", and `@mcp-abap-adt/auth-broker`
+kept that promise by calling `getToken()` — which, through `getTokens()`, handed
+back the token the server had just refused (found by the broker audit,
+2026-09-26).
+
+**Decided.** `IRefreshableTokenProvider extends ITokenProvider` adds
+`refreshTokens(): Promise<ITokenResult>`: a new token, never the cache, which
+then replaces the cache. A caller that must be able to refresh — the broker, or
+anything else implementing `ITokenRefresher` over a provider — requires this
+interface in its type.
+
+**Rejected.**
+- *`getTokens(options?: { forceRefresh?: boolean })`.* Additive and simplest,
+  but the type cannot tell a provider that honours the flag from one that
+  ignores it, and an old provider would answer the cache without a word — the
+  very failure this closes.
+- *`invalidate(): void`, then `getTokens()`.* Two calls where the caller means
+  one, with shared state between them that another caller can race.
+
+This follows the direction of small atoms composed: a provider that can refresh
+says so by implementing the atom, and one that cannot is not asked to pretend.
+
+**What would change it.** Every provider that ships implementing the refresh,
+with nothing left that only caches. Then the atom and the base contract describe
+the same set, and `refreshTokens()` belongs on `ITokenProvider` itself.
+
 ## Open, and what would settle it
 
 Not decisions. These are questions this repository has met and deliberately left
