@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [10.0.0] - 2026-09-26
+
+The error strategy is taken with the call by **every** member that answers an
+`IAdtResponse`, not only by the 17 that did. Decision 36.
+
+### Added
+
+- **`IAdtAnalyseOptions<E>`** — `analyse`, and nothing else. The options a
+  member takes when it has no write to carry. `IAdtOperationOptions` extends
+  it, so everything that accepted `IAdtOperationOptions` still does.
+- **`__typechecks__/errorStrategyOnEveryMember.ts`** — fails to compile if a
+  member of any of the 45 contracts that answer an `IAdtResponse` stops taking
+  `analyse`. Counted with the compiler: 96 members.
+
+### Changed
+
+- **BREAKING: 79 members take `options` with `analyse`**, as the overload pair
+  the capability atoms already had — one with `analyse` required, inferring the
+  failure type `E` into `IAdtResponse<T, E>`, one plain. Across
+  `IAdtLockable`, `IAdtVersionable`, `IFeatureToggleObject`, `IAdtRequest.list`,
+  `ITestRunInformation`, `ICdsTestDoubleCheckable`, every `IAdtUtilities` atom
+  (group activation and deletion among them), `IAdtRunnable` and both profiler
+  atoms, `ITraceScheduling`, `IFeedRepository`, `IApplicationLog`, `IAtcLog`,
+  `IAtcRunStatusReadable`, `IAtcFindings`, `ICrossTrace`, `IDdicActivation`,
+  `IGatewayErrorLog`, `IRuntimeDumps`, `ISt05Trace`, `ISystemMessages`,
+  `ITraceListing`, `ITraceReading`, `ITraceDeletion` and `IAdtAbapGitClient`.
+  Where a member already had an options object, `analyse` joins it; where it
+  had none, `options` is a new last parameter.
+- **BREAKING: `IAdtRunnable.run` always has a second parameter.** A flavour
+  without options (`TOptions = never`) took exactly its target; it now takes
+  `options?` carrying `analyse`.
+- **BREAKING: `ViewArgs` always yields an options parameter** — `analyse` alone
+  for a view whose options are `void`, beside the view's own otherwise. It takes
+  a third type parameter, the failure type, defaulting to `IAdtError`.
+- **`ITraceListing` takes a third type parameter, `TList`**, defaulting to
+  `TEntry[]`, and `list` answers it. The array was fixed in the contract, so a
+  result strategy could change an entry but not that the answer was a list of
+  them. The default keeps every existing instantiation meaning what it did.
+
 ## [9.0.0] - 2026-09-23
 
 ### Added

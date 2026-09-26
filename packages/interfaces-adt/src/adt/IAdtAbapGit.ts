@@ -1,4 +1,5 @@
-import type { IAdtResponse } from './IAdtResponse';
+import type { IAdtAnalyseOptions, IAnalyse } from './IAdtObject';
+import type { IAdtError, IAdtResponse } from './IAdtResponse';
 export interface IAbapGitLinkArgs {
   package: string;
   url: string;
@@ -53,7 +54,14 @@ export interface IAdtAbapGitClient<
   TPull,
   TExternalRepo,
 > {
-  link(args: IAbapGitLinkArgs): Promise<IAdtResponse<void>>;
+  link<E extends IAdtError>(
+    args: IAbapGitLinkArgs,
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<void, E>>;
+  link(
+    args: IAbapGitLinkArgs,
+    options?: IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<void>>;
   /**
    * Start a pull — one POST to `args.pullLink`.
    *
@@ -61,12 +69,48 @@ export interface IAdtAbapGitClient<
    * repositories once, keeps the link, posts, then polls `getRepo` on their own
    * terms and reads `getErrorLog` if the status says to.
    */
-  pull(args: IAbapGitPullArgs): Promise<IAdtResponse<TPull>>;
-  unlink(args: IAbapGitUnlinkArgs): Promise<IAdtResponse<void>>;
-  listRepos(): Promise<IAdtResponse<TRepos>>;
-  getRepo(packageName: string): Promise<IAdtResponse<TRepo>>;
-  getErrorLog(packageName: string): Promise<IAdtResponse<TErrorLog>>;
+  pull<E extends IAdtError>(
+    args: IAbapGitPullArgs,
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TPull, E>>;
+  pull(
+    args: IAbapGitPullArgs,
+    options?: IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<TPull>>;
+  unlink<E extends IAdtError>(
+    args: IAbapGitUnlinkArgs,
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<void, E>>;
+  unlink(
+    args: IAbapGitUnlinkArgs,
+    options?: IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<void>>;
+  listRepos<E extends IAdtError>(
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TRepos, E>>;
+  listRepos(options?: IAdtAnalyseOptions): Promise<IAdtResponse<TRepos>>;
+  getRepo<E extends IAdtError>(
+    packageName: string,
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TRepo, E>>;
+  getRepo(
+    packageName: string,
+    options?: IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<TRepo>>;
+  getErrorLog<E extends IAdtError>(
+    packageName: string,
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TErrorLog, E>>;
+  getErrorLog(
+    packageName: string,
+    options?: IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<TErrorLog>>;
+  checkExternalRepo<E extends IAdtError>(
+    args: IAbapGitExternalRepoCredentials,
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TExternalRepo, E>>;
   checkExternalRepo(
     args: IAbapGitExternalRepoCredentials,
+    options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TExternalRepo>>;
 }

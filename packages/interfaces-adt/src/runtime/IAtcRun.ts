@@ -7,7 +7,8 @@
  * nothing here takes an execution id.
  */
 
-import type { IAdtResponse } from '../adt/IAdtResponse';
+import type { IAdtAnalyseOptions, IAnalyse } from '../adt/IAdtObject';
+import type { IAdtError, IAdtResponse } from '../adt/IAdtResponse';
 
 /**
  * The object kinds ATC will check, at a URI a client can build for them.
@@ -99,7 +100,14 @@ export interface IAtcRunStatusReadable<TStatus> {
    * is the one who can decide when to give up — and `status` travels beside
    * `isFinished` so they can report the state they last saw.
    */
-  getRunStatus(runId: string): Promise<IAdtResponse<TStatus>>;
+  getRunStatus<E extends IAdtError>(
+    runId: string,
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TStatus, E>>;
+  getRunStatus(
+    runId: string,
+    options?: IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<TStatus>>;
 }
 
 export interface IAtcFindings<TFindings> {
@@ -110,5 +118,12 @@ export interface IAtcFindings<TFindings> {
    * Read it after the run reports finished. Read earlier it is empty whatever
    * happened, which is indistinguishable from a run that found nothing.
    */
-  getFindings(worklistId: string): Promise<IAdtResponse<TFindings>>;
+  getFindings<E extends IAdtError>(
+    worklistId: string,
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TFindings, E>>;
+  getFindings(
+    worklistId: string,
+    options?: IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<TFindings>>;
 }

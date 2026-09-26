@@ -2,7 +2,8 @@
  * Feature Toggle (FTG2/FT) ADT operation parameter interfaces (low-level)
  */
 
-import type { IAdtResponse } from './IAdtResponse';
+import type { IAdtAnalyseOptions, IAnalyse } from './IAdtObject';
+import type { IAdtError, IAdtResponse } from './IAdtResponse';
 
 export interface IFeatureToggleReleasePlan {
   version: string;
@@ -76,27 +77,57 @@ export interface IFeatureToggleConfig {
  * a consumer who wants only the switch had to take eight members to get it.
  */
 export interface IFeatureToggleObject<TState> {
+  switchOn<E extends IAdtError>(
+    config: Partial<IFeatureToggleConfig>,
+    opts: { transportRequest: string; userSpecific?: boolean },
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TState, E>>;
   switchOn(
     config: Partial<IFeatureToggleConfig>,
     opts: { transportRequest: string; userSpecific?: boolean },
+    options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TState>>;
+
+  switchOff<E extends IAdtError>(
+    config: Partial<IFeatureToggleConfig>,
+    opts: { transportRequest: string; userSpecific?: boolean },
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TState, E>>;
 
   switchOff(
     config: Partial<IFeatureToggleConfig>,
     opts: { transportRequest: string; userSpecific?: boolean },
+    options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TState>>;
 
+  getRuntimeState<E extends IAdtError>(
+    config: Partial<IFeatureToggleConfig>,
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TState, E>>;
   getRuntimeState(
     config: Partial<IFeatureToggleConfig>,
+    options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TState>>;
 
+  checkState<E extends IAdtError>(
+    config: Partial<IFeatureToggleConfig>,
+    opts: { userSpecific?: boolean } | undefined,
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TState, E>>;
   checkState(
     config: Partial<IFeatureToggleConfig>,
     opts?: { userSpecific?: boolean },
+    options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TState>>;
 
+  readSource<E extends IAdtError>(
+    config: Partial<IFeatureToggleConfig>,
+    version: 'active' | 'inactive' | undefined,
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TState, E>>;
   readSource(
     config: Partial<IFeatureToggleConfig>,
     version?: 'active' | 'inactive',
+    options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TState>>;
 }

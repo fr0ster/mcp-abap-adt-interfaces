@@ -13,24 +13,35 @@
  * inheritance either, which would decide for the composer that whoever runs
  * must also profile.
  */
-import type { IAdtResponse } from '../adt/IAdtResponse';
+
+import type { IAdtAnalyseOptions, IAnalyse } from '../adt/IAdtObject';
+import type { IAdtError, IAdtResponse } from '../adt/IAdtResponse';
 
 export interface IAdtRunnable<TTarget, TResult, TOptions = never> {
   /**
    * Execute the target.
    *
-   * The second parameter exists only for a flavour that has options. With the
-   * default `TOptions = never` the rest tuple is empty, so `run` takes exactly
-   * one parameter — not one plus an `options?: undefined` that would show up in
-   * `Parameters<…>`, break a wrapper built from tuple types, and quietly change
-   * the signature of every executor that inherits this.
+   * **There is always a second parameter now**, because every member takes the
+   * error strategy with the call (decision 36). Until 10.0.0 it existed only for
+   * a flavour with options: the default `TOptions = never` made the rest tuple
+   * empty, so `run` took exactly one parameter. That trick answered "does this
+   * flavour have options", and the question is gone — a flavour without options
+   * still has `analyse` to be given. Its own options, where it has any, are
+   * merged into the same object.
    *
    * @param target what to run — a program, a class, a list of test classes
-   * @param args flavour-specific execution options, where the flavour has any
+   * @param options the flavour's execution options, where it has any, and
+   *                `analyse` for the verdict
    */
+  run<E extends IAdtError>(
+    target: TTarget,
+    options: ([TOptions] extends [never] ? unknown : TOptions) &
+      IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TResult, E>>;
   run(
     target: TTarget,
-    ...args: [TOptions] extends [never] ? [] : [options?: TOptions]
+    options?: ([TOptions] extends [never] ? unknown : TOptions) &
+      IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TResult>>;
 }
 
@@ -49,9 +60,13 @@ export interface IAdtRunnable<TTarget, TResult, TOptions = never> {
  *                to attach to without it
  */
 export interface IRunnableWithProfiler<TTarget, TResult, TOptions> {
+  runWithProfiler<E extends IAdtError>(
+    target: TTarget,
+    options: TOptions & IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TResult, E>>;
   runWithProfiler(
     target: TTarget,
-    options: TOptions,
+    options: TOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TResult>>;
 }
 
@@ -65,8 +80,12 @@ export interface IRunnableWithProfiler<TTarget, TResult, TOptions> {
  * other says exactly that.
  */
 export interface IRunnableWithProfiling<TTarget, TResult, TOptions> {
+  runWithProfiling<E extends IAdtError>(
+    target: TTarget,
+    options: TOptions & IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TResult, E>>;
   runWithProfiling(
     target: TTarget,
-    options?: TOptions,
+    options?: TOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TResult>>;
 }

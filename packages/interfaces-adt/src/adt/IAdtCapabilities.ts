@@ -33,6 +33,7 @@
  * exists.
  */
 import type {
+  IAdtAnalyseOptions,
   IAdtCreateOptions,
   IAdtOperationOptions,
   IAnalyse,
@@ -299,8 +300,9 @@ export interface IAdtDeletable<TConfig, TDeleted, TChecked = string> {
    * that can be deleted can be asked whether it can be deleted right now.
    *
    * One request, like every other member, and the answer is a document rather
-   * than a status — ADT reports a refusal inside a 200. The shipped `analyse`
-   * reads it; a caller who wants another reading passes their own.
+   * than a status — ADT reports a refusal inside a 200. An implementation does
+   * not read it (decision 36): the refusal reaches a caller as a failure only
+   * through the `analyse` they pass with the call.
    *
    * @param config - Object identification
    * @param options - `analyse` for the verdict
@@ -379,7 +381,14 @@ export interface IAdtLockable<TConfig> {
    * an exception. The pair migrated together, because a lock and its unlock are
    * one operation seen from two ends.
    */
-  lock(config: Partial<TConfig>): Promise<IAdtResponse<string>>;
+  lock<E extends IAdtError>(
+    config: Partial<TConfig>,
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<string, E>>;
+  lock(
+    config: Partial<TConfig>,
+    options?: IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<string>>;
 
   /**
    * Unlock object
@@ -390,9 +399,15 @@ export interface IAdtLockable<TConfig> {
    * @param lockHandle - Lock handle returned from lock() operation
    * @returns nothing to read, and the answer says whether it happened
    */
+  unlock<E extends IAdtError>(
+    config: Partial<TConfig>,
+    lockHandle: string,
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<void, E>>;
   unlock(
     config: Partial<TConfig>,
     lockHandle: string,
+    options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<void>>;
 }
 
@@ -408,7 +423,14 @@ export interface IAdtVersionable<TConfig, TVersions, TSource> {
    * a type it did not choose is the normal case here, and a normal case belongs
    * in the return type.
    */
-  getVersions(config: Partial<TConfig>): Promise<IAdtResponse<TVersions>>;
+  getVersions<E extends IAdtError>(
+    config: Partial<TConfig>,
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TVersions, E>>;
+  getVersions(
+    config: Partial<TConfig>,
+    options?: IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<TVersions>>;
 
   /**
    * Fetch the source code of a specific version.
@@ -417,7 +439,14 @@ export interface IAdtVersionable<TConfig, TVersions, TSource> {
    * Answers like its pair above: a version resource that cannot be read is a
    * failure in the answer.
    */
-  getVersionSource(contentUri: string): Promise<IAdtResponse<TSource>>;
+  getVersionSource<E extends IAdtError>(
+    contentUri: string,
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TSource, E>>;
+  getVersionSource(
+    contentUri: string,
+    options?: IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<TSource>>;
 }
 
 /**

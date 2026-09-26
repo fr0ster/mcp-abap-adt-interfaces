@@ -123,10 +123,21 @@ export type IAnalyse<E extends IAdtError = IAdtError> = (
 ) => E | AdtNoFailure;
 
 /**
- * Options for ADT operations (create and update)
- * Unified interface for both create and update operations
+ * The error strategy, given with the call. **Every member that answers an
+ * {@link IAdtResponse} takes it** — decision 36.
+ *
+ * The result strategy is given once, when the implementation is constructed
+ * (decision 22); this one travels with each call. Both are the consumer's, and
+ * an implementation that has been given neither interprets nothing: it answers
+ * what the transport saw, and a refusal SAP wrote inside a 200 stays a
+ * document until a strategy reads it.
+ *
+ * It is its own type, rather than every member taking
+ * {@link IAdtOperationOptions}, because that one also carries `source` and
+ * `lockHandle`, which only a write can honour. Offering them to a lock, a
+ * version listing or a trace would permit a call that cannot work — decision 29.
  */
-export interface IAdtOperationOptions<E extends IAdtError = IAdtError> {
+export interface IAdtAnalyseOptions<E extends IAdtError = IAdtError> {
   /**
    * {@link IAnalyse} — the caller's own reading of what counts as a failure.
    *
@@ -141,7 +152,14 @@ export interface IAdtOperationOptions<E extends IAdtError = IAdtError> {
    * is passed rather than a summary of it.
    */
   analyse?: IAnalyse<E>;
+}
 
+/**
+ * Options for ADT operations (create and update)
+ * Unified interface for both create and update operations
+ */
+export interface IAdtOperationOptions<E extends IAdtError = IAdtError>
+  extends IAdtAnalyseOptions<E> {
   /*
    * `activateOnCreate`, `activateOnUpdate` and `deleteOnFailure` were here.
    *

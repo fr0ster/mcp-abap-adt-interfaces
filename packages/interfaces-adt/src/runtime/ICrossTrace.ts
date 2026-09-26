@@ -1,4 +1,5 @@
-import type { IAdtResponse } from '../adt/IAdtResponse';
+import type { IAdtAnalyseOptions, IAnalyse } from '../adt/IAdtObject';
+import type { IAdtError, IAdtResponse } from '../adt/IAdtResponse';
 
 export interface IListCrossTracesOptions {
   traceUser?: string;
@@ -27,16 +28,46 @@ export interface ICrossTrace<R extends ICrossTraceResults> {
   readonly kind: 'crossTrace';
 
   /** The traces this system holds. */
-  list(options?: IListCrossTracesOptions): Promise<IAdtResponse<R['list']>>;
+  list<E extends IAdtError>(
+    options: IListCrossTracesOptions &
+      IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<R['list'], E>>;
+  list(
+    options?: IListCrossTracesOptions & IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<R['list']>>;
 
+  getById<E extends IAdtError>(
+    traceId: string,
+    includeSensitiveData: boolean | undefined,
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<R['trace'], E>>;
   getById(
     traceId: string,
     includeSensitiveData?: boolean,
+    options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<R['trace']>>;
-  getRecords(traceId: string): Promise<IAdtResponse<R['records']>>;
+  getRecords<E extends IAdtError>(
+    traceId: string,
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<R['records'], E>>;
+  getRecords(
+    traceId: string,
+    options?: IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<R['records']>>;
+  getRecordContent<E extends IAdtError>(
+    traceId: string,
+    recordNumber: number,
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<R['recordContent'], E>>;
   getRecordContent(
     traceId: string,
     recordNumber: number,
+    options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<R['recordContent']>>;
-  getActivations(): Promise<IAdtResponse<R['activations']>>;
+  getActivations<E extends IAdtError>(
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<R['activations'], E>>;
+  getActivations(
+    options?: IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<R['activations']>>;
 }
