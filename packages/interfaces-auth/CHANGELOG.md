@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `IAssertionReplayStore.recordIfUnseen`: `retainUntil` was documented as the
+  assertion's "expiry plus any clock skew". It is the last instant a
+  validator would still accept the assertion, which can be later than the
+  expiry it reports — `@mcp-abap-adt/auth-providers` 4.0.0 retains until the
+  latest bearer confirmation that still admits it. Documentation only.
+
 ## [2.0.0] - 2026-09-25
 
 ### Changed
