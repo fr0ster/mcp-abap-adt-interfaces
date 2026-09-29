@@ -120,8 +120,9 @@ export interface IBearerCredential {
  * someone, which is what a database does.
  *
  * Accepted by `pg-vector-rag` and `hana-vector-rag`. {@link IAuthProvider} does
- * not fit here: it is HTTP-shaped, answering with a header, cookies and TLS
- * material, none of which a database connection speaks.
+ * not fit here: it is a provider the ABAP connection process delegates to
+ * through its own lifecycle and wire targets; a database driver takes an
+ * identity and a secret, and nothing else.
  */
 export interface ISecretLoginCredential {
   /** The protocol this speaks: log in as someone, with a secret. */

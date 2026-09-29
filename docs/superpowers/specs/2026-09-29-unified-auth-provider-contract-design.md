@@ -211,7 +211,7 @@ approved: the SNC-specific parts carry over as they are, the wiring parts go.
 
 ## The decisions this changes
 
-A new decision, **31. The process's contract with a credential is its
+A new decision, **40. The process's contract with a credential is its
 lifecycle, not the credential's capabilities**:
 
 - **Against decision 23's treatment of renewal.** `IRenewableCredential` was
@@ -235,7 +235,7 @@ lifecycle, not the credential's capabilities**:
   credential and the wire are independent axes chosen by configuration; the
   earliest honest point is `connect()`, and that is where it lands.
 
-`docs/architecture/DECISIONS.md` gets decision 31, and decision 23's paragraph
+`docs/architecture/DECISIONS.md` gets decision 40, and decision 23's paragraph
 on `IRenewableCredential` a note pointing to it.
 
 ## Migration

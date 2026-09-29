@@ -1723,6 +1723,10 @@ members whose implementations issue the same request.
 contracts extended two shared bases, `ITraceFamily` carried a listing, and
 `IRenewableCredential` extended the whole of `IAuthProvider` to add one method.
 
+> **Superseded for credentials by decision 40 (`interfaces-auth` 3.0.0).** `IRenewableCredential`
+> is gone: renewal is `IAuthProvider.rejected()`, which every provider answers.
+> The rule against inheritance stands.
+
 Inheritance also hides a second name for the same idea, which is how `IExecutor`
 survived review twice: read as "the executor contract" it looks like a thing,
 and read as its members it is `IAdtRunnable` twice over with different options.
@@ -2807,6 +2811,63 @@ says so by implementing the atom, and one that cannot is not asked to pretend.
 **What would change it.** Every provider that ships implementing the refresh,
 with nothing left that only caches. Then the atom and the base contract describe
 the same set, and `refreshTokens()` belongs on `ITokenProvider` itself.
+
+## 40. The process's contract with a credential is its lifecycle, not the credential's capabilities
+
+**Decided 2026-09-29, in `interfaces-auth` 3.0.0.** Supersedes the treatment of
+`IRenewableCredential` under decision 23.
+
+**The problem.** A passwordless SNC logon was being added (auth-providers#55).
+Every way to fit it into `IAuthProvider` as it stood left the consumer asking
+what it had been given: an optional `IRfcLogonCredential` atom and a guard, a
+`null`-returning member, a `case 'snc'` in the server. The contract already
+worked that way. `@mcp-abap-adt/connection` asked `authorizationHeader()`,
+`cookies()` and `transportMaterial()` of every credential and branched on
+`null` / `{}`; `IRenewableCredential` was an atom, so every consumer that met a
+401 narrowed with `typeof c.renew === 'function'`; and the RFC logon read
+`username`/`password` from the config, so the injected credential took no part
+in it at all. A provider was injected but not delegated to.
+
+**Decided.** `IAuthProvider` is the four moments every connection goes through,
+and every provider answers all four with an `AuthOutcome` — Ok, or Oops with an
+`IAuthRefusal { reason, hint? }`:
+
+- `prepare()` — once per connect;
+- `establish(logon: ILogonTarget)` — at every logon the wire makes;
+- `authorize(request: IRequestTarget)` — before every request attempt;
+- `rejected(rejection: IAuthRejection)` — the system refused; Ok means "fixed,
+  try once more".
+
+The wire implements the targets (`tlsMaterial`, `logonParameters`; `header`,
+`cookies`) and the provider writes into them. The process calls the same
+sequence for every provider and never asks what it holds. `authorizationHeader`,
+`cookies`, `transportMaterial` and `IRenewableCredential` are removed.
+
+**Against.**
+- *Keeping capabilities as atoms (decision 3) for credentials.* Atoms serve a
+  consumer who picks the capability it needs. Here the consumer is the process,
+  and it needs all of them, from every provider, at fixed moments. Composition
+  moved the question "can this renew?" to the consumer, which is the one party
+  that cannot answer it.
+- *"A password implementing `renew` would be a lie" (decision 23).* Answering
+  `rejected()` with Oops "user or password refused" is not a pretended
+  capability; it is the true verdict, and only the provider can give it.
+- *An optional member per new way in.* Each is a runtime check in the process,
+  which is what injection is meant to spare it.
+
+**Why this squares with the others.** Decision 11: no member is here because a
+sibling has it — the process calls all four, for every provider. Decision 2: a
+provider with nothing for a moment writes nothing and answers Ok; nothing throws
+"not supported". Decision 29: the one combination that cannot work — logon
+parameters on a wire that has none, when the provider has no other way — cannot
+be refused at compile time while credential and wire are chosen independently
+by configuration; the target answers Oops at the first logon, naming both, before
+any request. That is the earliest honest point.
+
+**What would change it.** A process that does not go through one of the four
+moments — a wire with no logon, or with no refusal — while still needing
+providers. Then that moment is not the lifecycle's but a capability's, and it
+leaves the contract as an atom.
 
 ## Open, and what would settle it
 

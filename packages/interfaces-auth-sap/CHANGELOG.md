@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`'snc'`** in `SapAuthType` and in `IConnectionConfig.authType`. A consumer
+  that switches exhaustively on either union gets a new case to handle.
+- **`sncPartnerName`, `sncQop`, `sncLib`, `sncMyName`** (optional strings) on
+  `ISapConfig` and `IConnectionConfig`. On `IConnectionConfig` because that is
+  what the stores hand the broker: an SNC-only destination needs no
+  authorization config, no username and no password. `sncQop` is one of `1`,
+  `2`, `3`, `8`, `9`.
+
+### Changed
+
+- `@mcp-abap-adt/interfaces-auth` accepted as `^1.2.0 || ^2.0.0 || ^3.0.0`:
+  this package uses `ICertificateMaterial` and the auth-type constants, which
+  3.0.0 does not change.
+
 ## [1.0.1] - 2026-09-25
 
 ### Changed
