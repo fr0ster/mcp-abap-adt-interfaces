@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking: `IAuthProvider` is the process's lifecycle, and every provider
+  answers all of it.** `prepare()`, `establish(logon)`, `authorize(request)`
+  and `rejected(rejection)`, each returning an `AuthOutcome` — Ok, or Oops
+  with an `IAuthRefusal { reason, hint? }`. The wire hands the provider an
+  `ILogonTarget` (`tlsMaterial`, `logonParameters`) and an `IRequestTarget`
+  (`header`, `cookies`); the provider writes into them. A process calls the
+  same sequence for every provider — basic, token, SAML, certificate, SNC — and
+  never asks what it holds. Decision 40.
+
+### Added
+
+- `AuthOutcome`, `IAuthRefusal`, `ILogonTarget`, `IRequestTarget`,
+  `IAuthRejection`.
+
+### Removed
+
+- **Breaking:** `IAuthProvider.authorizationHeader()`, `cookies()` and
+  `transportMaterial()` — `authorize()` and `establish()` write into the
+  wire's targets instead.
+- **Breaking:** `IRenewableCredential` — renewal is `rejected()`, which every
+  provider answers (a token renews and says Ok; a password says Oops "user or
+  password refused"). No narrowing on `renew` remains.
+
+### Migrating an implementation
+
+| Was | Now |
+|---|---|
+| `prepare(): Promise<void>` | `prepare(): Promise<AuthOutcome>` — return Oops instead of throwing |
+| `authorizationHeader()` → value | `authorize(r)`: `r.header('Authorization', value)` |
+| `cookies()` → value | `authorize(r)`: `r.cookies(value)` |
+| `transportMaterial()` → material | `establish(l)`: `return l.tlsMaterial(material)` |
+| `renew()` (`IRenewableCredential`) | `rejected(x)`: renew, then Ok; or Oops |
+| — (RFC read user/password from config) | `establish(l)`: `l.logonParameters({ user, passwd })` |
+
 ## [2.1.0] - 2026-09-26
 
 ### Added

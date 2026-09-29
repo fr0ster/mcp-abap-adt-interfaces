@@ -4,7 +4,7 @@ Authentication: credentials, OAuth grants, tokens and the contracts around them.
 
 ## TL;DR
 
-- **Credentials** — `IAuthProvider`, `IRenewableCredential`, `ICertificateMaterial`, `IApiKeyCredential`, `IBearerCredential`, `ISecretLoginCredential`.
+- **Credentials** — `IAuthProvider` with `AuthOutcome`, `IAuthRefusal`, `ILogonTarget`, `IRequestTarget`, `IAuthRejection`; `ICertificateMaterial`, `IApiKeyCredential`, `IBearerCredential`, `ISecretLoginCredential`. Since 3.0.0 `IAuthProvider` is the process's lifecycle — `prepare`, `establish`, `authorize`, `rejected` — answered by every provider with Ok or Oops.
 - **Tokens and grants** — `ITokenProvider`, `IRefreshableTokenProvider`, `ITokenRefresher`, `ITokenResult`, `ITokenRefreshResult`, `ITokenProviderOptions`, `TOKEN_PROVIDER_ERROR_CODES`, `OAuth2GrantType` and the OAuth2 grant constants.
 - **Interactive login** — `IAuthorizationStrategy`, the callback-server contracts.
 - **SAML assertions** — `IAssertionValidator`, `ASSERTION_ERROR_CODES`. Since 2.0.0 `AssertionContext.expectedInResponseTo` is optional: absent means a login declared IdP-initiated, and a validator must then **refuse** an assertion carrying `InResponseTo`, not skip the check.
@@ -22,19 +22,24 @@ npm install @mcp-abap-adt/interfaces-auth
 
 ```typescript
 import type {
+  AuthOutcome,
   IAuthProvider,
-  ICertificateMaterial,
-  IRenewableCredential,
+  ILogonTarget,
+  IRequestTarget,
 } from '@mcp-abap-adt/interfaces-auth';
 ```
 
-`@mcp-abap-adt/connection` ships implementations (`BasicAuthProvider`, `TokenAuthProvider`, …); a consumer can write its own against this contract.
+`@mcp-abap-adt/auth-providers` ships the implementations; a consumer can write its own against this contract. The ABAP connection calls `prepare()` → `establish()` per logon → `authorize()` per request attempt → `rejected()` on a refusal, the same for every provider.
 
 ## What belongs here
 
 A contract whose own fields name nothing SAP or BTP — that is the rule, and it is decision 35. `AUTH_TYPE_BASIC` is a user and a password anywhere; `AUTH_TYPE_XSUAA` names a BTP service, so it is not here.
 
 Everything SAP- or BTP-specific is `@mcp-abap-adt/interfaces-auth-sap`, which depends on this package: `ISapConfig`, `SapAuthType`, `AuthType`/`AUTH_TYPES`, `IAuthorizationConfig`, `IConfig`, `IConnectionConfig` (it carries `sapClient`), `ITokenProviderResult`, `IServiceKeyStore`, `ISessionStore` and the two validation results. Nothing authentication-related is in `@mcp-abap-adt/interfaces-adt` any more, as of its 9.0.0.
+
+## Migrating to 3.0.0
+
+Breaks **implementers of `IAuthProvider`** and anyone narrowing on `IRenewableCredential`. Each of the four moments returns an `AuthOutcome`; the old members map as the CHANGELOG's table shows — a header or cookies are written in `authorize()`, TLS material and RFC logon parameters in `establish()`, and renewal is `rejected()`. A process no longer asks a credential anything: it calls the four moments in order. Decision 40.
 
 ## Migrating to 2.0.0
 

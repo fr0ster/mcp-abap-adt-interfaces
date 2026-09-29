@@ -32,6 +32,7 @@
 export type { AssertionErrorCode } from './auth/AssertionErrorCodes';
 export { ASSERTION_ERROR_CODES } from './auth/AssertionErrorCodes';
 export { AUTH_TYPE_BASIC, AUTH_TYPE_JWT } from './auth/AuthMethod';
+export type { AuthOutcome, IAuthRefusal } from './auth/AuthOutcome';
 export type {
   AssertionContext,
   AssertionReplayKey,
@@ -44,7 +45,9 @@ export type {
   AuthorizationRequest,
   IAuthorizationStrategy,
 } from './auth/IAuthorizationStrategy';
-export type { IAuthProvider, IRenewableCredential } from './auth/IAuthProvider';
+export type { IAuthProvider } from './auth/IAuthProvider';
+export type { IAuthRejection } from './auth/IAuthRejection';
+export type { ILogonTarget, IRequestTarget } from './auth/IAuthTargets';
 export type {
   CallbackServerFactory,
   ICallbackServerHandle,
