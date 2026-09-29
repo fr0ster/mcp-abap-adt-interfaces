@@ -1,6 +1,6 @@
 {
   "name": "@mcp-abap-adt/interfaces-auth-sap",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "SAP and BTP authorization contracts: service keys, destinations, UAA, SAP connection configuration",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
