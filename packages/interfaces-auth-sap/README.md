@@ -5,11 +5,12 @@ The SAP and BTP half of authentication: SAP system configuration, service keys, 
 ## TL;DR
 
 - **The SAP system** — `ISapConfig`, `SapAuthType`, `SapConnectionType`, `IConfig`, `IConnectionConfig` (it carries `sapClient`, a `serviceUrl` and an ABAP language).
+- **What a destination states about its credential** — on `IConnectionConfig`: `authType`, `grantType` (`DestinationGrant` — how it obtains a new credential, or `'none'`), `expiresAt`, and the settings a grant needs: SNC (`snc*`), OIDC (`oidc*`) and the SAML IdP's trust (`saml*`). Data only; the client stays in `IAuthorizationConfig`, so a destination without a client secret carries none.
 - **BTP** — `AUTH_TYPE_XSUAA` and the `AuthType`/`AUTH_TYPES` union over all three: XSUAA is a BTP service, so a set that includes it describes what a *BTP* connection accepts.
 - **What holds the credentials** — `IServiceKeyStore`, `ISessionStore`, `ITokenProviderResult`, `ICertificateMaterialLoader`, `IAuthorizationConfig`.
 - **What a validator answers** — `IValidatedAuthConfig`, `AuthMethodPriority`, `IHeaderValidationResult`.
 - **`AUTH_TYPE_JWT` and `AUTH_TYPE_BASIC` are not here**, and are deliberately not re-exported: a bearer token and a user with a password mean the same thing off SAP, so they are in `interfaces-auth`, and forwarding is the duplication this family removed (decision 34).
-- Depends on `@mcp-abap-adt/interfaces-auth` (`^1.2.0 || ^2.0.0` — nothing it uses changed in 2.0.0), and on nothing else — `interfaces-utils` reaches it through that package, for `ILogger`. Types and constants; no implementation.
+- Depends on `@mcp-abap-adt/interfaces-auth` (`^1.2.0 || ^2.0.0 || ^3.0.0` — nothing it uses changed in 2.0.0 or 3.0.0), and on nothing else — `interfaces-utils` reaches it through that package, for `ILogger`. Types and constants; no implementation.
 
 ## Install
 

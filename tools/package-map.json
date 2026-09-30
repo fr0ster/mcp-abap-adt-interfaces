@@ -38,6 +38,7 @@
   "CalmService": "interfaces-calm",
   "DataElementTypeKind": "interfaces-adt",
   "DesiredPublicationState": "interfaces-adt",
+  "DestinationGrant": "interfaces-auth-sap",
   "EnhancementType": "interfaces-adt",
   "GeneratedServiceType": "interfaces-adt",
   "HEADER_ACCEPT": "interfaces-network",

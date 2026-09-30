@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-10-01
+
+### Added
+
+- **`DestinationGrant`** — how a destination obtains a new credential:
+  `authorization_code`, `client_credentials`, `passcode` (UAA),
+  `oidc_authorization_code`, `device_code`, `password`, `token_exchange`
+  (OIDC), `saml2_pure`, `saml2_bearer` (SAML), or `none` (handed over, not
+  renewed). Not `OAuth2GrantType` from `interfaces-auth`: that lists OAuth
+  grants on the wire, this the ways a destination is renewed, which include a
+  UAA passcode, SAML session cookies and no renewal. Here rather than in
+  `interfaces-auth` because it has no meaning apart from `IConnectionConfig`
+  (decision 35).
+- **On `IConnectionConfig`, all optional:**
+  - `grantType?: DestinationGrant` — so a consumer builds the provider the
+    destination states instead of inferring it;
+  - `expiresAt?: number` (epoch ms) — when the stored credential stops being
+    valid; session cookies carry no expiry of their own;
+  - OIDC settings: `oidcIssuerUrl`, `oidcAuthorizationEndpoint`,
+    `oidcTokenEndpoint`, `oidcDeviceAuthorizationEndpoint`, `oidcScopes`, and
+    for token exchange `oidcSubjectToken`, `oidcSubjectTokenType`,
+    `oidcAudience`, `oidcActorToken`, `oidcActorTokenType`;
+  - the SAML IdP's trust and endpoints: `samlIdpSsoUrl`, `samlIdpEntityId`,
+    `samlIdpCertificates`, `samlSpEntityId`, `samlAcsUrl`, `samlRelayState`,
+    `samlIdpInitiated`, `samlClockSkewMs`, `samlTokenUrl`.
+
+  On `IConnectionConfig` rather than `IAuthorizationConfig`, which requires
+  `uaaClientSecret`: a public OIDC client, an IdP's trust and a grant exist
+  without a client secret. For `@mcp-abap-adt/auth-broker` 4.0.0 (its design
+  spec, §1.1).
+
+### Changed
+
+- The README states the `interfaces-auth` range the package accepts since
+  1.1.0 (`^1.2.0 || ^2.0.0 || ^3.0.0`); it still named the 1.0.1 range.
+
 ## [1.1.0] - 2026-09-29
 
 ### Added
