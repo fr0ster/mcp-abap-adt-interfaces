@@ -21,6 +21,7 @@
 
 export type { AuthType } from './auth/AuthType';
 export { AUTH_TYPE_XSUAA, AUTH_TYPES } from './auth/AuthType';
+export type { DestinationGrant } from './auth/DestinationGrant';
 export type { IAuthorizationConfig } from './auth/IAuthorizationConfig';
 export type { ICertificateMaterialLoader } from './auth/ICertificateMaterialLoader';
 export type { IConfig } from './auth/IConfig';
