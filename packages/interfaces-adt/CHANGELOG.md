@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [11.1.0] - 2026-10-01
+
+### Added
+
+- **`IFeedQueryOptions.query`** — a feed's `$query` expression, sent as given.
+  A runtime feed filters on the attributes its descriptor declares (the dumps
+  feed: user, runtime error, exception, object, package, component, the
+  responsible people, date/time), combined with `and`/`or`; `user` alone could
+  only ever reach one of them. When `query` is present, `user` is not turned
+  into a query of its own.
+
 ## [11.0.0] - 2026-09-26
 
 One request per member, each addressed by what the server gave the caller
