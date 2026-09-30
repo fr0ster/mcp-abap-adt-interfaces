@@ -18,6 +18,16 @@ export interface IFeedQueryOptions {
   maxResults?: number;
   from?: IAbapTimestamp;
   to?: IAbapTimestamp;
+  /**
+   * The feed's `$query` expression, sent as given — built from the attributes
+   * and operators the feed's descriptor declares, e.g.
+   * `and ( equals ( user , X ) , contains ( runtimeError , Y ) )`.
+   *
+   * When it is present `user` is not turned into a query of its own: one feed
+   * request carries one `$query`, so a caller filtering by user and by more puts
+   * the user into this expression.
+   */
+  query?: string;
 }
 
 // --- System message types ---
