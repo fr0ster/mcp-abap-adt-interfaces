@@ -194,11 +194,12 @@ if (NPM_TAG !== null && semver.validRange(NPM_TAG) !== null)
 
 // --- the plan -------------------------------------------------------------
 
-// The workspaces array is in dependency order, and publishing follows it: a
-// package must never reach the registry before something it depends on.
-const { workspaces } = readJson(path.join(ROOT, 'package.json'));
+// `publishOrder` is in dependency order, and publishing follows it: a package
+// must never reach the registry before something it depends on. The packages
+// are not workspaces — each depends on its siblings as published.
+const { publishOrder } = readJson(path.join(ROOT, 'package.json'));
 
-const plan = workspaces.map((workspace) => {
+const plan = publishOrder.map((workspace) => {
   const dir = path.basename(workspace);
   const manifest = readJson(path.join(ROOT, workspace, 'package.json'));
   const versions = publishedVersions(manifest.name);
@@ -368,7 +369,7 @@ for (const p of pending) {
   try {
     // --ignore-scripts: prepublishOnly is `npm run check`, which just ran. It
     // stays in each package.json as the net for a publish by hand.
-    const args = ['publish', '--workspace', p.name, '--ignore-scripts'];
+    const args = ['publish', `packages/${p.dir}`, '--ignore-scripts'];
     if (NPM_TAG !== null) args.push('--tag', NPM_TAG);
     interactive('npm', args);
   } catch {

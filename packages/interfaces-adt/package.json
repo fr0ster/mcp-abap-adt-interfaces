@@ -37,5 +37,9 @@
   },
   "dependencies": {
     "@mcp-abap-adt/interfaces-adt-connection": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.2.1",
+    "typescript": "^5.9.2"
   }
 }

@@ -37,5 +37,9 @@
   },
   "dependencies": {
     "@mcp-abap-adt/interfaces-auth": "^1.2.0 || ^2.0.0 || ^3.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.2.1",
+    "typescript": "^5.9.2"
   }
 }

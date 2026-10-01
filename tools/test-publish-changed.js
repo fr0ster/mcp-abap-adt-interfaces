@@ -82,7 +82,7 @@ function fixture(packages) {
       {
         name: 'fixture',
         private: true,
-        workspaces: packages.map((p) => `packages/${p.dir}`),
+        publishOrder: packages.map((p) => `packages/${p.dir}`),
       },
       null,
       2,
@@ -225,7 +225,10 @@ if (args[0] === 'view') {
 if (args[0] === 'run' && args[1] === 'check') process.exit(state.failCheck ? 1 : 0);
 
 if (args[0] === 'publish') {
-  const name = args[args.indexOf('--workspace') + 1];
+  // Published by path, as the script does: the name is the package's own.
+  const name = JSON.parse(
+    fs.readFileSync(require('node:path').join(args[1], 'package.json'), 'utf8'),
+  ).name;
   // npm refusing a version the registry already holds: it exits non-zero, and
   // the version is there. This is what a re-run meets when the read that built
   // the plan was stale.
@@ -442,8 +445,8 @@ check('publishes every pending package, in workspace order', () => {
   const result = run(dir, bin);
   assert.strictEqual(result.status, 0, result.stdout + result.stderr);
   assert.deepStrictEqual(publishes(readLog(logPath)), [
-    'publish --workspace @fixture/alpha --ignore-scripts',
-    'publish --workspace @fixture/beta --ignore-scripts',
+    'publish packages/alpha --ignore-scripts',
+    'publish packages/beta --ignore-scripts',
   ]);
   assert.match(result.stdout, /Published 2 package\(s\)/);
 });
@@ -460,7 +463,7 @@ check('passes --tag through to npm publish', () => {
   const result = run(dir, bin, ['--tag=next']);
   assert.strictEqual(result.status, 0, result.stdout + result.stderr);
   assert.deepStrictEqual(publishes(readLog(logPath)), [
-    'publish --workspace @fixture/alpha --ignore-scripts --tag next',
+    'publish packages/alpha --ignore-scripts --tag next',
   ]);
 });
 
@@ -485,7 +488,7 @@ check('a failed publish stops the run before the next package', () => {
     /did not publish\. Later packages were not attempted/,
   );
   assert.deepStrictEqual(publishes(readLog(logPath)), [
-    'publish --workspace @fixture/alpha --ignore-scripts',
+    'publish packages/alpha --ignore-scripts',
   ]);
   // The first package failed, so nothing is on the registry — say that rather
   // than leaving the operator to guess, and say re-running is how to continue.
@@ -577,8 +580,8 @@ check('a slow registry read does not stop the packages after it', () => {
 
   const result = run(dir, bin);
   assert.deepStrictEqual(publishes(readLog(logPath)), [
-    'publish --workspace @fixture/alpha --ignore-scripts',
-    'publish --workspace @fixture/beta --ignore-scripts',
+    'publish packages/alpha --ignore-scripts',
+    'publish packages/beta --ignore-scripts',
   ]);
   assert.strictEqual(result.status, 2);
   assert.match(result.stdout, /Published 2 package/);
@@ -614,8 +617,8 @@ check(
     const result = run(dir, bin);
     // The point: beta was published although alpha's publish exited non-zero.
     assert.deepStrictEqual(publishes(readLog(logPath)), [
-      'publish --workspace @fixture/alpha --ignore-scripts',
-      'publish --workspace @fixture/beta --ignore-scripts',
+      'publish packages/alpha --ignore-scripts',
+      'publish packages/beta --ignore-scripts',
     ]);
     assert.strictEqual(result.status, 0, result.stdout + result.stderr);
     assert.match(result.stdout, /already published\. Continuing/);
@@ -646,7 +649,7 @@ check(
     const result = run(dir, bin);
     assert.strictEqual(result.status, 1);
     assert.deepStrictEqual(publishes(readLog(logPath)), [
-      'publish --workspace @fixture/alpha --ignore-scripts',
+      'publish packages/alpha --ignore-scripts',
     ]);
     assert.match(result.stderr, /does not have it/);
   },
@@ -774,8 +777,8 @@ check('a refusal is decided on the budget, not on the first read', () => {
   const result = run(dir, bin);
   assert.strictEqual(result.status, 0, result.stdout + result.stderr);
   assert.deepStrictEqual(publishes(readLog(logPath)), [
-    'publish --workspace @fixture/alpha --ignore-scripts',
-    'publish --workspace @fixture/beta --ignore-scripts',
+    'publish packages/alpha --ignore-scripts',
+    'publish packages/beta --ignore-scripts',
   ]);
   assert.match(result.stdout, /already published\. Continuing/);
 });
@@ -887,7 +890,7 @@ check('a package the registry has never seen is publishable', () => {
   const result = run(dir, bin);
   assert.strictEqual(result.status, 0, result.stdout + result.stderr);
   assert.deepStrictEqual(publishes(readLog(logPath)), [
-    'publish --workspace @fixture/alpha --ignore-scripts',
+    'publish packages/alpha --ignore-scripts',
   ]);
 });
 
