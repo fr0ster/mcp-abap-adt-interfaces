@@ -7,36 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.2.0] - 2026-10-01
+## [2.0.0] - 2026-10-01
 
-### Added
+### Removed
 
-- **`DestinationGrant`** — how a destination obtains a new credential:
-  `authorization_code`, `client_credentials`, `passcode` (UAA),
-  `oidc_authorization_code`, `device_code`, `password`, `token_exchange`
-  (OIDC), `saml2_pure`, `saml2_bearer` (SAML), or `none` (handed over, not
-  renewed). Not `OAuth2GrantType` from `interfaces-auth`: that lists OAuth
-  grants on the wire, this the ways a destination is renewed, which include a
-  UAA passcode, SAML session cookies and no renewal. Here rather than in
-  `interfaces-auth` because it has no meaning apart from `IConnectionConfig`
-  (decision 35).
-- **On `IConnectionConfig`, all optional:**
-  - `grantType?: DestinationGrant` — so a consumer builds the provider the
-    destination states instead of inferring it;
-  - `expiresAt?: number` (epoch ms) — when the stored credential stops being
-    valid; session cookies carry no expiry of their own;
-  - OIDC settings: `oidcIssuerUrl`, `oidcAuthorizationEndpoint`,
-    `oidcTokenEndpoint`, `oidcDeviceAuthorizationEndpoint`, `oidcScopes`, and
-    for token exchange `oidcSubjectToken`, `oidcSubjectTokenType`,
-    `oidcAudience`, `oidcActorToken`, `oidcActorTokenType`;
-  - the SAML IdP's trust and endpoints: `samlIdpSsoUrl`, `samlIdpEntityId`,
-    `samlIdpCertificates`, `samlSpEntityId`, `samlAcsUrl`, `samlRelayState`,
-    `samlIdpInitiated`, `samlClockSkewMs`, `samlTokenUrl`.
+Moved, unchanged, to the new package `@mcp-abap-adt/interfaces-auth-broker`
+1.0.0, and not re-exported (decision 34):
 
-  On `IConnectionConfig` rather than `IAuthorizationConfig`, which requires
-  `uaaClientSecret`: a public OIDC client, an IdP's trust and a grant exist
-  without a client secret. For `@mcp-abap-adt/auth-broker` 4.0.0 (its design
-  spec, §1.1).
+- `IConnectionConfig` → `@mcp-abap-adt/interfaces-auth-broker`
+- `DestinationGrant` → `@mcp-abap-adt/interfaces-auth-broker`
+- `IConfig` → `@mcp-abap-adt/interfaces-auth-broker`
+- `ISessionStore` → `@mcp-abap-adt/interfaces-auth-broker`
+- `IServiceKeyStore` → `@mcp-abap-adt/interfaces-auth-broker`
+- `ITokenProviderResult` → `@mcp-abap-adt/interfaces-auth-broker`
+
+This package held two subjects. What stays is the SAP system and its UAA
+client — `ISapConfig`, `SapAuthType`, `SapConnectionType`, `IAuthorizationConfig`,
+`ICertificateMaterialLoader`, `AUTH_TYPE_XSUAA` with `AuthType`/`AUTH_TYPES`,
+and the validation results — which a token provider, the ABAP connection and
+the ADT clients take. What left is the destination and its storage: the
+broker's port, imported only by the stores, the broker and the servers that
+build a broker. Decision 41.
+
+`DestinationGrant` and the `grantType`, `expiresAt`, `oidc*` and `saml*` fields
+of `IConnectionConfig` were prepared here as 1.2.0, which was never published;
+they ship in `interfaces-auth-broker` 1.0.0, whose CHANGELOG describes them.
+
+### Migration
+
+Change the import path of the six names; nothing else changes — same names,
+same shapes:
+
+```ts
+- import type { IConnectionConfig, ISessionStore } from '@mcp-abap-adt/interfaces-auth-sap';
++ import type { IConnectionConfig, ISessionStore } from '@mcp-abap-adt/interfaces-auth-broker';
+```
+
+A consumer that implements a store, or builds a broker, adds
+`@mcp-abap-adt/interfaces-auth-broker@^1.0.0` and keeps
+`interfaces-auth-sap@^2.0.0` for `IAuthorizationConfig` and `ISapConfig`. A
+consumer that imports none of the six — a provider, a connection, a client —
+only raises its range to `^2.0.0`.
 
 ### Changed
 

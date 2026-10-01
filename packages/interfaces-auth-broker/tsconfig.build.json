@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "exclude": ["node_modules", "dist", "src/__typechecks__"],
+  "references": [
+    {
+      "path": "../interfaces-auth-sap/tsconfig.build.json"
+    }
+  ]
+}

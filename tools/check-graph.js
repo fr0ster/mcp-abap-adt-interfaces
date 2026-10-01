@@ -18,6 +18,7 @@ const ALLOWED = {
   'interfaces-network': [],
   'interfaces-auth': ['interfaces-utils'],
   'interfaces-auth-sap': ['interfaces-auth'],
+  'interfaces-auth-broker': ['interfaces-auth-sap'],
   'interfaces-calm': ['interfaces-network'],
   'interfaces-adt-connection': ['interfaces-network'],
   'interfaces-adt': ['interfaces-adt-connection'],

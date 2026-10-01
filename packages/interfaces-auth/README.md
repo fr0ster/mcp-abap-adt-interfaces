@@ -35,7 +35,7 @@ import type {
 
 A contract whose own fields name nothing SAP or BTP — that is the rule, and it is decision 35. `AUTH_TYPE_BASIC` is a user and a password anywhere; `AUTH_TYPE_XSUAA` names a BTP service, so it is not here.
 
-Everything SAP- or BTP-specific is `@mcp-abap-adt/interfaces-auth-sap`, which depends on this package: `ISapConfig`, `SapAuthType`, `AuthType`/`AUTH_TYPES`, `IAuthorizationConfig`, `IConfig`, `IConnectionConfig` (it carries `sapClient`), `ITokenProviderResult`, `IServiceKeyStore`, `ISessionStore` and the two validation results. Nothing authentication-related is in `@mcp-abap-adt/interfaces-adt` any more, as of its 9.0.0.
+Everything SAP- or BTP-specific is `@mcp-abap-adt/interfaces-auth-sap`, which depends on this package: `ISapConfig`, `SapAuthType`, `AuthType`/`AUTH_TYPES`, `IAuthorizationConfig`, `ICertificateMaterialLoader` and the two validation results. The destination and its stores — `IConfig`, `IConnectionConfig` (it carries `sapClient`), `ITokenProviderResult`, `IServiceKeyStore`, `ISessionStore` — are `@mcp-abap-adt/interfaces-auth-broker`, which stands on `interfaces-auth-sap` (since its 2.0.0). Nothing authentication-related is in `@mcp-abap-adt/interfaces-adt` any more, as of its 9.0.0.
 
 ## Migrating to 3.0.0
 

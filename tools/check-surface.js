@@ -30,6 +30,7 @@ const packages = [
   'interfaces-adt',
   'interfaces-adt-connection',
   'interfaces-auth',
+  'interfaces-auth-broker',
   'interfaces-auth-sap',
   'interfaces-calm',
   'interfaces-network',

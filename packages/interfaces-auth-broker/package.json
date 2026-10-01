@@ -1,7 +1,7 @@
 {
-  "name": "@mcp-abap-adt/interfaces-auth-sap",
-  "version": "2.0.0",
-  "description": "SAP and BTP authorization contracts: SAP system configuration, the UAA client, XSUAA, certificate loading",
+  "name": "@mcp-abap-adt/interfaces-auth-broker",
+  "version": "1.0.0",
+  "description": "The broker's port: the destination (IConnectionConfig, DestinationGrant, IConfig) and the stores that hold it",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -14,14 +14,14 @@
   "sideEffects": false,
   "author": "Oleksii Kyslytsia <oleksij.kyslytsja@gmail.com>",
   "license": "LGPL-3.0-only",
-  "homepage": "https://github.com/fr0ster/mcp-abap-adt-interfaces/tree/master/packages/interfaces-auth-sap#readme",
+  "homepage": "https://github.com/fr0ster/mcp-abap-adt-interfaces/tree/master/packages/interfaces-auth-broker#readme",
   "bugs": {
     "url": "https://github.com/fr0ster/mcp-abap-adt-interfaces/issues"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/fr0ster/mcp-abap-adt-interfaces.git",
-    "directory": "packages/interfaces-auth-sap"
+    "directory": "packages/interfaces-auth-broker"
   },
   "publishConfig": {
     "access": "public"
@@ -36,6 +36,6 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@mcp-abap-adt/interfaces-auth": "^1.2.0 || ^2.0.0 || ^3.0.0"
+    "@mcp-abap-adt/interfaces-auth-sap": "^2.0.0"
   }
 }

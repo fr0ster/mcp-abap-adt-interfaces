@@ -2573,6 +2573,11 @@ reading the declaration, and each was contested before it was:
 | `HttpError` | `response.status`, `statusText`, `headers` — an HTTP failure | `-network` |
 | `XmlNode` | a recursive parser output shape | `-utils` |
 
+> **`IConnectionConfig` moved by decision 41 (`interfaces-auth-sap` 2.0.0).** With
+> `ITokenProviderResult`, `IConfig` and the two stores it is
+> `interfaces-auth-broker`: the destination and its storage are the broker's
+> port, a subject of their own. The rule is unchanged; the row records 1.0.0.
+
 **A reference does not move a contract; a vocabulary does.** `IAdtWireResponse`
 extends `IHttpWireResponse` and stays in `-adt`, because what it adds is the
 headers ADT sends. But `ITokenProviderResult` went to `-auth-sap` with
@@ -2869,6 +2874,73 @@ moments — a wire with no logon, or with no refusal — while still needing
 providers. Then that moment is not the lifecycle's but a capability's, and it
 leaves the contract as an atom.
 
+## 41. The destination and its stores are the broker's port, and their own package
+
+**Decided 2026-10-01, in `interfaces-auth-sap` 2.0.0 and
+`interfaces-auth-broker` 1.0.0.** Moves `IConnectionConfig` and
+`ITokenProviderResult` out of the package decision 35 placed them in; the
+table there records the 1.0.0 placement.
+
+**The problem.** `interfaces-auth-sap` held two subjects. One is the SAP system
+and the UAA client — `ISapConfig`, `SapAuthType`, `IAuthorizationConfig`,
+`ICertificateMaterialLoader`, `AUTH_TYPE_XSUAA` with its union, the validation
+results. The other is the destination and its storage — `IConnectionConfig`,
+`IConfig`, `ISessionStore`, `IServiceKeyStore`, `ITokenProviderResult` — and
+`@mcp-abap-adt/auth-broker` 4.0.0 needed it to grow: `DestinationGrant`, and
+`grantType`, `expiresAt`, `oidc*` and `saml*` on `IConnectionConfig`, prepared
+as `interfaces-auth-sap` 1.2.0 and never published. Every such release would
+have reached the providers, the connection and the clients, which import none
+of it.
+
+**Measured** (every repository under `~/prj`, 2026-10-01, sources only): the
+second group is imported by `mcp-abap-adt-auth-stores`, `mcp-abap-adt-auth-broker`
+and the servers that build a broker — `mcp-abap-adt`, `mcp-abap-adt-proxy` and
+`mcp-calm-server`. `mcp-abap-adt-auth-providers` imports `IAuthorizationConfig`
+and nothing of the second group; the connection and the ADT clients import
+neither.
+
+**Decided.** The second group, with `DestinationGrant`, is the package
+`@mcp-abap-adt/interfaces-auth-broker`, moved unchanged. It depends on
+`interfaces-auth-sap` for `IAuthorizationConfig` — `IConfig` composes it and
+both stores return it — and on nothing else. It is not re-exported from
+`interfaces-auth-sap` (decision 34): a consumer changes the import path, and
+nothing else.
+
+**Why it is decision 35, not an exception to it.** The test is the subject a
+contract's own fields name. The broker states what it needs from a destination
+and the stores implement it: `ISessionStore` and `IServiceKeyStore` are named
+for storage, `IConfig` is what a store saves, `DestinationGrant` and
+`expiresAt` say how a destination's credential is renewed and when it lapses,
+and `ITokenProviderResult` is the result of authenticating a destination. That
+is the broker's port, a subject of its own. `IConnectionConfig` carries
+`sapClient`, which is what put it in `-auth-sap` in 1.0.0 — but a destination's
+settings name the system they reach the way `serviceUrl` names a host; the
+contract's subject is the destination. By the test in 35 — remove the
+referenced subject and see whether the contract still means anything — a
+destination without its store and broker is a bag of fields, and an
+`ISapConfig` without a destination is still a system.
+
+**Why `IAuthorizationConfig` stays.** Its fields are a UAA client — `uaaUrl`,
+`uaaClientId`, `uaaClientSecret` — and a provider takes it to obtain a token
+without any destination or store. It names UAA, so it is `-auth-sap`'s, and the
+new package stands on it rather than beside it.
+
+**Rejected.**
+- *Leaving it, and releasing `-auth-sap` for the broker.* Every destination
+  field the broker adds would then move every provider and connection's
+  dependency, which is the coupling decision 26 split the family to remove.
+- *Re-exporting the moved names from `-auth-sap` for a release.* Forwarding is
+  what decision 34 removed; a consumer pinned to `-auth-sap` 1.x keeps what it
+  has, and one moving to 2.0.0 changes an import path the compiler finds.
+- *Putting it in `interfaces-auth`.* `IConnectionConfig` names `sapClient` and
+  the UAA client composed into `IConfig` names UAA; neither is authentication
+  in general.
+
+**What would change it.** A provider, the connection or a client needing the
+destination or a store — then the port is no longer the broker's alone, and the
+question is whether that consumer should be given a narrower contract or the
+two subjects are one again.
+
 ## Open, and what would settle it
 
 Not decisions. These are questions this repository has met and deliberately left
@@ -2882,7 +2954,8 @@ shape, not about that design.
 - ~~**The contracts nobody accepts.**~~ **Settled.** The facade is deleted
   (decision 34); the five header groups are in `interfaces-network` with the
   names they group, `ITokenProviderResult` is in `interfaces-auth-sap` with the
-  `IConnectionConfig` it carries, and `ISessionState`/`ISessionStorage` are
+  `IConnectionConfig` it carries (both in `interfaces-auth-broker` since
+  decision 41), and `ISessionState`/`ISessionStorage` are
   deleted outright — no package's subject names HTTP session state and nothing
   accepts them (decision 35). The caveat on the evidence stands: only
   repositories under `~/prj` were searched.

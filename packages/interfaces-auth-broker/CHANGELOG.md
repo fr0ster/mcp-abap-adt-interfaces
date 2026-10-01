@@ -1,0 +1,61 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [1.0.0] - 2026-10-01
+
+### Added
+
+- **The package — the broker's port: the destination and the stores that hold
+  it.** Six types, moved from `@mcp-abap-adt/interfaces-auth-sap`:
+  `IConnectionConfig`, `DestinationGrant`, `IConfig`, `ISessionStore`,
+  `IServiceKeyStore`, `ITokenProviderResult`. Same names; the shapes are those
+  of `interfaces-auth-sap` 1.1.0, plus what its 1.2.0 added and never published
+  — listed below. Decision 41.
+
+  **Why a package of its own.** `interfaces-auth-sap` held two subjects: the
+  SAP system and its UAA client, which providers, the connection and the ADT
+  clients take; and the destination with its storage, which only the stores,
+  the broker and the servers that build a broker import. The broker states what
+  it needs from a destination and the stores implement it; a contract lives in
+  the package whose subject its own fields name (decision 35).
+
+- **`DestinationGrant`** (new since `interfaces-auth-sap` 1.1.0) — how a
+  destination obtains a new credential: `authorization_code`,
+  `client_credentials`, `passcode` (UAA), `oidc_authorization_code`,
+  `device_code`, `password`, `token_exchange` (OIDC), `saml2_pure`,
+  `saml2_bearer` (SAML), or `none` (handed over, not renewed). Not
+  `OAuth2GrantType` from `interfaces-auth`: that lists OAuth grants on the
+  wire, this the ways a destination is renewed, which include a UAA passcode,
+  SAML session cookies and no renewal. Beside `IConnectionConfig` because it
+  has no meaning apart from it (decision 35).
+- **On `IConnectionConfig`, all optional** (new since `interfaces-auth-sap`
+  1.1.0):
+  - `grantType?: DestinationGrant` — so a consumer builds the provider the
+    destination states instead of inferring it;
+  - `expiresAt?: number` (epoch ms) — when the stored credential stops being
+    valid; session cookies carry no expiry of their own;
+  - OIDC settings: `oidcIssuerUrl`, `oidcAuthorizationEndpoint`,
+    `oidcTokenEndpoint`, `oidcDeviceAuthorizationEndpoint`, `oidcScopes`, and
+    for token exchange `oidcSubjectToken`, `oidcSubjectTokenType`,
+    `oidcAudience`, `oidcActorToken`, `oidcActorTokenType`;
+  - the SAML IdP's trust and endpoints: `samlIdpSsoUrl`, `samlIdpEntityId`,
+    `samlIdpCertificates`, `samlSpEntityId`, `samlAcsUrl`, `samlRelayState`,
+    `samlIdpInitiated`, `samlClockSkewMs`, `samlTokenUrl`.
+
+  On `IConnectionConfig` rather than `IAuthorizationConfig`, which requires
+  `uaaClientSecret`: a public OIDC client, an IdP's trust and a grant exist
+  without a client secret. For `@mcp-abap-adt/auth-broker` 4.0.0 (its design
+  spec, §1.1).
+
+### Dependencies
+
+- **`@mcp-abap-adt/interfaces-auth-sap` `^2.0.0`, and nothing else**, for
+  `IAuthorizationConfig`: `IConfig` composes it, and both stores return it.
+  Imported, not re-exported (decision 34). `interfaces-auth` and
+  `interfaces-utils` arrive through it.
