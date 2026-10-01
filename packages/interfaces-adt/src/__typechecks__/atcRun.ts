@@ -3,8 +3,10 @@
 import type { IAdtResponse } from '../adt/IAdtResponse';
 import type { IAdtRunnable } from '../execution/IAdtRunnable';
 import type {
+  AtcClassIncludeKind,
   AtcObjectType,
   IAtcFindings,
+  IAtcObjectRef,
   IAtcRunOptions,
   IAtcRunStatusReadable,
   IAtcRunTarget,
@@ -73,9 +75,8 @@ void _empty;
 // target a caller passes, the object types a URI can be built for, and that the
 // runnable composes with the two readers.
 
-// Every member of the union is a type this client can build a URI for. The
-// two ABAP Cloud refuses to hold are absent, and adding either later breaks
-// exhaustive consumers — which is what this map is here to demonstrate.
+// Every member of the union is a type a client can build a URI for. Adding one
+// breaks exhaustive consumers — which is what this map is here to demonstrate.
 const _uris: Record<AtcObjectType, string> = {
   class: '/sap/bc/adt/oo/classes/',
   interface: '/sap/bc/adt/oo/interfaces/',
@@ -84,12 +85,46 @@ const _uris: Record<AtcObjectType, string> = {
   ddl_source: '/sap/bc/adt/ddic/ddl/sources/',
   table: '/sap/bc/adt/ddic/tables/',
   behavior_definition: '/sap/bc/adt/bo/behaviordefinitions/',
+  program: '/sap/bc/adt/programs/programs/',
+  program_include: '/sap/bc/adt/programs/includes/',
+  function_include: '/sap/bc/adt/functions/groups/{group}/includes/',
+  class_include: '/sap/bc/adt/oo/classes/{class}/includes/{kind}',
 };
 void _uris;
 
-// @ts-expect-error — not confirmed anywhere: ABAP Cloud will not hold one
-const _program: AtcObjectType = 'program';
-void _program;
+// An include is addressed by what owns it, so each kind asks for its owner.
+const _refs: IAtcObjectRef[] = [
+  { objectType: 'program', objectName: 'ZREP' },
+  { objectType: 'program_include', objectName: 'ZREP_TOP' },
+  {
+    objectType: 'function_include',
+    objectName: 'LZFGTOP',
+    functionGroup: 'ZFG',
+  },
+  {
+    objectType: 'class_include',
+    objectName: 'ZCL_X',
+    includeKind: 'testclasses',
+  },
+];
+void _refs;
+
+// @ts-expect-error — a function include is addressed under its group
+const _noGroup: IAtcObjectRef = {
+  objectType: 'function_include',
+  objectName: 'LZFGTOP',
+};
+void _noGroup;
+
+// @ts-expect-error — a class include is addressed by its class and kind
+const _noKind: IAtcObjectRef = {
+  objectType: 'class_include',
+  objectName: 'ZCL_X',
+};
+void _noKind;
+
+const _kind: AtcClassIncludeKind = 'implementations';
+void _kind;
 
 // A consumer's own status is what the reader answers, and the contract says
 // nothing about its fields — which is the point of it having left.

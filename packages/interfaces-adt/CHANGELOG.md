@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [12.0.0] - 2026-10-02
+
+ATC checks programs and every kind of include, each addressed as what it is.
+
+### Added
+
+- **`AtcObjectType`** gains `program`, `program_include`, `function_include` and
+  `class_include`. ATC checks an include as the object that owns it: measured on
+  an on-premise and a cloud system, a program include lists its main program in
+  the worklist, a function include its function group, a class include its
+  class. Each include kind lives at an address of its own; a function include is
+  found under its group and not under `/programs/includes/`. A program and a
+  program include exist on premise only.
+- **`AtcNamedObjectType`** — the kinds a name alone addresses.
+- **`AtcClassIncludeKind`** — `definitions`, `implementations`, `macros`,
+  `testclasses`.
+
+### Changed
+
+- **`IAtcObjectRef` is a union** that carries what each kind's address needs:
+  `{ objectType: AtcNamedObjectType; objectName }`, `{ objectType:
+  'function_include'; objectName; functionGroup }`, `{ objectType:
+  'class_include'; objectName /* the class */; includeKind }`. An include
+  without its owner does not compile.
+
+### Migration
+
+- A reference with one of the seven earlier kinds is unchanged:
+  `{ objectType: 'class', objectName: 'ZCL_X' }` still compiles.
+- Code that **exhausts** `AtcObjectType` (`Record<AtcObjectType, …>`, a `switch`
+  with a `never` check) must handle the four new kinds.
+- Code that reads `ref.objectName` across all kinds keeps working. Code that
+  needs the owner narrows on `objectType` first: `functionGroup` exists only on
+  `function_include`, `includeKind` only on `class_include`.
+
 ## [11.1.0] - 2026-10-01
 
 ### Added

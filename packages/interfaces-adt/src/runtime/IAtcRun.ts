@@ -13,18 +13,23 @@ import type { IAdtError, IAdtResponse } from '../adt/IAdtResponse';
 /**
  * The object kinds ATC will check, at a URI a client can build for them.
  *
- * **Confirmed on an ABAP Cloud trial**, each by a run submitted at the URI the
- * client builds whose finished worklist then listed that object under that
- * type. A run being *accepted* proves nothing: a URI that cannot exist is
- * answered `201` too.
+ * Each was confirmed by a run submitted at the URI a client builds whose
+ * finished worklist then listed that object. A run being *accepted* proves
+ * nothing: a URI that cannot exist is answered `201` too.
  *
- * **This set is expected to grow, and growing it is a breaking change.**
- * `program` and `include` are absent because ABAP Cloud refuses to hold either
- * (`403`, authorization object `S_DEVELOP`), so nothing there could confirm
- * them; an on-prem system would. Adding a member does not disturb a caller
- * *passing* a value, but it does break one *exhausting* the union —
- * `Record<AtcObjectType, …>`, or a `switch` with a `never` check. Do not build
- * an exhaustive structure over this without meaning to revisit it.
+ * **An include is checked as the object that owns it.** Measured on an
+ * on-premise and a cloud system (2026-10-01): a program include lists its main
+ * program in the worklist, a function include its function group, a class
+ * include its class, and the findings point into every include of that owner.
+ * The include kinds exist so that a caller holding an include need not know its
+ * owner's name — and because each include kind lives at an address of its own:
+ * a function include is found under its group and **not** under
+ * `/programs/includes/`. A program and a program include exist on premise only;
+ * ABAP Cloud refuses to hold either (`S_DEVELOP`).
+ *
+ * **This set grows, and growing it is a breaking change** for a consumer
+ * *exhausting* the union — `Record<AtcObjectType, …>`, or a `switch` with a
+ * `never` check. A caller *passing* a value is not disturbed.
  */
 export type AtcObjectType =
   | 'class'
@@ -33,13 +38,50 @@ export type AtcObjectType =
   | 'package'
   | 'ddl_source'
   | 'table'
-  | 'behavior_definition';
+  | 'behavior_definition'
+  | 'program'
+  | 'program_include'
+  | 'function_include'
+  | 'class_include';
 
-/** One object to check, by kind and name. The client builds the URI. */
-export interface IAtcObjectRef {
-  objectType: AtcObjectType;
-  objectName: string;
-}
+/** The kinds a name alone addresses. */
+export type AtcNamedObjectType =
+  | 'class'
+  | 'interface'
+  | 'function_group'
+  | 'package'
+  | 'ddl_source'
+  | 'table'
+  | 'behavior_definition'
+  | 'program'
+  | 'program_include';
+
+/** Which of a class's includes. */
+export type AtcClassIncludeKind =
+  | 'definitions'
+  | 'implementations'
+  | 'macros'
+  | 'testclasses';
+
+/**
+ * One object to check. The client builds the URI, so each kind carries what
+ * its address needs: a function include its group, a class include its class
+ * and which include.
+ */
+export type IAtcObjectRef =
+  | { objectType: AtcNamedObjectType; objectName: string }
+  | {
+      objectType: 'function_include';
+      /** The include's name. */
+      objectName: string;
+      functionGroup: string;
+    }
+  | {
+      objectType: 'class_include';
+      /** The class's name. */
+      objectName: string;
+      includeKind: AtcClassIncludeKind;
+    };
 
 export interface IAtcRunTarget {
   /**
