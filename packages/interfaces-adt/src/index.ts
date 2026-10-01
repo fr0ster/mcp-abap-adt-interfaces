@@ -233,6 +233,8 @@ export type {
 } from './runtime/IApplicationLog';
 export type { IAtcLog, IGetCheckFailureLogsOptions } from './runtime/IAtcLog';
 export type {
+  AtcClassIncludeKind,
+  AtcNamedObjectType,
   AtcObjectType,
   IAtcFindings,
   IAtcObjectRef,
