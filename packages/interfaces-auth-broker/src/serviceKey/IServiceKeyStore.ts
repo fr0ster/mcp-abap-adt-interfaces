@@ -4,7 +4,7 @@
  * Service keys contain UAA credentials and connection URLs.
  */
 
-import type { IAuthorizationConfig } from '../auth/IAuthorizationConfig';
+import type { IAuthorizationConfig } from '@mcp-abap-adt/interfaces-auth-sap';
 import type { IConfig } from '../auth/IConfig';
 import type { IConnectionConfig } from '../auth/IConnectionConfig';
 

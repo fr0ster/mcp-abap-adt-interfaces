@@ -58,9 +58,11 @@ interfaces-utils          interfaces-network
 interfaces-auth   interfaces-adt-connection   interfaces-calm
        ▲                        ▲
 interfaces-auth-sap       interfaces-adt
+       ▲
+interfaces-auth-broker
 ```
 
-Five edges, and each one is the only dependency its package has.
+Six edges, and each one is the only dependency its package has.
 `interfaces-adt-connection` reaches `interfaces-network` for the HTTP frame and
 nothing else; `interfaces-adt` reaches the connection, because its strategies
 are handed an `IAdtWireResponse`, and gets the frame through it — since 11.0.0
@@ -69,6 +71,9 @@ it has no edge to `interfaces-network` of its own (decision 38).
 having no ABAP in it; `interfaces-auth` reaches `interfaces-utils` for
 `ILogger`, and `interfaces-auth-sap` reaches `interfaces-auth` — `utils` arrives
 through it, which makes it that package's dependency rather than its own.
+`interfaces-auth-broker` reaches `interfaces-auth-sap` for the UAA client
+`IAuthorizationConfig`, which `IConfig` composes and both stores return; `auth`
+and `utils` arrive through it (decision 41).
 
 **A dependency nothing imports is a defect, not a spare edge**, and
 `npm run check:graph` fails on one: two of these were declared after the last
@@ -271,9 +276,15 @@ put it, not with its first acceptor:
   grants, tokens, interactive login, SAML assertions, `AUTH_TYPE_JWT`,
   `AUTH_TYPE_BASIC`.
 - `@mcp-abap-adt/interfaces-auth-sap` — authentication that names something SAP
-  or BTP owns: `ISapConfig`, `IConnectionConfig` (it carries `sapClient`),
-  service keys, destinations, UAA, and `AUTH_TYPE_XSUAA` with the union over all
-  three, XSUAA being a BTP service.
+  or BTP owns: `ISapConfig`, the UAA client `IAuthorizationConfig`, the
+  certificate loader, and `AUTH_TYPE_XSUAA` with the union over all three, XSUAA
+  being a BTP service.
+- `@mcp-abap-adt/interfaces-auth-broker` — the broker's port: the destination
+  (`IConnectionConfig`, which carries `sapClient`, `DestinationGrant`, `IConfig`),
+  the stores that hold it (`ISessionStore`, `IServiceKeyStore`) and
+  `ITokenProviderResult`. Its fields name the destination and its storage, not
+  the SAP system, and only the stores, the broker and the servers that build a
+  broker import it (decision 41).
 - `@mcp-abap-adt/interfaces-calm` — Cloud ALM, which is not ABAP.
 - `@mcp-abap-adt/interfaces-utils` — `ILogger`, `LogLevel`, `XmlNode`: what
   belongs to no one system.
@@ -305,7 +316,9 @@ honours, and a type states what is supported, never what is lacking (decision 2)
 
 They are not in `interfaces-adt` any more, which is the point of 9.0.0:
 `auth/`, `token/`, `store/` and the assertion contracts are `interfaces-auth`;
-`sap/`, `session/`, `serviceKey/` and `validation/` are `interfaces-auth-sap`;
+`sap/` and `validation/` are `interfaces-auth-sap`, and `session/`,
+`serviceKey/` with the destination's `IConnectionConfig` are
+`interfaces-auth-broker` since `interfaces-auth-sap` 2.0.0 (decision 41);
 the header names, the HTTP frame and the WebSocket transport are
 `interfaces-network`; `logging/` and `XmlNode` are `interfaces-utils`. The ABAP
 connection itself — `IAbapConnection`, its capability atoms, `IAdtWireResponse`,
@@ -367,8 +380,9 @@ There is no CI on this repository. What holds instead:
 
 1. **The compiler** — `npm run build` and `npm run test:check` (`tsc --noEmit`
    over every package's `src/`, which includes its typechecks).
-2. **The typechecks** — 25 files of compile-only assertions (21 in
-   `interfaces-adt`, 3 in `interfaces-auth`, 1 in `interfaces-auth-sap`),
+2. **The typechecks** — 30 files of compile-only assertions (21 in
+   `interfaces-adt`, 4 in `interfaces-auth`, 2 each in `interfaces-auth-sap`
+   and `interfaces-auth-broker`, 1 in `interfaces-adt-connection`),
    including the ones that must *fail* (`@ts-expect-error`). They are the tests
    of a package that has nothing to run.
 3. **Enumerate, edit, count** — a removal is verified by listing the targets,
