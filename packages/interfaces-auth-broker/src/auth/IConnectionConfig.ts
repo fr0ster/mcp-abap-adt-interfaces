@@ -25,6 +25,25 @@ export interface IConnectionConfig {
    * provider reported it. A JWT carries its own `exp`; session cookies do not.
    */
   expiresAt?: number;
+  /**
+   * The canonical URI of the resource the secret was obtained for: scheme and
+   * host lower-cased, the port explicit, the path without a trailing `/`, the
+   * SAP client as `sap-client=<n>` when the destination states one, nothing
+   * else (`https://my-abap.example.com:443/sap/bc/adt?sap-client=100`). A
+   * session store keeps it with the secret, written and cleared with it; a key
+   * store never answers it. Compared as a string: whoever presents the secret
+   * compares it with the URI of the resource it is about to be presented to,
+   * and uses the secret only when they are equal.
+   */
+  issuedFor?: string;
+  /**
+   * The canonical URI of who issued the secret, and to which client — the same
+   * rules: for an OAuth/OIDC token the authorization server and the client
+   * (`<uaaUrl or issuer>?client_id=<clientId>`), for SAML session cookies the
+   * ACS of the system that set them (origin and path). Kept, written, cleared
+   * and compared like `issuedFor`.
+   */
+  issuedBy?: string;
   /** SAP client number (optional, for ABAP/BTP) */
   sapClient?: string;
   /** Language (optional, for ABAP/BTP) */

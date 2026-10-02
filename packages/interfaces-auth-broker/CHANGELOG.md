@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-02
+
+### Added
+
+- **`IConnectionConfig.issuedFor` and `issuedBy`** (optional strings) — what a
+  stored secret is bound to: the canonical URI of the resource it was obtained
+  for (`https://host:443/path?sap-client=100`), and of who issued it to which
+  client (`<uaaUrl or issuer>?client_id=<id>`, or the ACS that set SAML
+  cookies). A session store keeps both beside the secret, written and cleared
+  with it; a key store never answers them. They are what
+  `@mcp-abap-adt/auth-broker` 4 compares before it presents a stored secret, so
+  a custom `ISessionStore` must persist them — see the README's note for store
+  authors. Optional: every 1.0.x implementation still satisfies the type.
+
 ## [1.0.1] - 2026-10-02
 
 ### Changed

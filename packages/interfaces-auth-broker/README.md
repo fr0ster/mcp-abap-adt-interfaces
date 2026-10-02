@@ -10,7 +10,7 @@ npm install @mcp-abap-adt/interfaces-auth-broker
 
 | symbol | what it is |
 |---|---|
-| `IConnectionConfig` | a destination's connection settings, as a store hands them to the broker: `serviceUrl`, `sapClient`, `language`, the credential (`authorizationToken`, `username`/`password`, `sessionCookies`), `authType`, `grantType`, `expiresAt`, and the settings a grant needs — SNC (`snc*`), OIDC (`oidc*`) and the SAML IdP's trust (`saml*`) |
+| `IConnectionConfig` | a destination's connection settings, as a store hands them to the broker: `serviceUrl`, `sapClient`, `language`, the credential (`authorizationToken`, `username`/`password`, `sessionCookies`), `authType`, `grantType`, `expiresAt`, what a stored secret is bound to (`issuedFor`, `issuedBy`), and the settings a grant needs — SNC (`snc*`), OIDC (`oidc*`) and the SAML IdP's trust (`saml*`) |
 | `DestinationGrant` | how a destination obtains a new credential: the UAA, OIDC and SAML grants, or `'none'` — handed over, not renewed |
 | `IConfig` | `Partial<IAuthorizationConfig> & Partial<IConnectionConfig>` — what a session store loads and saves |
 | `ISessionStore` | loads, saves and updates a destination's session |
@@ -37,6 +37,19 @@ the repository's `docs/architecture/DECISIONS.md` records this split.
 Kept apart, a release of the destination — new grant settings for the broker —
 no longer asks every provider and connection to follow, and a change to the
 SAP system's configuration no longer reaches the stores.
+
+## For store authors: the secret's binding (1.1.0)
+
+A session store keeps two strings beside the secret — `issuedFor`, the
+canonical URI of the resource the secret was obtained for, and `issuedBy`, the
+canonical URI of who issued it and to which client — written and cleared with
+the secret. The broker (`@mcp-abap-adt/auth-broker` 4) uses a stored secret
+only when both equal what the destination's means give, so a secret never goes
+to another resource and a secret from another issuer is never used in place of
+this one. **A custom `ISessionStore` (a database, a message log, a secret store)
+must persist both fields**; one that drops them still type-checks, but the
+broker then never uses its sessions — every process start logs in afresh, a
+browser each time for an interactive grant. A key store never answers them.
 
 ## Where these contracts were
 
