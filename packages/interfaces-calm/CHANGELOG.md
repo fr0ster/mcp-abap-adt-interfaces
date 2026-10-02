@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-10-02
+
+### Changed
+
+- **Built from its own install.** The repository's packages are no longer npm
+  workspaces (#116): this package builds and type-checks against its
+  `@mcp-abap-adt/*` dependencies as published on the npm registry, never
+  against a sibling's source, and carries its own `typescript` and
+  `@types/node` as devDependencies. Its contract, its `dependencies` and the
+  files it ships are unchanged — nothing to do for a consumer.
+
 ## [1.0.1] - 2026-09-23
 
 ### Changed

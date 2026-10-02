@@ -1,6 +1,6 @@
 {
   "name": "@mcp-abap-adt/interfaces-network",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Transport contracts, the HTTP error shape, generic HTTP and MCP header names and network error codes for MCP ABAP ADT packages",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
