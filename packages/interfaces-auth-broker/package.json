@@ -1,6 +1,6 @@
 {
   "name": "@mcp-abap-adt/interfaces-auth-broker",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "The broker's port: the destination (IConnectionConfig, DestinationGrant, IConfig) and the stores that hold it",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
