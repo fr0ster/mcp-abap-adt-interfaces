@@ -369,7 +369,9 @@ for (const p of pending) {
   try {
     // --ignore-scripts: prepublishOnly is `npm run check`, which just ran. It
     // stays in each package.json as the net for a publish by hand.
-    const args = ['publish', `packages/${p.dir}`, '--ignore-scripts'];
+    // `./` makes the spec a folder: npm reads a bare `packages/<dir>` as the
+    // GitHub shorthand `user/repo` and asks git for it. Runs from ROOT.
+    const args = ['publish', `./packages/${p.dir}`, '--ignore-scripts'];
     if (NPM_TAG !== null) args.push('--tag', NPM_TAG);
     interactive('npm', args);
   } catch {
