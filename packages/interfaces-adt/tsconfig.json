@@ -5,10 +5,5 @@
     "rootDir": "./src"
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"],
-  "references": [
-    {
-      "path": "../interfaces-adt-connection/tsconfig.build.json"
-    }
-  ]
+  "exclude": ["node_modules", "dist"]
 }

@@ -2015,7 +2015,8 @@ from a publish that silently did not happen.
 
 **The decision.** `npm run release:publish` asks the registry what it serves,
 publishes only the versions missing from it, in the dependency order of the
-`workspaces` array, runs `npm run check` once, and afterwards asks the registry
+`publishOrder` array (the `workspaces` array until the packages stopped being
+workspaces, 2026-10-02), runs `npm run check` once, and afterwards asks the registry
 whether it serves each version before publishing anything that depends on it.
 A clean run with nothing pending says so and exits 0; there is no expected-failure
 output to filter.

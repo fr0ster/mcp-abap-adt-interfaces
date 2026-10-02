@@ -26,9 +26,17 @@ One version line for every contract meant an ADT major bumped a package that onl
 ## Working in this repository
 
 ```bash
-npm ci
-npm run check      # build, type checks, placement, graph, packed tarballs, release tool
+npm ci                    # the root's tools
+npm run install:packages  # each package's own dependencies, from the registry
+npm run check             # build, type checks, placement, graph, packed tarballs, release tool
 ```
+
+**The packages are not workspaces.** Each one installs its dependencies — its
+siblings included — from the npm registry and builds against them; nothing links
+one package to another's source. What passes here is what a consumer installs.
+The order they build and publish in is `publishOrder` in the root
+`package.json`, dependencies first. A change one package needs from another is
+published first; the dependent then raises its range.
 
 There is no CI; `npm run check` is what holds, and every package's `prepublishOnly` runs it.
 
@@ -38,7 +46,7 @@ It refuses to publish unless the tree **is** the tagged release: a dirty tree, a
 
 A prerelease version requires a dist-tag other than `latest` (`npm run release:publish -- --tag=next`); on `latest` it would reach everyone who asked for the stable line. Publishing to `latest` is also refused when it would move that tag backwards, compared with real SemVer precedence rather than string order. Both rules key on whether the publish targets `latest`, not on whether a `--tag` was given, so `--tag=latest` is treated exactly like passing none.
 
-Do not publish the workspaces by hand. `npm publish -w` for every package republishes the ones that have not changed, and npm answers each with `You cannot publish over the previously published versions` — errors that are expected, and therefore skipped over, and therefore hide the one that is not.
+Do not publish the packages by hand. `npm publish` for every package republishes the ones that have not changed, and npm answers each with `You cannot publish over the previously published versions` — errors that are expected, and therefore skipped over, and therefore hide the one that is not.
 
 ## Licence
 

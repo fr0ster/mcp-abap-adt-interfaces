@@ -2,7 +2,7 @@
   "name": "mcp-abap-adt-interfaces-workspace",
   "private": true,
   "license": "LGPL-3.0-only",
-  "workspaces": [
+  "publishOrder": [
     "packages/interfaces-utils",
     "packages/interfaces-network",
     "packages/interfaces-auth",
@@ -14,18 +14,19 @@
   ],
   "scripts": {
     "chrono": "./tools/version-stats.sh",
-    "clean": "npm run clean --workspaces",
+    "clean": "node tools/each-package.js run clean",
     "lint": "biome check --write packages tools",
     "lint:check": "biome check packages tools",
     "format": "biome format --write packages tools",
-    "build": "npm run clean --workspaces && biome check packages tools --diagnostic-level=error && tsc -b packages/interfaces-auth-sap/tsconfig.build.json packages/interfaces-auth-broker/tsconfig.build.json packages/interfaces-auth/tsconfig.build.json packages/interfaces-calm/tsconfig.build.json packages/interfaces-adt-connection/tsconfig.build.json packages/interfaces-adt/tsconfig.build.json packages/interfaces-network/tsconfig.build.json",
-    "test:check": "npm run test:check --workspaces",
+    "build": "node tools/each-package.js run clean && biome check packages tools --diagnostic-level=error && node tools/each-package.js run build",
+    "test:check": "node tools/each-package.js run test:check",
     "check:surface": "node tools/check-surface.js --placement all",
     "check:graph": "node tools/check-graph.js",
     "check": "npm run build && npm run test:check && npm run check:surface && npm run check:graph && npm run check:packed && npm run check:publish",
     "check:packed": "node tools/check-packed.js",
     "check:publish": "node tools/test-publish-changed.js",
-    "release:publish": "node tools/publish-changed.js"
+    "release:publish": "node tools/publish-changed.js",
+    "install:packages": "node tools/each-package.js ci"
   },
   "engines": {
     "node": ">=18.0.0"
