@@ -1,0 +1,52 @@
+// Compile-only assertions. If these stop compiling, the types regressed.
+
+import type { ICertificateMaterial } from '../auth/ICertificateMaterial';
+import type {
+  IClientAuthentication,
+  ITokenRequestAuthentication,
+  ITokenRequestDraft,
+} from '../auth/IClientAuthentication';
+
+// A draft with only what is required, and one carrying the mTLS alias.
+const _draft: ITokenRequestDraft = {
+  endpoint: 'https://uaa.example/oauth/token',
+  clientId: 'sb-client',
+  grantType: 'client_credentials',
+};
+const _draftMtls: ITokenRequestDraft = {
+  ..._draft,
+  mtlsEndpoint: 'https://mtls.uaa.example/oauth/token',
+};
+void _draft;
+void _draftMtls;
+
+// Every member of the authentication is optional; the empty one is valid.
+const _nothing: ITokenRequestAuthentication = {};
+const _all: ITokenRequestAuthentication = {
+  endpoint: 'https://cert.uaa.example/oauth/token',
+  parameters: { client_id: 'sb-client', client_assertion: 'jwt' },
+  headers: { Authorization: 'Basic abc' },
+};
+void _nothing;
+void _all;
+
+// A client that presents no TLS material omits `tlsMaterial`.
+const _secretClient: IClientAuthentication = {
+  authenticate: async (draft: ITokenRequestDraft) => ({
+    parameters: { client_id: draft.clientId, client_secret: 's' },
+  }),
+};
+void _secretClient;
+
+// A client that presents a certificate also answers `tlsMaterial`.
+const _certClient: IClientAuthentication = {
+  authenticate: async (draft: ITokenRequestDraft) => ({
+    endpoint: draft.mtlsEndpoint,
+    parameters: { client_id: draft.clientId },
+  }),
+  tlsMaterial: async (): Promise<ICertificateMaterial> => ({
+    cert: 'pem',
+    key: 'pem',
+  }),
+};
+void _certClient;
