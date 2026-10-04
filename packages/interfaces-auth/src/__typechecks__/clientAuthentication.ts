@@ -6,6 +6,8 @@ import type {
   ITokenRequestAuthentication,
   ITokenRequestDraft,
 } from '../auth/IClientAuthentication';
+import type { TokenProviderErrorCode } from '../token/TokenProviderErrorCodes';
+import { TOKEN_PROVIDER_ERROR_CODES } from '../token/TokenProviderErrorCodes';
 
 // A draft with only what is required, and one carrying the mTLS alias.
 const _draft: ITokenRequestDraft = {
@@ -50,3 +52,11 @@ const _certClient: IClientAuthentication = {
   }),
 };
 void _certClient;
+
+// The two codes a client-authentication failure carries.
+const _certificateCode: TokenProviderErrorCode =
+  TOKEN_PROVIDER_ERROR_CODES.CERTIFICATE_MATERIAL_ERROR;
+const _clientAuthCode: TokenProviderErrorCode =
+  TOKEN_PROVIDER_ERROR_CODES.CLIENT_AUTHENTICATION_ERROR;
+void _certificateCode;
+void _clientAuthCode;

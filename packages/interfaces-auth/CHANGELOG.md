@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   add to one token request; optional `tlsMaterial()` returns the
   `ICertificateMaterial` the client presents in the handshake. Types only;
   nothing existing changes.
+- **`CERTIFICATE_MATERIAL_ERROR` and `CLIENT_AUTHENTICATION_ERROR`** in
+  `TOKEN_PROVIDER_ERROR_CODES` (and so in `TokenProviderErrorCode`): client
+  certificate material that is incomplete or unusable, and a client-authentication
+  strategy that cannot authenticate the token request.
 
 ## [3.0.1] - 2026-10-02
 
