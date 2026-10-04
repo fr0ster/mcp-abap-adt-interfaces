@@ -6,6 +6,13 @@ export interface ITokenRequestDraft {
   readonly endpoint: string;
   /** The mTLS alias of that endpoint, when the server published one (RFC 8705 §5). */
   readonly mtlsEndpoint?: string;
+  /**
+   * The authorization server's token endpoint, also for a request that goes
+   * elsewhere (the device authorization). A client assertion names it as its
+   * audience (RFC 7523): Keycloak refuses an assertion whose `aud` is the
+   * device endpoint.
+   */
+  readonly tokenEndpoint?: string;
   readonly clientId: string;
   /** `client_credentials`, `authorization_code`, `refresh_token`, … — or `device_authorization`. */
   readonly grantType: string;

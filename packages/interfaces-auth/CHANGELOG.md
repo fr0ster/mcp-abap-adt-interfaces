@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-10-04
+
+### Added
+
+- **`ITokenRequestDraft.tokenEndpoint`** (optional): the authorization server's
+  token endpoint, also for a request that goes elsewhere (the device
+  authorization). A client assertion names it as its audience (RFC 7523);
+  Keycloak refuses an assertion whose `aud` is the device endpoint. Additive:
+  nothing existing changes.
+
 ## [3.1.0] - 2026-10-04
 
 ### Added
