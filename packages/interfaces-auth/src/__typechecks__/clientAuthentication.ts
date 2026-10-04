@@ -19,8 +19,17 @@ const _draftMtls: ITokenRequestDraft = {
   ..._draft,
   mtlsEndpoint: 'https://mtls.uaa.example/oauth/token',
 };
+// A device-authorization draft names the token endpoint apart from its own.
+const _draftDevice: ITokenRequestDraft = {
+  endpoint:
+    'https://kc.example/realms/test/protocol/openid-connect/auth/device',
+  tokenEndpoint: 'https://kc.example/realms/test/protocol/openid-connect/token',
+  clientId: 'sb-client',
+  grantType: 'device_authorization',
+};
 void _draft;
 void _draftMtls;
+void _draftDevice;
 
 // Every member of the authentication is optional; the empty one is valid.
 const _nothing: ITokenRequestAuthentication = {};
