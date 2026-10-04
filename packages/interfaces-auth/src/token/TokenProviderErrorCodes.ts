@@ -19,6 +19,10 @@ export const TOKEN_PROVIDER_ERROR_CODES = {
   SERVICE_KEY_ERROR: 'SERVICE_KEY_ERROR',
   /** Browser authentication failed or was cancelled */
   BROWSER_AUTH_ERROR: 'BROWSER_AUTH_ERROR',
+  /** Client certificate material is incomplete or cannot be used */
+  CERTIFICATE_MATERIAL_ERROR: 'CERTIFICATE_MATERIAL_ERROR',
+  /** A client-authentication strategy cannot authenticate the token request */
+  CLIENT_AUTHENTICATION_ERROR: 'CLIENT_AUTHENTICATION_ERROR',
 } as const;
 
 /**

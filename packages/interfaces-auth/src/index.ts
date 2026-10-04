@@ -55,6 +55,11 @@ export type {
 } from './auth/ICallbackServer';
 export type { ICertificateMaterial } from './auth/ICertificateMaterial';
 export type {
+  IClientAuthentication,
+  ITokenRequestAuthentication,
+  ITokenRequestDraft,
+} from './auth/IClientAuthentication';
+export type {
   IApiKeyCredential,
   IBearerCredential,
   ISecretLoginCredential,
