@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-10-04
+
+### Added
+
+- **`IClientAuthentication`**, with `ITokenRequestDraft` and `ITokenRequestAuthentication`:
+  how a token provider's client authenticates to the authorization server.
+  `authenticate(draft)` returns the endpoint, form parameters and headers to
+  add to one token request; optional `tlsMaterial()` returns the
+  `ICertificateMaterial` the client presents in the handshake. Types only;
+  nothing existing changes.
+
 ## [3.0.1] - 2026-10-02
 
 ### Changed
