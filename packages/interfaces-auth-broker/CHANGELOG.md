@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-10-05
+
+### Added
+
+- **`IClientCertificate`** — a client certificate a service key carries:
+  `uaaUrl`, `clientId`, `certificate` (PEM, possibly a chain), `key` (PEM) and
+  `certUrl` (the mTLS host), all readonly strings.
+- **`IServiceKeyStore.getClientCertificate?(destination)`** — optional; answers
+  the destination's `IClientCertificate`, or `null` when its key carries none.
+  Data only: an x509 key is not answered through `getAuthorizationConfig`, and
+  which authentication the client uses is the consumer's. A store that never
+  holds certificates omits the method, so existing stores keep compiling.
+
 ## [1.1.0] - 2026-10-02
 
 ### Added

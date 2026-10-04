@@ -14,7 +14,8 @@ npm install @mcp-abap-adt/interfaces-auth-broker
 | `DestinationGrant` | how a destination obtains a new credential: the UAA, OIDC and SAML grants, or `'none'` — handed over, not renewed |
 | `IConfig` | `Partial<IAuthorizationConfig> & Partial<IConnectionConfig>` — what a session store loads and saves |
 | `ISessionStore` | loads, saves and updates a destination's session |
-| `IServiceKeyStore` | reads a destination's service key as authorization and connection settings |
+| `IServiceKeyStore` | reads a destination's service key as authorization and connection settings, and, optionally, its client certificate |
+| `IClientCertificate` | a client certificate a service key carries: `uaaUrl`, `clientId`, `certificate`, `key`, `certUrl` — answered by the optional `IServiceKeyStore.getClientCertificate` |
 | `ITokenProviderResult` | the result of authenticating a destination: its `IConnectionConfig` and a refresh token |
 
 ```typescript
