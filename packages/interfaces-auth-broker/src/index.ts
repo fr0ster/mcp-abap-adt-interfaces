@@ -25,6 +25,7 @@
 export type { DestinationGrant } from './auth/DestinationGrant';
 export type { IConfig } from './auth/IConfig';
 export type { IConnectionConfig } from './auth/IConnectionConfig';
+export type { IClientCertificate } from './serviceKey/IClientCertificate';
 export type { IServiceKeyStore } from './serviceKey/IServiceKeyStore';
 export type { ISessionStore } from './session/ISessionStore';
 export type { ITokenProviderResult } from './token/ITokenProviderResult';

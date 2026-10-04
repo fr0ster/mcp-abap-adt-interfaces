@@ -7,6 +7,7 @@
 import type { IAuthorizationConfig } from '@mcp-abap-adt/interfaces-auth-sap';
 import type { IConfig } from '../auth/IConfig';
 import type { IConnectionConfig } from '../auth/IConnectionConfig';
+import type { IClientCertificate } from './IClientCertificate';
 
 export interface IServiceKeyStore {
   /**
@@ -33,4 +34,13 @@ export interface IServiceKeyStore {
    * @returns IConnectionConfig with actual values or null if not found
    */
   getConnectionConfig(destination: string): Promise<IConnectionConfig | null>;
+
+  /**
+   * The destination's client certificate, when its key carries one; `null`
+   * when it does not. Optional: a store that never holds certificates omits it.
+   * Answers data only — which authentication the client uses is the consumer's.
+   */
+  getClientCertificate?(
+    destination: string,
+  ): Promise<IClientCertificate | null>;
 }
