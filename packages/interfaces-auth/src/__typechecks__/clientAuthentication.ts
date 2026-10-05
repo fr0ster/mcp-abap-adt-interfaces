@@ -52,7 +52,9 @@ void _secretClient;
 // A client that presents a certificate also answers `tlsMaterial`.
 const _certClient: IClientAuthentication = {
   authenticate: async (draft: ITokenRequestDraft) => ({
-    endpoint: draft.mtlsEndpoint,
+    ...(draft.mtlsEndpoint === undefined
+      ? {}
+      : { endpoint: draft.mtlsEndpoint }),
     parameters: { client_id: draft.clientId },
   }),
   tlsMaterial: async (): Promise<ICertificateMaterial> => ({

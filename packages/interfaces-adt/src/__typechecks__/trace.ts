@@ -104,8 +104,8 @@ async function _assertions(
   noOptions: NoOptionReader,
 ) {
   // The result is typed, not `any`.
-  const gross: number = read(await family.read('t', 'hitlist')).entries[0]
-    .grossTime;
+  const gross: number | undefined = read(await family.read('t', 'hitlist'))
+    .entries[0]?.grossTime;
 
   // Optional options may be given or omitted.
   await family.read('t', 'hitlist');
