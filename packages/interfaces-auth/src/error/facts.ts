@@ -111,6 +111,25 @@ export interface AssertionRuleCheck {
  */
 type Member<U, T extends U> = T;
 
+/** Every key of any member of union `U`. */
+type KeysOfUnion<U> = U extends unknown ? keyof U : never;
+
+/**
+ * `T`, with every key in `All` that `T` does not declare present as
+ * `?: never`. An object type alone omits a field another variant carries,
+ * and a non-literal object (a spread, a variable) carrying that field still
+ * assigns — excess-property checks see literals only. Closing the shape
+ * refuses it whatever the object's origin.
+ */
+type Closed<T, All extends PropertyKey> = T & {
+  readonly [K in Exclude<All, keyof T>]?: never;
+};
+
+/** Each member of union `U` closed against the keys of every member. */
+type ClosedUnion<U, All = U> = U extends unknown
+  ? Closed<U, KeysOfUnion<All>>
+  : never;
+
 /** The rules whose words say "carries N": they carry `count`. */
 export type CountedAssertionRule = Member<
   AssertionRule,
@@ -132,7 +151,7 @@ export interface BearerCandidate {
 }
 
 /** The facts of one SAML rule: `rule`, its fixed `check`, and what the rule carries. */
-export type SamlFactsOf<R extends AssertionRule> = R extends unknown
+type OpenSamlFactsOf<R extends AssertionRule> = R extends unknown
   ? {
       readonly rule: R;
       readonly check: AssertionRuleCheck[R];
@@ -147,6 +166,14 @@ export type SamlFactsOf<R extends AssertionRule> = R extends unknown
               readonly moreCandidates?: Count;
             }
           : unknown)
+  : never;
+
+/**
+ * The facts of one SAML rule: `rule`, its fixed `check`, and what the rule
+ * carries; every fact another rule carries is `?: never`.
+ */
+export type SamlFactsOf<R extends AssertionRule> = R extends unknown
+  ? Closed<OpenSamlFactsOf<R>, KeysOfUnion<OpenSamlFactsOf<AssertionRule>>>
   : never;
 
 // ---- snc --------------------------------------------------------------------
@@ -185,14 +212,19 @@ export interface SncProblemFacts {
 }
 
 /** The facts of one SNC problem. */
-export type SncFactsOf<P extends SncProblem> = P extends unknown
+type OpenSncFactsOf<P extends SncProblem> = P extends unknown
   ? { readonly problem: P } & SncProblemFacts[P]
+  : never;
+
+/** The facts of one SNC problem; every fact another problem carries is `?: never`. */
+export type SncFactsOf<P extends SncProblem> = P extends unknown
+  ? Closed<OpenSncFactsOf<P>, KeysOfUnion<OpenSncFactsOf<SncProblem>>>
   : never;
 
 // ---- configuration --------------------------------------------------------
 
 /** The facts of one configuration case; `allowed` only where a value set applies. */
-export type ConfigFactsOf<C extends ConfigCase> = C extends unknown
+type OpenConfigFactsOf<C extends ConfigCase> = C extends unknown
   ? {
       readonly case: C;
       /** At most eight, deduplicated, in the order given. */
@@ -202,6 +234,11 @@ export type ConfigFactsOf<C extends ConfigCase> = C extends unknown
       : C extends Member<ConfigCase, 'basic-encoding-missing'>
         ? { readonly allowed?: Member<AllowedValueSet, 'basic-encoding'> }
         : unknown)
+  : never;
+
+/** The facts of one configuration case; `allowed` is `?: never` where no value set applies. */
+export type ConfigFactsOf<C extends ConfigCase> = C extends unknown
+  ? Closed<OpenConfigFactsOf<C>, KeysOfUnion<OpenConfigFactsOf<ConfigCase>>>
   : never;
 
 // ---- the kinds with discriminated facts -----------------------------------
@@ -222,7 +259,7 @@ type OutcomeWithFacts = Member<
  * `InteractiveOutcome` and nothing else — an outcome without facts of its own
  * is in the last branch, by `Exclude`.
  */
-export type InteractiveLoginFacts =
+type OpenInteractiveLoginFacts =
   | {
       readonly outcome: Member<InteractiveOutcome, 'port-in-use'>;
       readonly port: Port;
@@ -250,6 +287,12 @@ export type InteractiveLoginFacts =
     }
   | { readonly outcome: Exclude<InteractiveOutcome, OutcomeWithFacts> };
 
+/**
+ * `interactive-login`, discriminated by `outcome`; each outcome's shape is
+ * closed — a fact another outcome carries is `?: never`.
+ */
+export type InteractiveLoginFacts = ClosedUnion<OpenInteractiveLoginFacts>;
+
 /** The system-refused verdicts that carry an HTTP status. */
 type StatusVerdict = Member<
   SystemRefusedVerdict,
@@ -261,7 +304,7 @@ type RfcVerdict = Member<SystemRefusedVerdict, 'rfc-failure'>;
  * `system-refused`: discriminated by `verdict`, every member of
  * `SystemRefusedVerdict` and nothing else.
  */
-export type SystemRefusedFacts =
+type OpenSystemRefusedFacts =
   | {
       readonly verdict: StatusVerdict;
       readonly status: HttpStatus;
@@ -279,6 +322,9 @@ export type SystemRefusedFacts =
       >;
       readonly at: RejectionMoment;
     };
+
+/** `system-refused`, discriminated by `verdict`; each verdict's shape is closed. */
+export type SystemRefusedFacts = ClosedUnion<OpenSystemRefusedFacts>;
 
 // ---- every kind ------------------------------------------------------------
 

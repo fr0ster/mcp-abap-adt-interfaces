@@ -89,7 +89,7 @@ import {
   type TLS_FAILURE_CODES,
   type TOKEN_BINDING_PROBLEMS,
 } from '../error/kinds';
-import type { HttpStatus } from '../error/numbers';
+import type { Count, HttpStatus, Port } from '../error/numbers';
 
 type Equal<A, B> =
   (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
@@ -264,10 +264,10 @@ const _r3: AuthProviderErrorFacts['saml-assertion'] = {
   check: 'bearerConfirmation',
   candidates: [candidate],
 };
+// @ts-expect-error candidates belong to no-bearer-qualifies
 const _r4: AuthProviderErrorFacts['saml-assertion'] = {
   rule: 'duplicate-id',
   check: 'duplicateId',
-  // @ts-expect-error candidates belong to no-bearer-qualifies
   candidates: [candidate],
 };
 
@@ -288,9 +288,9 @@ const _n3: AuthProviderErrorFacts['snc'] = {
   secureLoginClient: true,
   libraryArchs: ['x64'],
 };
+// @ts-expect-error candidates belong to library-not-found
 const _n4: AuthProviderErrorFacts['snc'] = {
   problem: 'logon-refused',
-  // @ts-expect-error candidates belong to library-not-found
   candidates: [sncCandidate],
 };
 const _n5: AuthProviderErrorFacts['snc'] = {
@@ -324,10 +324,10 @@ const _c3: AuthProviderErrorFacts['configuration'] = {
   // @ts-expect-error no allowed-value set for this case
   allowed: 'snc-qop',
 };
+// @ts-expect-error the qop case names the qop values, not the encodings
 const _c4: AuthProviderErrorFacts['configuration'] = {
   case: 'snc-qop-invalid',
   fields: ['qop'],
-  // @ts-expect-error the qop case names the qop values, not the encodings
   allowed: 'basic-encoding',
 };
 
@@ -339,8 +339,8 @@ if (e.kind === 'saml-assertion' && e.variant === 'untrusted-issuer') {
   const r: 'untrusted-issuer' = e.facts.rule; // ok: facts narrowed too
   const i: DocumentValue | undefined = e.diagnostics?.issuer;
   use([r, i]);
-  // @ts-expect-error id is not a field of this variant
-  use(e.diagnostics?.id);
+  // a field of another variant is excluded: it reads as undefined only
+  const _id: undefined = e.diagnostics?.id;
 }
 if (e.kind === 'saml-assertion' && e.variant === 'duplicate-id') {
   use(e.diagnostics?.id); // ok
@@ -351,8 +351,8 @@ if (e.kind === 'saml-assertion' && e.variant === 'expired') {
 }
 if (e.kind === 'snc' && e.variant === 'no-credential') {
   use(e.diagnostics?.library); // ok
-  // @ts-expect-error candidatePaths belongs to library-not-found
-  use(e.diagnostics?.candidatePaths);
+  // candidatePaths belongs to library-not-found: excluded here
+  const _paths: undefined = e.diagnostics?.candidatePaths;
 }
 if (e.kind === 'snc' && e.variant === 'library-not-found') {
   use(e.diagnostics?.candidatePaths); // ok
@@ -371,8 +371,8 @@ if (e.kind === 'client-certificate') {
 }
 // facts.rule alone does not narrow the union (why `variant` is top-level):
 if (e.kind === 'saml-assertion' && e.facts.rule === 'untrusted-issuer') {
-  // @ts-expect-error issuer is not known to be permitted here
-  use(e.diagnostics?.issuer);
+  // @ts-expect-error the variant is not narrowed by facts.rule
+  const _v: 'untrusted-issuer' = e.variant;
 }
 // a plain kind's facts narrow on their own discriminant
 if (e.kind === 'interactive-login') {
@@ -380,18 +380,99 @@ if (e.kind === 'interactive-login') {
   if (facts.outcome === 'port-in-use') use(facts.port); // ok
   if (facts.outcome === 'disposed') use(facts.strategy); // ok
   if (facts.outcome === 'busy') {
-    // @ts-expect-error busy carries no port
-    use(facts.port);
+    // busy carries no port: excluded
+    const _port: undefined = facts.port;
   }
 }
 if (e.kind === 'system-refused') {
   const facts = e.facts;
   if (facts.verdict === 'rfc-failure') use(facts.rfcKey); // ok
   if (facts.verdict === 'unknown') {
-    // @ts-expect-error unknown carries no status
-    use(facts.status);
+    // unknown carries no status: excluded
+    const _status: undefined = facts.status;
   }
 }
+
+// ---- non-literal objects: a forbidden field is refused whatever its origin --
+// (an excess-property check sees literals only; these are spreads of a
+// minted error with a variable holding an allowed and a forbidden field)
+
+type MintedOf<K extends IAuthProviderError['kind'], V = unknown> = Extract<
+  IAuthProviderError,
+  { kind: K } & (V extends string ? { variant: V } : unknown)
+>;
+declare const samlIssuer: MintedOf<'saml-assertion', 'untrusted-issuer'>;
+declare const sncCredential: MintedOf<'snc', 'no-credential'>;
+declare const configMissing: MintedOf<
+  'configuration',
+  'required-fields-missing'
+>;
+declare const configMismatch: MintedOf<'configuration', 'saml-acs-mismatch'>;
+declare const busy: MintedOf<'interactive-login'>;
+declare const refusedUnknown: MintedOf<'system-refused'>;
+declare const certificate: MintedOf<'client-certificate'>;
+declare const count3: Count;
+declare const status503: HttpStatus;
+declare const port0: Port;
+
+const samlDiagOk = { issuer: 'idp' };
+const samlDiagBad = { issuer: 'idp', destination: 'elsewhere' };
+const _nl1: IAuthProviderError = { ...samlIssuer, diagnostics: samlDiagOk };
+// @ts-expect-error destination is excluded from untrusted-issuer's diagnostics
+const _nl2: IAuthProviderError = { ...samlIssuer, diagnostics: samlDiagBad };
+
+const samlFactsOk = { rule: 'untrusted-issuer', check: 'issuer' } as const;
+const samlFactsBad = { ...samlFactsOk, count: count3 };
+const _nl3: IAuthProviderError = { ...samlIssuer, facts: samlFactsOk };
+// @ts-expect-error count is excluded from untrusted-issuer's facts
+const _nl4: IAuthProviderError = { ...samlIssuer, facts: samlFactsBad };
+
+const sncDiagOk = { library: '/opt/sapcrypto.so' };
+const sncDiagBad = { library: '/opt/sapcrypto.so', candidatePaths: [] };
+const _nl5: IAuthProviderError = { ...sncCredential, diagnostics: sncDiagOk };
+// @ts-expect-error candidatePaths is excluded from no-credential's diagnostics
+const _nl6: IAuthProviderError = { ...sncCredential, diagnostics: sncDiagBad };
+
+const sncFactsOk = {
+  problem: 'no-credential',
+  secureLoginClient: true,
+} as const;
+const sncFactsBad = { ...sncFactsOk, rfcKey: 'RFC_LOGON_FAILURE' } as const;
+const _nl7: IAuthProviderError = { ...sncCredential, facts: sncFactsOk };
+// @ts-expect-error rfcKey is excluded from no-credential's facts
+const _nl8: IAuthProviderError = { ...sncCredential, facts: sncFactsBad };
+
+const configFactsOk = {
+  case: 'required-fields-missing',
+  fields: ['clientId'],
+} as const;
+const configFactsBad = { ...configFactsOk, allowed: 'snc-qop' } as const;
+const _nl9: IAuthProviderError = { ...configMissing, facts: configFactsOk };
+// @ts-expect-error allowed is excluded from required-fields-missing's facts
+const _nl10: IAuthProviderError = { ...configMissing, facts: configFactsBad };
+const cfgDiag = {
+  configuredUri: 'https://a/acs',
+  strategyUri: 'https://b/acs',
+};
+const _nl11: IAuthProviderError = { ...configMismatch, diagnostics: cfgDiag };
+// @ts-expect-error a case without diagnostics takes none
+const _nl12: IAuthProviderError = { ...configMissing, diagnostics: cfgDiag };
+
+const busyFactsOk = { outcome: 'busy' } as const;
+const busyFactsBad = { outcome: 'busy', port: port0 } as const;
+const _nl13: IAuthProviderError = { ...busy, facts: busyFactsOk };
+// @ts-expect-error port is excluded from busy's facts
+const _nl14: IAuthProviderError = { ...busy, facts: busyFactsBad };
+
+const unknownFactsOk = { verdict: 'unknown', at: 'request' } as const;
+const unknownFactsBad = { ...unknownFactsOk, status: status503 };
+const _nl15: IAuthProviderError = { ...refusedUnknown, facts: unknownFactsOk };
+// @ts-expect-error status is excluded from the unknown verdict's facts
+const _nl16: IAuthProviderError = { ...refusedUnknown, facts: unknownFactsBad };
+
+const strayVariant = { variant: 'expired' } as const;
+// @ts-expect-error a plain kind has no variant
+const _nl17: IAuthProviderError = { ...certificate, ...strayVariant };
 
 // ---- a mismatched pairing — with the brand missing, and set aside ---------
 

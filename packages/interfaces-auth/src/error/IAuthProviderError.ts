@@ -64,10 +64,19 @@ interface Common<K extends AuthProviderErrorKind> {
   readonly [minted]: true;
 }
 
-/** Only the permitted diagnostic fields are declared; none at all → `?: never`. */
+/**
+ * The permitted diagnostic fields carry their type and every other field of
+ * the kind is `?: never` — excluded, not merely omitted, so a non-literal
+ * object (a spread, a variable) carrying a forbidden field does not assign.
+ * A variant with none permitted: `diagnostics?: never`.
+ */
 type DiagOf<T, Allowed extends keyof T> = [Allowed] extends [never]
   ? { readonly diagnostics?: never }
-  : { readonly diagnostics?: { readonly [F in Allowed]?: T[F] } };
+  : {
+      readonly diagnostics?: {
+        readonly [F in keyof T]?: F extends Allowed ? T[F] : never;
+      };
+    };
 
 /** A SAML assertion refused, one object type per rule. */
 export type SamlAssertionError = {
@@ -96,6 +105,7 @@ export type ConfigurationError = {
 /** Every other kind: one object type, no variant, no diagnostics. */
 type PlainError<K extends PlainKind> = Common<K> & {
   readonly facts: AuthProviderErrorFacts[K];
+  readonly variant?: never;
   readonly diagnostics?: never;
 };
 
