@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-10-05
+
+### Changed
+
+- **Accepts `@mcp-abap-adt/interfaces-auth` `^4.0.0 || ^5.0.0 || ^6.0.0`.**
+  6.0.0 adds two optional facts to the error contract (a major there, because
+  its fact types are closed). What this package's exported types reach in
+  `interfaces-auth` — `ICertificateMaterial` and `AUTH_TYPE_BASIC` /
+  `AUTH_TYPE_JWT` — is declared identically in 6.0.0, so the range widens in a
+  minor (the rule of #123). Nothing else changes.
+
+### Migrating to 3.2.0
+
+Nothing to do. Install `interfaces-auth` 6.x beside it when the rest of the
+chain needs it; 4.x and 5.x keep working.
+
 ## [3.1.0] - 2026-10-05
 
 ### Changed

@@ -290,7 +290,7 @@ type OpenInteractiveLoginFacts =
     }
   | {
       readonly outcome: Member<InteractiveOutcome, 'aborted'>;
-      /** Which strategy's login was aborted (since 5.1.0). */
+      /** Which strategy's login was aborted (since 6.0.0). */
       readonly strategy?: InteractiveLoginStrategy;
       readonly ignoredCallbacks?: Count;
     }
@@ -310,7 +310,7 @@ type OpenInteractiveLoginFacts =
       readonly outcome: Member<InteractiveOutcome, 'failed'>;
       readonly code?: SystemCode;
       readonly status?: HttpStatus;
-      /** A registered OAuth/OIDC error code only (since 5.1.0). */
+      /** A registered OAuth/OIDC error code only (since 6.0.0). */
       readonly oauthError?: OAuthErrorCode;
     }
   | { readonly outcome: Exclude<InteractiveOutcome, OutcomeWithFacts> };

@@ -3018,8 +3018,9 @@ released.
 
 **What would change it.** A consumer that needs to act on something the facts
 cannot say without free text. That is a new fact or a new diagnostic for one
-variant — a major here when it is a new kind or discriminant member, a minor
-for a new member of a code list — not a return to words.
+variant — a major here (the types are closed, so a field added to one variant
+changes the shape of all; 6.0.0 added two), as is a new kind or discriminant
+member; a minor only for a new member of a code list — not a return to words.
 
 ## Open, and what would settle it
 

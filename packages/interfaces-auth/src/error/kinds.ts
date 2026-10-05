@@ -515,7 +515,7 @@ export type InteractiveOutcome = (typeof INTERACTIVE_OUTCOMES)[number];
 
 /**
  * Which strategy was disposed or aborted (`interactive-login`, outcome
- * `disposed`; outcome `aborted` since 5.1.0).
+ * `disposed`; outcome `aborted` since 6.0.0).
  */
 export const INTERACTIVE_LOGIN_STRATEGIES = Object.freeze([
   'browser',

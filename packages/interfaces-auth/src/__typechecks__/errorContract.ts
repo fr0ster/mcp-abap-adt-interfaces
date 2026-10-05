@@ -582,9 +582,9 @@ const paired = {
 } as const;
 const _f4: Unbranded<IAuthProviderError> = paired; // the right pairing is one
 
-// ---- 5.1.0: aborted names its strategy, failed a registered OAuth code ----
-// Two optional fact fields, a minor: the kinds, the outcomes and every other
-// outcome's and kind's shape are what 5.0.0 declared.
+// ---- 6.0.0: aborted names its strategy, failed a registered OAuth code ----
+// Two optional fact fields, a major (the types are closed): the kinds, the outcomes and every other
+// outcome's and kind's shape are what 5.0.0 declared, apart from the two new optional facts.
 
 const _ia1: AuthProviderErrorFacts['interactive-login'] = {
   outcome: 'aborted',
@@ -682,8 +682,8 @@ const certWithOauth = { ...certFactsOk, oauthError: 'access_denied' } as const;
 // @ts-expect-error an oauthError on client-certificate facts
 const _x13: IAuthProviderError = { ...certificate, facts: certWithOauth };
 
-// a minor adds no kind and no outcome: both lists are 5.0.0's
-export type MinorAddsNoKind = [
+// 6.0.0 adds no kind and no outcome: both lists are 5.0.0's
+export type MajorAddsNoKind = [
   Expect<
     Same<
       AuthProviderErrorKind,
