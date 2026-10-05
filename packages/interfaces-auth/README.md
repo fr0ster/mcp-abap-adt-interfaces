@@ -70,7 +70,7 @@ switch (error.kind) {
 }
 ```
 
-A `switch` with neither is not checked by TypeScript, and is not a supported way to read this type. A new kind — or a new member of a discriminant you switch on (`variant`, `problem`, `outcome`, `verdict`, …) — is a major of this package, so code written either way stops compiling on the upgrade instead of meeting the kind at run time. Both helpers also take an error from a newer producer whose kind this build does not know, without throwing: it reaches the `unknown` handler with `facts.operation: 'unfamiliar-error'`. A new member of a **code list** (`SystemCode`, `TlsFailureCode`, `OAuthErrorCode`, `RfcKey`, `ConfigField`, `SamlStatusCode`) is a minor — do not assert exhaustiveness over a code list.
+A `switch` with neither is not checked by TypeScript, and is not a supported way to read this type. A new kind — or a new member of a discriminant you switch on (`variant`, `problem`, `outcome`, `verdict`, …) — is a major of this package, so code written either way stops compiling on the upgrade instead of meeting the kind at run time. Both helpers also take an error from a newer producer whose kind this build does not know, without throwing: `matchKind` sends it to the `unknown` handler, and `unreachableKind` returns it as an `unknown` error (`facts.operation: 'unfamiliar-error'`); a foreign error of a known kind with valid facts reaches that kind's handler. A new member of a **code list** (`SystemCode`, `TlsFailureCode`, `OAuthErrorCode`, `RfcKey`, `ConfigField`, `SamlStatusCode`) is a minor — do not assert exhaustiveness over a code list.
 
 ### Cancelling a login
 
