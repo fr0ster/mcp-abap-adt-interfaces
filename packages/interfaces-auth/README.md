@@ -45,6 +45,8 @@ What a provider, a logon target or the connection reports when it cannot authent
 
 **Produced only by `@mcp-abap-adt/auth-errors`.** The error carries a property keyed by a symbol this package declares and does not export, so an object literal, a class instance or a parsed JSON value is not an `IAuthProviderError` to the compiler. A provider, a logon target or a test double builds one with an `auth-errors` builder, and relays a refusal it received as the object it is — never a copy. `auth-errors` also reads anything thrown into this contract (`classify`, `readFailure`).
 
+**What the compiler guarantees, and where it stops.** For an object literal and for declared fields, the pairing is checked: a `variant` decides which `facts` and `diagnostics` fields may appear, and every field another variant or kind carries is `?: never`, so naming one does not compile. TypeScript has no exact object types, though: a source typed with an index signature (`Record<string, string>` as `diagnostics`), or a spread of a minted error with another value, can carry keys the types never see. Two things close that at run time — the producers' shape check forbids spreading a minted error, and `@mcp-abap-adt/auth-errors` re-validates and rebuilds every error at each hand-off (`classifyOutcome`, `relayOutcome`, `readFailure`) from `kind` and its allowlisted facts only, so an extra key never survives. `src/__typechecks__/exactTypesLimit.ts` records the cases that compile, as the known limit.
+
 ### Handle every kind
 
 A consumer that decides on an error handles **every** kind, in one of the two patterns `@mcp-abap-adt/auth-errors` provides — both checked by the compiler:

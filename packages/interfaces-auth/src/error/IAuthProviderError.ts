@@ -19,6 +19,15 @@
  * `e.facts.rule` does not: TypeScript narrows a union only by a discriminant
  * of its members, not of a nested object.
  *
+ * **What the compiler guarantees, and where it stops.** Correct pairings are
+ * checked for object literals and declared fields: every field another
+ * variant or kind carries is `?: never`. TypeScript has no exact types, so a
+ * source typed with an index signature, or a spread of a minted error, can
+ * carry extra keys past these types. The producers' shape check forbids
+ * spreading a minted error, and `@mcp-abap-adt/auth-errors` re-validates and
+ * rebuilds every error at each hand-off, so an extra key never survives
+ * (`src/__typechecks__/exactTypesLimit.ts` records the limit).
+ *
  * **Handle every kind, checked by the compiler.** A consumer that decides on
  * `kind` uses one of the two patterns `@mcp-abap-adt/auth-errors` provides:
  * `matchKind(error, handlers)`, whose handler map does not compile with a kind
