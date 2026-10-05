@@ -7,20 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [2.1.0] - 2026-10-05
+## [3.0.0] - 2026-10-05
+
+### Changed (breaking)
+
+- **Requires `@mcp-abap-adt/interfaces-auth` ^4.0.0** (it accepted
+  `^1.2.0 || ^2.0.0 || ^3.0.0`). This package's own declarations are
+  byte-identical, but `ICertificateMaterialLoader.load` answers
+  `interfaces-auth`'s `ICertificateMaterial`, whose optional fields 4.0.0
+  declares `?: T | undefined`. Under `exactOptionalPropertyTypes`, code that
+  keeps the loaded material in a shape of its own declaring `cert`, `key`,
+  `pfx` or `passphrase` as `?: T` no longer compiles. Accepting 4.x within
+  2.x would have handed that to a `^2` consumer on a fresh install, so the
+  new range comes with a major: 2.x stays on `interfaces-auth` ≤ 3.
+  `__typechecks__/certificateLoaderCompatibility.ts` holds the break (it
+  fails against `interfaces-auth` 3.x).
+
+### Migrating from 2.x
+
+- Install `@mcp-abap-adt/interfaces-auth` ^4.0.0 beside this release.
+- Without `exactOptionalPropertyTypes`, nothing else to do. With it, where
+  `await loader.load(config)` is assigned to a type of your own, declare its
+  optional fields `?: T | undefined` (or copy only the fields that are
+  present). An `ICertificateMaterialLoader` you implement may now return a
+  field set to `undefined`.
+- Nothing else changed: same names, same shapes, same constants.
 
 ### Changed
 
-- **`@mcp-abap-adt/interfaces-auth` accepted as
-  `^1.2.0 || ^2.0.0 || ^3.0.0 || ^4.0.0`.** Of what 4.0.0 changes, this package
-  uses `ICertificateMaterial` (the return of `ICertificateMaterialLoader.load`),
-  whose optional fields are now `?: T | undefined`. This package's
-  declarations are byte-identical either way. A consumer that resolves
-  `interfaces-auth` 4.x through this range gets that package's change: under
-  `exactOptionalPropertyTypes`, a loaded `ICertificateMaterial` assigned to
-  its own type declaring a field `?: T` no longer compiles — see
-  `interfaces-auth` 4.0.0's migration note. A consumer that pins
-  `interfaces-auth` `^3` keeps 3.x.
 - **Built under a stricter compiler and lint**: the repository's base
   `tsconfig` adds `noImplicitReturns`, `noFallthroughCasesInSwitch`,
   `noImplicitOverride`, `noUncheckedIndexedAccess` and

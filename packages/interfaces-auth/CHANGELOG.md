@@ -24,7 +24,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `exactOptionalPropertyTypes`: assigning one of these objects to a
   consumer's own type that declares the same field `?: T` (without
   `| undefined`) no longer compiles. A consumer on `^3.x` would have received
-  that through a minor, so this is a major. The fields:
+  that through a minor, so this is a major
+  (`__typechecks__/majorCompatibility.ts` assigns each widened contract to its
+  3.x shape and fails against 3.x). The fields:
   - `ITokenResult`: `refreshToken`, `expiresIn`, `expiresAt`, `tokenType`
   - `AuthorizationRequest`: `logger`
   - `ICallbackServerOptions`: `signal`, `logger`

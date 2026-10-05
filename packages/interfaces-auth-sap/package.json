@@ -1,6 +1,6 @@
 {
   "name": "@mcp-abap-adt/interfaces-auth-sap",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "description": "SAP and BTP authorization contracts: SAP system configuration, the UAA client, XSUAA, certificate loading",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -36,7 +36,7 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@mcp-abap-adt/interfaces-auth": "^1.2.0 || ^2.0.0 || ^3.0.0 || ^4.0.0"
+    "@mcp-abap-adt/interfaces-auth": "^4.0.0"
   },
   "devDependencies": {
     "@types/node": "^24.2.1",
