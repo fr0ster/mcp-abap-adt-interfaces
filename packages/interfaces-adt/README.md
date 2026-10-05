@@ -8,7 +8,8 @@ ADT contracts: object operations, runtime analysis, execution, feeds and service
 - What it holds: ADT object operations for 31 object types, runtime analysis, execution, feeds, service bindings, `IAdtResponse` and the error codes. **The ABAP connection** — `IAbapConnection`, `IAdtWireResponse`, its capability atoms, `ITimeoutConfig` — is [`interfaces-adt-connection`](../interfaces-adt-connection) since 11.0.0, and is not re-exported here.
 - **What left, and where.** Every HTTP header name, the HTTP frame and `HttpError` → [`interfaces-network`](../interfaces-network). Cloud ALM → [`interfaces-calm`](../interfaces-calm). `XmlNode` → [`interfaces-utils`](../interfaces-utils). Authentication in general — credentials, OAuth grants, tokens, interactive login, SAML assertions, `AUTH_TYPE_JWT`/`BASIC` → [`interfaces-auth`](../interfaces-auth). Everything naming SAP or BTP — `ISapConfig`, `SapAuthType`, `SapConnectionType`, `IConfig`, `IConnectionConfig`, `IAuthorizationConfig`, `ICertificateMaterialLoader`, `IServiceKeyStore`, `ISessionStore`, `ITokenProviderResult`, the two validation results and `AUTH_TYPE_XSUAA` with its union → [`interfaces-auth-sap`](../interfaces-auth-sap). Of those, `IConfig`, `IConnectionConfig`, `IServiceKeyStore`, `ISessionStore` and `ITokenProviderResult` moved on to [`interfaces-auth-broker`](../interfaces-auth-broker) in `interfaces-auth-sap` 2.0.0. `ISessionState` and `ISessionStorage` are deleted, not moved.
 - `IAdtWireResponse` extends `IHttpWireResponse` from `-network` and keeps the headers ADT sends (`sap-adt-location`, both spellings of `content-location`). It lives in `interfaces-adt-connection` since 11.0.0, name and shape unchanged.
-- Depends on `@mcp-abap-adt/interfaces-adt-connection`, and on nothing else. Types and constants; no implementation.
+- Since 13.0.0 `IResultStrategy`, `IAnalyse` and `IAdtFailure.response` hand over an `IAdtWireResponse` whose `data` is `unknown`, not `any` (`interfaces-adt-connection` 2.0.0): narrow it before reading. The CHANGELOG has the migration note.
+- Depends on `@mcp-abap-adt/interfaces-adt-connection` ^2.0.0, and on nothing else. Types and constants; no implementation.
 
 ## Install
 
@@ -49,6 +50,22 @@ Two of the signatures say things a capture cannot. 1.2.0 was declared from captu
 So `createTask` requires `targetUser` and `removeObject` requires `position`, and `readObjects` was added because otherwise the second would require a value this package offers no way to obtain — leaving a caller to parse a transport document themselves for a `tm:position`. It is its own member because it answers its own thing: entries, each with its position as a value, rather than a document. What an implementation sends to get them is its own business; the contract says what must come back.
 
 `addObject` still takes an entry without a position — one that does not exist yet has none.
+
+## Migrating to 13.0.0
+
+`IAdtWireResponse` comes from `interfaces-adt-connection` ^2.0.0, where its
+`data` defaults to `unknown` instead of `any`. Install that version beside this
+one (one copy only), then, wherever a result strategy, an `analyse` function or
+`IAdtFailure.response` reads the answer, narrow it or name it:
+
+```diff
+- const strategy: IResultStrategy<string> = (answer) => answer.data;
++ const strategy: IResultStrategy<string> = (answer) =>
++   typeof answer.data === 'string' ? answer.data : '';
+```
+
+A stub of `makeAdtRequest` in a test is covered in `interfaces-adt-connection`'s
+2.0.0 migration note.
 
 ## Migrating to 11.0.0
 

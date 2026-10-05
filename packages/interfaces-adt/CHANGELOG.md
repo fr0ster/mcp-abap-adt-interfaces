@@ -7,7 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [12.0.2] - 2026-10-05
+## [13.0.0] - 2026-10-05
+
+### Changed (breaking)
+
+- **Depends on `@mcp-abap-adt/interfaces-adt-connection` ^2.0.0**, whose
+  `IAdtWireResponse` defaults its type parameters to `unknown` instead of
+  `any`. This package's declarations name `IAdtWireResponse` without type
+  arguments in three exported types, so each now hands a consumer an answer
+  whose `data` is `unknown`:
+  - `IResultStrategy<T>` — `(answer: IAdtWireResponse) => T`
+  - `IAnalyse<E>` — its optional `answer` parameter
+  - `IAdtFailure.response`
+
+  The emitted `.d.ts` text of these is unchanged; what they resolve to is
+  not, which is why this is a major.
+
+### Migrating from 12.x
+
+Install `@mcp-abap-adt/interfaces-adt-connection` ^2.0.0 beside this release
+(a single copy: two copies of one interface do not compare equal). In a
+result strategy, an `analyse` function, or code reading
+`IAdtFailure.response`, narrow `answer.data` before reading it —
+`typeof answer.data === 'string'` for an ADT body — or name the type where it
+is stored (`IAdtWireResponse<string>`). See that package's 2.0.0 migration
+note, which also covers `makeAdtRequest` stubs.
 
 ### Changed
 
