@@ -113,6 +113,13 @@ type ViewOwnOptions<TViews, K extends keyof TViews> =
   ViewOptions<TViews, K> extends void ? unknown : ViewOptions<TViews, K>;
 
 /**
+ * A listing's own options, or nothing to add when it has none. The parameter
+ * is wrapped so that a union is judged whole, not member by member.
+ */
+type ListingOwnOptions<TOptions> =
+  Array<TOptions> extends Array<void> ? unknown : TOptions;
+
+/**
  * What traces exist.
  *
  * `TList` is the listing's own result, defaulting to the entries. Until 10.0.0
@@ -126,12 +133,11 @@ export interface ITraceListing<
   TList = TEntry[],
 > {
   list<E extends IAdtError>(
-    options: ([TOptions] extends [void] ? unknown : TOptions) &
+    options: ListingOwnOptions<TOptions> &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TList, E>>;
   list(
-    options?: ([TOptions] extends [void] ? unknown : TOptions) &
-      IAdtAnalyseOptions,
+    options?: ListingOwnOptions<TOptions> & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TList>>;
 }
 

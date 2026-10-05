@@ -14,9 +14,6 @@
  * `HttpError` to `-network` and `XmlNode` to `-utils`.
  */
 
-import type { IAdtAnalyseOptions, IAnalyse } from './adt/IAdtObject';
-import type { IAdtError } from './adt/IAdtResponse';
-
 export type {
   IAbapGitExternalRepoCredentials,
   IAbapGitLinkArgs,

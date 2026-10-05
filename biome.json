@@ -18,7 +18,7 @@
 		"rules": {
 			"recommended": true,
 			"suspicious": {
-				"noExplicitAny": "warn"
+				"noExplicitAny": "error"
 			},
 			"correctness": {
 				"noUnusedVariables": "warn",
@@ -41,6 +41,16 @@
 		}
 	},
 	"overrides": [
+		{
+			"includes": ["packages/interfaces-adt-connection/src/IAbapConnection.ts"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noExplicitAny": "off"
+					}
+				}
+			}
+		},
 		{
 			"includes": ["**/__tests__/**", "**/*.test.ts", "**/*.spec.ts"],
 			"linter": {
