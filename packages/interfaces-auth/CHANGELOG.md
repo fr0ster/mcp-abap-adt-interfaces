@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.3.0] - 2026-10-05
+
 ### Changed
 
 - **Optional fields of the objects a provider hands out accept an explicit
@@ -29,6 +31,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `AssertionContext`: `expectedInResponseTo`, `expectedIssuer`, `logger`
   - `ValidatedAssertion`: `nameId`, `sessionIndex`, `attributes`
   - `ICertificateMaterial`: `cert`, `key`, `pfx`, `passphrase`
+- **Built under a stricter compiler and lint.** The repository's base
+  `tsconfig` adds `noImplicitReturns`, `noFallthroughCasesInSwitch`,
+  `noImplicitOverride`, `noUncheckedIndexedAccess` and
+  `exactOptionalPropertyTypes`, and lint fails on a warning. Two compile-only
+  checks leave an optional field out instead of setting it to `undefined`
+  (`IAuthRefusal.hint`, `ITokenRequestAuthentication.endpoint`, neither of them
+  widened); a new one sets every widened field to `undefined`.
 
 ## [3.2.0] - 2026-10-04
 

@@ -10,6 +10,7 @@ Authentication: credentials, OAuth grants, tokens and the contracts around them.
 - **SAML assertions** — `IAssertionValidator`, `ASSERTION_ERROR_CODES`. Since 2.0.0 `AssertionContext.expectedInResponseTo` is optional: absent means a login declared IdP-initiated, and a validator must then **refuse** an assertion carrying `InResponseTo`, not skip the check.
 - **`AUTH_TYPE_JWT` and `AUTH_TYPE_BASIC`** — a bearer token and a user with a password. `AUTH_TYPE_XSUAA` is *not* here: XSUAA is a BTP service, so it and the union over all three are in `interfaces-auth-sap`.
 - **Arrived in 1.2.0 from `@mcp-abap-adt/interfaces-adt`**, where three repositories — `auth-broker`, `auth-stores`, `auth-providers` — imported 10, 7 and 17 names and not one was an ADT contract. They tracked the ADT contract's release rate to describe authentication.
+- **Optional fields accept an explicit `undefined`** (since 3.3.0) on the objects a provider hands out — `ITokenResult`, `AuthorizationRequest`, `ICallbackServerOptions`, `AssertionContext`, `ValidatedAssertion`, `ICertificateMaterial`: declared `?: T | undefined`, so under `exactOptionalPropertyTypes` a provider may build them with `refreshToken: undefined` and no cast. A consumer with that flag that assigns one to its own type declaring the field `?: T` widens that field the same way.
 - Depends on `@mcp-abap-adt/interfaces-utils`, for `ILogger`. Types and constants; no implementation.
 
 ## Install

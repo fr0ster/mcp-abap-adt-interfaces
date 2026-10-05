@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [12.0.2] - 2026-10-05
+
+### Changed
+
+- **`ITraceListing.list` names its options type.** The inline
+  `[TOptions] extends [void] ? unknown : TOptions` is now the declared
+  `ListingOwnOptions<TOptions>` (`Array<TOptions> extends Array<void> ?
+  unknown : TOptions`), checked to resolve to the same type for `void`,
+  `undefined`, `never`, `any`, `unknown`, an options object, and unions with
+  and without `void`. `ITrace.d.ts` changes; what a consumer passes and gets
+  does not — nothing to do.
+- **Built under a stricter compiler and lint.** The repository's base
+  `tsconfig` adds `noImplicitReturns`, `noFallthroughCasesInSwitch`,
+  `noImplicitOverride`, `noUncheckedIndexedAccess` and
+  `exactOptionalPropertyTypes`, and lint fails on a warning. Only the
+  compile-only checks changed (and two unused imports left `index.ts`); no
+  other declaration changes.
+
 ## [12.0.1] - 2026-10-02
 
 ### Changed
