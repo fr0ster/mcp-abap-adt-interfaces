@@ -470,6 +470,51 @@ const _nl15: IAuthProviderError = { ...refusedUnknown, facts: unknownFactsOk };
 // @ts-expect-error status is excluded from the unknown verdict's facts
 const _nl16: IAuthProviderError = { ...refusedUnknown, facts: unknownFactsBad };
 
+declare const archsX64: readonly SncArch[];
+const bearerOk = {
+  reason: 'several-confirmation-data',
+  count: count3,
+} as const;
+const bearerBad = { reason: 'recipient-not-acs', count: count3 } as const;
+const _bc1: BearerCandidate = bearerOk;
+// @ts-expect-error count belongs to several-confirmation-data only
+const _bc2: BearerCandidate = bearerBad;
+const _bc3: AuthProviderErrorFacts['saml-assertion'] = {
+  rule: 'no-bearer-qualifies',
+  check: 'bearerConfirmation',
+  candidates: [bearerOk],
+};
+const bearerFactsBad = {
+  rule: 'no-bearer-qualifies',
+  check: 'bearerConfirmation',
+  candidates: [bearerBad],
+} as const;
+// @ts-expect-error a candidate with count under another reason, in the facts
+const _bc4: AuthProviderErrorFacts['saml-assertion'] = bearerFactsBad;
+const sncCandOk = {
+  source: 'SNC_LIB',
+  reason: 'wrong architecture',
+  archs: archsX64,
+} as const;
+const sncCandBad = {
+  source: 'SNC_LIB',
+  reason: 'missing',
+  archs: archsX64,
+} as const;
+const _sc1: SncCandidate = sncCandOk;
+// @ts-expect-error archs belong to wrong architecture only
+const _sc2: SncCandidate = sncCandBad;
+const _sc3: AuthProviderErrorFacts['snc'] = {
+  problem: 'library-not-found',
+  candidates: [sncCandOk],
+};
+const sncFactsCandBad = {
+  problem: 'library-not-found',
+  candidates: [sncCandBad],
+} as const;
+// @ts-expect-error a candidate with archs under another reason, in the facts
+const _sc4: AuthProviderErrorFacts['snc'] = sncFactsCandBad;
+
 const strayVariant = { variant: 'expired' } as const;
 // @ts-expect-error a plain kind has no variant
 const _nl17: IAuthProviderError = { ...certificate, ...strayVariant };

@@ -143,12 +143,25 @@ export type CountedAssertionRule = Member<
   | 'several-assertions'
 >;
 
-/** One SubjectConfirmation that did not qualify as bearer, and why. */
-export interface BearerCandidate {
-  readonly reason: BearerCandidateReason;
-  /** Only with reason `several-confirmation-data`. */
-  readonly count?: Count;
-}
+/**
+ * One SubjectConfirmation that did not qualify as bearer, and why; `count`
+ * only with reason `several-confirmation-data`, `?: never` otherwise.
+ */
+export type BearerCandidate = ClosedUnion<
+  | {
+      readonly reason: Member<
+        BearerCandidateReason,
+        'several-confirmation-data'
+      >;
+      readonly count?: Count;
+    }
+  | {
+      readonly reason: Exclude<
+        BearerCandidateReason,
+        Member<BearerCandidateReason, 'several-confirmation-data'>
+      >;
+    }
+>;
 
 /** The facts of one SAML rule: `rule`, its fixed `check`, and what the rule carries. */
 type OpenSamlFactsOf<R extends AssertionRule> = R extends unknown
@@ -178,13 +191,24 @@ export type SamlFactsOf<R extends AssertionRule> = R extends unknown
 
 // ---- snc --------------------------------------------------------------------
 
-/** One SNC library candidate that could not be used. */
-export interface SncCandidate {
-  readonly source: SncCandidateSource;
-  readonly reason: SncUnusableReason;
-  /** Only with reason `wrong architecture`. */
-  readonly archs?: readonly SncArch[];
-}
+/**
+ * One SNC library candidate that could not be used; `archs` only with reason
+ * `wrong architecture`, `?: never` otherwise.
+ */
+export type SncCandidate = ClosedUnion<
+  | {
+      readonly source: SncCandidateSource;
+      readonly reason: Member<SncUnusableReason, 'wrong architecture'>;
+      readonly archs?: readonly SncArch[];
+    }
+  | {
+      readonly source: SncCandidateSource;
+      readonly reason: Exclude<
+        SncUnusableReason,
+        Member<SncUnusableReason, 'wrong architecture'>
+      >;
+    }
+>;
 
 /**
  * What each SNC problem carries beyond `problem`. Its keys are exactly
