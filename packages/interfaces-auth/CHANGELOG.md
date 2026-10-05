@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.0.0] - 2026-10-05
+
+Two optional fact fields on `interactive-login`, so the renderer in
+`@mcp-abap-adt/auth-errors` keeps two sentences the providers say today
+without losing a fact.
+
+**Why it is a major.** 5.0.0's facts and diagnostics are closed types: every
+kind and outcome declares the keys of the others as `?: never`. Adding a field
+to one outcome therefore changes the shape of every other, and a consumer's
+object literal, spread or handler map written against 5.0.0 can stop
+compiling. Any change to the shape of facts or diagnostics is a major here, an
+optional field added included.
+
+**Migration.** A consumer on 5.x widens its range to include `^6.0.0`; nothing
+is removed or renamed, and no kind, outcome or required field changes. Code
+that builds or reads `interactive-login` facts needs no edit unless it spreads
+facts across outcomes; it may now read the two new optional facts.
+
+### Added
+
+- **`aborted` names its strategy**: `strategy?: 'browser' | 'manual'`
+  (`InteractiveLoginStrategy`, as `disposed` carries it), so a manual login
+  that was aborted is told apart from a browser one.
+- **`failed` carries a registered OAuth error code**: `oauthError?:
+  OAuthErrorCode` — a registered code only, as the browser login's words put it
+  today.
+- Every other outcome and every other kind declares both fields `?: never`,
+  through the same closing as 5.0.0's facts, so a spread or a variable carrying
+  one does not assign. Type tests pin the kinds, `INTERACTIVE_OUTCOMES` and a
+  handler map written against 5.0.0 unchanged.
+
+### Changed
+
+- **The versioning rule** in the README: any change to the shape of facts or
+  diagnostics — a field added, removed, made required or narrowed — is a
+  major, because the types are closed.
+
 ## [5.0.0] - 2026-10-05
 
 The error contract: what a provider, a logon target and a connection report
