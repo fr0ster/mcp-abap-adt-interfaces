@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.0] - 2026-10-05
+
+Two optional fact fields on `interactive-login`, so the renderer in
+`@mcp-abap-adt/auth-errors` keeps two sentences the providers say today
+without losing a fact. A minor: no kind, no outcome and no other field changes,
+and a reader that does not read the new fields is unaffected.
+
+### Added
+
+- **`aborted` names its strategy**: `strategy?: 'browser' | 'manual'`
+  (`InteractiveLoginStrategy`, as `disposed` carries it), so a manual login
+  that was aborted is told apart from a browser one.
+- **`failed` carries a registered OAuth error code**: `oauthError?:
+  OAuthErrorCode` — a registered code only, as the browser login's words put it
+  today.
+- Every other outcome and every other kind declares both fields `?: never`,
+  through the same closing as 5.0.0's facts, so a spread or a variable carrying
+  one does not assign. Type tests pin the kinds, `INTERACTIVE_OUTCOMES` and a
+  handler map written against 5.0.0 unchanged.
+- **The versioning rule** in the README: a new optional fact field on an
+  existing kind or variant is a minor; making one required, removing a field or
+  narrowing its type is a major.
+
 ## [5.0.0] - 2026-10-05
 
 The error contract: what a provider, a logon target and a connection report

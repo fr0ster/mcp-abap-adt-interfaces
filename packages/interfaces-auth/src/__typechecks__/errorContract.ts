@@ -581,3 +581,198 @@ const paired = {
   reason: '',
 } as const;
 const _f4: Unbranded<IAuthProviderError> = paired; // the right pairing is one
+
+// ---- 5.1.0: aborted names its strategy, failed a registered OAuth code ----
+// Two optional fact fields, a minor: the kinds, the outcomes and every other
+// outcome's and kind's shape are what 5.0.0 declared.
+
+const _ia1: AuthProviderErrorFacts['interactive-login'] = {
+  outcome: 'aborted',
+  strategy: 'manual',
+};
+const _ia2: AuthProviderErrorFacts['interactive-login'] = {
+  outcome: 'aborted',
+  strategy: 'browser',
+  ignoredCallbacks: count3,
+};
+const _ia3: AuthProviderErrorFacts['interactive-login'] = {
+  outcome: 'aborted',
+};
+const _ia4: AuthProviderErrorFacts['interactive-login'] = {
+  outcome: 'aborted',
+  // @ts-expect-error a strategy off the list
+  strategy: 'device',
+};
+const _ia5: AuthProviderErrorFacts['interactive-login'] = {
+  outcome: 'aborted',
+  // @ts-expect-error oauthError belongs to failed and identity-provider-refused
+  oauthError: 'access_denied',
+};
+const _if1: AuthProviderErrorFacts['interactive-login'] = {
+  outcome: 'failed',
+  oauthError: 'access_denied',
+};
+const _if2: AuthProviderErrorFacts['interactive-login'] = {
+  outcome: 'failed',
+  code: 'ECONNRESET',
+  status,
+  oauthError: 'invalid_grant',
+};
+const _if3: AuthProviderErrorFacts['interactive-login'] = {
+  outcome: 'failed',
+  // @ts-expect-error an unregistered OAuth error code
+  oauthError: 'made_up_error',
+};
+const _if4: AuthProviderErrorFacts['interactive-login'] = {
+  outcome: 'failed',
+  // @ts-expect-error strategy belongs to aborted and disposed
+  strategy: 'browser',
+};
+const _ib1: AuthProviderErrorFacts['interactive-login'] = {
+  outcome: 'busy',
+  // @ts-expect-error busy carries no strategy
+  strategy: 'manual',
+};
+
+// narrowing reads the new fields where they are declared, and only there
+if (e.kind === 'interactive-login') {
+  const facts = e.facts;
+  if (facts.outcome === 'aborted') {
+    const s: InteractiveLoginStrategy | undefined = facts.strategy; // ok
+    const _o: undefined = facts.oauthError;
+    use(s);
+  }
+  if (facts.outcome === 'failed') {
+    const o: OAuthErrorCode | undefined = facts.oauthError; // ok
+    const _s: undefined = facts.strategy;
+    use(o);
+  }
+}
+
+// non-literal objects: spreads and variables
+const abortedManual = { outcome: 'aborted', strategy: 'manual' } as const;
+const _nl18: IAuthProviderError = { ...busy, facts: abortedManual };
+const abortedWithOauth = {
+  ...abortedManual,
+  oauthError: 'access_denied',
+} as const;
+// @ts-expect-error oauthError is excluded from aborted's facts
+const _nl19: IAuthProviderError = { ...busy, facts: abortedWithOauth };
+const abortedDevice = { outcome: 'aborted', strategy: 'device' } as const;
+// @ts-expect-error a strategy off the list, in a variable
+const _nl20: IAuthProviderError = { ...busy, facts: abortedDevice };
+const failedOauth = { outcome: 'failed', oauthError: 'access_denied' } as const;
+const _nl21: IAuthProviderError = { ...busy, facts: failedOauth };
+const failedWithStrategy = { ...failedOauth, strategy: 'browser' } as const;
+// @ts-expect-error strategy is excluded from failed's facts
+const _nl22: IAuthProviderError = { ...busy, facts: failedWithStrategy };
+const failedUnregistered = {
+  outcome: 'failed',
+  oauthError: 'made_up',
+} as const;
+// @ts-expect-error an unregistered OAuth error code, in a variable
+const _nl23: IAuthProviderError = { ...busy, facts: failedUnregistered };
+const busyWithStrategy = { ...busyFactsOk, strategy: 'manual' } as const;
+// @ts-expect-error strategy is excluded from busy's facts
+const _nl24: IAuthProviderError = { ...busy, facts: busyWithStrategy };
+const tlsWithStrategy = { ...tlsFactsOk, strategy: 'browser' } as const;
+// @ts-expect-error interactive-login's strategy on a tls error
+const _x12: IAuthProviderError = { ...tlsExpired, facts: tlsWithStrategy };
+const certWithOauth = { ...certFactsOk, oauthError: 'access_denied' } as const;
+// @ts-expect-error an oauthError on client-certificate facts
+const _x13: IAuthProviderError = { ...certificate, facts: certWithOauth };
+
+// a minor adds no kind and no outcome: both lists are 5.0.0's
+export type MinorAddsNoKind = [
+  Expect<
+    Same<
+      AuthProviderErrorKind,
+      | 'configuration'
+      | 'client-certificate'
+      | 'client-authentication'
+      | 'request-failed'
+      | 'tls'
+      | 'interactive-login'
+      | 'saml-assertion'
+      | 'snc'
+      | 'credential-refused'
+      | 'system-refused'
+      | 'renewal-unchanged'
+      | 'token-binding'
+      | 'not-prepared'
+      | 'logon-target'
+      | 'connection'
+      | 'unknown'
+    >
+  >,
+  Expect<Same<keyof AuthProviderErrorFacts, AuthProviderErrorKind>>,
+  Expect<
+    Equal<
+      typeof INTERACTIVE_OUTCOMES,
+      readonly [
+        'port-in-use',
+        'aborted',
+        'disposed',
+        'busy',
+        'browser-launch-failed',
+        'callback-closed',
+        'identity-provider-refused',
+        'input-abandoned',
+        'no-input',
+        'unreadable-input',
+        'no-terminal',
+        'device-code-not-shown',
+        'failed',
+      ]
+    >
+  >,
+  Expect<Same<InteractiveLoginStrategy, 'browser' | 'manual'>>,
+];
+
+// a handler map written against 5.0.0 — one handler per kind, and a switch
+// over every outcome — still compiles: nothing new to handle
+type Handlers = {
+  readonly [K in AuthProviderErrorKind]: (
+    facts: AuthProviderErrorFacts[K],
+  ) => string;
+};
+const handlers50: Handlers = {
+  configuration: (f) => f.case,
+  'client-certificate': (f) => f.problem,
+  'client-authentication': (f) => f.problem,
+  'request-failed': (f) => f.problem,
+  tls: (f) => f.code,
+  'interactive-login': (f) => {
+    switch (f.outcome) {
+      case 'port-in-use':
+      case 'aborted':
+      case 'disposed':
+      case 'busy':
+      case 'browser-launch-failed':
+      case 'callback-closed':
+      case 'identity-provider-refused':
+      case 'input-abandoned':
+      case 'no-input':
+      case 'unreadable-input':
+      case 'no-terminal':
+      case 'device-code-not-shown':
+      case 'failed':
+        return f.outcome;
+      default: {
+        const unhandled: never = f;
+        return unhandled;
+      }
+    }
+  },
+  'saml-assertion': (f) => f.rule,
+  snc: (f) => f.problem,
+  'credential-refused': (f) => f.credential,
+  'system-refused': (f) => f.verdict,
+  'renewal-unchanged': (f) => f.source,
+  'token-binding': (f) => f.problem,
+  'not-prepared': (f) => f.provider,
+  'logon-target': (f) => f.refused,
+  connection: (f) => f.problem,
+  unknown: (f) => f.operation,
+};
+use(handlers50);
