@@ -18,6 +18,17 @@
  * the whole object, `facts` and `diagnostics` included. Narrowing on
  * `e.facts.rule` does not: TypeScript narrows a union only by a discriminant
  * of its members, not of a nested object.
+ *
+ * **Handle every kind, checked by the compiler.** A consumer that decides on
+ * `kind` uses one of the two patterns `@mcp-abap-adt/auth-errors` provides:
+ * `matchKind(error, handlers)`, whose handler map does not compile with a kind
+ * missing, or a `switch (error.kind)` whose `default` calls
+ * `unreachableKind(error)`, which compiles only when every kind was handled.
+ * A `switch` with neither is not checked by TypeScript, and is not a
+ * supported way to read this type. A new kind is a major of this package, so
+ * a consumer following either pattern stops compiling on the upgrade rather
+ * than meeting the kind at run time; both also take an error of a kind this
+ * build does not know (a newer producer) without throwing.
  */
 
 import type {

@@ -73,8 +73,14 @@ export interface ValidatedAssertion {
 /**
  * Establishes that an assertion is genuine, addressed to us, currently valid,
  * and answers a request we made — or, for a login declared IdP-initiated,
- * answers none. Rejects by throwing, with a reason naming the check that
- * failed.
+ * answers none. Rejects by throwing.
+ *
+ * The validators `@mcp-abap-adt/auth-providers` ships reject with an
+ * `IAuthProviderFailure` whose error is of kind `saml-assertion`, its
+ * `variant` the rule that refused the assertion. A custom validator may throw
+ * anything: the provider classifies what it throws, and a value it does not
+ * recognise becomes an error of kind `unknown` — it carries no word of the
+ * thrown value.
  */
 export interface IAssertionValidator {
   /**

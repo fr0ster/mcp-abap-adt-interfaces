@@ -47,7 +47,6 @@ const logger: ILogger = {
 // Ephemeral port plus a transport-level logger.
 const _ephemeral: ICallbackServerOptions = {
   port: 0,
-  timeoutMs: 30_000,
   logger,
 };
 void _ephemeral;

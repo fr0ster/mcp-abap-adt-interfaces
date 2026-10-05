@@ -7,19 +7,18 @@
  * provider is a bug in the provider, not an answer.
  */
 
-/** Why a provider could not authenticate, and what to do about it. */
-export interface IAuthRefusal {
-  /**
-   * What went wrong, for a log and for a person reading it: "the user or
-   * password was refused", "the SAP Secure Login Client has no certificate".
-   */
-  readonly reason: string;
-  /**
-   * What to do about it, when the provider knows — "log on in the Secure Login
-   * Client", "renew the service key". Absent when there is nothing to suggest.
-   */
-  readonly hint?: string;
-}
+import type { IAuthProviderError } from '../error/IAuthProviderError';
+
+/**
+ * Why a provider could not authenticate: an {@link IAuthProviderError}.
+ *
+ * `reason` and `hint` read as before — what went wrong, and what to do about
+ * it when there is something to suggest. A decision is made on `kind` and
+ * `facts`, never on the words. A refusal is minted by
+ * `@mcp-abap-adt/auth-errors`; an object literal is not one, and a refusal is
+ * relayed as the object it is, never copied into a new one.
+ */
+export type IAuthRefusal = IAuthProviderError;
 
 export type AuthOutcome =
   | { readonly ok: true }

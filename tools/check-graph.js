@@ -72,6 +72,50 @@ for (const dir of fs.readdirSync(packagesDir)) {
     }
   }
 
+  // The normal course names the error only as a whole (goal invariant 1 of the
+  // error contract): outside `src/error/`, a file of interfaces-auth imports
+  // (or re-exports) from there `IAuthProviderError` or `IAuthProviderFailure`
+  // and nothing else — no kind, fact, allowlist or diagnostic. `index.ts`
+  // re-exports them all, and the type tests reach for them on purpose. An
+  // inline `import('../error/…').X` type is not read here.
+  if (dir === 'interfaces-auth') {
+    const errorDir = path.join(src, 'error');
+    const WHOLE = new Set(['IAuthProviderError', 'IAuthProviderFailure']);
+    for (const file of tsFiles(src)) {
+      if (file.startsWith(errorDir + path.sep)) continue;
+      if (file === path.join(src, 'index.ts')) continue;
+      if (file.startsWith(path.join(src, '__typechecks__') + path.sep))
+        continue;
+      const text = fs.readFileSync(file, 'utf8');
+      const rel = path.relative(ROOT, file);
+      for (const m of text.matchAll(
+        /(?:import|export)\s+(?:type\s+)?(\{[^}]*\}|\*(?:\s+as\s+\w+)?|\w+)\s+from\s*['"]([^'"]+)['"]/g,
+      )) {
+        const target = path.resolve(path.dirname(file), m[2]);
+        if (!m[2].startsWith('.') || !target.startsWith(errorDir + path.sep))
+          continue;
+        const names = m[1].startsWith('{')
+          ? m[1]
+              .slice(1, -1)
+              .split(',')
+              .map((n) =>
+                n
+                  .trim()
+                  .replace(/^type\s+/, '')
+                  .split(/\s+as\s+/)[0]
+                  .trim(),
+              )
+              .filter((n) => n !== '')
+          : [m[1]];
+        for (const name of names)
+          if (!WHOLE.has(name))
+            problems.push(
+              `${rel}: takes ${name} from ${m[2]}; the normal course names only IAuthProviderError and IAuthProviderFailure`,
+            );
+      }
+    }
+  }
+
   // A dependency nothing imports is an edge the tree pays for and the contract
   // does not need. Types-only packages have no runtime use for one.
   for (const dep of declared) {

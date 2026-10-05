@@ -106,3 +106,16 @@ IUpdateTableTypeParams type
 IUpdateTransformationParams type
 IValidateEnhancementParams type
 IValidateServiceBindingParams type
+#
+# interfaces-auth 5.0.0 — the error contract. The two code constants (and
+# their unions) named thrown classes that no longer exist: a provider's
+# failure is an `IAuthProviderError` read by `kind`, and nothing outside
+# `@mcp-abap-adt/auth-providers` imported them. `STORE_ERROR_CODES` stays: the
+# stores' own errors. `ICallbackServerOptions.timeoutMs` is a member, not a
+# symbol, recorded here so its removal is signed too: a login has no built-in
+# bound, and `signal` is how a consumer ends one.
+TOKEN_PROVIDER_ERROR_CODES const
+TokenProviderErrorCode type
+ASSERTION_ERROR_CODES const
+AssertionErrorCode type
+ICallbackServerOptions.timeoutMs member

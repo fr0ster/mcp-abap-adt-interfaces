@@ -29,8 +29,6 @@
  * Depends on `@mcp-abap-adt/interfaces-utils`, for `ILogger`.
  */
 
-export type { AssertionErrorCode } from './auth/AssertionErrorCodes';
-export { ASSERTION_ERROR_CODES } from './auth/AssertionErrorCodes';
 export { AUTH_TYPE_BASIC, AUTH_TYPE_JWT } from './auth/AuthMethod';
 export type { AuthOutcome, IAuthRefusal } from './auth/AuthOutcome';
 export type {
@@ -106,6 +104,7 @@ export type {
   SamlAssertionError,
   SncError,
 } from './error/IAuthProviderError';
+export type { IAuthProviderFailure } from './error/IAuthProviderFailure';
 export type {
   AllowedValueSet,
   AssertionCheck,
@@ -202,6 +201,7 @@ export type { ITokenProvider } from './token/ITokenProvider';
 export type { ITokenProviderOptions } from './token/ITokenProviderOptions';
 export type { ITokenRefresher } from './token/ITokenRefresher';
 export type { ITokenRefreshResult } from './token/ITokenRefreshResult';
+export type { ITokenRequestOptions } from './token/ITokenRequestOptions';
 export type { ITokenResult } from './token/ITokenResult';
-export type { TokenProviderErrorCode } from './token/TokenProviderErrorCodes';
-export { TOKEN_PROVIDER_ERROR_CODES } from './token/TokenProviderErrorCodes';
+export type { RefreshTokenDisposition } from './token/RefreshTokenDisposition';
+export { REFRESH_TOKEN_DISPOSITIONS } from './token/RefreshTokenDisposition';
