@@ -175,7 +175,8 @@ export interface SncProblemFacts {
   };
   readonly 'logon-refused': { readonly rfcKey?: RfcKey };
   readonly 'library-not-found': {
-    readonly searched?: boolean;
+    /** Present only when the shipped locator searched; never `false`. */
+    readonly searched?: true;
     /** At most eight. */
     readonly candidates?: readonly SncCandidate[];
     readonly processArch?: SncArch;

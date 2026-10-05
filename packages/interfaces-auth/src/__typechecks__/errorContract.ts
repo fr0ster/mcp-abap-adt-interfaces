@@ -303,6 +303,11 @@ const _n6: AuthProviderErrorFacts['snc'] = {
   // @ts-expect-error locator-returned-no-path carries nothing more
   searched: true,
 };
+const _n7: AuthProviderErrorFacts['snc'] = {
+  problem: 'library-not-found',
+  // @ts-expect-error searched is present only as true
+  searched: false,
+};
 const _c1: AuthProviderErrorFacts['configuration'] = {
   case: 'snc-qop-invalid',
   fields: ['qop'],
