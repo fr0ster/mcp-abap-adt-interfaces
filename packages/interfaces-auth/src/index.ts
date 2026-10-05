@@ -96,6 +96,7 @@ export type {
   SamlFactsOf,
   SncCandidate,
   SncFactsOf,
+  SncProblemFacts,
   SystemRefusedFacts,
 } from './error/facts';
 export type {

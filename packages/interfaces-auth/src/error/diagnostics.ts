@@ -115,9 +115,9 @@ export const SAML_RULE_DIAGNOSTIC = Object.freeze({
   'only-encrypted-assertion': null,
   'no-assertion': null,
   'several-assertions': null,
-} as const) satisfies {
+} as const satisfies {
   readonly [R in AssertionRule]: SamlDiagnosticField | null;
-};
+});
 
 /** The diagnostic fields each SNC problem may carry. */
 export const SNC_PROBLEM_DIAGNOSTICS = Object.freeze({
@@ -126,9 +126,9 @@ export const SNC_PROBLEM_DIAGNOSTICS = Object.freeze({
   'logon-refused': Object.freeze([] as const),
   'library-not-found': Object.freeze(['candidatePaths'] as const),
   'locator-returned-no-path': Object.freeze([] as const),
-} as const) satisfies {
+} as const satisfies {
   readonly [P in SncProblem]: readonly SncDiagnosticField[];
-};
+});
 
 /** The diagnostic fields each configuration case may carry. */
 export const CONFIG_CASE_DIAGNOSTICS = Object.freeze({
@@ -156,9 +156,9 @@ export const CONFIG_CASE_DIAGNOSTICS = Object.freeze({
   'idp-certificate-invalid': Object.freeze([] as const),
   'static-code-without-payload': Object.freeze([] as const),
   'callback-port-invalid': Object.freeze([] as const),
-} as const) satisfies {
+} as const satisfies {
   readonly [C in ConfigCase]: readonly ConfigDiagnosticField[];
-};
+});
 
 /** The diagnostic field rule `R` may carry; `never` when none. */
 export type SamlDiagnosticOf<R extends AssertionRule> = Exclude<

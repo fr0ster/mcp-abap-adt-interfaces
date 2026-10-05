@@ -481,6 +481,7 @@
   "SncError": "interfaces-auth",
   "SncFactsOf": "interfaces-auth",
   "SncProblem": "interfaces-auth",
+  "SncProblemFacts": "interfaces-auth",
   "SncQop": "interfaces-auth",
   "SncUnusableReason": "interfaces-auth",
   "StoreErrorCode": "interfaces-auth",

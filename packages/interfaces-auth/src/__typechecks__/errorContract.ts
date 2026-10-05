@@ -3,11 +3,18 @@
 // an unused directive fails `test:check` — so each one is load-bearing by
 // construction; the positive line beside it proves the failure is the rule's.
 
-import type { DocumentValue } from '../error/diagnostics';
+import type {
+  CONFIG_CASE_DIAGNOSTICS,
+  DocumentValue,
+  SAML_RULE_DIAGNOSTIC,
+  SNC_PROBLEM_DIAGNOSTICS,
+} from '../error/diagnostics';
 import type {
   AssertionRuleCheck,
   AuthProviderErrorFacts,
   BearerCandidate,
+  SncCandidate,
+  SncProblemFacts,
 } from '../error/facts';
 import type { IAuthProviderError } from '../error/IAuthProviderError';
 import type {
@@ -169,6 +176,25 @@ export type FactsCoverTheKinds = [
       : false
   >,
   Expect<Same<IAuthProviderError['kind'], AuthProviderErrorKind>>,
+  Expect<Same<keyof SncProblemFacts, SncProblem>>,
+  Expect<
+    Same<
+      AuthProviderErrorFacts['interactive-login']['outcome'],
+      InteractiveOutcome
+    >
+  >,
+  Expect<
+    Same<
+      AuthProviderErrorFacts['system-refused']['verdict'],
+      SystemRefusedVerdict
+    >
+  >,
+  Expect<Same<AuthProviderErrorFacts['snc']['problem'], SncProblem>>,
+  Expect<Same<AuthProviderErrorFacts['configuration']['case'], ConfigCase>>,
+  Expect<Same<AuthProviderErrorFacts['saml-assertion']['rule'], AssertionRule>>,
+  Expect<Same<keyof typeof SAML_RULE_DIAGNOSTIC, AssertionRule>>,
+  Expect<Same<keyof typeof SNC_PROBLEM_DIAGNOSTICS, SncProblem>>,
+  Expect<Same<keyof typeof CONFIG_CASE_DIAGNOSTICS, ConfigCase>>,
 ];
 
 // ---- the arrays are frozen, and readonly to the compiler ------------------
@@ -243,6 +269,61 @@ const _r4: AuthProviderErrorFacts['saml-assertion'] = {
   check: 'duplicateId',
   // @ts-expect-error candidates belong to no-bearer-qualifies
   candidates: [candidate],
+};
+
+// ---- SNC facts per problem, configuration facts per case ------------------
+
+declare const sncCandidate: SncCandidate;
+const _n1: AuthProviderErrorFacts['snc'] = {
+  problem: 'library-not-found',
+  searched: true,
+  candidates: [sncCandidate],
+};
+const _n2: AuthProviderErrorFacts['snc'] = {
+  problem: 'logon-refused',
+  rfcKey: 'RFC_LOGON_FAILURE',
+};
+const _n3: AuthProviderErrorFacts['snc'] = {
+  problem: 'no-credential',
+  secureLoginClient: true,
+  libraryArchs: ['x64'],
+};
+const _n4: AuthProviderErrorFacts['snc'] = {
+  problem: 'logon-refused',
+  // @ts-expect-error candidates belong to library-not-found
+  candidates: [sncCandidate],
+};
+const _n5: AuthProviderErrorFacts['snc'] = {
+  problem: 'no-credential',
+  // @ts-expect-error an RFC key belongs to logon-refused
+  rfcKey: 'RFC_LOGON_FAILURE',
+};
+const _n6: AuthProviderErrorFacts['snc'] = {
+  problem: 'locator-returned-no-path',
+  // @ts-expect-error locator-returned-no-path carries nothing more
+  searched: true,
+};
+const _c1: AuthProviderErrorFacts['configuration'] = {
+  case: 'snc-qop-invalid',
+  fields: ['qop'],
+  allowed: 'snc-qop',
+};
+const _c2: AuthProviderErrorFacts['configuration'] = {
+  case: 'basic-encoding-missing',
+  fields: ['encoding'],
+  allowed: 'basic-encoding',
+};
+const _c3: AuthProviderErrorFacts['configuration'] = {
+  case: 'required-fields-missing',
+  fields: ['clientId'],
+  // @ts-expect-error no allowed-value set for this case
+  allowed: 'snc-qop',
+};
+const _c4: AuthProviderErrorFacts['configuration'] = {
+  case: 'snc-qop-invalid',
+  fields: ['qop'],
+  // @ts-expect-error the qop case names the qop values, not the encodings
+  allowed: 'basic-encoding',
 };
 
 // ---- consumers: narrowing by kind + variant ------------------------------

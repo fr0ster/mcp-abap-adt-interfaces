@@ -17,6 +17,7 @@ import type {
   ConnectionProblem,
   CredentialKind,
   InteractiveLoginStrategy,
+  InteractiveOutcome,
   LogonTargetRefusal,
   LogonTargetWire,
   NotPreparedProvider,
@@ -32,6 +33,7 @@ import type {
   SncProblem,
   SncUnusableReason,
   SystemCode,
+  SystemRefusedVerdict,
   TlsFailureCode,
   TokenBindingProblem,
 } from './kinds';
@@ -102,8 +104,15 @@ export interface AssertionRuleCheck {
   readonly 'several-assertions': 'document';
 }
 
+/**
+ * Names members of union `U`: a name that is not one fails to compile, so a
+ * misspelled member is refused rather than silently dropped (as `Extract`
+ * would drop it).
+ */
+type Member<U, T extends U> = T;
+
 /** The rules whose words say "carries N": they carry `count`. */
-export type CountedAssertionRule = Extract<
+export type CountedAssertionRule = Member<
   AssertionRule,
   | 'several-references'
   | 'several-direct-assertions'
@@ -129,9 +138,9 @@ export type SamlFactsOf<R extends AssertionRule> = R extends unknown
       readonly check: AssertionRuleCheck[R];
     } & (R extends CountedAssertionRule
       ? { readonly count?: Count }
-      : R extends 'declined'
+      : R extends Member<AssertionRule, 'declined'>
         ? { readonly statusCode?: SamlStatusCode }
-        : R extends 'no-bearer-qualifies'
+        : R extends Member<AssertionRule, 'no-bearer-qualifies'>
           ? {
               /** At most five. */
               readonly candidates?: readonly BearerCandidate[];
@@ -150,80 +159,125 @@ export interface SncCandidate {
   readonly archs?: readonly SncArch[];
 }
 
+/**
+ * What each SNC problem carries beyond `problem`. Its keys are exactly
+ * `SncProblem` (a type test asserts it).
+ */
+export interface SncProblemFacts {
+  /** A2200019. */
+  readonly 'no-credential': {
+    readonly secureLoginClient?: boolean;
+    readonly libraryArchs?: readonly SncArch[];
+  };
+  /** SNCERR_INIT. */
+  readonly 'library-init-failed': {
+    readonly libraryArchs?: readonly SncArch[];
+  };
+  readonly 'logon-refused': { readonly rfcKey?: RfcKey };
+  readonly 'library-not-found': {
+    readonly searched?: boolean;
+    /** At most eight. */
+    readonly candidates?: readonly SncCandidate[];
+    readonly processArch?: SncArch;
+  };
+  readonly 'locator-returned-no-path': unknown;
+}
+
 /** The facts of one SNC problem. */
 export type SncFactsOf<P extends SncProblem> = P extends unknown
-  ? {
-      readonly problem: P;
-      readonly rfcKey?: RfcKey;
-      readonly secureLoginClient?: boolean;
-      readonly libraryArchs?: readonly SncArch[];
-      /** At most eight. */
-      readonly candidates?: readonly SncCandidate[];
-      readonly searched?: boolean;
-      readonly processArch?: SncArch;
-    }
+  ? { readonly problem: P } & SncProblemFacts[P]
   : never;
 
 // ---- configuration --------------------------------------------------------
 
-/** The facts of one configuration case. */
+/** The facts of one configuration case; `allowed` only where a value set applies. */
 export type ConfigFactsOf<C extends ConfigCase> = C extends unknown
   ? {
       readonly case: C;
       /** At most eight, deduplicated, in the order given. */
       readonly fields: readonly ConfigField[];
-      readonly allowed?: AllowedValueSet;
-    }
+    } & (C extends Member<ConfigCase, 'snc-qop-invalid'>
+      ? { readonly allowed?: Member<AllowedValueSet, 'snc-qop'> }
+      : C extends Member<ConfigCase, 'basic-encoding-missing'>
+        ? { readonly allowed?: Member<AllowedValueSet, 'basic-encoding'> }
+        : unknown)
   : never;
 
 // ---- the kinds with discriminated facts -----------------------------------
 
-/** `interactive-login`: discriminated by `outcome`. */
+/** The interactive-login outcomes that carry facts beyond `outcome`. */
+type OutcomeWithFacts = Member<
+  InteractiveOutcome,
+  | 'port-in-use'
+  | 'aborted'
+  | 'disposed'
+  | 'identity-provider-refused'
+  | 'browser-launch-failed'
+  | 'failed'
+>;
+
+/**
+ * `interactive-login`: discriminated by `outcome`, every member of
+ * `InteractiveOutcome` and nothing else — an outcome without facts of its own
+ * is in the last branch, by `Exclude`.
+ */
 export type InteractiveLoginFacts =
-  | { readonly outcome: 'port-in-use'; readonly port: Port }
-  | { readonly outcome: 'aborted'; readonly ignoredCallbacks?: Count }
   | {
-      readonly outcome: 'disposed';
+      readonly outcome: Member<InteractiveOutcome, 'port-in-use'>;
+      readonly port: Port;
+    }
+  | {
+      readonly outcome: Member<InteractiveOutcome, 'aborted'>;
+      readonly ignoredCallbacks?: Count;
+    }
+  | {
+      readonly outcome: Member<InteractiveOutcome, 'disposed'>;
       readonly strategy: InteractiveLoginStrategy;
     }
   | {
-      readonly outcome: 'identity-provider-refused';
+      readonly outcome: Member<InteractiveOutcome, 'identity-provider-refused'>;
       readonly oauthError?: OAuthErrorCode;
     }
-  | { readonly outcome: 'browser-launch-failed'; readonly code?: SystemCode }
   | {
-      readonly outcome: 'failed';
+      readonly outcome: Member<InteractiveOutcome, 'browser-launch-failed'>;
+      readonly code?: SystemCode;
+    }
+  | {
+      readonly outcome: Member<InteractiveOutcome, 'failed'>;
       readonly code?: SystemCode;
       readonly status?: HttpStatus;
     }
-  | {
-      readonly outcome:
-        | 'busy'
-        | 'callback-closed'
-        | 'input-abandoned'
-        | 'no-input'
-        | 'unreadable-input'
-        | 'no-terminal'
-        | 'device-code-not-shown';
-    };
+  | { readonly outcome: Exclude<InteractiveOutcome, OutcomeWithFacts> };
 
-/** `system-refused`: discriminated by `verdict`. */
+/** The system-refused verdicts that carry an HTTP status. */
+type StatusVerdict = Member<
+  SystemRefusedVerdict,
+  'not-authorized' | 'redirected' | 'system-failed' | 'other-status'
+>;
+type RfcVerdict = Member<SystemRefusedVerdict, 'rfc-failure'>;
+
+/**
+ * `system-refused`: discriminated by `verdict`, every member of
+ * `SystemRefusedVerdict` and nothing else.
+ */
 export type SystemRefusedFacts =
   | {
-      readonly verdict:
-        | 'not-authorized'
-        | 'redirected'
-        | 'system-failed'
-        | 'other-status';
+      readonly verdict: StatusVerdict;
       readonly status: HttpStatus;
       readonly at: RejectionMoment;
     }
   | {
-      readonly verdict: 'rfc-failure';
+      readonly verdict: RfcVerdict;
       readonly rfcKey: RfcKey;
       readonly at: RejectionMoment;
     }
-  | { readonly verdict: 'unknown'; readonly at: RejectionMoment };
+  | {
+      readonly verdict: Exclude<
+        SystemRefusedVerdict,
+        StatusVerdict | RfcVerdict
+      >;
+      readonly at: RejectionMoment;
+    };
 
 // ---- every kind ------------------------------------------------------------
 
