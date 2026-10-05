@@ -33,9 +33,10 @@ interface CertificateMaterial3 {
   pfx?: Buffer;
   passphrase?: string;
 }
+// `timeoutMs` is left out: 5.0.0 removed it, and a required mirror of it would
+// refuse the assignment below for that reason instead of the widened fields.
 interface CallbackServerOptions3 {
   readonly port: number;
-  readonly timeoutMs: number;
   readonly signal?: AbortSignal;
   readonly logger?: ILogger;
 }

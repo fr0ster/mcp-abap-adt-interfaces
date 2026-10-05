@@ -15,15 +15,17 @@ Measured against the tree at 30.0.0. Numbers here are counted from the emitted
 
 ## 1. What this package is
 
-This repository is **the contract, and nothing else** — six packages, no
-facade over them since decision 34. **311 exported symbols**, of which 53 carry
+This repository is **the contract, and nothing else** — eight packages, no
+facade over them since decision 34. **433 exported symbols**, of which 89 carry
 runtime values: 36 string constants (24 `HEADER_*`, 10 `AUTH_TYPE_*`,
-`ADT_NO_FAILURE`, `TRANSPORT_SEARCH_CONFIGURATIONS_URL`), 8 maps of codes or
+`ADT_NO_FAILURE`, `TRANSPORT_SEARCH_CONFIGURATIONS_URL`), 6 maps of codes or
 letters (`AdtObjectErrorCodes`, `ADT_SESSION_ERROR`, `ADT_TASK_TYPE`,
-`SERVICE_BINDING_VARIANT_MAP`, `NETWORK_ERROR_CODES`, `ASSERTION_ERROR_CODES`,
-`STORE_ERROR_CODES`, `TOKEN_PROVIDER_ERROR_CODES`), 7 groups over other
-constants (the five header groups, `AUTH_TYPES`, `CALM_SERVICES`) and 2 enums
-(`AuthMethodPriority`, `LogLevel`). Everything else is a type. It emits **no
+`SERVICE_BINDING_VARIANT_MAP`, `NETWORK_ERROR_CODES`, `STORE_ERROR_CODES`), 7
+groups over other constants (the five header groups, `AUTH_TYPES`,
+`CALM_SERVICES`), 2 enums (`AuthMethodPriority`, `LogLevel`), and the error
+contract's 38 frozen allowlists in `interfaces-auth` (35 `as const` arrays,
+`REFRESH_TOKEN_DISPOSITIONS` among them, and the three diagnostics maps).
+Everything else is a type. It emits **no
 class and no function** — every other module compiles to an empty JavaScript
 file.
 

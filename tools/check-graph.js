@@ -76,8 +76,10 @@ for (const dir of fs.readdirSync(packagesDir)) {
   // error contract): outside `src/error/`, a file of interfaces-auth imports
   // (or re-exports) from there `IAuthProviderError` or `IAuthProviderFailure`
   // and nothing else — no kind, fact, allowlist or diagnostic. `index.ts`
-  // re-exports them all, and the type tests reach for them on purpose. An
-  // inline `import('../error/…').X` type is not read here.
+  // re-exports them all, and the type tests reach for them on purpose. The
+  // barrel (`../index`, `..`) and the directory (`../error`) are held to the
+  // same rule, or they would be a way round it. An inline
+  // `import('../error/…').X` type is not read here.
   if (dir === 'interfaces-auth') {
     const errorDir = path.join(src, 'error');
     const WHOLE = new Set(['IAuthProviderError', 'IAuthProviderFailure']);
@@ -91,9 +93,18 @@ for (const dir of fs.readdirSync(packagesDir)) {
       for (const m of text.matchAll(
         /(?:import|export)\s+(?:type\s+)?(\{[^}]*\}|\*(?:\s+as\s+\w+)?|\w+)\s+from\s*['"]([^'"]+)['"]/g,
       )) {
-        const target = path.resolve(path.dirname(file), m[2]);
-        if (!m[2].startsWith('.') || !target.startsWith(errorDir + path.sep))
-          continue;
+        if (!m[2].startsWith('.')) continue;
+        const target = path
+          .resolve(path.dirname(file), m[2])
+          .replace(/\.(?:d\.ts|ts|js)$/, '');
+        // The error modules, the error directory itself, and the barrel —
+        // which re-exports every kind — are all the same door.
+        const restricted =
+          target === errorDir ||
+          target.startsWith(errorDir + path.sep) ||
+          target === src ||
+          target === path.join(src, 'index');
+        if (!restricted) continue;
         const names = m[1].startsWith('{')
           ? m[1]
               .slice(1, -1)
