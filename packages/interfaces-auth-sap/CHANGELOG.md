@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-10-05
+
+### Changed
+
+- **`@mcp-abap-adt/interfaces-auth` accepted as
+  `^1.2.0 || ^2.0.0 || ^3.0.0 || ^4.0.0`.** Of what 4.0.0 changes, this package
+  uses `ICertificateMaterial` (the return of `ICertificateMaterialLoader.load`),
+  whose optional fields are now `?: T | undefined`. This package's
+  declarations are byte-identical either way. A consumer that resolves
+  `interfaces-auth` 4.x through this range gets that package's change: under
+  `exactOptionalPropertyTypes`, a loaded `ICertificateMaterial` assigned to
+  its own type declaring a field `?: T` no longer compiles — see
+  `interfaces-auth` 4.0.0's migration note. A consumer that pins
+  `interfaces-auth` `^3` keeps 3.x.
+- **Built under a stricter compiler and lint**: the repository's base
+  `tsconfig` adds `noImplicitReturns`, `noFallthroughCasesInSwitch`,
+  `noImplicitOverride`, `noUncheckedIndexedAccess` and
+  `exactOptionalPropertyTypes`; lint fails on a warning.
+
 ## [2.0.1] - 2026-10-02
 
 ### Changed

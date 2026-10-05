@@ -11,7 +11,7 @@ The SAP and BTP half of authentication: SAP system configuration, the UAA client
 - **What a validator answers** — `IValidatedAuthConfig`, `AuthMethodPriority`, `IHeaderValidationResult`.
 - **Not here since 2.0.0: the destination and its storage** — `IConnectionConfig`, `DestinationGrant`, `IConfig`, `ISessionStore`, `IServiceKeyStore`, `ITokenProviderResult` are [`interfaces-auth-broker`](../interfaces-auth-broker), and are not re-exported. Change the import path; nothing else changes (see [Migrating to 2.0.0](#migrating-to-200)).
 - **`AUTH_TYPE_JWT` and `AUTH_TYPE_BASIC` are not here**, and are deliberately not re-exported: a bearer token and a user with a password mean the same thing off SAP, so they are in `interfaces-auth`, and forwarding is the duplication this family removed (decision 34).
-- Depends on `@mcp-abap-adt/interfaces-auth` (`^1.2.0 || ^2.0.0 || ^3.0.0` — nothing it uses changed in 2.0.0 or 3.0.0), and on nothing else — `interfaces-utils` reaches it through that package, for `ILogger`. `interfaces-auth-broker` depends on this package, for `IAuthorizationConfig`. Types and constants; no implementation.
+- Depends on `@mcp-abap-adt/interfaces-auth` (`^1.2.0 || ^2.0.0 || ^3.0.0 || ^4.0.0` — nothing it uses changed in 2.0.0 or 3.0.0; 4.0.0 lets `ICertificateMaterial`'s optional fields hold `undefined`), and on nothing else — `interfaces-utils` reaches it through that package, for `ILogger`. `interfaces-auth-broker` depends on this package, for `IAuthorizationConfig`. Types and constants; no implementation.
 
 ## Install
 

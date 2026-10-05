@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [3.3.0] - 2026-10-05
+## [4.0.0] - 2026-10-05
 
-### Changed
+### Changed (breaking)
 
 - **Optional fields of the objects a provider hands out accept an explicit
   `undefined`** — declared `?: T | undefined` instead of `?: T`. A provider
@@ -23,14 +23,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `T | undefined` to read). **One case breaks**, and only under
   `exactOptionalPropertyTypes`: assigning one of these objects to a
   consumer's own type that declares the same field `?: T` (without
-  `| undefined`) no longer compiles — widen that field the same way. The
-  fields:
+  `| undefined`) no longer compiles. A consumer on `^3.x` would have received
+  that through a minor, so this is a major. The fields:
   - `ITokenResult`: `refreshToken`, `expiresIn`, `expiresAt`, `tokenType`
   - `AuthorizationRequest`: `logger`
   - `ICallbackServerOptions`: `signal`, `logger`
   - `AssertionContext`: `expectedInResponseTo`, `expectedIssuer`, `logger`
   - `ValidatedAssertion`: `nameId`, `sessionIndex`, `attributes`
   - `ICertificateMaterial`: `cert`, `key`, `pfx`, `passphrase`
+
+### Migrating from 3.x
+
+Nothing to do without `exactOptionalPropertyTypes`, or when the code only
+reads these fields or builds these objects. With the flag, where a value of
+one of these types is assigned (or spread) into a type of your own that
+declares the same field `?: T`, the compiler now reports `undefined` is not
+assignable. Either widen your field to `?: T | undefined` — the shape the
+contract now has — or do not enable `exactOptionalPropertyTypes`. Copying
+only the fields that are present (`...(r.refreshToken === undefined ? {} :
+{ refreshToken: r.refreshToken })`) also works where your type must stay
+`?: T`.
 - **Built under a stricter compiler and lint.** The repository's base
   `tsconfig` adds `noImplicitReturns`, `noFallthroughCasesInSwitch`,
   `noImplicitOverride`, `noUncheckedIndexedAccess` and
