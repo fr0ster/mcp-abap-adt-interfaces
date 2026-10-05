@@ -12,7 +12,7 @@ Contracts for the MCP ABAP ADT packages: types and constants, no implementations
 |---|---|---|
 | [`@mcp-abap-adt/interfaces-utils`](packages/interfaces-utils) | what belongs to no one system: `ILogger`, `LogLevel`, `XmlNode` | nothing |
 | [`@mcp-abap-adt/interfaces-network`](packages/interfaces-network) | WebSocket transport, `NETWORK_ERROR_CODES`, `IHttpWireResponse`, `HttpError`, **every HTTP header name** and the five groups over them | nothing |
-| [`@mcp-abap-adt/interfaces-auth`](packages/interfaces-auth) | authentication: credentials, OAuth grants, tokens, interactive login, SAML assertions, `AUTH_TYPE_JWT`/`BASIC` | `interfaces-utils` |
+| [`@mcp-abap-adt/interfaces-auth`](packages/interfaces-auth) | authentication: credentials, OAuth grants, tokens, interactive login, SAML assertions, the error contract (`IAuthProviderError`, since 5.0.0), `AUTH_TYPE_JWT`/`BASIC` | `interfaces-utils` |
 | [`@mcp-abap-adt/interfaces-auth-sap`](packages/interfaces-auth-sap) | the SAP and BTP half: `ISapConfig`, `SapAuthType`, the UAA client `IAuthorizationConfig`, `ICertificateMaterialLoader`, `AUTH_TYPE_XSUAA` | `interfaces-auth` |
 | [`@mcp-abap-adt/interfaces-auth-broker`](packages/interfaces-auth-broker) | the broker's port: the destination (`IConnectionConfig`, `DestinationGrant`, `IConfig`), the stores that hold it (`ISessionStore`, `IServiceKeyStore`), `ITokenProviderResult`. What a store implements | `interfaces-auth-sap` |
 | [`@mcp-abap-adt/interfaces-calm`](packages/interfaces-calm) | SAP Cloud ALM: `ICalmConnection`, `CalmService`, `ICalmRequestOptions`, `ICalmResponse` | `interfaces-network` |

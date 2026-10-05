@@ -1,15 +1,19 @@
 // Compile-only assertions. If these stop compiling, the types regressed.
 
-import type { AuthOutcome } from '../auth/AuthOutcome';
+import type { AuthOutcome, IAuthRefusal } from '../auth/AuthOutcome';
 import type { IAuthProvider } from '../auth/IAuthProvider';
 import type { IAuthRejection } from '../auth/IAuthRejection';
 import type { ILogonTarget, IRequestTarget } from '../auth/IAuthTargets';
 
+// A refusal is minted by `@mcp-abap-adt/auth-errors`; these stand for its
+// errors (an object literal is not one — see outcomeAndCancellation.ts).
+declare const passwordRefused: IAuthRefusal;
+declare const certificateRefused: IAuthRefusal;
+declare const sncNoCredential: IAuthRefusal;
+declare const sncRefused: IAuthRefusal;
+
 const ok: AuthOutcome = { ok: true };
-const oops = (reason: string, hint?: string): AuthOutcome => ({
-  ok: false,
-  refusal: hint === undefined ? { reason } : { reason, hint },
-});
+const oops = (refusal: IAuthRefusal): AuthOutcome => ({ ok: false, refusal });
 
 // ---- Every way in, on the one contract (decision 40) --------------------
 
@@ -27,7 +31,7 @@ const _basic: IAuthProvider = {
     request.header('Authorization', 'Basic dTpw');
     return ok;
   },
-  rejected: async () => oops('user or password refused'),
+  rejected: async () => oops(passwordRefused),
 };
 
 // A token (authorization code, OIDC, client credentials, …): renews in
@@ -61,7 +65,7 @@ const _certificate: IAuthProvider = {
   prepare: async () => ok,
   establish: async (logon) => logon.tlsMaterial({ cert: 'C', key: 'K' }),
   authorize: async () => ok,
-  rejected: async () => oops('certificate refused'),
+  rejected: async () => oops(certificateRefused),
 };
 
 // SNC: logon parameters or nothing — the wire's Oops is SNC's own.
@@ -78,8 +82,8 @@ const _snc: IAuthProvider = {
   authorize: async () => ok,
   rejected: async (r: IAuthRejection) =>
     String(r.error).includes('A2200019')
-      ? oops('no certificate to present', 'log on in the Secure Login Client')
-      : oops('SNC logon refused'),
+      ? oops(sncNoCredential)
+      : oops(sncRefused),
 };
 
 // ---- The process: one sequence, no question about what it was given ------
@@ -109,7 +113,7 @@ void _all;
 void run;
 
 // A refusal is read without narrowing to a provider.
-const _answer: AuthOutcome = oops('x', 'y');
+const _answer: AuthOutcome = oops(passwordRefused);
 if (!_answer.ok) {
   const _reason: string = _answer.refusal.reason;
   const _hint: string | undefined = _answer.refusal.hint;

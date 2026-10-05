@@ -15,15 +15,17 @@ Measured against the tree at 30.0.0. Numbers here are counted from the emitted
 
 ## 1. What this package is
 
-This repository is **the contract, and nothing else** — six packages, no
-facade over them since decision 34. **311 exported symbols**, of which 53 carry
+This repository is **the contract, and nothing else** — eight packages, no
+facade over them since decision 34. **433 exported symbols**, of which 89 carry
 runtime values: 36 string constants (24 `HEADER_*`, 10 `AUTH_TYPE_*`,
-`ADT_NO_FAILURE`, `TRANSPORT_SEARCH_CONFIGURATIONS_URL`), 8 maps of codes or
+`ADT_NO_FAILURE`, `TRANSPORT_SEARCH_CONFIGURATIONS_URL`), 6 maps of codes or
 letters (`AdtObjectErrorCodes`, `ADT_SESSION_ERROR`, `ADT_TASK_TYPE`,
-`SERVICE_BINDING_VARIANT_MAP`, `NETWORK_ERROR_CODES`, `ASSERTION_ERROR_CODES`,
-`STORE_ERROR_CODES`, `TOKEN_PROVIDER_ERROR_CODES`), 7 groups over other
-constants (the five header groups, `AUTH_TYPES`, `CALM_SERVICES`) and 2 enums
-(`AuthMethodPriority`, `LogLevel`). Everything else is a type. It emits **no
+`SERVICE_BINDING_VARIANT_MAP`, `NETWORK_ERROR_CODES`, `STORE_ERROR_CODES`), 7
+groups over other constants (the five header groups, `AUTH_TYPES`,
+`CALM_SERVICES`), 2 enums (`AuthMethodPriority`, `LogLevel`), and the error
+contract's 38 frozen allowlists in `interfaces-auth` (35 `as const` arrays,
+`REFRESH_TOKEN_DISPOSITIONS` among them, and the three diagnostics maps).
+Everything else is a type. It emits **no
 class and no function** — every other module compiles to an empty JavaScript
 file.
 
@@ -274,7 +276,10 @@ put it, not with its first acceptor:
   travels, not what it means.
 - `@mcp-abap-adt/interfaces-auth` — authentication anywhere: credentials, OAuth
   grants, tokens, interactive login, SAML assertions, `AUTH_TYPE_JWT`,
-  `AUTH_TYPE_BASIC`.
+  `AUTH_TYPE_BASIC`, and the error contract — `IAuthProviderError`, its kinds
+  and allowlists, `IAuthProviderFailure` (decision 42). Its producer, the
+  builders and the exhaustiveness helpers are `@mcp-abap-adt/auth-errors`,
+  outside this repository: they are functions.
 - `@mcp-abap-adt/interfaces-auth-sap` — authentication that names something SAP
   or BTP owns: `ISapConfig`, the UAA client `IAuthorizationConfig`, the
   certificate loader, and `AUTH_TYPE_XSUAA` with the union over all three, XSUAA
@@ -315,9 +320,9 @@ honours, and a type states what is supported, never what is lacking (decision 2)
 ### Infrastructure — not ADT contracts
 
 They are not in `interfaces-adt` any more, which is the point of 9.0.0:
-`auth/`, `token/`, `store/` and the assertion contracts are `interfaces-auth`;
-`sap/` and `validation/` are `interfaces-auth-sap`, and `session/`,
-`serviceKey/` with the destination's `IConnectionConfig` are
+`auth/`, `token/`, `store/`, the assertion contracts and (since 5.0.0) `error/`
+are `interfaces-auth`; `sap/` and `validation/` are `interfaces-auth-sap`, and
+`session/`, `serviceKey/` with the destination's `IConnectionConfig` are
 `interfaces-auth-broker` since `interfaces-auth-sap` 2.0.0 (decision 41);
 the header names, the HTTP frame and the WebSocket transport are
 `interfaces-network`; `logging/` and `XmlNode` are `interfaces-utils`. The ABAP
@@ -386,8 +391,8 @@ push to `master`. What it runs:
    `noFallthroughCasesInSwitch`, `noImplicitOverride`,
    `noUncheckedIndexedAccess` and `exactOptionalPropertyTypes`. `npm run
    lint:check` fails on a warning, and `noExplicitAny` is an error.
-2. **The typechecks** — 38 files of compile-only assertions (21 in
-   `interfaces-adt`, 7 in `interfaces-auth`, 5 in `interfaces-auth-broker`,
+2. **The typechecks** — 40 files of compile-only assertions (21 in
+   `interfaces-adt`, 9 in `interfaces-auth`, 5 in `interfaces-auth-broker`,
    3 in `interfaces-auth-sap`, 2 in `interfaces-adt-connection`),
    including the ones that must *fail* (`@ts-expect-error`). They are the tests
    of a package that has nothing to run.

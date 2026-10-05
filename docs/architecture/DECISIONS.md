@@ -1516,7 +1516,10 @@ contract rests on.
 **Constants are not classes, and they stay.** The package ships 17 runtime
 values that are not classes — `AUTH_TYPE_PASSWORD`, `TOKEN_PROVIDER_ERROR_CODES`,
 `TRANSPORT_SEARCH_CONFIGURATIONS_URL` and the rest. The no-classes rule does not
-reach them, and reading it that widely would be reading it wrong.
+reach them, and reading it that widely would be reading it wrong. (The count is
+of that release; `TOKEN_PROVIDER_ERROR_CODES` left in `interfaces-auth` 5.0.0,
+decision 42, and the error contract's frozen allowlists are constants of the
+same sort.)
 
 The line is what the thing *is*. A constant is a value the contract **names**:
 `'password'` is the authorisation type, and a consumer writing their own
@@ -1957,6 +1960,14 @@ llm-agent's own record: `docs/ARCHITECTURE.md` principle 8; the reasoning is in
 Spec: `docs/superpowers/specs/2026-09-15-interfaces-split-design.md`.
 
 ## 27. One mechanism brings its own error codes; it does not widen a shared set
+
+> **Superseded for authentication by decision 42 (`interfaces-auth` 5.0.0).**
+> `TOKEN_PROVIDER_ERROR_CODES` and `ASSERTION_ERROR_CODES` are removed: an
+> authentication failure is an `IAuthProviderError` whose `kind` and `facts`
+> say what went wrong. The rule still stands for the sets that remain —
+> `STORE_ERROR_CODES`, `NETWORK_ERROR_CODES` — and its instinct carries over:
+> a new mechanism adds a `variant` under its own kind, not a member to a
+> shared one.
 
 **The problem.** Contracts for validating a SAML assertion needed a code for
 "the assertion was refused". `TOKEN_PROVIDER_ERROR_CODES` was already there, it
@@ -2838,6 +2849,11 @@ in it at all. A provider was injected but not delegated to.
 and every provider answers all four with an `AuthOutcome` — Ok, or Oops with an
 `IAuthRefusal { reason, hint? }`:
 
+> **The refusal's shape is superseded by decision 42 (`interfaces-auth`
+> 5.0.0):** `IAuthRefusal` is an `IAuthProviderError`, minted by
+> `@mcp-abap-adt/auth-errors`, which still carries `reason` and `hint`. The
+> four moments are unchanged.
+
 - `prepare()` — once per connect;
 - `establish(logon: ILogonTarget)` — at every logon the wire makes;
 - `authorize(request: IRequestTarget)` — before every request attempt;
@@ -2941,6 +2957,69 @@ new package stands on it rather than beside it.
 destination or a store — then the port is no longer the broker's alone, and the
 question is whether that consumer should be given a narrower contract or the
 two subjects are one again.
+
+## 42. A refusal is a typed error with facts from allowlists, not a sentence
+
+**Decided 2026-10-05, in `interfaces-auth` 5.0.0.** Supersedes the refusal's
+shape under decision 40 and, for authentication, decision 27.
+
+**The problem.** An Oops carried `{ reason, hint? }` — words. Every consumer
+that needed to act on one (renew or not, ask the user to sign in again, report
+a misconfiguration) parsed them: the broker re-chose three certificate phrases
+from a provider's error flags, the server read `AuthRefusedError`'s message,
+and the only way to tell an expired certificate from a refused password was
+`reason.includes('expired')`. The words were also the only channel for
+detail, so keeping a secret out of them was a rule held by review
+in `auth-providers` (its rule 2) and nowhere in the types. And the thrown side
+was a second, unrelated vocabulary: thirteen error classes behind
+`TOKEN_PROVIDER_ERROR_CODES` and `ASSERTION_ERROR_CODES`, which no package
+outside `auth-providers` imported (searched in the broker, the CLI, the
+stores, the connection and the server, 2026-10-05).
+
+**Decided.** `IAuthRefusal` is `IAuthProviderError`: a `kind` out of sixteen
+(`AUTH_PROVIDER_ERROR_KINDS`), `facts` that hold only members of allowlists
+declared here (frozen `as const` arrays beside their unions) or branded
+integers (`HttpStatus`, `Count`, `Port`), the rendered `reason` and `hint`, and
+— for `saml-assertion`, `snc` and `configuration` only — a top-level `variant`
+and the one diagnostic field that variant permits. The same error is what
+`getTokens()` / `refreshTokens()` reject with, inside an
+`IAuthProviderFailure`. It carries a property keyed by an unexported symbol, so
+nothing but `@mcp-abap-adt/auth-errors` produces one. A consumer that decides
+on it handles every kind through `matchKind` or `unreachableKind`, both of
+which the compiler checks. Types and constants only here; the builders,
+`classify`, `readFailure` and the renderer are functions, so they are the new
+package `auth-errors`, outside this repository, which emits no class and no
+function (ARCHITECTURE §1).
+
+**Against.**
+- *Keep the words, add a `code`.* A code without facts is the old code
+  constants again; a consumer still parses the words for the detail.
+- *A class hierarchy of errors.* `instanceof` fails across two copies of a
+  package and across a process boundary; a plain frozen object with a
+  discriminant survives both, and narrows in TypeScript.
+- *Make the error a plain structural type.* Then any object literal is a
+  refusal, and a provider can put a server's message in `reason` again. The
+  brand is what moves rule 2 from review into the compiler, for everything but
+  a deliberate type assertion — which the producers' shape check refuses.
+- *`facts.rule` as the discriminant.* TypeScript narrows a union on a
+  discriminant of its members, not of a nested object (measured with
+  TypeScript 5.9 for this design), so the variant is lifted onto the error.
+- *A built-in login timeout.* Removed with it
+  (`ICallbackServerOptions.timeoutMs`): a login ends on a result, the identity provider's refusal or a
+  consumer's `signal`; a bound is `AbortSignal.timeout(ms)`, composed by
+  whoever wants one.
+
+**Why it is a major, and its siblings are not.** Building a refusal no longer
+compiles, and two constants are gone. `interfaces-auth-sap` reaches only
+`ICertificateMaterial` and `AUTH_TYPE_BASIC` / `AUTH_TYPE_JWT`, declared
+identically in 5.0.0, so it widens its range in 3.1.0 (the rule of #123);
+`interfaces-auth-broker` reaches nothing in `interfaces-auth` and is not
+released.
+
+**What would change it.** A consumer that needs to act on something the facts
+cannot say without free text. That is a new fact or a new diagnostic for one
+variant — a major here when it is a new kind or discriminant member, a minor
+for a new member of a code list — not a return to words.
 
 ## Open, and what would settle it
 

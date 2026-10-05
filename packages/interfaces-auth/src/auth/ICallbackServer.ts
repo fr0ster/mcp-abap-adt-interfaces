@@ -28,22 +28,14 @@ export interface ICallbackServerOptions {
   readonly port: number;
 
   /**
-   * How long to wait for the callback. Mandatory: there is no such thing as
-   * waiting forever, and the absence of this bound is a known way to strand a
-   * port.
-   *
-   * Must satisfy `Number.isFinite(timeoutMs) && timeoutMs > 0 && timeoutMs <=
-   * 2_147_483_647`. The upper bound is Node's rather than this contract's:
-   * `setTimeout` takes a 32-bit signed delay, and a larger value fires after
-   * 1 ms with a `TimeoutOverflowWarning` — so a generous-looking timeout would
-   * end the login almost instantly. Implementations reject such a value rather
-   * than clamping it, because clamping hides the mistake.
-   */
-  readonly timeoutMs: number;
-
-  /**
    * External cancellation — "this login is no longer needed". Honoured whether
    * it fires before the bind, during it, or while waiting for the callback.
+   *
+   * **The only way a scope ends without a result** other than by its own
+   * body (returning, throwing, `fail`) or an explicit error from the identity
+   * provider. There is no timeout: a consumer that wants a bound composes one
+   * — `AbortSignal.timeout(ms)`, or its own controller. Absent, the scope
+   * waits until one of the others happens.
    */
   readonly signal?: AbortSignal | undefined;
 
@@ -58,8 +50,8 @@ export interface ICallbackServerOptions {
  * Borrowed handle on a listening callback server.
  *
  * Valid until the scope reaches its first terminal outcome, which may be before
- * the factory's callback has finished: a timeout or an abort ends the scope
- * without stopping an already-running callback. Members behave differently once
+ * the factory's callback has finished: an abort ends the scope without
+ * stopping an already-running callback. Members behave differently once
  * that has happened, so a still-running body cannot be harmed by touching it:
  *
  * - `fail()` becomes a silent no-op and never throws;
@@ -78,7 +70,7 @@ export interface ICallbackServerHandle<TResult> {
    * The result delivered to the callback endpoint.
    *
    * Returns the same promise on every call, so it is safe to call repeatedly.
-   * Rejects on timeout, on cancellation, on `fail`, and when the scope ends
+   * Rejects on cancellation (the `signal`), on `fail`, and when the scope ends
    * while it is still pending — the last of which is why an implementation must
    * mark the promise handled on creation, so a body that creates it and walks
    * away cannot raise `unhandledRejection`.
@@ -99,8 +91,8 @@ export interface ICallbackServerHandle<TResult> {
    * launchBrowser(url).catch((e) => server.fail(e));
    * ```
    *
-   * A launcher that rejects after the login has already timed out must not turn
-   * that into a fresh unhandled rejection.
+   * A launcher that rejects after the login has already been aborted must not
+   * turn that into a fresh unhandled rejection.
    */
   fail(error: Error): void;
 }
@@ -112,7 +104,7 @@ export interface ICallbackServerHandle<TResult> {
  * factory, so it cannot be forgotten.
  *
  * The factory settles on the first terminal outcome — the callback returning or
- * throwing, `fail`, the timeout, or an abort — and only once the listening
+ * throwing, `fail`, or an abort of `signal` — and only once the listening
  * socket has been released, so a settled result always means the port is free.
  * On success it resolves with whatever the callback returned — which need not be
  * the payload itself, so `transform(await server.waitForResult())` resolves with
@@ -134,8 +126,10 @@ export interface ICallbackServerHandle<TResult> {
  *   produce a token, a session, or anything else built from the payload.
  *
  * ```ts
+ * // No timeout of its own: the signal bounds the wait — the consumer's
+ * // controller, or `AbortSignal.timeout(ms)` when it wants a bound.
  * const code = await withBrowserCallbackServer(
- *   { port, timeoutMs, signal },
+ *   { port, signal },
  *   async (server) => {
  *     const waiting = server.waitForResult();
  *     launchBrowser(buildAuthUrl(server.redirectUri)).catch((e) => server.fail(e));

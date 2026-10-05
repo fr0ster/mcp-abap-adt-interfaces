@@ -3,8 +3,13 @@
  *
  * The provider owns what it can compute — the authorization URL and the token
  * exchange. Everything between them (reaching the URL, receiving what comes
- * back, the port, the timeout) belongs to whoever implements this interface,
- * which is why a consumer can replace it wholesale.
+ * back, the port) belongs to whoever implements this interface, which is why a
+ * consumer can replace it wholesale.
+ *
+ * A login has no built-in bound: it ends on a result, the identity provider's
+ * explicit refusal, or an abort — the request's `signal`, or the strategy's
+ * own option signal. A consumer that wants a bound composes one
+ * (`AbortSignal.timeout(ms)`).
  *
  * See `ICallbackServer` for the transport a shipped strategy is composed of.
  */
@@ -27,6 +32,15 @@ export interface AuthorizationRequest {
    * rather than as a callback that never arrives.
    */
   buildAuthorizationUrl(redirectUri: string): Promise<string>;
+
+  /**
+   * The provider's signal for this login: aborted once no caller needs the
+   * login any more. A strategy **must** honour it as it honours its own option
+   * signal — end the login, release what it holds (a socket, a stdin reader),
+   * and only then reject. A strategy that ignores it never settles an
+   * abandoned login, and the provider's next login waits for it.
+   */
+  readonly signal?: AbortSignal | undefined;
 
   /** For progress messages. Absent means silence — never stdout. */
   readonly logger?: ILogger | undefined;

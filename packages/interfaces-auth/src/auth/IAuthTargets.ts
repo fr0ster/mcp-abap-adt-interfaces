@@ -21,6 +21,13 @@ import type { ICertificateMaterial } from './ICertificateMaterial';
  * wire are chosen independently, so this is where a real mismatch surfaces —
  * at the first logon, before any request, never as a request sent without
  * its credential.
+ *
+ * A target's Oops carries an `IAuthProviderError` like any other refusal, so
+ * a target builds it through `@mcp-abap-adt/auth-errors` (kind
+ * `logon-target`, naming the wire and what it refused); an object literal
+ * does not compile. A provider never returns a target's answer unread: it
+ * relays it through `auth-errors`' `relayOutcome`, which classifies what the
+ * target returned or threw.
  */
 export interface ILogonTarget {
   /** TLS client material for the connection being opened. */

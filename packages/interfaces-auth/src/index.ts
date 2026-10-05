@@ -29,8 +29,6 @@
  * Depends on `@mcp-abap-adt/interfaces-utils`, for `ILogger`.
  */
 
-export type { AssertionErrorCode } from './auth/AssertionErrorCodes';
-export { ASSERTION_ERROR_CODES } from './auth/AssertionErrorCodes';
 export { AUTH_TYPE_BASIC, AUTH_TYPE_JWT } from './auth/AuthMethod';
 export type { AuthOutcome, IAuthRefusal } from './auth/AuthOutcome';
 export type {
@@ -64,6 +62,128 @@ export type {
   IBearerCredential,
   ISecretLoginCredential,
 } from './auth/ICredentials';
+export type {
+  ConfigDiagnosticField,
+  ConfigDiagnosticOf,
+  ConfigDiagnosticValues,
+  ConfigUri,
+  DocumentTime,
+  DocumentValue,
+  LocalPath,
+  SamlDiagnosticField,
+  SamlDiagnosticOf,
+  SamlDiagnosticValues,
+  SncDiagnosticField,
+  SncDiagnosticOf,
+  SncDiagnosticValues,
+  XmlId,
+  XmlName,
+} from './error/diagnostics';
+export {
+  CONFIG_CASE_DIAGNOSTICS,
+  SAML_RULE_DIAGNOSTIC,
+  SNC_PROBLEM_DIAGNOSTICS,
+} from './error/diagnostics';
+export type {
+  AssertionRuleCheck,
+  AuthProviderErrorFacts,
+  BearerCandidate,
+  ConfigFactsOf,
+  CountedAssertionRule,
+  InteractiveLoginFacts,
+  SamlFactsOf,
+  SncCandidate,
+  SncFactsOf,
+  SncProblemFacts,
+  SystemRefusedFacts,
+} from './error/facts';
+export type {
+  AuthProviderErrorOf,
+  ConfigurationError,
+  IAuthProviderError,
+  SamlAssertionError,
+  SncError,
+} from './error/IAuthProviderError';
+export type { IAuthProviderFailure } from './error/IAuthProviderFailure';
+export type {
+  AllowedValueSet,
+  AssertionCheck,
+  AssertionRule,
+  AuthProviderErrorKind,
+  BasicEncoding,
+  BearerCandidateReason,
+  ClientAuthenticationProblem,
+  ClientCertificateProblem,
+  ConfigCase,
+  ConfigField,
+  ConnectionMoment,
+  ConnectionProblem,
+  CredentialKind,
+  InteractiveLoginStrategy,
+  InteractiveOutcome,
+  LogonTargetRefusal,
+  LogonTargetWire,
+  NotPreparedProvider,
+  OAuthErrorCode,
+  Operation,
+  PlainKind,
+  RejectionMoment,
+  RenewalUnchangedSource,
+  RequestProblem,
+  RfcKey,
+  SamlStatusCode,
+  SncArch,
+  SncCandidateSource,
+  SncProblem,
+  SncQop,
+  SncUnusableReason,
+  SystemCode,
+  SystemRefusedVerdict,
+  TlsFailureCode,
+  TokenBindingProblem,
+  VariantKind,
+} from './error/kinds';
+export {
+  ALLOWED_VALUE_SETS,
+  ASSERTION_CHECKS,
+  ASSERTION_RULES,
+  AUTH_PROVIDER_ERROR_KINDS,
+  BASIC_ENCODINGS,
+  BEARER_CANDIDATE_REASONS,
+  CLIENT_AUTHENTICATION_PROBLEMS,
+  CLIENT_CERTIFICATE_PROBLEMS,
+  CONFIG_CASES,
+  CONFIG_FIELDS,
+  CONNECTION_MOMENTS,
+  CONNECTION_PROBLEMS,
+  CREDENTIAL_KINDS,
+  INTERACTIVE_LOGIN_STRATEGIES,
+  INTERACTIVE_OUTCOMES,
+  LOGON_TARGET_REFUSALS,
+  LOGON_TARGET_WIRES,
+  NOT_PREPARED_PROVIDERS,
+  OAUTH_ERROR_CODES,
+  OPERATIONS,
+  REJECTION_MOMENTS,
+  RENEWAL_UNCHANGED_SOURCES,
+  REQUEST_PROBLEMS,
+  RFC_KEYS,
+  SAML_STATUS_CODES,
+  SNC_ARCHS,
+  SNC_CANDIDATE_SOURCES,
+  SNC_PROBLEMS,
+  SNC_QOP_VALUES,
+  SNC_UNUSABLE_REASONS,
+  SYSTEM_CODES,
+  SYSTEM_REFUSED_VERDICTS,
+  TLS_FAILURE_CODES,
+  TOKEN_BINDING_PROBLEMS,
+} from './error/kinds';
+export type {
+  Count,
+  HttpStatus,
+  Port,
+} from './error/numbers';
 export type { StoreErrorCode } from './store/StoreErrorCodes';
 export { STORE_ERROR_CODES } from './store/StoreErrorCodes';
 export type { OAuth2GrantType } from './token/AuthType';
@@ -81,6 +201,7 @@ export type { ITokenProvider } from './token/ITokenProvider';
 export type { ITokenProviderOptions } from './token/ITokenProviderOptions';
 export type { ITokenRefresher } from './token/ITokenRefresher';
 export type { ITokenRefreshResult } from './token/ITokenRefreshResult';
+export type { ITokenRequestOptions } from './token/ITokenRequestOptions';
 export type { ITokenResult } from './token/ITokenResult';
-export type { TokenProviderErrorCode } from './token/TokenProviderErrorCodes';
-export { TOKEN_PROVIDER_ERROR_CODES } from './token/TokenProviderErrorCodes';
+export type { RefreshTokenDisposition } from './token/RefreshTokenDisposition';
+export { REFRESH_TOKEN_DISPOSITIONS } from './token/RefreshTokenDisposition';

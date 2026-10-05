@@ -22,6 +22,7 @@ const _token: ITokenResult = {
   expiresIn: undefined,
   expiresAt: undefined,
   tokenType: undefined,
+  refreshTokenDisposition: undefined,
 };
 
 const _material: ICertificateMaterial = {
@@ -33,7 +34,6 @@ const _material: ICertificateMaterial = {
 
 const _callback: ICallbackServerOptions = {
   port: 0,
-  timeoutMs: 30_000,
   signal: undefined,
   logger: undefined,
 };
@@ -41,6 +41,7 @@ const _callback: ICallbackServerOptions = {
 const _request: AuthorizationRequest = {
   buildAuthorizationUrl: async (redirectUri) => redirectUri,
   logger: undefined,
+  signal: undefined,
 };
 
 const _context: AssertionContext = {

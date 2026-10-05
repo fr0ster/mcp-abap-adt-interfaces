@@ -19,6 +19,13 @@
  * Ok. That is not a negative answer the process must check — the process does
  * the same thing either way. Decision 40.
  *
+ * **An Oops's refusal is an `IAuthProviderError`**, minted by
+ * `@mcp-abap-adt/auth-errors`: the process decides on its `kind` and `facts`
+ * and shows its `reason` and `hint`. **A method never throws:** every failure
+ * of a moment — the provider's own work, a collaborator, a target that throws
+ * — is answered as an Oops. A rejected promise out of one of these four
+ * methods is a bug in the provider, not an answer.
+ *
  * Distinct from {@link IAuthorizationStrategy}, which is one layer up: that is
  * how an INTERACTIVE login is conducted — a browser, a redirect, a callback
  * server — and a provider that needs one uses it inside `prepare()` or

@@ -5,6 +5,7 @@
  * The provider validates, refreshes, or re-authenticates as needed.
  */
 
+import type { ITokenRequestOptions } from './ITokenRequestOptions';
 import type { ITokenResult } from './ITokenResult';
 
 /**
@@ -16,8 +17,17 @@ export interface ITokenProvider {
    *
    * Stateful providers cache tokens internally and handle refresh automatically.
    * Checks token expiration, refreshes if needed, or triggers login.
+   *
+   * **Rejects with an `IAuthProviderFailure`**, whose `error` is an
+   * `IAuthProviderError`. TypeScript does not type a rejection: read one with
+   * `readFailure(thrown, operation)` from `@mcp-abap-adt/auth-errors` and
+   * switch on `error.kind`, never on the message.
+   *
+   * @param options `signal` releases this caller when it no longer needs the
+   *   token (see {@link ITokenRequestOptions}). Optional, so an implementation
+   *   that takes no parameter still satisfies the contract.
    */
-  getTokens(): Promise<ITokenResult>;
+  getTokens(options?: ITokenRequestOptions): Promise<ITokenResult>;
 
   /**
    * Validate JWT token locally (optional)
