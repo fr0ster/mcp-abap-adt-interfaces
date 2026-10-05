@@ -95,8 +95,8 @@ type LastParameter<F> = F extends (...args: infer P) => unknown
 
 /** A member answering an `IAdtResponse` takes `analyse`; anything else is not asked. */
 type TakesAnalyse<F> = F extends (
-  ...args: any[]
-) => Promise<IAdtResponse<any, IAdtError>>
+  ...args: never[]
+) => Promise<IAdtResponse<unknown, IAdtError>>
   ? 'analyse' extends keyof NonNullable<LastParameter<F>>
     ? true
     : false

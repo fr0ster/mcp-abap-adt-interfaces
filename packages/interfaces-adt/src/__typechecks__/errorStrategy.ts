@@ -93,11 +93,13 @@ const t100: IAnalyse<IT100Failure> = (verdict, answer) => {
   const document = String(answer?.data ?? '');
   const key = /<entry key="T100KEY-ID">([^<]*)<\/entry>/.exec(document);
   const no = /<entry key="T100KEY-NO">([^<]*)<\/entry>/.exec(document);
-  if (!(key && no)) return ADT_NO_FAILURE;
+  const msgid = key?.[1];
+  const msgno = no?.[1];
+  if (msgid === undefined || msgno === undefined) return ADT_NO_FAILURE;
   return {
     origin: 'refusal',
     message: 'refused',
-    t100: { msgid: key[1], msgno: no[1] },
+    t100: { msgid, msgno },
   };
 };
 

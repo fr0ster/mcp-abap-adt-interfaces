@@ -9,7 +9,7 @@ import type { IAbapRequestOptions } from './IAbapRequestOptions';
 
 export type IAdtHeaderValue = IHttpHeaderValue;
 
-export interface IAdtWireResponse<T = any, D = any>
+export interface IAdtWireResponse<T = unknown, D = unknown>
   extends Omit<IHttpWireResponse<T, D>, 'headers'> {
   /**
    * **The generic shape, narrowed by the headers ADT actually sends.** The
@@ -71,7 +71,7 @@ export interface IAbapConnection {
    * @param options - Request options (url, method, data, etc.)
    * @returns Promise with Axios response
    */
-  makeAdtRequest<T = any, D = any>(
+  makeAdtRequest<T = unknown, D = unknown>(
     options: IAbapRequestOptions,
   ): Promise<IAdtWireResponse<T, D>>;
 }

@@ -61,7 +61,7 @@ only the package changed. Before that, `@mcp-abap-adt/interfaces-adt` until its
 
 ## Dependencies
 
-Depends on `@mcp-abap-adt/interfaces-auth-sap` (`^2.0.0`), for
+Depends on `@mcp-abap-adt/interfaces-auth-sap` (`^2.0.0 || ^3.0.0` — the one type it uses, `IAuthorizationConfig`, is the same in both), for
 `IAuthorizationConfig` — the UAA client a store returns beside the connection
 settings — and on nothing else. `interfaces-auth` and `interfaces-utils` reach
 it through that package.

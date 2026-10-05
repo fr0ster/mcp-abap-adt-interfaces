@@ -38,7 +38,17 @@ The order they build and publish in is `publishOrder` in the root
 `package.json`, dependencies first. A change one package needs from another is
 published first; the dependent then raises its range.
 
-There is no CI; `npm run check` is what holds, and every package's `prepublishOnly` runs it.
+`npm run check` is what holds, and every package's `prepublishOnly` runs it.
+CI (`.github/workflows/ci.yml`, Node 22, 24 and 26) runs the same checks and
+`npm run lint:check` on every pull request and on every push to `master`.
+
+**The compiler is strict beyond `strict`.** `tsconfig.base.json`, which every
+package extends, adds `noImplicitReturns`, `noFallthroughCasesInSwitch`,
+`noImplicitOverride`, `noUncheckedIndexedAccess` and
+`exactOptionalPropertyTypes`. `npm run test:check` type-checks everything under
+each package's `src`, its `__typechecks__` included; the build leaves those
+out. `npm run lint:check` fails on a warning, and `noExplicitAny` is an error,
+with no exception.
 
 Publish with `npm run release:publish`. It publishes only the packages whose version is not on the registry yet, in dependency order (`interfaces-utils`, `interfaces-network`, `interfaces-auth`, `interfaces-auth-sap`, `interfaces-auth-broker`, `interfaces-calm`, `interfaces-adt-connection`, `interfaces-adt`), and runs `npm run check` once rather than once per package. Everything goes out first; afterwards it asks the registry which versions are being served and names any that are not yet, or that it could not check. A version npm refuses and the registry then vouches for was published by an earlier run, and the summary says so rather than counting it as this one's. That is **exit 2** — published, not confirmed — and is not a failure; wait for `npm view <package> versions --prefer-online` to show the version before re-running, because a re-run before then puts the package back in the plan. **Exit 1** is a publish that errored with no version on the registry to account for it, and stops the run there; a publish npm refuses for a version the registry does serve is treated as already published, which is what a re-run meets when the read that built the plan was stale. `npm run release:publish -- --dry-run` prints the plan and changes nothing.
 

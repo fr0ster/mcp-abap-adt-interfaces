@@ -7,6 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.0] - 2026-10-05
+
+### Changed (breaking)
+
+- **Optional fields of the objects a provider hands out accept an explicit
+  `undefined`** — declared `?: T | undefined` instead of `?: T`. A provider
+  builds these objects with an optional field present and `undefined`
+  (`refreshToken: undefined`), and a consumer merges them
+  (`{ ...stored, ...result }`); under `exactOptionalPropertyTypes` the old
+  declaration forbade that and forced a cast. Widening only: no field is
+  renamed, added or removed, and every value the old declaration accepted is
+  still accepted. Without `exactOptionalPropertyTypes` nothing changes, and
+  reading a field is unchanged with it (an optional field was already
+  `T | undefined` to read). **One case breaks**, and only under
+  `exactOptionalPropertyTypes`: assigning one of these objects to a
+  consumer's own type that declares the same field `?: T` (without
+  `| undefined`) no longer compiles. A consumer on `^3.x` would have received
+  that through a minor, so this is a major
+  (`__typechecks__/majorCompatibility.ts` assigns each widened contract to its
+  3.x shape and fails against 3.x). The fields:
+  - `ITokenResult`: `refreshToken`, `expiresIn`, `expiresAt`, `tokenType`
+  - `AuthorizationRequest`: `logger`
+  - `ICallbackServerOptions`: `signal`, `logger`
+  - `AssertionContext`: `expectedInResponseTo`, `expectedIssuer`, `logger`
+  - `ValidatedAssertion`: `nameId`, `sessionIndex`, `attributes`
+  - `ICertificateMaterial`: `cert`, `key`, `pfx`, `passphrase`
+
+### Migrating from 3.x
+
+Nothing to do without `exactOptionalPropertyTypes`, or when the code only
+reads these fields or builds these objects. With the flag, where a value of
+one of these types is assigned (or spread) into a type of your own that
+declares the same field `?: T`, the compiler now reports `undefined` is not
+assignable. Either widen your field to `?: T | undefined` — the shape the
+contract now has — or do not enable `exactOptionalPropertyTypes`. Copying
+only the fields that are present (`...(r.refreshToken === undefined ? {} :
+{ refreshToken: r.refreshToken })`) also works where your type must stay
+`?: T`.
+- **Built under a stricter compiler and lint.** The repository's base
+  `tsconfig` adds `noImplicitReturns`, `noFallthroughCasesInSwitch`,
+  `noImplicitOverride`, `noUncheckedIndexedAccess` and
+  `exactOptionalPropertyTypes`, and lint fails on a warning. Two compile-only
+  checks leave an optional field out instead of setting it to `undefined`
+  (`IAuthRefusal.hint`, `ITokenRequestAuthentication.endpoint`, neither of them
+  widened); a new one sets every widened field to `undefined`.
+
 ## [3.2.0] - 2026-10-04
 
 ### Added

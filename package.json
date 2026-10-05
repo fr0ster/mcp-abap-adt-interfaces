@@ -16,7 +16,7 @@
     "chrono": "./tools/version-stats.sh",
     "clean": "node tools/each-package.js run clean",
     "lint": "biome check --write packages tools",
-    "lint:check": "biome check packages tools",
+    "lint:check": "biome check --error-on-warnings packages tools",
     "format": "biome format --write packages tools",
     "build": "node tools/each-package.js run clean && biome check packages tools --diagnostic-level=error && node tools/each-package.js run build",
     "test:check": "node tools/each-package.js run test:check",

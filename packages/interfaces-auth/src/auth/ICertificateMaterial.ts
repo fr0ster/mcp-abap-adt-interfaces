@@ -1,7 +1,7 @@
 /** Loaded TLS client-cert material for an https.Agent. */
 export interface ICertificateMaterial {
-  cert?: Buffer | string;
-  key?: Buffer | string;
-  pfx?: Buffer;
-  passphrase?: string;
+  cert?: Buffer | string | undefined;
+  key?: Buffer | string | undefined;
+  pfx?: Buffer | undefined;
+  passphrase?: string | undefined;
 }

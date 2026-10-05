@@ -11,7 +11,7 @@ npm install @mcp-abap-adt/interfaces-adt-connection
 |---|---|
 | `IAbapConnection` | a connection an ADT request is made through: `makeAdtRequest`, connect/disconnect, the session type |
 | `IAbapRequestOptions` | what one request carries |
-| `IAdtWireResponse` | the answer as it came off the wire — extends `IHttpWireResponse` from `interfaces-network` with the headers ADT sends |
+| `IAdtWireResponse` | the answer as it came off the wire — extends `IHttpWireResponse` from `interfaces-network` with the headers ADT sends. Since 2.0.0 its `data` is `unknown` unless the caller names the type (`makeAdtRequest<string>(…)`); it was `any` — see the CHANGELOG's migration note |
 | `ISessionLifecycleAware`, `ICriticalSection`, `IRequestProfiling`, `IDeferredResponseConnection` | the connection's capability atoms — a connection honours the ones it can |
 | `ADT_SESSION_ERROR` / `AdtSessionErrorCode` | what a session failure is called |
 | `ITimeoutConfig` | the deadlines a caller gives a connection: `default`, `csrf`, `long` |

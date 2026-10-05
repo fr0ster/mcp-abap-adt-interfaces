@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [13.0.0] - 2026-10-05
+
+### Changed (breaking)
+
+- **Depends on `@mcp-abap-adt/interfaces-adt-connection` ^2.0.0**, whose
+  `IAdtWireResponse` defaults its type parameters to `unknown` instead of
+  `any`. This package's declarations name `IAdtWireResponse` without type
+  arguments in three exported types, so each now hands a consumer an answer
+  whose `data` is `unknown`:
+  - `IResultStrategy<T>` — `(answer: IAdtWireResponse) => T`
+  - `IAnalyse<E>` — its optional `answer` parameter
+  - `IAdtFailure.response`
+
+  The emitted `.d.ts` text of these is unchanged; what they resolve to is
+  not, which is why this is a major.
+
+### Migrating from 12.x
+
+Install `@mcp-abap-adt/interfaces-adt-connection` ^2.0.0 beside this release
+(a single copy: two copies of one interface do not compare equal). In a
+result strategy, an `analyse` function, or code reading
+`IAdtFailure.response`, narrow `answer.data` before reading it —
+`typeof answer.data === 'string'` for an ADT body — or name the type where it
+is stored (`IAdtWireResponse<string>`). See that package's 2.0.0 migration
+note, which also covers `makeAdtRequest` stubs.
+
+### Changed
+
+- **`ITraceListing.list` names its options type.** The inline
+  `[TOptions] extends [void] ? unknown : TOptions` is now the declared
+  `ListingOwnOptions<TOptions>` (`Array<TOptions> extends Array<void> ?
+  unknown : TOptions`), checked to resolve to the same type for `void`,
+  `undefined`, `never`, `any`, `unknown`, an options object, and unions with
+  and without `void`. `ITrace.d.ts` changes; what a consumer passes and gets
+  does not — nothing to do.
+- **Built under a stricter compiler and lint.** The repository's base
+  `tsconfig` adds `noImplicitReturns`, `noFallthroughCasesInSwitch`,
+  `noImplicitOverride`, `noUncheckedIndexedAccess` and
+  `exactOptionalPropertyTypes`, and lint fails on a warning. Only the
+  compile-only checks changed (and two unused imports left `index.ts`); no
+  other declaration changes.
+
 ## [12.0.1] - 2026-10-02
 
 ### Changed

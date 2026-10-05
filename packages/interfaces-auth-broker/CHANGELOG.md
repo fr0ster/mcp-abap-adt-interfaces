@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-10-05
+
+### Changed
+
+- **`@mcp-abap-adt/interfaces-auth-sap` accepted as `^2.0.0 || ^3.0.0`.**
+  3.0.0 is a major only because `ICertificateMaterialLoader.load` answers
+  `interfaces-auth` 4.x's widened `ICertificateMaterial`. This package takes
+  one type from `interfaces-auth-sap`, `IAuthorizationConfig`, which imports
+  nothing and is the same in 2.x and 3.x, and it does not depend on
+  `interfaces-auth`. Every type it exports therefore type-checks the same
+  under either major — nothing to do for a consumer, so a minor.
+  `__typechecks__/authSapMajorCompatibility.ts` holds `IAuthorizationConfig`
+  to its 2.x shape, both ways.
+- **Built under a stricter compiler and lint**: the repository's base
+  `tsconfig` adds `noImplicitReturns`, `noFallthroughCasesInSwitch`,
+  `noImplicitOverride`, `noUncheckedIndexedAccess` and
+  `exactOptionalPropertyTypes`; lint fails on a warning.
+
 ## [1.2.0] - 2026-10-05
 
 ### Added

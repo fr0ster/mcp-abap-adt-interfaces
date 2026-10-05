@@ -65,6 +65,11 @@ const read = <T>(answer: IAdtResponse<T>): T => {
   return answer.getResult().value;
 };
 
+type Equal<A, B> =
+  (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
+    ? true
+    : false;
+
 // A map whose members are not views is refused WHERE IT IS DECLARED, not at the
 // call site with a result of `never`.
 interface IBadViews {
@@ -104,8 +109,8 @@ async function _assertions(
   noOptions: NoOptionReader,
 ) {
   // The result is typed, not `any`.
-  const gross: number = read(await family.read('t', 'hitlist')).entries[0]
-    .grossTime;
+  const gross: number | undefined = read(await family.read('t', 'hitlist'))
+    .entries[0]?.grossTime;
 
   // Optional options may be given or omitted.
   await family.read('t', 'hitlist');
@@ -217,7 +222,8 @@ async function _profilerCalls(p: MyProfiler) {
   const hits: MyHitList = read(await p.read('t1', 'hitlist'));
   const rows = hits.entries;
   const kind: 'profiler' = p.kind;
-  const deleted: void = read(await p.delete('t1'));
+  const deleted = read(await p.delete('t1'));
+  type _DeletedIsVoid = Assert<Equal<typeof deleted, void>>;
 
   // @ts-expect-error this profiler has one view, and that is not it
   await p.read('t1', 'dbAccesses');

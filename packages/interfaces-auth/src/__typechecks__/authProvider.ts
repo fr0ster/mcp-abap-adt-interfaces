@@ -8,7 +8,7 @@ import type { ILogonTarget, IRequestTarget } from '../auth/IAuthTargets';
 const ok: AuthOutcome = { ok: true };
 const oops = (reason: string, hint?: string): AuthOutcome => ({
   ok: false,
-  refusal: { reason, hint },
+  refusal: hint === undefined ? { reason } : { reason, hint },
 });
 
 // ---- Every way in, on the one contract (decision 40) --------------------
