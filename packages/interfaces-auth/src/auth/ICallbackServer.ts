@@ -45,13 +45,13 @@ export interface ICallbackServerOptions {
    * External cancellation — "this login is no longer needed". Honoured whether
    * it fires before the bind, during it, or while waiting for the callback.
    */
-  readonly signal?: AbortSignal;
+  readonly signal?: AbortSignal | undefined;
 
   /**
    * Where the transport reports what it did — an ignored request that was not
    * our redirect, for instance. Absent means silence; never stdout.
    */
-  readonly logger?: ILogger;
+  readonly logger?: ILogger | undefined;
 }
 
 /**

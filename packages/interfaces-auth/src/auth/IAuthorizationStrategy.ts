@@ -29,7 +29,7 @@ export interface AuthorizationRequest {
   buildAuthorizationUrl(redirectUri: string): Promise<string>;
 
   /** For progress messages. Absent means silence — never stdout. */
-  readonly logger?: ILogger;
+  readonly logger?: ILogger | undefined;
 }
 
 /** How the login ended. */

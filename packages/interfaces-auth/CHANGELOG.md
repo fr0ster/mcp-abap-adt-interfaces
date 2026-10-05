@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Optional fields of the objects a provider hands out accept an explicit
+  `undefined`** — declared `?: T | undefined` instead of `?: T`. A provider
+  builds these objects with an optional field present and `undefined`
+  (`refreshToken: undefined`), and a consumer merges them
+  (`{ ...stored, ...result }`); under `exactOptionalPropertyTypes` the old
+  declaration forbade that and forced a cast. Widening only: no field is
+  renamed, added or removed, and every value the old declaration accepted is
+  still accepted. Without `exactOptionalPropertyTypes` nothing changes, and
+  reading a field is unchanged with it (an optional field was already
+  `T | undefined` to read). **One case breaks**, and only under
+  `exactOptionalPropertyTypes`: assigning one of these objects to a
+  consumer's own type that declares the same field `?: T` (without
+  `| undefined`) no longer compiles — widen that field the same way. The
+  fields:
+  - `ITokenResult`: `refreshToken`, `expiresIn`, `expiresAt`, `tokenType`
+  - `AuthorizationRequest`: `logger`
+  - `ICallbackServerOptions`: `signal`, `logger`
+  - `AssertionContext`: `expectedInResponseTo`, `expectedIssuer`, `logger`
+  - `ValidatedAssertion`: `nameId`, `sessionIndex`, `attributes`
+  - `ICertificateMaterial`: `cert`, `key`, `pfx`, `passphrase`
+
 ## [3.2.0] - 2026-10-04
 
 ### Added

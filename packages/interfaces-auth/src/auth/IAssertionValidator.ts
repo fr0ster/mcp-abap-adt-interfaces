@@ -16,7 +16,7 @@ export interface AssertionContext {
    * IdP-initiated: then no request was sent, and a validator must refuse an
    * assertion that carries `InResponseTo` at all.
    */
-  readonly expectedInResponseTo?: string;
+  readonly expectedInResponseTo?: string | undefined;
   /** Our entity ID, which the AudienceRestriction must name. */
   readonly audience: string;
   /** The ACS the response arrived at; Recipient and Destination must match. */
@@ -27,9 +27,9 @@ export interface AssertionContext {
    * Optional on the interface because a custom validator may establish trust
    * without it. The shipped default always receives it.
    */
-  readonly expectedIssuer?: string;
+  readonly expectedIssuer?: string | undefined;
   /** For progress messages. Absent means silence — never stdout. */
-  readonly logger?: ILogger;
+  readonly logger?: ILogger | undefined;
 }
 
 /** What a validated assertion yields to the flow. */
@@ -42,9 +42,9 @@ export interface ValidatedAssertion {
   readonly expiresAt: Date;
   readonly assertionId: string;
   readonly issuer: string;
-  readonly nameId?: string;
-  readonly sessionIndex?: string;
-  readonly attributes?: Readonly<Record<string, readonly string[]>>;
+  readonly nameId?: string | undefined;
+  readonly sessionIndex?: string | undefined;
+  readonly attributes?: Readonly<Record<string, readonly string[]>> | undefined;
   /**
    * The validator's input, unchanged: a whole `samlp:Response`, or a bare
    * `saml:Assertion` where the validator accepts one. It promises nothing
