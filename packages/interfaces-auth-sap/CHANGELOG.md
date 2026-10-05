@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-10-05
+
+### Changed
+
+- **Accepts `@mcp-abap-adt/interfaces-auth` `^4.0.0 || ^5.0.0`** (it
+  accepted `^4.0.0`). What this package's exported types reach in
+  `interfaces-auth` — `ICertificateMaterial`, through
+  `ICertificateMaterialLoader.load`, and `AUTH_TYPE_BASIC` / `AUTH_TYPE_JWT`,
+  in the `AuthType` union — is unchanged in 5.0.0: their declarations are
+  byte-identical in both, and this package's `dist` is byte-identical built
+  against either. 5.0.0's breaking changes (the error contract, the removed
+  code constants, the removed callback timeout) touch nothing declared here,
+  so the range widens in a minor. `__typechecks__/certificateLoaderCompatibility.ts`
+  holds it: the loaded material is assigned both ways to its 4.x shape and
+  has the same field names, and the union is still `'jwt' | 'basic' | 'xsuaa'`
+  — under either major.
+
+### Migrating to 3.1.0
+
+Nothing to do. Install `interfaces-auth` 5.x beside it when the rest of the
+chain (`auth-providers` 6.0.0) needs it; 4.x keeps working.
+
 ## [3.0.0] - 2026-10-05
 
 ### Changed (breaking)

@@ -11,7 +11,7 @@ The SAP and BTP half of authentication: SAP system configuration, the UAA client
 - **What a validator answers** — `IValidatedAuthConfig`, `AuthMethodPriority`, `IHeaderValidationResult`.
 - **Not here since 2.0.0: the destination and its storage** — `IConnectionConfig`, `DestinationGrant`, `IConfig`, `ISessionStore`, `IServiceKeyStore`, `ITokenProviderResult` are [`interfaces-auth-broker`](../interfaces-auth-broker), and are not re-exported. Change the import path; nothing else changes (see [Migrating to 2.0.0](#migrating-to-200)).
 - **`AUTH_TYPE_JWT` and `AUTH_TYPE_BASIC` are not here**, and are deliberately not re-exported: a bearer token and a user with a password mean the same thing off SAP, so they are in `interfaces-auth`, and forwarding is the duplication this family removed (decision 34).
-- Depends on `@mcp-abap-adt/interfaces-auth` (`^4.0.0` since 3.0.0, a major: `ICertificateMaterialLoader.load` answers `ICertificateMaterial`, whose optional fields 4.0.0 lets hold `undefined` — see the CHANGELOG's migration note; 2.x accepts `^1.2.0 || ^2.0.0 || ^3.0.0`), and on nothing else — `interfaces-utils` reaches it through that package, for `ILogger`. `interfaces-auth-broker` depends on this package, for `IAuthorizationConfig`. Types and constants; no implementation.
+- Depends on `@mcp-abap-adt/interfaces-auth` and on nothing else: `^4.0.0 || ^5.0.0` since 3.1.0 (5.0.0's error contract reaches nothing declared here; see [Migrating to 3.1.0](#migrating-to-310)); `^4.0.0` in 3.0.0, a major, because `ICertificateMaterialLoader.load` answers `ICertificateMaterial`, whose optional fields 4.0.0 lets hold `undefined` (see the CHANGELOG's migration note); `^1.2.0 || ^2.0.0 || ^3.0.0` in 2.x. `interfaces-utils` reaches it through that package, for `ILogger`. `interfaces-auth-broker` depends on this package, for `IAuthorizationConfig`. Types and constants; no implementation.
 
 ## Install
 
@@ -28,6 +28,10 @@ import { AUTH_TYPE_BASIC } from '@mcp-abap-adt/interfaces-auth';
 ```
 
 Two packages in one file is the point: the union's SAP member and its generic members are declared where each is true.
+
+## Migrating to 3.1.0
+
+Nothing to do. 3.1.0 accepts `@mcp-abap-adt/interfaces-auth` 5.x beside 4.x. What this package's types take from it — `ICertificateMaterial` through `ICertificateMaterialLoader.load`, and `AUTH_TYPE_BASIC` / `AUTH_TYPE_JWT` in the `AuthType` union — is declared identically in both, so a consumer moving to `interfaces-auth` 5.0.0 (the error contract) keeps this package as it is, and one staying on 4.x is unaffected. `__typechecks__/certificateLoaderCompatibility.ts` holds that under either major.
 
 ## Migrating to 2.0.0
 

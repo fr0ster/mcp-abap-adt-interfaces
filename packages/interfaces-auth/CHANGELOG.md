@@ -7,6 +7,121 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.0.0] - 2026-10-05
+
+The error contract: what a provider, a logon target and a connection report
+when they cannot authenticate is a typed error with a closed set of kinds and
+facts drawn from allowlists, not a sentence. Types and constants only, as
+always; the builders, the classification and the two exhaustiveness helpers
+are the new package `@mcp-abap-adt/auth-errors`.
+
+### Added
+
+- **`IAuthProviderError`** (`src/error/`): a frozen object with `kind`,
+  `facts`, `reason`, `hint?` and, for three kinds, `variant` and optional
+  `diagnostics`. Sixteen kinds, listed in `AUTH_PROVIDER_ERROR_KINDS`
+  (`AuthProviderErrorKind`): `configuration`, `client-certificate`,
+  `client-authentication`, `request-failed`, `tls`, `interactive-login`,
+  `saml-assertion`, `snc`, `credential-refused`, `system-refused`,
+  `renewal-unchanged`, `token-binding`, `not-prepared`, `logon-target`,
+  `connection`, `unknown`. `AuthProviderErrorOf<K>` is the error of one kind;
+  `SamlAssertionError`, `SncError` and `ConfigurationError` are one object type
+  per `variant` (the rule, the problem, the case), so
+  `e.kind === 'snc' && e.variant === 'library-not-found'` narrows `facts` and
+  `diagnostics` too. A variant declares only the diagnostic fields it may
+  carry (`SAML_RULE_DIAGNOSTIC`, `SNC_PROBLEM_DIAGNOSTICS`,
+  `CONFIG_CASE_DIAGNOSTICS`); reading another is a compile error.
+- **The brand.** An `IAuthProviderError` carries a property keyed by a symbol
+  this package declares and does not export: an object literal, a class
+  instance or parsed JSON is not one to the compiler. Only
+  `@mcp-abap-adt/auth-errors` mints one.
+- **`IAuthProviderFailure`** — the `Error` (`name: 'AuthProviderFailure'`)
+  that `getTokens()` / `refreshTokens()` reject with, carrying the error as
+  `error`. Read a rejection with `readFailure(thrown, operation)` from
+  `auth-errors`.
+- **The allowlists**, each a frozen `as const` array beside its union:
+  `CONFIG_FIELDS`, `CONFIG_CASES`, `ALLOWED_VALUE_SETS` (with `SNC_QOP_VALUES`
+  and `BASIC_ENCODINGS`), `OPERATIONS`, `REQUEST_PROBLEMS`, `SYSTEM_CODES`,
+  `TLS_FAILURE_CODES`, `OAUTH_ERROR_CODES`, `RFC_KEYS`, `ASSERTION_CHECKS`,
+  `ASSERTION_RULES`, `BEARER_CANDIDATE_REASONS`, `SAML_STATUS_CODES`,
+  `SNC_PROBLEMS`, `SNC_CANDIDATE_SOURCES`, `SNC_UNUSABLE_REASONS`,
+  `SNC_ARCHS`, `INTERACTIVE_OUTCOMES`, `INTERACTIVE_LOGIN_STRATEGIES`,
+  `CREDENTIAL_KINDS`, and the per-kind discriminants
+  (`CLIENT_CERTIFICATE_PROBLEMS`, `CLIENT_AUTHENTICATION_PROBLEMS`,
+  `TOKEN_BINDING_PROBLEMS`, `NOT_PREPARED_PROVIDERS`, `LOGON_TARGET_REFUSALS`,
+  `LOGON_TARGET_WIRES`, `CONNECTION_PROBLEMS`, `CONNECTION_MOMENTS`,
+  `SYSTEM_REFUSED_VERDICTS`, `RENEWAL_UNCHANGED_SOURCES`,
+  `REJECTION_MOMENTS`). A fact holds a member of one of them, a branded
+  integer — `HttpStatus`, `Count`, `Port` — or a flag; never free text.
+- **Cancellation.** `ITokenRequestOptions { signal? }`, taken by
+  `ITokenProvider.getTokens(options?)` and
+  `IRefreshableTokenProvider.refreshTokens(options?)`: an abort releases that
+  caller only (`interactive-login`, outcome `aborted`), and the shared login is
+  aborted once every caller waiting on it has aborted.
+  `AuthorizationRequest.signal` is the provider's signal for one login, which a
+  strategy must honour as it honours its own. Optional parameters and fields:
+  an implementation written for 4.x still satisfies the types.
+- **`ITokenResult.refreshTokenDisposition`** (optional): `'keep'`,
+  `'replace'` or `'clear'` (`REFRESH_TOKEN_DISPOSITIONS`) — what the result
+  means for a stored refresh token. Absent, read it as 4.x did: a
+  `refreshToken` present replaces, none keeps.
+
+### Changed (breaking)
+
+- **`IAuthRefusal` is `IAuthProviderError`.** `AuthOutcome`'s Oops carries a
+  minted error, so `{ ok: false, refusal: { reason, hint } }` no longer
+  compiles — a provider, a logon target or a test double builds its refusal
+  through an `auth-errors` builder. Reading `refusal.reason` / `refusal.hint`
+  compiles unchanged. `IAuthProvider`'s four methods are unchanged in shape;
+  their JSDoc now says a method never throws.
+- **A consumer that decides on an error handles every kind, checked by the
+  compiler:** `matchKind(error, handlers)` or a `switch (error.kind)` whose
+  `default` calls `unreachableKind(error)`, both from `auth-errors`. A new kind
+  or a new member of a discriminant a consumer switches on is a major of this
+  package; a new member of a code list (`SystemCode`, `TlsFailureCode`,
+  `OAuthErrorCode`, `RfcKey`, `ConfigField`, `SamlStatusCode`) is a minor, so
+  do not assert exhaustiveness over a code list.
+
+### Removed
+
+- **`TOKEN_PROVIDER_ERROR_CODES` / `TokenProviderErrorCode` and
+  `ASSERTION_ERROR_CODES` / `AssertionErrorCode`.** They named thrown classes
+  that `auth-providers` 6.0.0 no longer throws; a failure is an
+  `IAuthProviderFailure` whose `error.kind` says what went wrong.
+  `STORE_ERROR_CODES` stays.
+- **`ICallbackServerOptions.timeoutMs`.** A login has no built-in bound: a
+  callback scope ends on a result, the identity provider's explicit error,
+  `fail`, or an abort of `signal`. A consumer that wants a bound passes
+  `AbortSignal.timeout(ms)`. `IAuthorizationStrategy` no longer names a
+  timeout among what a strategy owns.
+
+### Migrating to 5.0.0
+
+| On 4.x a consumer… | On 5.0.0 |
+|---|---|
+| reads `refusal.reason` / `refusal.hint` | compiles unchanged |
+| builds `{ ok: false, refusal: { reason, hint } }` (a provider, a target, a test double) | does not compile (the brand); build it with an `@mcp-abap-adt/auth-errors` builder |
+| copies or spreads a refusal into a new object | compiles (the spread keeps the brand), but the producers' shape check refuses it; relay the error object itself |
+| matches words to decide (`reason.includes('expired')`) | switches on `refusal.kind` and `facts`, through `matchKind` or `unreachableKind` |
+| catches `instanceof TokenProviderError` / `ValidationError` / `CertificateMaterialError` / … from `getTokens()` | `readFailure(thrown, operation)` from `auth-errors`, then switches on `error.kind` |
+| calls `refusalWords(error, what)` (auth-providers) | `classify(error, operation)` from `auth-errors`; `.reason` / `.hint` |
+| imports `TOKEN_PROVIDER_ERROR_CODES` or `ASSERTION_ERROR_CODES` | switches on `error.kind` (`saml-assertion` for a refused assertion) |
+| passes `timeoutMs` to a callback server | passes `signal: AbortSignal.timeout(ms)`; without a signal the scope waits for a result |
+| implements `ITokenProvider` / `IRefreshableTokenProvider` | nothing to do; take `options?: ITokenRequestOptions` to honour cancellation, and set `refreshTokenDisposition` on each result |
+| implements `IAuthorizationStrategy` | honour `request.signal`: end the login, release what it holds, then reject |
+
+`@mcp-abap-adt/interfaces-auth-sap` 3.1.0 accepts `^4.0.0 || ^5.0.0`, so a
+consumer moving to 5.0.0 keeps one copy of this package.
+
+### Changed
+
+- `tools/check-graph.js`: outside `src/error/`, this package takes only
+  `IAuthProviderError` and `IAuthProviderFailure` from there — the
+  normal-course contracts do not name a kind.
+- Type tests: `__typechecks__/errorContract.ts` and
+  `__typechecks__/outcomeAndCancellation.ts`; the existing ones no longer
+  build literal refusals, pass `timeoutMs` or import the removed codes.
+
 ## [4.0.0] - 2026-10-05
 
 ### Changed (breaking)
