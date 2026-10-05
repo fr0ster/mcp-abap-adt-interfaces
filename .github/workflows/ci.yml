@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    # The Node.js versions SAP BTP, Cloud Foundry supports. Follow SAP: add a
+    # version when the buildpack gains it, drop one when it loses it.
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ['22', '24', '26']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      # The packages are not workspaces: the root installs the tools, and each
+      # package installs its own dependencies from the registry.
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm run install:packages
+
+      - name: Build
+        run: npm run build
+
+      - name: Type-check, compile-only checks included
+        run: npm run test:check
+
+      - name: Lint
+        run: npm run lint:check
+
+      - name: Public surface
+        run: npm run check:surface
+
+      - name: Import graph
+        run: npm run check:graph
+
+      # Packs every package and installs the tarballs into a fresh project.
+      - name: Packed packages
+        run: npm run check:packed
+
+      # Runs the publish script against throwaway repositories with a fake
+      # npm: no registry credentials, nothing published.
+      - name: Publish path
+        run: npm run check:publish
