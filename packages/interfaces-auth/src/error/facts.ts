@@ -183,10 +183,10 @@ type OpenSamlFactsOf<R extends AssertionRule> = R extends unknown
 
 /**
  * The facts of one SAML rule: `rule`, its fixed `check`, and what the rule
- * carries; every fact another rule carries is `?: never`.
+ * carries; every fact another rule or kind carries is `?: never`.
  */
 export type SamlFactsOf<R extends AssertionRule> = R extends unknown
-  ? Closed<OpenSamlFactsOf<R>, KeysOfUnion<OpenSamlFactsOf<AssertionRule>>>
+  ? Closed<OpenSamlFactsOf<R>, AnyFactKey>
   : never;
 
 // ---- snc --------------------------------------------------------------------
@@ -240,9 +240,9 @@ type OpenSncFactsOf<P extends SncProblem> = P extends unknown
   ? { readonly problem: P } & SncProblemFacts[P]
   : never;
 
-/** The facts of one SNC problem; every fact another problem carries is `?: never`. */
+/** The facts of one SNC problem; every fact another problem or kind carries is `?: never`. */
 export type SncFactsOf<P extends SncProblem> = P extends unknown
-  ? Closed<OpenSncFactsOf<P>, KeysOfUnion<OpenSncFactsOf<SncProblem>>>
+  ? Closed<OpenSncFactsOf<P>, AnyFactKey>
   : never;
 
 // ---- configuration --------------------------------------------------------
@@ -260,9 +260,9 @@ type OpenConfigFactsOf<C extends ConfigCase> = C extends unknown
         : unknown)
   : never;
 
-/** The facts of one configuration case; `allowed` is `?: never` where no value set applies. */
+/** The facts of one configuration case; `allowed` is `?: never` where no value set applies, and every other kind's fact everywhere. */
 export type ConfigFactsOf<C extends ConfigCase> = C extends unknown
-  ? Closed<OpenConfigFactsOf<C>, KeysOfUnion<OpenConfigFactsOf<ConfigCase>>>
+  ? Closed<OpenConfigFactsOf<C>, AnyFactKey>
   : never;
 
 // ---- the kinds with discriminated facts -----------------------------------
@@ -315,7 +315,7 @@ type OpenInteractiveLoginFacts =
  * `interactive-login`, discriminated by `outcome`; each outcome's shape is
  * closed — a fact another outcome carries is `?: never`.
  */
-export type InteractiveLoginFacts = ClosedUnion<OpenInteractiveLoginFacts>;
+export type InteractiveLoginFacts = ClosedFacts<OpenInteractiveLoginFacts>;
 
 /** The system-refused verdicts that carry an HTTP status. */
 type StatusVerdict = Member<
@@ -348,13 +348,13 @@ type OpenSystemRefusedFacts =
     };
 
 /** `system-refused`, discriminated by `verdict`; each verdict's shape is closed. */
-export type SystemRefusedFacts = ClosedUnion<OpenSystemRefusedFacts>;
+export type SystemRefusedFacts = ClosedFacts<OpenSystemRefusedFacts>;
 
 // ---- every kind ------------------------------------------------------------
 
 /** The facts of every kind. Its keys are exactly `AuthProviderErrorKind`. */
-export interface AuthProviderErrorFacts {
-  readonly configuration: ConfigFactsOf<ConfigCase>;
+interface OpenAuthProviderErrorFacts {
+  readonly configuration: OpenConfigFactsOf<ConfigCase>;
   readonly 'client-certificate': { readonly problem: ClientCertificateProblem };
   readonly 'client-authentication': {
     readonly problem: ClientAuthenticationProblem;
@@ -372,14 +372,14 @@ export interface AuthProviderErrorFacts {
     readonly grant?: OAuth2GrantType;
     readonly code: TlsFailureCode;
   };
-  readonly 'interactive-login': InteractiveLoginFacts;
-  readonly 'saml-assertion': SamlFactsOf<AssertionRule>;
-  readonly snc: SncFactsOf<SncProblem>;
+  readonly 'interactive-login': OpenInteractiveLoginFacts;
+  readonly 'saml-assertion': OpenSamlFactsOf<AssertionRule>;
+  readonly snc: OpenSncFactsOf<SncProblem>;
   readonly 'credential-refused': {
     readonly credential: CredentialKind;
     readonly at?: RejectionMoment;
   };
-  readonly 'system-refused': SystemRefusedFacts;
+  readonly 'system-refused': OpenSystemRefusedFacts;
   readonly 'renewal-unchanged': { readonly source: RenewalUnchangedSource };
   readonly 'token-binding': { readonly problem: TokenBindingProblem };
   readonly 'not-prepared': { readonly provider: NotPreparedProvider };
@@ -399,3 +399,25 @@ export interface AuthProviderErrorFacts {
     readonly code?: SystemCode;
   };
 }
+
+/** Every fact key of every kind. */
+type AnyFactKey = KeysOfUnion<
+  OpenAuthProviderErrorFacts[keyof OpenAuthProviderErrorFacts]
+>;
+
+/**
+ * Each member of `U` closed against every fact key of every kind: a fact of
+ * another variant, or of another kind, is `?: never`.
+ */
+type ClosedFacts<U> = U extends unknown ? Closed<U, AnyFactKey> : never;
+
+/**
+ * The facts of every kind. Its keys are exactly `AuthProviderErrorKind`; each
+ * kind's facts declare its own fields and every other kind's or variant's
+ * field as `?: never`, so a non-literal object carrying one does not assign.
+ */
+export type AuthProviderErrorFacts = {
+  readonly [K in keyof OpenAuthProviderErrorFacts]: ClosedFacts<
+    OpenAuthProviderErrorFacts[K]
+  >;
+};

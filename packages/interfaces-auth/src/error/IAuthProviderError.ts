@@ -64,17 +64,27 @@ interface Common<K extends AuthProviderErrorKind> {
   readonly [minted]: true;
 }
 
+/** Every diagnostic field of every kind, with the type of its value. */
+type AnyDiagnosticValues = SamlDiagnosticValues &
+  SncDiagnosticValues &
+  ConfigDiagnosticValues;
+
 /**
- * The permitted diagnostic fields carry their type and every other field of
- * the kind is `?: never` — excluded, not merely omitted, so a non-literal
- * object (a spread, a variable) carrying a forbidden field does not assign.
- * A variant with none permitted: `diagnostics?: never`.
+ * The permitted diagnostic fields carry their type and every other
+ * diagnostic field of every kind is `?: never` — excluded, not merely
+ * omitted, so a non-literal object (a spread, a variable) carrying another
+ * variant's or another kind's field does not assign. A variant with none
+ * permitted: `diagnostics?: never`.
  */
-type DiagOf<T, Allowed extends keyof T> = [Allowed] extends [never]
+type DiagOf<Allowed extends keyof AnyDiagnosticValues> = [Allowed] extends [
+  never,
+]
   ? { readonly diagnostics?: never }
   : {
       readonly diagnostics?: {
-        readonly [F in keyof T]?: F extends Allowed ? T[F] : never;
+        readonly [F in keyof AnyDiagnosticValues]?: F extends Allowed
+          ? AnyDiagnosticValues[F]
+          : never;
       };
     };
 
@@ -83,7 +93,7 @@ export type SamlAssertionError = {
   [R in AssertionRule]: Common<'saml-assertion'> & {
     readonly variant: R;
     readonly facts: SamlFactsOf<R>;
-  } & DiagOf<SamlDiagnosticValues, SamlDiagnosticOf<R>>;
+  } & DiagOf<SamlDiagnosticOf<R>>;
 }[AssertionRule];
 
 /** An SNC logon problem, one object type per problem. */
@@ -91,7 +101,7 @@ export type SncError = {
   [P in SncProblem]: Common<'snc'> & {
     readonly variant: P;
     readonly facts: SncFactsOf<P>;
-  } & DiagOf<SncDiagnosticValues, SncDiagnosticOf<P>>;
+  } & DiagOf<SncDiagnosticOf<P>>;
 }[SncProblem];
 
 /** A configuration mistake, one object type per case. */
@@ -99,7 +109,7 @@ export type ConfigurationError = {
   [C in ConfigCase]: Common<'configuration'> & {
     readonly variant: C;
     readonly facts: ConfigFactsOf<C>;
-  } & DiagOf<ConfigDiagnosticValues, ConfigDiagnosticOf<C>>;
+  } & DiagOf<ConfigDiagnosticOf<C>>;
 }[ConfigCase];
 
 /** Every other kind: one object type, no variant, no diagnostics. */

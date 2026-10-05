@@ -515,6 +515,44 @@ const sncFactsCandBad = {
 // @ts-expect-error a candidate with archs under another reason, in the facts
 const _sc4: AuthProviderErrorFacts['snc'] = sncFactsCandBad;
 
+// ---- across kinds: another kind's diagnostic or fact is refused too ------
+
+declare const tlsExpired: MintedOf<'tls'>;
+const xDiagSnc = { issuer: 'idp', library: '/secret/path' };
+const xDiagCfg = { issuer: 'idp', configuredUri: 'https://wrong/' };
+const xDiagSaml = { configuredUri: 'https://a/', issuer: 'idp' };
+// @ts-expect-error snc's library on a saml-assertion error
+const _x1: IAuthProviderError = { ...samlIssuer, diagnostics: xDiagSnc };
+// @ts-expect-error configuration's configuredUri on a saml-assertion error
+const _x2: IAuthProviderError = { ...samlIssuer, diagnostics: xDiagCfg };
+const cfgDiagOk = { configuredUri: 'https://a/' };
+const _x3: IAuthProviderError = { ...configMismatch, diagnostics: cfgDiagOk };
+// @ts-expect-error saml's issuer on a configuration error
+const _x4: IAuthProviderError = { ...configMismatch, diagnostics: xDiagSaml };
+
+const tlsFactsOk = {
+  operation: 'token-request',
+  code: 'CERT_HAS_EXPIRED',
+} as const;
+const tlsFactsBad = { ...tlsFactsOk, fields: ['clientId'] } as const;
+const _x5: IAuthProviderError = { ...tlsExpired, facts: tlsFactsOk };
+// @ts-expect-error configuration's fields on a tls error
+const _x6: IAuthProviderError = { ...tlsExpired, facts: tlsFactsBad };
+const samlFactsXBad = { ...samlFactsOk, problem: 'expired' } as const;
+// @ts-expect-error a problem (another kind's fact) on saml-assertion facts
+const _x7: IAuthProviderError = { ...samlIssuer, facts: samlFactsXBad };
+const sncFactsXBad = { ...sncFactsOk, rule: 'expired' } as const;
+// @ts-expect-error a rule (saml's fact) on snc facts
+const _x8: IAuthProviderError = { ...sncCredential, facts: sncFactsXBad };
+const certFactsXBad = { problem: 'expired', port: port0 } as const;
+const certFactsOk = { problem: 'expired' } as const;
+const _x9: IAuthProviderError = { ...certificate, facts: certFactsOk };
+// @ts-expect-error interactive-login's port on client-certificate facts
+const _x10: IAuthProviderError = { ...certificate, facts: certFactsXBad };
+const certDiagX = { library: '/secret/path' };
+// @ts-expect-error a plain kind takes no diagnostics at all
+const _x11: IAuthProviderError = { ...certificate, diagnostics: certDiagX };
+
 const strayVariant = { variant: 'expired' } as const;
 // @ts-expect-error a plain kind has no variant
 const _nl17: IAuthProviderError = { ...certificate, ...strayVariant };
