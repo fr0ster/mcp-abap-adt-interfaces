@@ -4,7 +4,7 @@ Authentication: credentials, OAuth grants, tokens and the contracts around them.
 
 ## TL;DR
 
-- **The error contract** (since 5.0.0, a major) — `IAuthProviderError`: a frozen object with a `kind` out of sixteen, `facts` drawn only from allowlists this package declares, the rendered `reason` and `hint`, and for three kinds a `variant` and optional `diagnostics`. `IAuthRefusal` *is* this error, and `IAuthProviderFailure` carries it as the rejection of `getTokens()` / `refreshTokens()`. Only `@mcp-abap-adt/auth-errors` produces one (a brand the compiler checks). See [The error contract](#the-error-contract).
+- **The error contract** (since 5.0.0, a major) — `IAuthProviderError`: a frozen object with a `kind` out of seventeen, `facts` drawn only from allowlists this package declares, the rendered `reason` and `hint`, and for three kinds a `variant` and optional `diagnostics`. `IAuthRefusal` *is* this error, and `IAuthProviderFailure` carries it as the rejection of `getTokens()` / `refreshTokens()`. Only `@mcp-abap-adt/auth-errors` produces one (a brand the compiler checks). See [The error contract](#the-error-contract).
 - **Credentials** — `IAuthProvider` with `AuthOutcome`, `IAuthRefusal`, `ILogonTarget`, `IRequestTarget`, `IAuthRejection`; `ICertificateMaterial`, `IClientAuthentication` with `ITokenRequestDraft` and `ITokenRequestAuthentication` (how a token provider's client authenticates to the authorization server, since 3.1.0; the draft's optional `tokenEndpoint` since 3.2.0), `IApiKeyCredential`, `IBearerCredential`, `ISecretLoginCredential`. Since 3.0.0 `IAuthProvider` is the process's lifecycle — `prepare`, `establish`, `authorize`, `rejected` — answered by every provider with Ok or Oops.
 - **Tokens and grants** — `ITokenProvider`, `IRefreshableTokenProvider`, `ITokenRefresher`, `ITokenResult`, `ITokenRefreshResult`, `ITokenProviderOptions`, `ITokenRequestOptions` (a caller's `signal`, since 5.0.0), `OAuth2GrantType` and the OAuth2 grant constants. A failure is an `IAuthProviderFailure`; its `error.kind` says what went wrong.
 - **Interactive login** — `IAuthorizationStrategy`, the callback-server contracts. No built-in bound since 5.0.0: a login ends on a result, the identity provider's refusal, or an abort of a `signal` (see [Cancelling a login](#cancelling-a-login)).
@@ -82,13 +82,37 @@ There is no built-in timeout on a login (since 5.0.0). It ends on a result, the 
 - **A strategy** receives the provider's signal for one login as `AuthorizationRequest.signal`, and **must** honour it as it honours its own option signal: end the login, release what it holds (a socket, a stdin reader), then reject.
 - **A callback server** ends its scope on a result, `fail`, the identity provider's explicit error, or an abort of `ICallbackServerOptions.signal` — nothing else.
 
-Every new parameter and field is optional, so a token provider or a strategy written for 4.x still satisfies the types; it just cannot be cancelled. `ITokenResult.refreshTokenDisposition` (`'keep'`, `'replace'`, `'clear'`) tells a store what to do with a refresh token it holds; absent, read it as 4.x did — a `refreshToken` present replaces, none keeps.
+Every new parameter and field is optional, so a token provider or a strategy written for 4.x still satisfies the types; it just cannot be cancelled. What becomes of a refresh token is the renewal strategy's decision and the persistence strategy's report since 7.0.0 (`IRenewalStrategy`, `ITokenPersistence`; see [Renewal and persistence](#renewal-and-persistence)); `ITokenResult` carries no disposition.
+
+## Renewal and persistence
+
+Since 7.0.0 two strategies are contracts here, in `src/token/`:
+
+- **`IRenewalStrategy`** (`renewal.ts`) — `next(situation)` answers `RenewalDecision`: `refresh` (with a required `ifCut`: what becomes of the refresh token sent if the renewal is cut after dispatch), `login` or `stop`. The `RenewalSituation` carries the `RenewalCause` (`no-token`, `expired`, `bound-elsewhere`, `explicit`, `rejected` — the last with the `reading`, the moment `at`, and the `status` / `rfcKey`), the `RenewalMoment`, `canRefresh` and the `steps` already taken. After a refresh that failed after it was sent, the decision names `sentRefreshToken` (`'keep' | 'discard'`): an uncertain refresh token is never kept or discarded by default. `aborted?(observation)` is told of an aborted step. A strategy receives minted errors and allowlisted facts, never a token or a thrown value's message.
+- **`ITokenPersistence`** (`persistence.ts`) — `report(report)` receives a `PersistenceReport`: `credential` (what a commit installed, with `refreshToken: { change: 'new', value } | { change: 'none' }`) or `refresh-token-discarded` (the credential still held), each with `awaited`.
+
+New kind `renewal-declined` (facts `{ trigger: RenewalTrigger }`): the renewal strategy stopped with no step taken and no other refusal that explains it. New configuration case `invalid-value` (`fields`): a configured value that is present but unusable.
 
 ## What belongs here
 
 A contract whose own fields name nothing SAP or BTP — that is the rule, and it is decision 35. `AUTH_TYPE_BASIC` is a user and a password anywhere; `AUTH_TYPE_XSUAA` names a BTP service, so it is not here.
 
 Everything SAP- or BTP-specific is `@mcp-abap-adt/interfaces-auth-sap`, which depends on this package: `ISapConfig`, `SapAuthType`, `AuthType`/`AUTH_TYPES`, `IAuthorizationConfig`, `ICertificateMaterialLoader` and the two validation results. The destination and its stores — `IConfig`, `IConnectionConfig` (it carries `sapClient`), `ITokenProviderResult`, `IServiceKeyStore`, `ISessionStore` — are `@mcp-abap-adt/interfaces-auth-broker`, which stands on `interfaces-auth-sap` (since its 2.0.0). Nothing authentication-related is in `@mcp-abap-adt/interfaces-adt` any more, as of its 9.0.0.
+
+## Migrating to 7.0.0
+
+A major: a new kind (`renewal-declined`), a new configuration case (`invalid-value`), and removals.
+
+| If you ... | now ... |
+|---|---|
+| read or set `ITokenResult.refreshTokenDisposition`, or import `RefreshTokenDisposition` / `REFRESH_TOKEN_DISPOSITIONS` | read the persistence strategy's `PersistenceReport` (`refreshToken.change`, `refresh-token-discarded`); a result carries no disposition |
+| switch over `AuthProviderErrorKind` or hand `matchKind` a handler map | handle `renewal-declined` (facts `{ trigger }`) |
+| switch over `ConfigCase` | handle `invalid-value` |
+| match `Operation` `'on-tokens-hook'` | it is `'persisting-tokens'`; `'renewal-strategy'` is new |
+| match `InteractiveOutcome` `'browser-launch-failed'` | it is gone: a launcher that fails no longer ends a login, the URL is shown and the login keeps waiting |
+| implement a renewal or persistence strategy | `IRenewalStrategy` / `ITokenPersistence`, exported here |
+
+`@mcp-abap-adt/interfaces-auth-sap` 3.3.0 accepts `^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0`.
 
 ## Migrating to 6.0.0
 

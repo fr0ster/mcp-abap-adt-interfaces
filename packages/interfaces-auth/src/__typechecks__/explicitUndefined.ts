@@ -22,7 +22,6 @@ const _token: ITokenResult = {
   expiresIn: undefined,
   expiresAt: undefined,
   tokenType: undefined,
-  refreshTokenDisposition: undefined,
 };
 
 const _material: ICertificateMaterial = {

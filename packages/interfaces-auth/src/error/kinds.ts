@@ -27,6 +27,7 @@ export const AUTH_PROVIDER_ERROR_KINDS = Object.freeze([
   'credential-refused',
   'system-refused',
   'renewal-unchanged',
+  'renewal-declined',
   'token-binding',
   'not-prepared',
   'logon-target',
@@ -106,6 +107,7 @@ export type ConfigField = (typeof CONFIG_FIELDS)[number];
 /** One per configuration mistake a provider or strategy refuses. */
 export const CONFIG_CASES = Object.freeze([
   'required-fields-missing',
+  'invalid-value',
   'client-secret-beside-client-authentication',
   'saml-acs-required-with-authorization-url',
   'saml-idp-initiated-with-request-id',
@@ -153,7 +155,8 @@ export type BasicEncoding = (typeof BASIC_ENCODINGS)[number];
 export const OPERATIONS = Object.freeze([
   'token-request',
   'refresh',
-  'on-tokens-hook',
+  'persisting-tokens',
+  'renewal-strategy',
   'presenting-token',
   'presenting-certificate',
   'loading-certificate',
@@ -501,7 +504,6 @@ export const INTERACTIVE_OUTCOMES = Object.freeze([
   'aborted',
   'disposed',
   'busy',
-  'browser-launch-failed',
   'callback-closed',
   'identity-provider-refused',
   'input-abandoned',

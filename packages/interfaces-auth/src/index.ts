@@ -203,5 +203,28 @@ export type { ITokenRefresher } from './token/ITokenRefresher';
 export type { ITokenRefreshResult } from './token/ITokenRefreshResult';
 export type { ITokenRequestOptions } from './token/ITokenRequestOptions';
 export type { ITokenResult } from './token/ITokenResult';
-export type { RefreshTokenDisposition } from './token/RefreshTokenDisposition';
-export { REFRESH_TOKEN_DISPOSITIONS } from './token/RefreshTokenDisposition';
+export type {
+  ITokenPersistence,
+  PersistenceReport,
+  ReportedCredential,
+  ReportedRefreshToken,
+} from './token/persistence';
+export type {
+  IRenewalStrategy,
+  RejectionReading,
+  RenewalAbortObservation,
+  RenewalCause,
+  RenewalDecision,
+  RenewalMoment,
+  RenewalSituation,
+  RenewalStep,
+  RenewalStepOutcome,
+  RenewalTrigger,
+  SentRefreshToken,
+} from './token/renewal';
+export {
+  REJECTION_READINGS,
+  RENEWAL_MOMENTS,
+  RENEWAL_STEPS,
+  RENEWAL_TRIGGERS,
+} from './token/renewal';

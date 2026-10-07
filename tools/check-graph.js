@@ -83,6 +83,17 @@ for (const dir of fs.readdirSync(packagesDir)) {
   if (dir === 'interfaces-auth') {
     const errorDir = path.join(src, 'error');
     const WHOLE = new Set(['IAuthProviderError', 'IAuthProviderFailure']);
+    // One file may take more than the whole error: the renewal strategy
+    // (7.0.0) carries what a rejection said — `RejectionMoment`, `RfcKey`,
+    // `HttpStatus` — so its contract names exactly those three facts. Any
+    // other name from `src/error` is still refused there.
+    const EXTRA = {
+      [path.join(src, 'token', 'renewal.ts')]: new Set([
+        'RejectionMoment',
+        'RfcKey',
+        'HttpStatus',
+      ]),
+    };
     for (const file of tsFiles(src)) {
       if (file.startsWith(errorDir + path.sep)) continue;
       if (file === path.join(src, 'index.ts')) continue;
@@ -119,7 +130,7 @@ for (const dir of fs.readdirSync(packagesDir)) {
               .filter((n) => n !== '')
           : [m[1]];
         for (const name of names)
-          if (!WHOLE.has(name))
+          if (!WHOLE.has(name) && !EXTRA[file]?.has(name))
             problems.push(
               `${rel}: takes ${name} from ${m[2]}; the normal course names only IAuthProviderError and IAuthProviderFailure`,
             );

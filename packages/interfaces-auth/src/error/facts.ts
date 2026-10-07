@@ -5,6 +5,7 @@
  */
 
 import type { OAuth2GrantType } from '../token/AuthType';
+import type { RenewalTrigger } from '../token/renewal';
 import type {
   AllowedValueSet,
   AssertionRule,
@@ -274,7 +275,6 @@ type OutcomeWithFacts = Member<
   | 'aborted'
   | 'disposed'
   | 'identity-provider-refused'
-  | 'browser-launch-failed'
   | 'failed'
 >;
 
@@ -301,10 +301,6 @@ type OpenInteractiveLoginFacts =
   | {
       readonly outcome: Member<InteractiveOutcome, 'identity-provider-refused'>;
       readonly oauthError?: OAuthErrorCode;
-    }
-  | {
-      readonly outcome: Member<InteractiveOutcome, 'browser-launch-failed'>;
-      readonly code?: SystemCode;
     }
   | {
       readonly outcome: Member<InteractiveOutcome, 'failed'>;
@@ -385,6 +381,7 @@ interface OpenAuthProviderErrorFacts {
   };
   readonly 'system-refused': OpenSystemRefusedFacts;
   readonly 'renewal-unchanged': { readonly source: RenewalUnchangedSource };
+  readonly 'renewal-declined': { readonly trigger: RenewalTrigger };
   readonly 'token-binding': { readonly problem: TokenBindingProblem };
   readonly 'not-prepared': { readonly provider: NotPreparedProvider };
   readonly 'logon-target': {

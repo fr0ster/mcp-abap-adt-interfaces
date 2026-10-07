@@ -133,6 +133,7 @@ export const SNC_PROBLEM_DIAGNOSTICS = Object.freeze({
 /** The diagnostic fields each configuration case may carry. */
 export const CONFIG_CASE_DIAGNOSTICS = Object.freeze({
   'required-fields-missing': Object.freeze([] as const),
+  'invalid-value': Object.freeze([] as const),
   'client-secret-beside-client-authentication': Object.freeze([] as const),
   'saml-acs-required-with-authorization-url': Object.freeze([] as const),
   'saml-idp-initiated-with-request-id': Object.freeze([] as const),

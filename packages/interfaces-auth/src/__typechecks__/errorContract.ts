@@ -682,8 +682,8 @@ const certWithOauth = { ...certFactsOk, oauthError: 'access_denied' } as const;
 // @ts-expect-error an oauthError on client-certificate facts
 const _x13: IAuthProviderError = { ...certificate, facts: certWithOauth };
 
-// 6.0.0 adds no kind and no outcome: both lists are 5.0.0's
-export type MajorAddsNoKind = [
+// 7.0.0 adds the kind renewal-declined and removes the outcome browser-launch-failed
+export type KindsAndOutcomesAt7 = [
   Expect<
     Same<
       AuthProviderErrorKind,
@@ -698,6 +698,7 @@ export type MajorAddsNoKind = [
       | 'credential-refused'
       | 'system-refused'
       | 'renewal-unchanged'
+      | 'renewal-declined'
       | 'token-binding'
       | 'not-prepared'
       | 'logon-target'
@@ -714,7 +715,6 @@ export type MajorAddsNoKind = [
         'aborted',
         'disposed',
         'busy',
-        'browser-launch-failed',
         'callback-closed',
         'identity-provider-refused',
         'input-abandoned',
@@ -729,14 +729,13 @@ export type MajorAddsNoKind = [
   Expect<Same<InteractiveLoginStrategy, 'browser' | 'manual'>>,
 ];
 
-// a handler map written against 5.0.0 — one handler per kind, and a switch
-// over every outcome — still compiles: nothing new to handle
+// a handler map and a switch over every outcome, written against 7.0.0
 type Handlers = {
   readonly [K in AuthProviderErrorKind]: (
     facts: AuthProviderErrorFacts[K],
   ) => string;
 };
-const handlers50: Handlers = {
+const handlersAt7: Handlers = {
   configuration: (f) => f.case,
   'client-certificate': (f) => f.problem,
   'client-authentication': (f) => f.problem,
@@ -748,7 +747,6 @@ const handlers50: Handlers = {
       case 'aborted':
       case 'disposed':
       case 'busy':
-      case 'browser-launch-failed':
       case 'callback-closed':
       case 'identity-provider-refused':
       case 'input-abandoned':
@@ -769,10 +767,11 @@ const handlers50: Handlers = {
   'credential-refused': (f) => f.credential,
   'system-refused': (f) => f.verdict,
   'renewal-unchanged': (f) => f.source,
+  'renewal-declined': (f) => f.trigger,
   'token-binding': (f) => f.problem,
   'not-prepared': (f) => f.provider,
   'logon-target': (f) => f.refused,
   connection: (f) => f.problem,
   unknown: (f) => f.operation,
 };
-use(handlers50);
+use(handlersAt7);
