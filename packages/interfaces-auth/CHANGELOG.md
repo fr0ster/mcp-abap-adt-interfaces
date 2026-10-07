@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.0.0] - 2026-10-07
+
+The renewal strategy and the persistence strategy as contracts, the kind the
+renewal strategy's stop needs, and the removal of what they replace.
+
+**Migration.** See "Migrating to 7.0.0" in the README. A consumer handling every
+kind or every configuration case adds one branch each; whoever read
+`ITokenResult.refreshTokenDisposition` reads the persistence report instead;
+`'on-tokens-hook'` and `'browser-launch-failed'` are gone.
+
+### Added
+
+- **`IRenewalStrategy`** and its types (`src/token/renewal.ts`): `RenewalSituation`,
+  `RenewalCause`, `RenewalStepOutcome`, `RenewalDecision` (`ifCut` required on
+  every `refresh`), `RenewalAbortObservation`, `SentRefreshToken`, with the
+  lists `RENEWAL_TRIGGERS`, `RENEWAL_MOMENTS`, `REJECTION_READINGS`,
+  `RENEWAL_STEPS` and their unions.
+- **`ITokenPersistence`** and its types (`src/token/persistence.ts`):
+  `PersistenceReport` (events `credential` and `refresh-token-discarded`, each
+  carrying the credential), `ReportedCredential`, `ReportedRefreshToken`.
+- **Kind `renewal-declined`**, facts `{ trigger: RenewalTrigger }`: the renewal
+  strategy stopped with no step taken and no other refusal that explains it.
+- **Configuration case `invalid-value`** (`fields`, no diagnostics): a
+  configured value that is present but unusable.
+- **`OPERATIONS`**: `'renewal-strategy'`, `'persisting-tokens'`.
+
+### Removed
+
+- `ITokenResult.refreshTokenDisposition`, the type `RefreshTokenDisposition`
+  and `REFRESH_TOKEN_DISPOSITIONS`.
+- `Operation` `'on-tokens-hook'` (renamed `'persisting-tokens'`).
+- `InteractiveOutcome` `'browser-launch-failed'` and its `code` fact: a
+  launcher's failure no longer ends a login.
+
 ## [6.0.0] - 2026-10-05
 
 Two optional fact fields on `interactive-login`, so the renderer in

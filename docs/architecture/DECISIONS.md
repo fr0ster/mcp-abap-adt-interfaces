@@ -2976,7 +2976,7 @@ was a second, unrelated vocabulary: thirteen error classes behind
 outside `auth-providers` imported (searched in the broker, the CLI, the
 stores, the connection and the server, 2026-10-05).
 
-**Decided.** `IAuthRefusal` is `IAuthProviderError`: a `kind` out of sixteen
+**Decided.** `IAuthRefusal` is `IAuthProviderError`: a `kind` out of seventeen
 (`AUTH_PROVIDER_ERROR_KINDS`), `facts` that hold only members of allowlists
 declared here (frozen `as const` arrays beside their unions) or branded
 integers (`HttpStatus`, `Count`, `Port`), the rendered `reason` and `hint`, and
