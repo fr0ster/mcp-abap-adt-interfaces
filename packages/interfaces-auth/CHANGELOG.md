@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.1.0] - 2026-10-07
+
+### Added
+- `CONFIG_FIELDS` names `renewal` and `persistence`, so a token provider can
+  refuse a missing renewal strategy at construction (`configuration`,
+  `required-fields-missing`, `fields: ['renewal']`) like any other required
+  collaborator. Additive; `onTokens` stays listed until the next major.
+
 ## [7.0.0] - 2026-10-07
 
 The renewal strategy and the persistence strategy as contracts, the kind the
