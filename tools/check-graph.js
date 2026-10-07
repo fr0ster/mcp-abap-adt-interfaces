@@ -83,7 +83,12 @@ for (const dir of fs.readdirSync(packagesDir)) {
   if (dir === 'interfaces-auth') {
     const errorDir = path.join(src, 'error');
     const WHOLE = new Set(['IAuthProviderError', 'IAuthProviderFailure']);
+    // The renewal strategy is not the normal course: it reads what a
+    // rejection said (`RejectionMoment`, `HttpStatus`, `RfcKey`) to decide a
+    // renewal, so its contract names those facts (7.0.0).
+    const STRATEGY_CONTRACTS = new Set([path.join(src, 'token', 'renewal.ts')]);
     for (const file of tsFiles(src)) {
+      if (STRATEGY_CONTRACTS.has(file)) continue;
       if (file.startsWith(errorDir + path.sep)) continue;
       if (file === path.join(src, 'index.ts')) continue;
       if (file.startsWith(path.join(src, '__typechecks__') + path.sep))

@@ -14,10 +14,6 @@ import type { IRefreshableTokenProvider } from '../token/IRefreshableTokenProvid
 import type { ITokenProvider } from '../token/ITokenProvider';
 import type { ITokenRequestOptions } from '../token/ITokenRequestOptions';
 import type { ITokenResult } from '../token/ITokenResult';
-import {
-  REFRESH_TOKEN_DISPOSITIONS,
-  type RefreshTokenDisposition,
-} from '../token/RefreshTokenDisposition';
 
 type Equal<A, B> =
   (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
@@ -149,30 +145,6 @@ const _badRequest: AuthorizationRequest = {
   signal: 'x',
 };
 
-// ---- the refresh-token disposition (§6b) -----------------------------------
-
-export type DispositionIsTheArray = Expect<
-  Equal<RefreshTokenDisposition, (typeof REFRESH_TOKEN_DISPOSITIONS)[number]>
->;
-export type DispositionMembers = Expect<
-  Equal<RefreshTokenDisposition, 'keep' | 'replace' | 'clear'>
->;
-export type DispositionOnTheResult = Expect<
-  Equal<
-    ITokenResult['refreshTokenDisposition'],
-    RefreshTokenDisposition | undefined
-  >
->;
-
-const _cleared: ITokenResult = { ...result, refreshTokenDisposition: 'clear' };
-const _unsaid: ITokenResult = { ...result, refreshTokenDisposition: undefined };
-// @ts-expect-error a disposition is one of keep, replace, clear
-const _dropped: ITokenResult = { ...result, refreshTokenDisposition: 'drop' };
-// @ts-expect-error the disposition is readonly
-_cleared.refreshTokenDisposition = 'keep';
-// @ts-expect-error the allowlist is frozen
-REFRESH_TOKEN_DISPOSITIONS.push('keep');
-
 // ---- removed code constants stay removed; the stores' stay -----------------
 
 const _storeCodes: object = surface.STORE_ERROR_CODES;
@@ -185,11 +157,7 @@ type _TokenCode = surface.TokenProviderErrorCode;
 // @ts-expect-error AssertionErrorCode is removed in 5.0.0
 type _AssertionCode = surface.AssertionErrorCode;
 // The new names are on the surface.
-type _New =
-  | surface.IAuthProviderFailure
-  | surface.ITokenRequestOptions
-  | surface.RefreshTokenDisposition;
-const _dispositions: readonly string[] = surface.REFRESH_TOKEN_DISPOSITIONS;
+type _New = surface.IAuthProviderFailure | surface.ITokenRequestOptions;
 
 void _refusal;
 void _oops;
@@ -212,10 +180,7 @@ void _plainRefreshable;
 void _calls;
 void _request;
 void _badRequest;
-void _unsaid;
-void _dropped;
 void _storeCodes;
 void _tokenCodes;
 void _assertionCodes;
-void _dispositions;
 export type { _AssertionCode, _New, _TokenCode };

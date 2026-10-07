@@ -119,3 +119,13 @@ TokenProviderErrorCode type
 ASSERTION_ERROR_CODES const
 AssertionErrorCode type
 ICallbackServerOptions.timeoutMs member
+#
+# interfaces-auth 7.0.0 — the renewal and persistence strategies. The
+# refresh-token disposition on a result is replaced by the persistence
+# strategy's report; the hook operation is renamed; a launcher's failure no
+# longer ends a login, so its outcome goes.
+RefreshTokenDisposition type
+REFRESH_TOKEN_DISPOSITIONS const
+ITokenResult.refreshTokenDisposition member
+on-tokens-hook Operation member
+browser-launch-failed InteractiveOutcome member
