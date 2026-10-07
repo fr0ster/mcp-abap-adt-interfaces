@@ -775,3 +775,10 @@ const handlersAt7: Handlers = {
   unknown: (f) => f.operation,
 };
 use(handlersAt7);
+
+// 7.1.0: the two strategies a token provider requires or takes are field names
+// a configuration error may name.
+const renewalField: ConfigField = 'renewal';
+const persistenceField: ConfigField = 'persistence';
+void renewalField;
+void persistenceField;
