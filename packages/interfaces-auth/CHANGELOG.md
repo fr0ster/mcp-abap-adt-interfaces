@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.2.0] - 2026-10-07
+
+### Added
+- `CONFIG_FIELDS` names `onWriteFailure` and `write`, so a persistence
+  factory (auth-providers' `refreshStatePersistence(write, { onWriteFailure })`)
+  refuses a missing or invalid option naming that option, not `persistence`.
+  Additive.
+
 ## [7.1.0] - 2026-10-07
 
 ### Added
