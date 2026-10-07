@@ -61,6 +61,7 @@ export const CONFIG_FIELDS = Object.freeze([
   'authorization',
   'authorizationEndpoint',
   'authorizationUrl',
+  'callbackServer',
   'certKeyPath',
   'certPassphrase',
   'certPath',

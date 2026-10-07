@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.3.0] - 2026-10-07
+
+### Added
+- `ICallbackServerOptions.gated`, `.host`, `.allowedHosts` and
+  `ICallbackServerHandle.expectState(state | null)` — the login-CSRF gate of
+  a callback transport: closed from the bind until the strategy arms it with
+  the authorization URL's `state`; a forged callback (payload or error) is
+  refused and ignored; the transport binds loopback unless the consumer sets
+  `host`, and refuses any `Host` but loopback and `allowedHosts`.
+  All optional: a transport written before 7.3.0 still satisfies the
+  contract.
+- `CONFIG_FIELDS` names `callbackServer`, so a strategy refusing a transport
+  it cannot gate names it.
+
 ## [7.2.0] - 2026-10-07
 
 ### Added

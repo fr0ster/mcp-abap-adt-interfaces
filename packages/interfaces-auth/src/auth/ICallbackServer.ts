@@ -44,6 +44,30 @@ export interface ICallbackServerOptions {
    * our redirect, for instance. Absent means silence; never stdout.
    */
   readonly logger?: ILogger | undefined;
+  /**
+   * The bind address. Not given, a transport binds loopback only
+   * (`127.0.0.1`, and `::1` when the redirect host is `localhost`) — never
+   * every interface. A consumer that wants the transport reachable from
+   * another machine sets it (e.g. `0.0.0.0`) together with `allowedHosts`.
+   */
+  readonly host?: string | undefined;
+  /**
+   * The authorities (`host` or `host:port`) a browser may use to reach the
+   * transport besides loopback; an entry without a port matches the bound
+   * port. Every request whose `Host` header is neither loopback with the
+   * bound port nor one of these is refused before anything is served — so a
+   * DNS-rebound name cannot read a page or settle a callback. The bind
+   * address is not an authority: a browser never sends `Host: 0.0.0.0`.
+   */
+  readonly allowedHosts?: readonly string[] | undefined;
+  /**
+   * `true`: from the bind on, every request to the callback (a payload or an
+   * explicit error) is refused and ignored until the strategy arms the gate
+   * with {@link ICallbackServerHandle.expectState}. Lets a strategy build its
+   * authorization URL — which may await network discovery — while the socket
+   * listens, without a forged callback settling the scope meanwhile.
+   */
+  readonly gated?: boolean | undefined;
 }
 
 /**
@@ -95,6 +119,18 @@ export interface ICallbackServerHandle<TResult> {
    * turn that into a fresh unhandled rejection.
    */
   fail(error: Error): void;
+  /**
+   * Arms the gate of a transport opened with `gated: true`. A string: only a
+   * callback whose `state` equals it (compared in constant time) settles the
+   * scope — a payload or an explicit error alike; every other request is
+   * refused, counted and ignored, and the wait goes on. `null`: the
+   * authorization URL carries no `state` (one the consumer configured), and
+   * callbacks are accepted as without a gate.
+   *
+   * Optional, so a transport written before 7.3.0 still satisfies the
+   * contract; a strategy that needs the gate refuses a transport without it.
+   */
+  expectState?(state: string | null): void;
 }
 
 /**

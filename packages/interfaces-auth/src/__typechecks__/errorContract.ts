@@ -789,3 +789,7 @@ const onWriteFailureField: ConfigField = 'onWriteFailure';
 const writeField: ConfigField = 'write';
 void onWriteFailureField;
 void writeField;
+
+// 7.3.0: a strategy refusing a callback transport it cannot gate names it.
+const callbackServerField: ConfigField = 'callbackServer';
+void callbackServerField;
