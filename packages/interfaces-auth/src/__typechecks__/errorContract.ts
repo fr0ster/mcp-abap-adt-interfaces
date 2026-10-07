@@ -782,3 +782,10 @@ const renewalField: ConfigField = 'renewal';
 const persistenceField: ConfigField = 'persistence';
 void renewalField;
 void persistenceField;
+
+// 7.2.0: the two options of a persistence factory a configuration error may
+// name precisely.
+const onWriteFailureField: ConfigField = 'onWriteFailure';
+const writeField: ConfigField = 'write';
+void onWriteFailureField;
+void writeField;
