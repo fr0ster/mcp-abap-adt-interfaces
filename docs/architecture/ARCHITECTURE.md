@@ -16,15 +16,17 @@ Measured against the tree at 30.0.0. Numbers here are counted from the emitted
 ## 1. What this package is
 
 This repository is **the contract, and nothing else** — eight packages, no
-facade over them since decision 34. **433 exported symbols**, of which 89 carry
+facade over them since decision 34. **443 exported symbols**, of which 92 carry
 runtime values: 36 string constants (24 `HEADER_*`, 10 `AUTH_TYPE_*`,
 `ADT_NO_FAILURE`, `TRANSPORT_SEARCH_CONFIGURATIONS_URL`), 6 maps of codes or
 letters (`AdtObjectErrorCodes`, `ADT_SESSION_ERROR`, `ADT_TASK_TYPE`,
 `SERVICE_BINDING_VARIANT_MAP`, `NETWORK_ERROR_CODES`, `STORE_ERROR_CODES`), 7
 groups over other constants (the five header groups, `AUTH_TYPES`,
 `CALM_SERVICES`), 2 enums (`AuthMethodPriority`, `LogLevel`), and the error
-contract's 38 frozen allowlists in `interfaces-auth` (35 `as const` arrays,
-`REFRESH_TOKEN_DISPOSITIONS` among them, and the three diagnostics maps).
+contract's 41 frozen allowlists in `interfaces-auth` (38 `as const` arrays — among them
+`RENEWAL_TRIGGERS`, `RENEWAL_MOMENTS`, `RENEWAL_STEPS` and `REJECTION_READINGS`
+of the renewal strategy, `src/token/renewal.ts`, beside the persistence
+contract in `src/token/persistence.ts` — and the three diagnostics maps).
 Everything else is a type. It emits **no
 class and no function** — every other module compiles to an empty JavaScript
 file.

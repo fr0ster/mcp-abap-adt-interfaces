@@ -249,6 +249,52 @@ export type Lists = [
 // @ts-expect-error the allowlist is frozen
 surface.RENEWAL_TRIGGERS.push('explicit');
 
+// readonly fields
+// @ts-expect-error ifCut is readonly
+_refresh.ifCut = 'discard';
+// @ts-expect-error a report's credential is readonly
+_credentialReport.credential = _cred;
+// @ts-expect-error a cause's trigger is readonly
+_noToken.trigger = 'expired';
+
+// the new kind's facts are closed: no other fact fits
+const _declinedExtra: AuthProviderErrorFacts['renewal-declined'] = {
+  trigger: 'expired',
+  // @ts-expect-error renewal-declined carries the trigger and nothing else
+  reading: 'unknown',
+};
+const _declinedOk: AuthProviderErrorFacts['renewal-declined'] = {
+  trigger: 'expired',
+};
+// @ts-expect-error trigger is required
+const _declinedNone: AuthProviderErrorFacts['renewal-declined'] = {};
+
+// the exact order of the lists
+export type ListOrders = [
+  Expect<
+    Equal<
+      typeof surface.RENEWAL_MOMENTS,
+      readonly [
+        'prepare',
+        'get-tokens',
+        'refresh-tokens',
+        'authorize',
+        'rejected',
+      ]
+    >
+  >,
+  Expect<Equal<typeof surface.RENEWAL_STEPS, readonly ['refresh', 'login']>>,
+  Expect<
+    Equal<
+      typeof surface.REJECTION_READINGS,
+      readonly ['credential', 'not-credential', 'unknown']
+    >
+  >,
+];
+
+void _declinedExtra;
+void _declinedOk;
+void _declinedNone;
 void _refresh;
 void _refreshAfterSent;
 void _login;

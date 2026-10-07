@@ -132,7 +132,7 @@ Breaks **whoever builds a refusal** (a provider, a logon target, a test double),
 | calls `refusalWords(error, what)` (auth-providers) | `classify(error, operation)` from `auth-errors`; `.reason` / `.hint` |
 | imports `TOKEN_PROVIDER_ERROR_CODES` / `TokenProviderErrorCode` or `ASSERTION_ERROR_CODES` / `AssertionErrorCode` | switches on `error.kind` (`saml-assertion` for a refused assertion); `STORE_ERROR_CODES` stays |
 | passes `timeoutMs` to a callback server | passes `signal: AbortSignal.timeout(ms)`; without a signal the scope waits for a result or an abort |
-| implements `ITokenProvider` / `IRefreshableTokenProvider` | nothing required; take `options?: ITokenRequestOptions` to honour cancellation |
+| implements `ITokenProvider` / `IRefreshableTokenProvider` | nothing required; take `options?: ITokenRequestOptions` to honour cancellation, and set `refreshTokenDisposition` on each result |
 | implements `IAuthorizationStrategy` | honour `request.signal`: end the login, release what it holds, then reject |
 
 `@mcp-abap-adt/interfaces-auth-sap` 3.1.0 accepts `^4.0.0 || ^5.0.0` — nothing it declares reaches what changed — so a consumer moving to 5.0.0 keeps one copy of this package. The CHANGELOG lists every added symbol.

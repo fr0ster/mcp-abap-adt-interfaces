@@ -683,7 +683,7 @@ const certWithOauth = { ...certFactsOk, oauthError: 'access_denied' } as const;
 const _x13: IAuthProviderError = { ...certificate, facts: certWithOauth };
 
 // 7.0.0 adds the kind renewal-declined and removes the outcome browser-launch-failed
-export type MajorAddsNoKind = [
+export type KindsAndOutcomesAt7 = [
   Expect<
     Same<
       AuthProviderErrorKind,
@@ -735,7 +735,7 @@ type Handlers = {
     facts: AuthProviderErrorFacts[K],
   ) => string;
 };
-const handlers50: Handlers = {
+const handlersAt7: Handlers = {
   configuration: (f) => f.case,
   'client-certificate': (f) => f.problem,
   'client-authentication': (f) => f.problem,
@@ -774,4 +774,4 @@ const handlers50: Handlers = {
   connection: (f) => f.problem,
   unknown: (f) => f.operation,
 };
-use(handlers50);
+use(handlersAt7);
