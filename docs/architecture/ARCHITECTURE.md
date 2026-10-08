@@ -23,11 +23,10 @@ letters (`AdtObjectErrorCodes`, `ADT_SESSION_ERROR`, `ADT_TASK_TYPE`,
 `SERVICE_BINDING_VARIANT_MAP`, `NETWORK_ERROR_CODES`, `STORE_ERROR_CODES`), 7
 groups over other constants (the five header groups, `AUTH_TYPES`,
 `CALM_SERVICES`), 2 enums (`AuthMethodPriority`, `LogLevel`), and the error
-contract's 41 frozen allowlists in `interfaces-auth` (38 `as const` arrays — among them
+contract's and the authorization parts' 42 frozen allowlists in `interfaces-auth` (39 `as const` arrays — among them `ANSWER_REFUSALS` of the authorization parts, `src/auth/IAuthorizationParts.ts`, and
 `RENEWAL_TRIGGERS`, `RENEWAL_MOMENTS`, `RENEWAL_STEPS` and `REJECTION_READINGS`
 of the renewal strategy, `src/token/renewal.ts`, beside the persistence
-contract in `src/token/persistence.ts` — and the three diagnostics maps),
-and `ANSWER_REFUSALS` (`src/auth/IAuthorizationParts.ts`, 7.4.0), a plain `as const` array outside that count.
+contract in `src/token/persistence.ts` — and the three diagnostics maps).
 Everything else is a type. It emits **no
 class and no function** — every other module compiles to an empty JavaScript
 file.

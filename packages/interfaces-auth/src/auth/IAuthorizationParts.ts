@@ -40,7 +40,7 @@ export type AuthorizationAnswer =
     };
 
 /** Why an answer is refused while the login keeps waiting. Fixed words. */
-export const ANSWER_REFUSALS = [
+export const ANSWER_REFUSALS = Object.freeze([
   'not-armed', // arrived before the channel was armed (transport)
   'host', // a Host the listener does not answer for (transport)
   'form-token', // no or another form token (transport)
@@ -49,7 +49,7 @@ export const ANSWER_REFUSALS = [
   'no-payload', // nothing this protocol reads (protocol)
   'unreadable', // a text no payload could be read from (protocol)
   'already-answered', // after the first accepted answer (composer)
-] as const;
+] as const);
 export type AnswerRefusal = (typeof ANSWER_REFUSALS)[number];
 
 /** The protocol's decision on one answer. */
