@@ -17,6 +17,7 @@ import type {
   IArmedChannel,
   IAuthorizationPresentation,
   IAuthorizationProtocol,
+  IBrowser,
   PasteWords,
   PresentationContext,
 } from '../auth/IAuthorizationParts';
@@ -377,3 +378,19 @@ void newOperations;
 export type SurfaceHasTheRefusals = [
   Expect<Equal<typeof surface.ANSWER_REFUSALS, typeof ANSWER_REFUSALS>>,
 ];
+
+// 7.5.0: the browser contract — an open(url, signal) that answers a promise.
+const browser: IBrowser = {
+  open: async (_url: string, _signal: AbortSignal) => {},
+};
+void browser;
+const syncBrowser: IBrowser = {
+  // @ts-expect-error — open must answer a promise
+  open: (_url: string, _signal: AbortSignal) => undefined,
+};
+void syncBrowser;
+const wrongBrowser: IBrowser = {
+  // @ts-expect-error — open takes the URL first
+  open: async (_n: number, _signal: AbortSignal) => {},
+};
+void wrongBrowser;

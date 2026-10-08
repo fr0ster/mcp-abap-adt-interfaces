@@ -50,6 +50,7 @@ export type {
   IArmedChannel,
   IAuthorizationPresentation,
   IAuthorizationProtocol,
+  IBrowser,
   PasteWords,
   PresentationContext,
 } from './auth/IAuthorizationParts';
