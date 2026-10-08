@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.4.0] - 2026-10-08
+
+### Added
+- **The authorization parts** (`src/auth/IAuthorizationParts.ts`): an
+  interactive authorization is composed of a presentation, a transport and a
+  protocol, and `IAuthorizationStrategy` (unchanged) is what they compose into.
+  - `IAuthorizationPresentation` / `PresentationContext` — how the URL reaches
+    the user.
+  - `IAnswerTransport` / `AnswerTransportOptions` (with a required `endpoint`)
+    / `IAnswerChannel` / `IArmedChannel` — how the answer reaches us.
+  - `IAuthorizationProtocol<TPayload>` / `PasteWords` — what an answer is and
+    how it is checked.
+  - `AuthorizationAnswer` (a redirect, or a text `via` `form`, `terminal` or
+    `consumer`), `AnswerParameters`, `AnswerVerdict<TPayload>` (`accept`,
+    `refuse` with an `AnswerRefusal`, `end` with a minted error and text for
+    the error page only), `AnswerJudge<TPayload>`.
+  - `ANSWER_REFUSALS` — the closed list of why an answer is refused while the
+    login keeps waiting, and `AnswerRefusal`.
+- `CONFIG_FIELDS` gains `endpoint`, `redirectUri`, `presentation`, `transport`,
+  `protocol`, `provide`, `receive` and `show`.
+- `INTERACTIVE_LOGIN_STRATEGIES` gains `consumer`.
+- `OPERATIONS` gains `presenting-authorization-url` and `judging-answer`.
+
+### Deprecated
+- `ICallbackServerOptions`, `ICallbackServerHandle` and `CallbackServerFactory`
+  (`gated`, `expectState`, `host` and `allowedHosts` with them), and the
+  `callbackServer` value of `CONFIG_FIELDS` — replaced by the parts above and
+  implemented or read by no package from `@mcp-abap-adt/auth-providers` 6.0.0.
+  Nothing is removed: they go in the next major of this package made for
+  another reason.
+
+### Notes
+- A minor: new types and new members of code lists (`ConfigField`,
+  `Operation`, `InteractiveLoginStrategy`), as in 7.1.0 — no kind, outcome or
+  facts shape changes. A handler map or switch over `InteractiveLoginStrategy`
+  or `Operation` written with an exhaustiveness check should handle the new
+  members; the README says not to assert exhaustiveness over a code list.
+- `interfaces-auth-sap` and `interfaces-auth-broker` do not move: their
+  exported types reach none of the changed ones, and `interfaces-auth-sap`'s
+  range already accepts `^7.0.0`.
+
 ## [7.3.0] - 2026-10-07
 
 ### Added

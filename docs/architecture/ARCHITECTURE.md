@@ -26,7 +26,8 @@ groups over other constants (the five header groups, `AUTH_TYPES`,
 contract's 41 frozen allowlists in `interfaces-auth` (38 `as const` arrays — among them
 `RENEWAL_TRIGGERS`, `RENEWAL_MOMENTS`, `RENEWAL_STEPS` and `REJECTION_READINGS`
 of the renewal strategy, `src/token/renewal.ts`, beside the persistence
-contract in `src/token/persistence.ts` — and the three diagnostics maps).
+contract in `src/token/persistence.ts` — and the three diagnostics maps),
+and `ANSWER_REFUSALS` (`src/auth/IAuthorizationParts.ts`, 7.4.0), a plain `as const` array outside that count.
 Everything else is a type. It emits **no
 class and no function** — every other module compiles to an empty JavaScript
 file.
