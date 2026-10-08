@@ -185,3 +185,22 @@ export interface IAuthorizationPresentation {
    */
   present(authorizationUrl: string, context: PresentationContext): unknown;
 }
+
+// ---- browser (since 7.5.0) ---------------------------------------------
+
+/**
+ * How a URL is opened in a browser. A presentation that opens a browser
+ * knows nothing else of browsers: names, paths and how to start one are the
+ * implementation's. Implementations ship with auth-providers (the system
+ * browser, Chrome, Edge, Firefox); a consumer with another browser
+ * implements this.
+ */
+export interface IBrowser {
+  /**
+   * Opens `url`. Resolves once the browser was asked to open it (not when
+   * the user finished); rejects when it could not be — a browser that is not
+   * installed, a launcher that failed. `signal` aborts a launch still in
+   * progress.
+   */
+  open(url: string, signal: AbortSignal): Promise<void>;
+}

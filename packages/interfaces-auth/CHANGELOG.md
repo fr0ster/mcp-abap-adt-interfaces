@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.5.0] - 2026-10-08
+
+### Added
+- `IBrowser` — `open(url, signal): Promise<void>`: how a URL is opened in a
+  browser. auth-providers ships the system browser, Chrome, Edge and Firefox;
+  a consumer with another browser implements it. No browser is named by a
+  string. Additive.
+
 ## [7.4.0] - 2026-10-08
 
 ### Added
