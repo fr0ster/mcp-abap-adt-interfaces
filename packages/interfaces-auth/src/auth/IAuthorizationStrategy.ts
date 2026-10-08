@@ -11,7 +11,9 @@
  * own option signal. A consumer that wants a bound composes one
  * (`AbortSignal.timeout(ms)`).
  *
- * See `ICallbackServer` for the transport a shipped strategy is composed of.
+ * See `IAuthorizationParts` for what a shipped strategy is composed of: a
+ * presentation, a transport and a protocol (since 7.4.0; `ICallbackServer`,
+ * the transport it was composed of before, is deprecated).
  */
 
 import type { ILogger } from '@mcp-abap-adt/interfaces-utils';

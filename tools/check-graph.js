@@ -87,7 +87,12 @@ for (const dir of fs.readdirSync(packagesDir)) {
     // (7.0.0) carries what a rejection said — `RejectionMoment`, `RfcKey`,
     // `HttpStatus` — so its contract names exactly those three facts. Any
     // other name from `src/error` is still refused there.
+    // The authorization parts (7.4.0) name the strategy that labels a
+    // transport (`IAnswerTransport.label`): exactly `InteractiveLoginStrategy`.
     const EXTRA = {
+      [path.join(src, 'auth', 'IAuthorizationParts.ts')]: new Set([
+        'InteractiveLoginStrategy',
+      ]),
       [path.join(src, 'token', 'renewal.ts')]: new Set([
         'RejectionMoment',
         'RfcKey',
