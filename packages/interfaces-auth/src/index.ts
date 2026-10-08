@@ -39,6 +39,22 @@ export type {
   ValidatedAssertion,
 } from './auth/IAssertionValidator';
 export type {
+  AnswerJudge,
+  AnswerParameters,
+  AnswerRefusal,
+  AnswerTransportOptions,
+  AnswerVerdict,
+  AuthorizationAnswer,
+  IAnswerChannel,
+  IAnswerTransport,
+  IArmedChannel,
+  IAuthorizationPresentation,
+  IAuthorizationProtocol,
+  PasteWords,
+  PresentationContext,
+} from './auth/IAuthorizationParts';
+export { ANSWER_REFUSALS } from './auth/IAuthorizationParts';
+export type {
   AuthorizationOutcome,
   AuthorizationRequest,
   IAuthorizationStrategy,

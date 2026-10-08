@@ -14,6 +14,13 @@ import type { ILogger } from '@mcp-abap-adt/interfaces-utils';
  * lets an abandoned login hold a port for the lifetime of a process.
  */
 
+/**
+ * @deprecated Since 7.4.0. Interactive authorization is composed of parts —
+ * `IAuthorizationPresentation`, `IAnswerTransport`, `IAuthorizationProtocol`
+ * (see `IAuthorizationParts`) — and no package implements or reads this option set
+ * any more. Kept so a consumer written against 7.3.0 still compiles; removed
+ * in the next major of this package made for another reason.
+ */
 export interface ICallbackServerOptions {
   /**
    * Port for the local listener. Must be an integer in 0..65535.
@@ -71,6 +78,9 @@ export interface ICallbackServerOptions {
 }
 
 /**
+ * @deprecated Since 7.4.0 — see `ICallbackServerOptions`; the parts of
+ * `IAuthorizationParts` replace it.
+ *
  * Borrowed handle on a listening callback server.
  *
  * Valid until the scope reaches its first terminal outcome, which may be before
@@ -134,6 +144,9 @@ export interface ICallbackServerHandle<TResult> {
 }
 
 /**
+ * @deprecated Since 7.4.0 — see `ICallbackServerOptions`; an `IAnswerTransport`
+ * replaces it.
+ *
  * The only way to obtain a callback server.
  *
  * There is deliberately no `close` on the handle: closing belongs to the

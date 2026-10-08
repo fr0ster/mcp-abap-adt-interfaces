@@ -48,7 +48,10 @@ export type PlainKind = Exclude<AuthProviderErrorKind, VariantKind>;
  * (auth-providers' `KNOWN_CONFIG_FIELDS`), plus `port`, `payload` and `read` —
  * field names a configuration error names without their being provider
  * properties (the callback server, the static code strategy, the manual
- * strategies).
+ * strategies). Since 7.4.0 also the options of the authorization parts
+ * (`endpoint`, `redirectUri`, `presentation`, `transport`, `protocol`,
+ * `provide`, `receive`, `show`). `callbackServer` is deprecated with
+ * `ICallbackServer` and kept: removing a value is a major.
  */
 export const CONFIG_FIELDS = Object.freeze([
   'accessToken',
@@ -61,6 +64,7 @@ export const CONFIG_FIELDS = Object.freeze([
   'authorization',
   'authorizationEndpoint',
   'authorizationUrl',
+  // Deprecated since 7.4.0 with `ICallbackServer`; kept (removal is a major).
   'callbackServer',
   'certKeyPath',
   'certPassphrase',
@@ -72,6 +76,7 @@ export const CONFIG_FIELDS = Object.freeze([
   'cookieProvider',
   'deviceAuthorizationEndpoint',
   'encoding',
+  'endpoint',
   'idpCertificates',
   'idpEntityId',
   'idpInitiated',
@@ -85,21 +90,28 @@ export const CONFIG_FIELDS = Object.freeze([
   'partnerName',
   'password',
   'persistence',
+  'presentation',
   'presenter',
   'probes',
+  'protocol',
+  'provide',
   'qop',
+  'receive',
+  'redirectUri',
   'refreshToken',
   'relayState',
   'renewal',
   'replayStore',
   'scope',
   'scopes',
+  'show',
   'sncLib',
   'spEntityId',
   'subjectToken',
   'subjectTokenType',
   'tokenEndpoint',
   'tokenUrl',
+  'transport',
   'uaaUrl',
   'username',
   'write',
@@ -180,6 +192,8 @@ export const OPERATIONS = Object.freeze([
   'saml-token-refresh',
   'browser-login',
   'opening-browser',
+  'presenting-authorization-url',
+  'judging-answer',
   'passcode-exchange',
   'device-authorization',
   'password-grant',
@@ -527,6 +541,7 @@ export type InteractiveOutcome = (typeof INTERACTIVE_OUTCOMES)[number];
 export const INTERACTIVE_LOGIN_STRATEGIES = Object.freeze([
   'browser',
   'manual',
+  'consumer',
 ] as const);
 export type InteractiveLoginStrategy =
   (typeof INTERACTIVE_LOGIN_STRATEGIES)[number];

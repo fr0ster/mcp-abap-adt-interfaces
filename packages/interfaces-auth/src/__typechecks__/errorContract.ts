@@ -726,7 +726,7 @@ export type KindsAndOutcomesAt7 = [
       ]
     >
   >,
-  Expect<Same<InteractiveLoginStrategy, 'browser' | 'manual'>>,
+  Expect<Same<InteractiveLoginStrategy, 'browser' | 'manual' | 'consumer'>>,
 ];
 
 // a handler map and a switch over every outcome, written against 7.0.0
