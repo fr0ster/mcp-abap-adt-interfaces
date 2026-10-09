@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Corrected
+- The 7.5.0 entry below says auth-providers ships "the system browser, Chrome,
+  Edge and Firefox". auth-providers 6.0.0 actually ships six `IBrowser`
+  factories: `linuxDefaultBrowser()`, `linuxBrowser(executable)`,
+  `macDefaultBrowser()`, `macBrowser(app)`, `windowsDefaultBrowser()` and
+  `windowsBrowser(program)` (linux/mac/windows x default/named). No browser is
+  named by a string. Documentation only.
+
 ## [7.5.0] - 2026-10-08
 
 ### Added
