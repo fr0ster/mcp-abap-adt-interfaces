@@ -1955,9 +1955,13 @@ is for. Should a second repository later accept the same shape, that is when it
 moves up, and not before.
 
 llm-agent's own record: `docs/ARCHITECTURE.md` principle 8; the reasoning is in
-`docs/superpowers/specs/2026-09-16-auth-contracts-design.md` §1.4, §4.4 and §5.
+`docs/superpowers/specs/2026-09-16-auth-contracts-design.md` §1.4, §4.4 and §5
+(llm-agent's spec, since removed there: last at `fr0ster/llm-agent` commit
+`d51abd1e0b40a4bc1a8dd4951e08b9fe5b564e41`, `https://github.com/fr0ster/llm-agent/blob/d51abd1e0b40a4bc1a8dd4951e08b9fe5b564e41/docs/superpowers/specs/2026-09-16-auth-contracts-design.md`).
 
-Spec: `docs/superpowers/specs/2026-09-15-interfaces-split-design.md`.
+Spec: `docs/superpowers/specs/2026-09-15-interfaces-split-design.md` (removed
+once implemented; last at commit `06791609ef7b6c4b92012850ae9c15f4067c7a53`,
+`https://github.com/fr0ster/mcp-abap-adt-interfaces/blob/06791609ef7b6c4b92012850ae9c15f4067c7a53/docs/superpowers/specs/2026-09-15-interfaces-split-design.md`).
 
 ## 27. One mechanism brings its own error codes; it does not widen a shared set
 
