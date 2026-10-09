@@ -309,7 +309,7 @@ is in the shape rather than the number.
 | directory | what it holds |
 |---|---|
 | `adt/` (39 files) | the capability atoms (`IAdtCreatable`, `IAdtReadable`, …), one file per ADT object type with its config and low-level params, the cross-cutting utilities (`IAdtInformationSystem` and the four atoms it composes, `IAdtRepositoryStructure`, `IAdtGroupLifecycle`, `IAdtDataPreview`, `IAdtDiscovery`, `IAdtObjectAccess`), transport, abapGit, client options, content types |
-| `runtime/` (11) | what a system says about itself after the fact — the profiler, the ABAP and SQL traces, dumps, ATC (log and run), application log, DDIC activation, gateway errors, system messages |
+| `runtime/` (14) | what a system says about itself after the fact — the profiler, the ABAP and SQL traces, dumps, ATC (log and run), application log, DDIC activation, gateway errors, system messages — and while it runs: the ABAP and AMDP debuggers, memory snapshots |
 | `service/` (1) | the service binding: what it has that the atoms do not cover |
 | `feeds/` (2) | the ADT feed repository |
 | `execution/` (3) | being run: `IAdtRunnable`, the two profiler atoms, trace scheduling, and the two executors composed from them |
@@ -373,11 +373,12 @@ alone, composed families, a consumer's own readings, and the shapes that must
 - **Anything unmeasured.** A member is added because someone needs it, not
   because a sibling has one (decision 11), and a shape is named from a capture,
   not from a guess (decision 1).
-- **Contracts nobody can yet state.** The debugger, memory snapshots and batch
-  left in 30.0.0 for a research branch of `adt-clients` and come back measured —
-  39 of `IDebugger`'s 42 members answered the transport envelope, which is what a
-  contract looks like before anyone knows what its endpoints return. Publishing
-  one migrates every consumer twice.
+- **Contracts nobody can yet state.** The debugger batch left in 30.0.0 with
+  the debugger and memory snapshots, and stays out: it routes any request, and
+  what a caller needs from it — Eclipse's step answered with the stack in one
+  round trip — is not measured yet. The debugger and memory snapshots came back
+  measured in `interfaces-adt` 13.1.0 (decision 43). Publishing a contract
+  before its endpoints are known migrates every consumer twice.
 
 ---
 

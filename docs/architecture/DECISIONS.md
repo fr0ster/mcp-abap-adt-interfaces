@@ -556,6 +556,10 @@ the next task.
 **What would change it.** The debugger's own design being settled. Until then it
 is counted and left alone.
 
+**Settled 2026-10-10** — see decision 43. The design was measured first and the
+contracts came back with named results from the start, so there was never an
+envelope version of them to migrate from.
+
 ## 14. The envelope's type parameter is transport pass-through, not a strategy receiver
 
 **The question.** `IAdtResponse<T = any, D = any>` has a generic. Decision 13
@@ -3025,6 +3029,50 @@ cannot say without free text. That is a new fact or a new diagnostic for one
 variant — a major here (the types are closed, so a field added to one variant
 changes the shape of all; 6.0.0 added two), as is a new kind or discriminant
 member; a minor only for a new member of a code list — not a return to words.
+
+## 43. The debugger comes back measured, and its shape is the two sessions
+
+**Decided 2026-10-10, in `interfaces-adt` 13.1.0.** Settles "IDebugger is not a
+design problem yet".
+
+**The problem.** `IDebugger` left in 30.0.0 because its shape was a guess: one
+object holding the ABAP debugger, the AMDP debugger and memory snapshots, its
+members answering the transport envelope. What was missing was not a return
+type but the protocol — which session each request may go on.
+
+**What was measured.** The whole sequence, on premise over HTTP and RFC and on
+SAP BTP ABAP Environment, in a research branch of `adt-clients` with its own
+integration tests:
+
+- the ABAP listener holds one stateful session; a debuggee caught is attached
+  on **another**, opened for it and routed to the debuggee's application
+  server. On the cloud an attach on the listener's session was refused
+  whenever the debuggee ran on another server, and a session that has attached
+  once cannot attach again;
+- two listeners of one user conflict by the IDE id, and the newcomer either is
+  refused or displaces the other — a choice the implementation is told at
+  construction, not a member of the contract;
+- the AMDP debugger is a protocol of its own: events on one session, commands
+  on another, each command answered with the request it became;
+- memory snapshots are written by the debugger and read through the list,
+  where they arrive later, and only for a user authorized to read them.
+
+**The decision.** Three contracts, not one aggregate: `IAbapDebugger`,
+`IAmdpDebugger`, `IMemorySnapshots`. An aggregate handing out all three from
+one connection would state the one thing the measurement disproved. Each takes
+its sessions from the caller; each member is one request and takes the error
+strategy with the call (decision 36); results are type parameters without
+defaults, as in every runtime contract. Where SAP refuses a request that lacks
+an argument and does damage in the same moment — run to a line without the
+line — the argument is required by the signature.
+
+**What stays out.** The debugger batch (not measured as a caller would use it),
+and the AMDP cell substring (never sent). Each comes in as a member once it is
+measured.
+
+**What would change it.** A platform where one session can both listen and
+attach to any debuggee — then the two-session rule becomes a fact about some
+systems, not a property of the contract.
 
 ## Open, and what would settle it
 

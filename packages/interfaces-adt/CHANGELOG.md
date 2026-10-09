@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [13.1.0] - 2026-10-10
+
+### Added
+
+- **The debugger contracts, measured.** Withdrawn from `@mcp-abap-adt/interfaces`
+  in 30.0.0 until they could come back "measured: one member per endpoint";
+  they were measured on premise (HTTP and RFC) and on SAP BTP ABAP
+  Environment, and come back here.
+  - `IAbapDebugger` — the ABAP debugger in user mode: breakpoints, listener,
+    attach, stack, variables, steps, watchpoints, a value set, termination,
+    and the debuggee's memory (sizes, and a snapshot written).
+    `IDebuggerIdentity`, `IDebuggerBreakpoint`, `IDebuggerStepMethod`,
+    `IDebuggerStepToLineMethod`, `IAttachOptions`.
+  - `IAmdpDebugger` — the AMDP debugger, a protocol of its own: session,
+    breakpoints, events, steps, a debuggee ended, stop, and a table
+    variable's rows. `IAmdpBreakpoint`, `IAmdpStepMethod`,
+    `IStartAmdpDebuggerOptions`, `IGetAmdpDataPreviewOptions`.
+  - `IMemorySnapshots` — the memory snapshots the system lists, each view of
+    one and the deltas between two. `IMemorySnapshotsListOptions`,
+    `ISnapshotRankingListOptions`, `ISnapshotChildrenOptions`,
+    `ISnapshotReferencesOptions`.
+
+  What the measurement decided in the shape:
+  - **Two sessions.** The ABAP listener holds one; each debuggee caught is
+    attached on another, named by its application server. On a system with
+    more than one server an attach on the listener's session is refused
+    whenever the debuggee runs elsewhere. The AMDP debugger likewise answers
+    its events on one session and takes its commands on another.
+  - **Run to a line takes the line as an argument.** Without it SAP answers
+    400 and lets the program run to its end in the same moment.
+  - **The snapshot views take their limit as required.** Without
+    `maxNumberOfObjects` or `maxNumberOfReferences` they answer 400.
+  - **Every member takes the error strategy with the call** (decision 36),
+    and `errorStrategyOnEveryMember` now holds the three contracts to it.
+  - Every type parameter is the implementation's, with no default, as in the
+    other runtime contracts.
+
 ## [13.0.0] - 2026-10-05
 
 ### Changed (breaking)
