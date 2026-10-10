@@ -52,8 +52,9 @@ export type IDebuggerStepMethod =
 
 /**
  * The steps that go to a line, which they name. Without the line SAP answers
- * 400 and lets the program run to its end in the same moment, so the stop is
- * lost — the line is therefore an argument, not an option.
+ * 400 — and on one release (BASIS 758) let the program run to its end in the
+ * same moment, losing the stop, while another (BASIS 816, 2026-10-10) kept it
+ * suspended. The line is therefore an argument, not an option.
  */
 export type IDebuggerStepToLineMethod = 'stepRunToLine' | 'stepJumpToLine';
 
