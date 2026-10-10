@@ -11,6 +11,7 @@
 // belongs in it; the check is only as wide as the list.
 
 import type {
+  IAbapDebugger,
   IAdtAbapGitClient,
   IAdtActivatable,
   IAdtCheckable,
@@ -39,6 +40,7 @@ import type {
   IAdtVersionable,
   IAdtVirtualFolders,
   IAdtWhereUsed,
+  IAmdpDebugger,
   IApplicationLog,
   IAtcFindings,
   IAtcLog,
@@ -51,6 +53,7 @@ import type {
   IFeatureToggleObjectResults,
   IFeedRepository,
   IGatewayErrorLog,
+  IMemorySnapshots,
   IRunnableWithProfiler,
   IRunnableWithProfiling,
   IRuntimeDumps,
@@ -246,4 +249,17 @@ export type _ITraceReading = Assert<
 export type _ITraceDeletion = Assert<EveryMemberTakesAnalyse<ITraceDeletion>>;
 export type _IAdtTransportSearchConfigurations = Assert<
   EveryMemberTakesAnalyse<IAdtTransportSearchConfigurations<Probe>>
+>;
+export type _IAbapDebugger = Assert<
+  EveryMemberTakesAnalyse<
+    IAbapDebugger<Probe, Probe, Probe, Probe, Probe, Probe, Probe, Probe, Probe>
+  >
+>;
+export type _IAmdpDebugger = Assert<
+  EveryMemberTakesAnalyse<IAmdpDebugger<Probe, Probe, Probe, Probe>>
+>;
+export type _IMemorySnapshots = Assert<
+  EveryMemberTakesAnalyse<
+    IMemorySnapshots<Probe, Probe, Probe, Probe, Probe, Probe>
+  >
 >;

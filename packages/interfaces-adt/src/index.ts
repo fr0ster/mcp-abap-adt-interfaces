@@ -224,6 +224,21 @@ export type { ITraceScheduling } from './execution/ITraceScheduling';
 export type { IFeedRepository } from './feeds/IFeedRepository';
 export type { IAbapTimestamp, IFeedQueryOptions } from './feeds/types';
 export type {
+  IAbapDebugger,
+  IAttachOptions,
+  IDebuggerBreakpoint,
+  IDebuggerIdentity,
+  IDebuggerStepMethod,
+  IDebuggerStepToLineMethod,
+} from './runtime/IAbapDebugger';
+export type {
+  IAmdpBreakpoint,
+  IAmdpDebugger,
+  IAmdpStepMethod,
+  IGetAmdpDataPreviewOptions,
+  IStartAmdpDebuggerOptions,
+} from './runtime/IAmdpDebugger';
+export type {
   IApplicationLog,
   IGetApplicationLogObjectOptions,
   IGetApplicationLogSourceOptions,
@@ -249,6 +264,13 @@ export type {
   IGetActivationGraphOptions,
 } from './runtime/IDdicActivation';
 export type { IGatewayErrorLog } from './runtime/IGatewayErrorLog';
+export type {
+  IMemorySnapshots,
+  IMemorySnapshotsListOptions,
+  ISnapshotChildrenOptions,
+  ISnapshotRankingListOptions,
+  ISnapshotReferencesOptions,
+} from './runtime/IMemorySnapshots';
 export type {
   IProfiler,
   IProfilerListOptions,
