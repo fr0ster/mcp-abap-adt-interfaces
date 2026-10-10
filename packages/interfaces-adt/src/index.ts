@@ -123,8 +123,11 @@ export type {
 export type {
   DesiredPublicationState,
   GeneratedServiceType,
+  IAdtServiceBindingTypes,
+  IAdtServiceGroupReadable,
   ICreateServiceBindingParams,
   IServiceBindingConfig,
+  IServiceGroupParams,
   ServiceBindingType,
   ServiceBindingVariant,
   ServiceBindingVersion,

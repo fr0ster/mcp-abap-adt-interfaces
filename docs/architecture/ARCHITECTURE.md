@@ -308,7 +308,7 @@ is in the shape rather than the number.
 
 | directory | what it holds |
 |---|---|
-| `adt/` (39 files) | the capability atoms (`IAdtCreatable`, `IAdtReadable`, …), one file per ADT object type with its config and low-level params, the cross-cutting utilities (`IAdtInformationSystem` and the four atoms it composes, `IAdtRepositoryStructure`, `IAdtGroupLifecycle`, `IAdtDataPreview`, `IAdtDiscovery`, `IAdtObjectAccess`), transport, abapGit, client options, content types |
+| `adt/` (39 files) | the capability atoms (`IAdtCreatable`, `IAdtReadable`, …), one file per ADT object type with its config and low-level params (the service binding's also with its two reads beyond the lifecycle, `IAdtServiceBindingTypes` and `IAdtServiceGroupReadable`), the cross-cutting utilities (`IAdtInformationSystem` and the four atoms it composes, `IAdtRepositoryStructure`, `IAdtGroupLifecycle`, `IAdtDataPreview`, `IAdtDiscovery`, `IAdtObjectAccess`), transport, abapGit, client options, content types |
 | `runtime/` (14) | what a system says about itself after the fact — the profiler, the ABAP and SQL traces, dumps, ATC (log and run), application log, DDIC activation, gateway errors, system messages — and while it runs: the ABAP and AMDP debuggers, memory snapshots |
 | `service/` (1) | the service binding: what it has that the atoms do not cover |
 | `feeds/` (2) | the ADT feed repository |

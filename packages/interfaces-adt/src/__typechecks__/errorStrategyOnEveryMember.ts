@@ -31,6 +31,8 @@ import type {
   IAdtRequest,
   IAdtResponse,
   IAdtRunnable,
+  IAdtServiceBindingTypes,
+  IAdtServiceGroupReadable,
   IAdtTransportAware,
   IAdtTransportObjectActions,
   IAdtTransportSearchConfigurations,
@@ -262,4 +264,10 @@ export type _IMemorySnapshots = Assert<
   EveryMemberTakesAnalyse<
     IMemorySnapshots<Probe, Probe, Probe, Probe, Probe, Probe>
   >
+>;
+export type _IAdtServiceBindingTypes = Assert<
+  EveryMemberTakesAnalyse<IAdtServiceBindingTypes<Probe>>
+>;
+export type _IAdtServiceGroupReadable = Assert<
+  EveryMemberTakesAnalyse<IAdtServiceGroupReadable<Probe>>
 >;
