@@ -37,7 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     its events on one session and takes its commands on another.
   - **Run to a line takes the line as an argument.** Without it SAP answers
     400, and on one release (BASIS 758) the program ran to its end in the
-    same moment, losing the stop; on another (BASIS 816) it stayed suspended.
+    same moment, losing the stop; on BASIS 816 and on SAP BTP ABAP
+    Environment it stayed suspended.
   - **Jump to a line is measured too**: it moves the debuggee to the line
     without running what lies between.
   - **The snapshot views take their limit as required.** Without

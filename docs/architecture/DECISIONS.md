@@ -3064,7 +3064,8 @@ its sessions from the caller; each member is one request and takes the error
 strategy with the call (decision 36); results are type parameters without
 defaults, as in every runtime contract. Where SAP refuses a request that lacks
 an argument and, on some releases, does damage in the same moment — run to a
-line without the line released the program on BASIS 758 and kept it on 816 —
+line without the line released the program on BASIS 758, and kept it on 816
+and on the cloud —
 the argument is required by the signature.
 
 **What stays out.** The debugger batch (not measured as a caller would use it),
