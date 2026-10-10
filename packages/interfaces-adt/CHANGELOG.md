@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [13.2.0] - 2026-10-10
+
+### Added
+
+- **The service binding's two reads beyond its lifecycle, as atoms.** Until now
+  a binding's handler could only be typed by its implementation, because these
+  members had no contract (`adt-clients` #109).
+  - `IAdtServiceBindingTypes` — `getServiceBindingTypes`: the binding types the
+    system offers, a catalogue (`nameditem:namedItemList`).
+  - `IAdtServiceGroupReadable` — `getServiceGroup(params)`: the service group a
+    binding publishes, its URL prefix, services and publication state. A read,
+    which is what tells a publication's outcome — not a job, not a generation.
+  - `IServiceGroupParams`, the read's argument, moves here from
+    `adt-clients`, which declared it locally.
+
+  Measured on premise and on SAP BTP ABAP Environment (2026-10-10). Every
+  member takes the error strategy with the call; both are in
+  `errorStrategyOnEveryMember`.
+
 ## [13.1.0] - 2026-10-10
 
 ### Added
