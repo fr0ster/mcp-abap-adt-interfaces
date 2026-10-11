@@ -2,24 +2,61 @@ import type { IAdtAnalyseOptions, IAnalyse } from '../adt/IAdtObject';
 import type { IAdtError, IAdtResponse } from '../adt/IAdtResponse';
 
 /**
- * Who is debugging: the values SAP keys a user-mode listener and the
- * breakpoints armed for it on. `terminalId` and `ideId` are 32 upper-case hex
- * characters, chosen by the caller and kept for the whole session.
+ * Who is debugging, by mode: the values SAP keys a listener and the
+ * breakpoints armed for it on. `ideId` is 32 upper-case hex characters, chosen
+ * by the caller and kept for the whole session. In `user` mode so is
+ * `terminalId`; in `terminal` mode it is the target's terminal id (for SAP GUI,
+ * the one its settings show).
  *
- * A conflict between two listeners of one SAP user is decided by `ideId`: the
- * same `ideId` never conflicts, another one either refuses the newcomer or is
- * displaced by it, as the implementation is told to.
+ * - `user` catches the requests of `requestUser`. Debugging another user
+ *   needs `S_DEVELOP` with the DEBUG activity 90 on them.
+ * - `terminal` catches the requests that carry `terminalId` (for SAP GUI, its
+ *   terminal id). The server reads no `requestUser` there, so the type has
+ *   none. No catch was measured in this mode as of 2026-10-11.
+ *
+ * A `terminalId` equal to `ideId` keys on the IDE id alone.
+ *
+ * In `user` mode (measured on premise, 2026-10-10), a conflict between two
+ * listeners of one SAP user is decided by `ideId`: the same `ideId` never
+ * conflicts, another one either refuses the newcomer or is displaced by it, as
+ * the implementation is told to. It was not measured in `terminal` mode.
  */
-export interface IDebuggerIdentity {
-  requestUser: string;
-  terminalId: string;
-  ideId: string;
-}
+export type IDebuggerIdentity =
+  | {
+      debuggingMode: 'user';
+      requestUser: string;
+      terminalId: string;
+      ideId: string;
+    }
+  | {
+      debuggingMode: 'terminal';
+      terminalId: string;
+      ideId: string;
+      requestUser?: never;
+    };
 
 interface IBreakpointCommon {
+  /**
+   * Hits to pass before the breakpoint stops. Which hit stops is recorded in
+   * the implementation's docs.
+   */
+  skipCount?: number;
+}
+
+/** A line breakpoint; the only kind the server evaluates a condition on. */
+export type IDebuggerLineBreakpoint = IBreakpointCommon & {
+  kind: 'line';
+  /** The source URI with `#start=<line>`. */
+  uri: string;
   /** An ABAP condition; the breakpoint stops only where it holds. */
   condition?: string;
-}
+};
+
+/**
+ * `condition?: never` rejects a pre-typed value carrying a condition, not only
+ * a fresh literal.
+ */
+type NoCondition = { condition?: never };
 
 /**
  * The kinds of breakpoint. Only a line breakpoint is tied to an object; the
@@ -29,19 +66,54 @@ interface IBreakpointCommon {
  * type makes SAP refuse the whole set.
  */
 export type IDebuggerBreakpoint =
-  | (IBreakpointCommon & {
-      kind: 'line';
-      /** The source URI with `#start=<line>`. */
-      uri: string;
-    })
-  | (IBreakpointCommon & { kind: 'exception'; exceptionClass: string })
-  | (IBreakpointCommon & { kind: 'statement'; statement: string })
-  | (IBreakpointCommon & {
-      kind: 'message';
-      msgId: string;
-      msgNo: string;
-      msgTy: string;
-    });
+  | IDebuggerLineBreakpoint
+  | (IBreakpointCommon &
+      NoCondition & { kind: 'exception'; exceptionClass: string })
+  | (IBreakpointCommon & NoCondition & { kind: 'statement'; statement: string })
+  | (IBreakpointCommon &
+      NoCondition & {
+        kind: 'message';
+        msgId: string;
+        msgNo: string;
+        msgTy: string;
+      });
+
+/**
+ * Replace breakpoints instead of adding them. Both scopes touch every IDE that
+ * shares the identity's key. The key is the IDE user and `requestUser` in
+ * `user` mode, and the IDE user and `terminalId` in `terminal` mode; a
+ * `terminalId` equal to `ideId` selects the IDE-id-only key. At most 30
+ * breakpoints per key.
+ *
+ * `full` replaces all of the key's breakpoints; an empty `breakpoints` clears
+ * them. `partial` replaces the line breakpoints of the main programs its
+ * objects map to (two objects of one class pool are one program); an empty
+ * `breakpoints` clears that scope. An object that maps to no program leaves
+ * the body's line breakpoints unset. All of this is (server source, BASIS 816, read 2026-10-11);
+ * none of it was observed on a system.
+ */
+export type IDebuggerBreakpointSync =
+  | { scope: 'full'; breakpoints: readonly IDebuggerBreakpoint[] }
+  | {
+      scope: 'partial';
+      objects: readonly [string, ...string[]];
+      breakpoints: readonly IDebuggerLineBreakpoint[];
+    };
+
+/**
+ * What to change in the debugger settings; a field left out keeps its current
+ * value. The exception is `showDataAging`: the server does not merge it, takes
+ * it from each request, and turns it off when left out. It only steers how the
+ * variables present data aging. This is (server source, BASIS 816, read 2026-10-11).
+ */
+export interface IDebuggerSettings {
+  systemDebugging?: boolean;
+  updateDebugging?: boolean;
+  createExceptionObject?: boolean;
+  backgroundRFC?: boolean;
+  sharedObjectDebugging?: boolean;
+  showDataAging?: boolean;
+}
 
 /** The steps that go from where the debuggee stands. */
 export type IDebuggerStepMethod =
@@ -63,7 +135,7 @@ type WithAnalyse<E extends IAdtError, O = unknown> = O &
 type WithoutAnalyse<O = unknown> = O & IAdtAnalyseOptions;
 
 /**
- * The ABAP debugger in user mode, one member per request.
+ * The ABAP debugger, by the mode its identity names, one member per request.
  *
  * **Two sessions, both stateful, both the caller's.** The listener holds one.
  * Each debuggee caught is attached on another, opened for it; every member
@@ -75,7 +147,8 @@ type WithoutAnalyse<O = unknown> = O & IAdtAnalyseOptions;
  *
  * Every type parameter is what the implementation answers for that kind of
  * request: the breakpoints set, the listener's catch, the attach, the stack,
- * variables, a step, an answer with nothing to read, watchpoints, memory.
+ * variables, a step, an answer with nothing to read, watchpoints, memory,
+ * settings.
  */
 export interface IAbapDebugger<
   TBreakpoints,
@@ -87,6 +160,7 @@ export interface IAbapDebugger<
   TDone,
   TWatchpoints,
   TMemory,
+  TSettings,
 > {
   /** Which runtime resource this is, for a consumer narrowing a union of them. */
   readonly kind: 'abapDebugger';
@@ -138,12 +212,12 @@ export interface IAbapDebugger<
 
   /** Take over a caught debuggee, on a session of its own. */
   attach<E extends IAdtError>(
-    requestUser: string,
+    identity: IDebuggerIdentity,
     debuggeeId: string,
     options: WithAnalyse<E, IAttachOptions>,
   ): Promise<IAdtResponse<TAttach, E>>;
   attach(
-    requestUser: string,
+    identity: IDebuggerIdentity,
     debuggeeId: string,
     options?: WithoutAnalyse<IAttachOptions>,
   ): Promise<IAdtResponse<TAttach>>;
@@ -214,11 +288,82 @@ export interface IAbapDebugger<
     options?: WithoutAnalyse,
   ): Promise<IAdtResponse<TVariables>>;
 
-  /** End the debuggee where it stands. */
+  /**
+   * End the debuggee where it stands. Compare {@link detachDebugger}, where the
+   * debugger leaves and the program runs on, and {@link terminateDebugger},
+   * which frees the debugger.
+   */
   terminateDebuggee<E extends IAdtError>(
     options: WithAnalyse<E>,
   ): Promise<IAdtResponse<TDone, E>>;
   terminateDebuggee(options?: WithoutAnalyse): Promise<IAdtResponse<TDone>>;
+
+  /**
+   * Replace the breakpoints of the identity's key instead of adding (`full`),
+   * or the line breakpoints of the named objects' programs (`partial`). The
+   * key is the IDE user and `requestUser` in `user` mode, the IDE user and
+   * `terminalId` in `terminal` mode (a `terminalId` equal to `ideId` selects
+   * the IDE-id-only key). Reaches every IDE sharing the key.
+   */
+  syncBreakpoints<E extends IAdtError>(
+    identity: IDebuggerIdentity,
+    sync: IDebuggerBreakpointSync,
+    options: WithAnalyse<E>,
+  ): Promise<IAdtResponse<TBreakpoints, E>>;
+  syncBreakpoints(
+    identity: IDebuggerIdentity,
+    sync: IDebuggerBreakpointSync,
+    options?: WithoutAnalyse,
+  ): Promise<IAdtResponse<TBreakpoints>>;
+
+  /**
+   * Ask whether a listener for the identity would conflict, without starting
+   * one. A conflict is the failure (409).
+   */
+  checkListener<E extends IAdtError>(
+    identity: IDebuggerIdentity,
+    options: WithAnalyse<E>,
+  ): Promise<IAdtResponse<TDone, E>>;
+  checkListener(
+    identity: IDebuggerIdentity,
+    options?: WithoutAnalyse,
+  ): Promise<IAdtResponse<TDone>>;
+
+  /**
+   * The debugger leaves and the program runs on. With `debuggeeId`, a caught
+   * debuggee not attached on this session. (server source, BASIS 816, read 2026-10-11):
+   * with a `debuggeeId` the server tries to attach that debuggee; if that
+   * fails it deletes the debuggee's activation and still answers success, so
+   * success does not prove the debuggee was attached and released.
+   */
+  detachDebugger<E extends IAdtError>(
+    options: WithAnalyse<E, { debuggeeId?: string }>,
+  ): Promise<IAdtResponse<TDone, E>>;
+  detachDebugger(
+    options?: WithoutAnalyse<{ debuggeeId?: string }>,
+  ): Promise<IAdtResponse<TDone>>;
+
+  /**
+   * Free the debugger; the program runs on. (server source, BASIS 816, read 2026-10-11).
+   */
+  terminateDebugger<E extends IAdtError>(
+    options: WithAnalyse<E>,
+  ): Promise<IAdtResponse<TDone, E>>;
+  terminateDebugger(options?: WithoutAnalyse): Promise<IAdtResponse<TDone>>;
+
+  /**
+   * Change the debugger settings at the current stop; answers the settings in
+   * force. The first call after an attach ignores `systemDebugging=false`
+   * (server source).
+   */
+  setDebuggerSettings<E extends IAdtError>(
+    settings: IDebuggerSettings,
+    options: WithAnalyse<E>,
+  ): Promise<IAdtResponse<TSettings, E>>;
+  setDebuggerSettings(
+    settings: IDebuggerSettings,
+    options?: WithoutAnalyse,
+  ): Promise<IAdtResponse<TSettings>>;
 
   createWatchpoint<E extends IAdtError>(
     variableName: string,

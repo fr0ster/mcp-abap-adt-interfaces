@@ -3076,6 +3076,39 @@ measured.
 attach to any debuggee — then the two-session rule becomes a fact about some
 systems, not a property of the contract.
 
+## 44. The debugger by mode, and a sync of its own
+
+**Decided 2026-10-11, in `interfaces-adt` 14.0.0.** Builds on decision 43.
+
+**Read in the server source (BASIS 816, 2026-10-11).** The listener discovery
+template takes `debuggingMode`, `requestUser`, `terminalId` and `ideId`; the
+server reads `requestUser` in `user` mode only.
+
+**Measured (on premise, 2026-10-11).** Deleting a terminal-mode breakpoint:
+`requestUser` left out answers `400 ExceptionParameterNotFound`, empty answers
+`200`, the logon user answers `200`.
+
+**The decision.**
+
+- **Sync is a member of its own, not an option on `setBreakpoints`.** Replacing
+  a set is destructive and reaches every IDE sharing the key. `setBreakpoints`
+  keeps its add-only promise, and the name of the new member says what it does.
+- **`partial` takes line breakpoints only.** That is all the server replaces
+  there; what it does with the other kinds is unclear, so they do not compile.
+  Its objects are a non-empty tuple, because an empty list names nothing.
+- **`condition?: never` on the other kinds.** A plain omission accepts a
+  pre-typed value that carries a condition; `never` rejects it too. The server
+  evaluates a condition on a line breakpoint only.
+- **Terminal mode ships unmeasured.** The contract follows the discovery and the
+  server source; no catch was observed in it. A type that waited for the
+  measurement would leave callers no way to try it, and the implementation's
+  docs say what to send in an issue if it does not catch.
+- **The mode is required, with no default.** Every caller states it; a default
+  would pick a mode for those who did not choose.
+
+**What would change it.** A measured terminal-mode catch that differs from the
+source, or a server that replaces other kinds in `partial`.
+
 ## Open, and what would settle it
 
 Not decisions. These are questions this repository has met and deliberately left
