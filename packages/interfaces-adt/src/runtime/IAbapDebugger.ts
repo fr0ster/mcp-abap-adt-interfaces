@@ -37,10 +37,15 @@ export type IDebuggerIdentity =
 
 interface IBreakpointCommon {
   /**
-   * Hits to pass before the breakpoint stops. Which hit stops is recorded in
-   * the implementation's docs.
+   * The caller's own tag for this breakpoint, sent with it and echoed by the
+   * server on the breakpoint's row of the answer, on a placed row and on a
+   * refused row alike. It pairs the answer with the request whatever order the
+   * server answers the rows in (measured on premise (2026-10-11), BASIS 816:
+   * the server answered refused rows before placed ones, out of the request's
+   * order, and echoed every `clientId`). Unique per request is the caller's
+   * responsibility.
    */
-  skipCount?: number;
+  clientId?: string;
 }
 
 /** A line breakpoint; the only kind the server evaluates a condition on. */
@@ -79,18 +84,23 @@ export type IDebuggerBreakpoint =
       });
 
 /**
- * Replace breakpoints instead of adding them. Both scopes touch every IDE that
- * shares the identity's key. The key is the IDE user and `requestUser` in
- * `user` mode, and the IDE user and `terminalId` in `terminal` mode; a
- * `terminalId` equal to `ideId` selects the IDE-id-only key. At most 30
- * breakpoints per key.
+ * Replace breakpoints, explicitly. Both scopes touch every IDE that shares the
+ * identity's key. The key is the IDE user and `requestUser` in `user` mode, and
+ * the IDE user and `terminalId` in `terminal` mode; a `terminalId` equal to
+ * `ideId` selects the IDE-id-only key. At most 30 breakpoints per key.
+ *
+ * `setBreakpoints` without a sync scope replaces the whole set of the key too
+ * (measured on premise (2026-10-11), BASIS 816, also with `validationOnly`).
+ * What this adds is an explicit name for a destructive call, `full` with an
+ * empty set to clear the key, and `partial` scoped to the main programs of the
+ * named objects.
  *
  * `full` replaces all of the key's breakpoints; an empty `breakpoints` clears
  * them. `partial` replaces the line breakpoints of the main programs its
  * objects map to (two objects of one class pool are one program); an empty
  * `breakpoints` clears that scope. An object that maps to no program leaves
- * the body's line breakpoints unset. All of this is (server source, BASIS 816, read 2026-10-11);
- * none of it was observed on a system.
+ * the body's line breakpoints unset. The `partial` mapping is (server source,
+ * BASIS 816, read 2026-10-11); it was not observed on a system.
  */
 export type IDebuggerBreakpointSync =
   | { scope: 'full'; breakpoints: readonly IDebuggerBreakpoint[] }
@@ -165,7 +175,12 @@ export interface IAbapDebugger<
   /** Which runtime resource this is, for a consumer narrowing a union of them. */
   readonly kind: 'abapDebugger';
 
-  /** Arm breakpoints for the identity. Answers each one placed or refused. */
+  /**
+   * Arm breakpoints for the identity. This replaces the key's set, it does not
+   * add to it (measured on premise (2026-10-11), BASIS 816, also with
+   * `validationOnly`). Answers each one placed or refused; `clientId` pairs a
+   * row with its request. {@link stopListener} deletes the key's breakpoints.
+   */
   setBreakpoints<E extends IAdtError>(
     identity: IDebuggerIdentity,
     breakpoints: readonly IDebuggerBreakpoint[],
@@ -299,8 +314,9 @@ export interface IAbapDebugger<
   terminateDebuggee(options?: WithoutAnalyse): Promise<IAdtResponse<TDone>>;
 
   /**
-   * Replace the breakpoints of the identity's key instead of adding (`full`),
-   * or the line breakpoints of the named objects' programs (`partial`). The
+   * Replace the breakpoints of the identity's key (`full`; an empty set clears
+   * it), or the line breakpoints of the named objects' programs (`partial`).
+   * Unlike a bare {@link setBreakpoints}, it names the destructive call. The
    * key is the IDE user and `requestUser` in `user` mode, the IDE user and
    * `terminalId` in `terminal` mode (a `terminalId` equal to `ideId` selects
    * the IDE-id-only key). Reaches every IDE sharing the key.

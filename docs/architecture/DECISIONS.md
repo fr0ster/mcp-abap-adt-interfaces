@@ -3092,7 +3092,7 @@ server reads `requestUser` in `user` mode only.
 
 - **Sync is a member of its own, not an option on `setBreakpoints`.** Replacing
   a set is destructive and reaches every IDE sharing the key. `setBreakpoints`
-  keeps its add-only promise, and the name of the new member says what it does.
+  replaces too (corrected in decision 45), and the name of the new member says what it does.
 - **`partial` takes line breakpoints only.** That is all the server replaces
   there; what it does with the other kinds is unclear, so they do not compile.
   Its objects are a non-empty tuple, because an empty list names nothing.
@@ -3108,6 +3108,30 @@ server reads `requestUser` in `user` mode only.
 
 **What would change it.** A measured terminal-mode catch that differs from the
 source, or a server that replaces other kinds in `partial`.
+
+## 45. A breakpoint carries the caller's `clientId`, and `skipCount` leaves
+
+**Decided 2026-10-11, in `interfaces-adt` 15.0.0.** Corrects decision 44.
+
+**Measured (on premise, 2026-10-11, BASIS 816).** The server answers the rows of
+a breakpoint set refused-first, out of the request's order, and echoes the
+`clientId` of every row, refused ones included. It ignores `skipCount` on
+external breakpoints. `setBreakpoints` replaces the key's set, also with
+`validationOnly`, so decision 44's "add-only promise" was wrong.
+
+**The decision.**
+
+- **`clientId` is in the contract.** It is the only identifier the server
+  echoes on a refused row, and the order is not kept, so without it a refusal
+  cannot be tied to the breakpoint that caused it. Optional; unique per request
+  is the caller's.
+- **`skipCount` is removed**, not deprecated: it never did anything a caller
+  could rely on.
+- **`syncBreakpoints` stays**, with its reason restated: an explicit name for a
+  destructive call, a `full` empty set to clear the key, and `partial`.
+
+**What would change it.** A server that keeps the row order, or one that honours
+a skip count.
 
 ## Open, and what would settle it
 
