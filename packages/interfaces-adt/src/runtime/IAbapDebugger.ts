@@ -2,6 +2,29 @@ import type { IAdtAnalyseOptions, IAnalyse } from '../adt/IAdtObject';
 import type { IAdtError, IAdtResponse } from '../adt/IAdtResponse';
 
 /**
+ * The ids a request carries so that a terminal-mode listener catches it: the
+ * listener's `terminalId` and `ideId`, 32 upper-case hex characters each, as in
+ * {@link IDebuggerIdentity}.
+ *
+ * They travel in the request's `SAP-PASSPORT` header (the DSR passport), as two
+ * system variable items, terminal id and IDE id — the way the ADT client sends
+ * them. A run URL has no parameter for them. Measured on premise (2026-10-12,
+ * BASIS 816):
+ *
+ * - a class run carrying the ids is caught by the terminal-mode listener with
+ *   those ids, with `terminalId` equal to `ideId` or not; without them it is not
+ *   caught;
+ * - two listeners of one SAP user in terminal mode, with other ids, both listen,
+ *   and each run is caught only by the listener whose ids it carries;
+ * - the ids do not separate the breakpoints: `setBreakpoints` under other ids
+ *   still replaces the set of that SAP user.
+ */
+export interface IDebuggeeIds {
+  terminalId: string;
+  ideId: string;
+}
+
+/**
  * Who is debugging, by mode: the values SAP keys a listener and the
  * breakpoints armed for it on. `ideId` is 32 upper-case hex characters, chosen
  * by the caller and kept for the whole session. In `user` mode so is

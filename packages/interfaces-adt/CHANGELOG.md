@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [15.1.0] - 2026-10-12
+
+### Added
+
+- **`debuggee?: IDebuggeeIds` on the plain class and program run**
+  (`IClassExecuteOptions`, `IProgramExecuteOptions`): the terminal id and IDE id
+  a terminal-mode listener catches a run by. They travel in the request's
+  `SAP-PASSPORT` header, the way the ADT client sends them; a run URL has no
+  parameter for them. Measured on premise (2026-10-12, BASIS 816): a run with the
+  ids is caught by the listener with those ids and by no other, and without them
+  a terminal-mode listener catches nothing. The ids do not separate the
+  breakpoints: `setBreakpoints` under other ids still replaces the SAP user's
+  set.
+
 ## [15.0.0] - 2026-10-11
 
 ### Changed (breaking)

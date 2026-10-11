@@ -207,11 +207,13 @@ export type {
   IGetNodeContentsOptions,
 } from './adt/IAdtUtilities';
 export type {
+  IClassExecuteOptions,
   IClassExecuteWithProfilerOptions,
   IClassExecuteWithProfilingOptions,
   IClassExecuteWithProfilingResult,
   IClassExecutionTarget,
   IClassExecutor,
+  IProgramExecuteOptions,
   IProgramExecuteWithProfilerOptions,
   IProgramExecuteWithProfilingOptions,
   IProgramExecuteWithProfilingResult,
@@ -229,6 +231,7 @@ export type { IAbapTimestamp, IFeedQueryOptions } from './feeds/types';
 export type {
   IAbapDebugger,
   IAttachOptions,
+  IDebuggeeIds,
   IDebuggerBreakpoint,
   IDebuggerBreakpointSync,
   IDebuggerIdentity,
