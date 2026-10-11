@@ -1,11 +1,14 @@
 // Compile-only assertions for the #217 debugger contract. If these stop compiling, the types regressed.
 import type {
   IAbapDebugger,
+  IClassExecuteOptions,
+  IDebuggeeIds,
   IDebuggerBreakpoint,
   IDebuggerBreakpointSync,
   IDebuggerIdentity,
   IDebuggerLineBreakpoint,
   IDebuggerSettings,
+  IProgramExecuteOptions,
 } from '../index';
 
 // The identity, by mode.
@@ -149,3 +152,13 @@ export const lineWithSkipCount: IDebuggerBreakpoint = {
   // @ts-expect-error skipCount is removed; the server ignores it
   skipCount: 2,
 };
+
+// A run carries the debuggee's ids for a terminal-mode listener (15.1.0).
+export const debuggee: IDebuggeeIds = {
+  terminalId: 'A'.repeat(32),
+  ideId: 'B'.repeat(32),
+};
+export const classRunOptions: IClassExecuteOptions = { debuggee };
+export const programRunOptions: IProgramExecuteOptions = {};
+// @ts-expect-error both ids travel together
+export const debuggeeWithoutIde: IDebuggeeIds = { terminalId: 'A' };

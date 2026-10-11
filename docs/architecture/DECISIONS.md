@@ -3133,6 +3133,28 @@ external breakpoints. `setBreakpoints` replaces the key's set, also with
 **What would change it.** A server that keeps the row order, or one that honours
 a skip count.
 
+## 46. A run carries the debuggee's ids
+
+**Decided 2026-10-12, in `interfaces-adt` 15.1.0.**
+
+**Measured (on premise, 2026-10-12, BASIS 816).** A terminal-mode listener
+catches a request by the terminal id and IDE id the request carries in its
+`SAP-PASSPORT` header (two system variable items of the DSR passport, as the
+ADT client sends them). A class run with the ids is caught by the listener with
+those ids and by no other; without them nothing in terminal mode catches it. A
+run URL has no parameter for them (discovery: `classrun` and `programrun` take
+only `profilerId`). The ids do not separate the breakpoints: `setBreakpoints`
+under other ids still replaces the SAP user's set.
+
+**The decision.** The plain class and program run take an optional `debuggee`
+(`IDebuggeeIds`). The contract names what the run is for — to be caught by a
+listener — not the header: how the ids travel is the implementation's. Only the
+plain run takes it; the profiler variants do not, until someone needs a traced
+run caught.
+
+**What would change it.** A run endpoint that takes the ids as parameters, or a
+system that reads them from somewhere other than the passport.
+
 ## Open, and what would settle it
 
 Not decisions. These are questions this repository has met and deliberately left

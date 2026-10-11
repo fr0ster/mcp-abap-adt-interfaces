@@ -6,6 +6,7 @@
  * one place to import from and one place to override.
  */
 
+import type { IDebuggeeIds } from '../runtime/IAbapDebugger';
 import type { IProfilerTraceParameters } from '../runtime/IProfiler';
 import type {
   IAdtRunnable,
@@ -17,6 +18,18 @@ import type { ITraceScheduling } from './ITraceScheduling';
 
 export interface IClassExecutionTarget {
   className: string;
+}
+
+/**
+ * The plain run's options.
+ *
+ * `debuggee` makes the run a request a terminal-mode listener catches: the
+ * request carries the listener's terminal id and IDE id. Without it, only a
+ * user-mode listener for the logon user catches the run. See
+ * {@link IDebuggeeIds}.
+ */
+export interface IClassExecuteOptions {
+  debuggee?: IDebuggeeIds;
 }
 
 export interface IClassExecuteWithProfilerOptions {
@@ -71,7 +84,8 @@ export interface IClassExecuteWithProfilingResult<TRun> {
  */
 export type IClassExecutor<TRun, TTypes, TRequests, TScheduled> = IAdtRunnable<
   IClassExecutionTarget,
-  TRun
+  TRun,
+  IClassExecuteOptions
 > &
   IRunnableWithProfiler<
     IClassExecutionTarget,
@@ -87,6 +101,11 @@ export type IClassExecutor<TRun, TTypes, TRequests, TScheduled> = IAdtRunnable<
 
 export interface IProgramExecutionTarget {
   programName: string;
+}
+
+/** The plain run's options; see {@link IClassExecuteOptions}. */
+export interface IProgramExecuteOptions {
+  debuggee?: IDebuggeeIds;
 }
 
 export interface IProgramExecuteWithProfilerOptions {
@@ -108,7 +127,7 @@ export interface IProgramExecuteWithProfilingResult<TRun> {
 
 /** The program executor, composed the same way — see {@link IClassExecutor}. */
 export type IProgramExecutor<TRun, TTypes, TRequests, TScheduled> =
-  IAdtRunnable<IProgramExecutionTarget, TRun> &
+  IAdtRunnable<IProgramExecutionTarget, TRun, IProgramExecuteOptions> &
     IRunnableWithProfiler<
       IProgramExecutionTarget,
       TRun,
