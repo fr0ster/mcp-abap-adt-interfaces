@@ -3,8 +3,10 @@ import type { IAdtError, IAdtResponse } from '../adt/IAdtResponse';
 
 /**
  * Who is debugging, by mode: the values SAP keys a listener and the
- * breakpoints armed for it on. `terminalId` and `ideId` are 32 upper-case hex
- * characters, chosen by the caller and kept for the whole session.
+ * breakpoints armed for it on. `ideId` is 32 upper-case hex characters, chosen
+ * by the caller and kept for the whole session. In `user` mode so is
+ * `terminalId`; in `terminal` mode it is the target's terminal id (for SAP GUI,
+ * the one its settings show).
  *
  * - `user` catches the requests of `requestUser`. Debugging another user
  *   needs `S_DEVELOP` with the DEBUG activity 90 on them.
@@ -14,9 +16,10 @@ import type { IAdtError, IAdtResponse } from '../adt/IAdtResponse';
  *
  * A `terminalId` equal to `ideId` keys on the IDE id alone.
  *
- * A conflict between two listeners of one SAP user is decided by `ideId`: the
- * same `ideId` never conflicts, another one either refuses the newcomer or is
- * displaced by it, as the implementation is told to.
+ * In `user` mode (measured on premise, 2026-10-10), a conflict between two
+ * listeners of one SAP user is decided by `ideId`: the same `ideId` never
+ * conflicts, another one either refuses the newcomer or is displaced by it, as
+ * the implementation is told to. It was not measured in `terminal` mode.
  */
 export type IDebuggerIdentity =
   | {
@@ -33,7 +36,10 @@ export type IDebuggerIdentity =
     };
 
 interface IBreakpointCommon {
-  /** Hits to pass before the breakpoint stops. Which hit stops is recorded in the implementation's docs. */
+  /**
+   * Hits to pass before the breakpoint stops. Which hit stops is recorded in
+   * the implementation's docs.
+   */
   skipCount?: number;
 }
 
@@ -46,7 +52,10 @@ export type IDebuggerLineBreakpoint = IBreakpointCommon & {
   condition?: string;
 };
 
-/** `condition?: never` rejects a pre-typed value carrying a condition, not only a fresh literal. */
+/**
+ * `condition?: never` rejects a pre-typed value carrying a condition, not only
+ * a fresh literal.
+ */
 type NoCondition = { condition?: never };
 
 /**
@@ -71,8 +80,10 @@ export type IDebuggerBreakpoint =
 
 /**
  * Replace breakpoints instead of adding them. Both scopes touch every IDE that
- * shares the identity's key: in `user` mode the breakpoints belong to the
- * user, in `terminal` mode to the terminal.
+ * shares the identity's key. The key is the IDE user and `requestUser` in
+ * `user` mode, and the IDE user and `terminalId` in `terminal` mode; a
+ * `terminalId` equal to `ideId` selects the IDE-id-only key. At most 30
+ * breakpoints per key.
  *
  * `full` replaces all of the key's breakpoints; an empty `breakpoints` clears
  * them. `partial` replaces the line breakpoints of the main programs its
@@ -286,7 +297,13 @@ export interface IAbapDebugger<
   ): Promise<IAdtResponse<TDone, E>>;
   terminateDebuggee(options?: WithoutAnalyse): Promise<IAdtResponse<TDone>>;
 
-  /** Replace the breakpoints of the identity's key instead of adding (`full`), or the line breakpoints of the named objects' programs (`partial`). Reaches every IDE sharing the key. */
+  /**
+   * Replace the breakpoints of the identity's key instead of adding (`full`),
+   * or the line breakpoints of the named objects' programs (`partial`). The
+   * key is the IDE user and `requestUser` in `user` mode, the IDE user and
+   * `terminalId` in `terminal` mode (a `terminalId` equal to `ideId` selects
+   * the IDE-id-only key). Reaches every IDE sharing the key.
+   */
   syncBreakpoints<E extends IAdtError>(
     identity: IDebuggerIdentity,
     sync: IDebuggerBreakpointSync,
@@ -298,7 +315,10 @@ export interface IAbapDebugger<
     options?: WithoutAnalyse,
   ): Promise<IAdtResponse<TBreakpoints>>;
 
-  /** Ask whether a listener for the identity would conflict, without starting one. A conflict is the failure (409). */
+  /**
+   * Ask whether a listener for the identity would conflict, without starting
+   * one. A conflict is the failure (409).
+   */
   checkListener<E extends IAdtError>(
     identity: IDebuggerIdentity,
     options: WithAnalyse<E>,
@@ -308,7 +328,10 @@ export interface IAbapDebugger<
     options?: WithoutAnalyse,
   ): Promise<IAdtResponse<TDone>>;
 
-  /** The debugger leaves and the program runs on. With `debuggeeId`, a caught debuggee not attached on this session. */
+  /**
+   * The debugger leaves and the program runs on. With `debuggeeId`, a caught
+   * debuggee not attached on this session.
+   */
   detachDebugger<E extends IAdtError>(
     options: WithAnalyse<E, { debuggeeId?: string }>,
   ): Promise<IAdtResponse<TDone, E>>;
@@ -322,7 +345,11 @@ export interface IAbapDebugger<
   ): Promise<IAdtResponse<TDone, E>>;
   terminateDebugger(options?: WithoutAnalyse): Promise<IAdtResponse<TDone>>;
 
-  /** Change the debugger settings at the current stop; answers the settings in force. */
+  /**
+   * Change the debugger settings at the current stop; answers the settings in
+   * force. The first call after an attach ignores `systemDebugging=false`
+   * (server source).
+   */
   setDebuggerSettings<E extends IAdtError>(
     settings: IDebuggerSettings,
     options: WithAnalyse<E>,

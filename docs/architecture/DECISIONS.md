@@ -3080,10 +3080,13 @@ systems, not a property of the contract.
 
 **Decided 2026-10-11, in `interfaces-adt` 14.0.0.** Builds on decision 43.
 
-**What was measured.** On premise (2026-10-11, BASIS 816): the listener
-discovery template takes `debuggingMode`, `requestUser`, `terminalId` and
-`ideId`; the server reads `requestUser` in user mode only; deleting a
-breakpoint requires the parameter in every mode.
+**Read in the server source (BASIS 816, 2026-10-11).** The listener discovery
+template takes `debuggingMode`, `requestUser`, `terminalId` and `ideId`; the
+server reads `requestUser` in `user` mode only.
+
+**Measured (on premise, 2026-10-11).** Deleting a terminal-mode breakpoint:
+`requestUser` left out answers `400 ExceptionParameterNotFound`, empty answers
+`200`, the logon user answers `200`.
 
 **The decision.**
 
@@ -3105,8 +3108,6 @@ breakpoint requires the parameter in every mode.
 
 **What would change it.** A measured terminal-mode catch that differs from the
 source, or a server that replaces other kinds in `partial`.
-
----
 
 ## Open, and what would settle it
 

@@ -15,7 +15,9 @@ The ABAP debugger by mode (`adt-clients` #217). Migration:
 
 - **`IDebuggerIdentity` is a union by `debuggingMode`**, required, with no
   default. Add `debuggingMode: 'user'` to every identity you build today;
-  `requestUser` exists only in `user` mode. `terminal` mode takes `terminalId`
+  `requestUser` exists only in `user` mode. It is now a type union, not an
+  interface: `interface X extends IDebuggerIdentity` no longer compiles; use an
+  intersection or name a union member. `terminal` mode takes `terminalId`
   and `ideId` and no `requestUser`; no catch in it was measured as of
   2026-10-11.
 - **`attach` takes the identity** instead of `requestUser`:
