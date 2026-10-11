@@ -95,12 +95,19 @@ export type IDebuggerBreakpoint =
  * empty set to clear the key, and `partial` scoped to the main programs of the
  * named objects.
  *
- * `full` replaces all of the key's breakpoints; an empty `breakpoints` clears
- * them. `partial` replaces the line breakpoints of the main programs its
- * objects map to (two objects of one class pool are one program); an empty
- * `breakpoints` clears that scope. An object that maps to no program leaves
- * the body's line breakpoints unset. The `partial` mapping is (server source,
- * BASIS 816, read 2026-10-11); it was not observed on a system.
+ * Measured on premise (2026-10-11), BASIS 816:
+ * - `full` replaces all of the key's breakpoints.
+ * - `full` with an empty `breakpoints` clears the key.
+ * - `partial` keeps the breakpoints of other programs.
+ * - `partial` scopes by main program and refuses a line breakpoint outside
+ *   its scope.
+ *
+ * Server source, BASIS 816, read 2026-10-11 (not observed on a system):
+ * - `partial` maps its objects to main programs (two objects of one class
+ *   pool are one program).
+ * - An empty `partial` `breakpoints` clears that scope.
+ * - An object that maps to no program leaves the body's line breakpoints
+ *   unset.
  */
 export type IDebuggerBreakpointSync =
   | { scope: 'full'; breakpoints: readonly IDebuggerBreakpoint[] }
@@ -216,10 +223,20 @@ export interface IAbapDebugger<
     options?: WithoutAnalyse<{ holdSeconds?: number }>,
   ): Promise<IAdtResponse<TListener>>;
 
+  /**
+   * Release the listener. This also deletes the identity key's breakpoints,
+   * whether or not a listener was running (measured on premise (2026-10-11),
+   * BASIS 816).
+   */
   stopListener<E extends IAdtError>(
     identity: IDebuggerIdentity,
     options: WithAnalyse<E>,
   ): Promise<IAdtResponse<TDone, E>>;
+  /**
+   * Release the listener. This also deletes the identity key's breakpoints,
+   * whether or not a listener was running (measured on premise (2026-10-11),
+   * BASIS 816).
+   */
   stopListener(
     identity: IDebuggerIdentity,
     options?: WithoutAnalyse,
