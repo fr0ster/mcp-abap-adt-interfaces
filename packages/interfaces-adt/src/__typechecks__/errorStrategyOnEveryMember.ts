@@ -254,7 +254,18 @@ export type _IAdtTransportSearchConfigurations = Assert<
 >;
 export type _IAbapDebugger = Assert<
   EveryMemberTakesAnalyse<
-    IAbapDebugger<Probe, Probe, Probe, Probe, Probe, Probe, Probe, Probe, Probe>
+    IAbapDebugger<
+      Probe,
+      Probe,
+      Probe,
+      Probe,
+      Probe,
+      Probe,
+      Probe,
+      Probe,
+      Probe,
+      Probe
+    >
   >
 >;
 export type _IAmdpDebugger = Assert<

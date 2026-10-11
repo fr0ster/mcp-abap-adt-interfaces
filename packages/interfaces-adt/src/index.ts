@@ -230,7 +230,10 @@ export type {
   IAbapDebugger,
   IAttachOptions,
   IDebuggerBreakpoint,
+  IDebuggerBreakpointSync,
   IDebuggerIdentity,
+  IDebuggerLineBreakpoint,
+  IDebuggerSettings,
   IDebuggerStepMethod,
   IDebuggerStepToLineMethod,
 } from './runtime/IAbapDebugger';

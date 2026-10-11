@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [14.0.0] - 2026-10-11
+
+### Changed (breaking)
+
+The ABAP debugger by mode (`adt-clients` #217). Migration:
+
+- **`IDebuggerIdentity` is a union by `debuggingMode`**, required, with no
+  default. Add `debuggingMode: 'user'` to every identity you build today;
+  `requestUser` exists only in `user` mode. `terminal` mode takes `terminalId`
+  and `ideId` and no `requestUser`; no catch in it was measured as of
+  2026-10-11.
+- **`attach` takes the identity** instead of `requestUser`:
+  `attach(identity, debuggeeId, options?)`.
+- **`condition` is on line breakpoints only.** Setting it on an exception,
+  statement or message breakpoint no longer compiles, which is the point: the
+  server evaluates it on a line breakpoint only.
+- **`IAbapDebugger` gains a type parameter, `TSettings`**, last, and **five
+  required members** that implementations and mocks must add: `syncBreakpoints`,
+  `checkListener`, `detachDebugger`, `terminateDebugger`, `setDebuggerSettings`.
+
+### Added
+
+- `skipCount` on every breakpoint kind.
+- `IDebuggerLineBreakpoint`, and `IDebuggerBreakpointSync`: replace the
+  identity's breakpoints (`full`) or the line breakpoints of the named objects'
+  main programs (`partial`; at least one object, line breakpoints only).
+- `IDebuggerSettings`: what to change at a stop; a field left out keeps its
+  value, except `showDataAging`, which is turned off when left out.
+
 ## [13.2.0] - 2026-10-10
 
 ### Added
