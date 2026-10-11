@@ -89,7 +89,8 @@ export type IDebuggerBreakpoint =
  * them. `partial` replaces the line breakpoints of the main programs its
  * objects map to (two objects of one class pool are one program); an empty
  * `breakpoints` clears that scope. An object that maps to no program leaves
- * the body's line breakpoints unset.
+ * the body's line breakpoints unset. All of this is (server source, BASIS 816, read 2026-10-11);
+ * none of it was observed on a system.
  */
 export type IDebuggerBreakpointSync =
   | { scope: 'full'; breakpoints: readonly IDebuggerBreakpoint[] }
@@ -103,7 +104,7 @@ export type IDebuggerBreakpointSync =
  * What to change in the debugger settings; a field left out keeps its current
  * value. The exception is `showDataAging`: the server does not merge it, takes
  * it from each request, and turns it off when left out. It only steers how the
- * variables present data aging.
+ * variables present data aging. This is (server source, BASIS 816, read 2026-10-11).
  */
 export interface IDebuggerSettings {
   systemDebugging?: boolean;
@@ -330,7 +331,10 @@ export interface IAbapDebugger<
 
   /**
    * The debugger leaves and the program runs on. With `debuggeeId`, a caught
-   * debuggee not attached on this session.
+   * debuggee not attached on this session. (server source, BASIS 816, read 2026-10-11):
+   * with a `debuggeeId` the server tries to attach that debuggee; if that
+   * fails it deletes the debuggee's activation and still answers success, so
+   * success does not prove the debuggee was attached and released.
    */
   detachDebugger<E extends IAdtError>(
     options: WithAnalyse<E, { debuggeeId?: string }>,
@@ -339,7 +343,9 @@ export interface IAbapDebugger<
     options?: WithoutAnalyse<{ debuggeeId?: string }>,
   ): Promise<IAdtResponse<TDone>>;
 
-  /** Free the debugger; the program runs on. */
+  /**
+   * Free the debugger; the program runs on. (server source, BASIS 816, read 2026-10-11).
+   */
   terminateDebugger<E extends IAdtError>(
     options: WithAnalyse<E>,
   ): Promise<IAdtResponse<TDone, E>>;
