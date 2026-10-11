@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [15.0.0] - 2026-10-11
+
+### Changed (breaking)
+
+- **`skipCount` is removed from every breakpoint kind.** The server ignores it
+  on external breakpoints (measured on premise, 2026-10-11, BASIS 816).
+  Migration: drop `skipCount` from the breakpoints you build; it no longer
+  compiles.
+
+### Added
+
+- **`clientId?: string` on every breakpoint kind**: the caller's own tag, echoed
+  by the server on the breakpoint's row of the answer, placed or refused, so the
+  answer pairs with the request whatever order the rows come in. Optional: set
+  it to pair answers; unique per request is the caller's responsibility.
+
+### Changed (docs)
+
+- `setBreakpoints` replaces the key's set; it does not add (measured on premise,
+  2026-10-11, BASIS 816, also with `validationOnly`). `stopListener` deletes the
+  key's breakpoints.
+- `syncBreakpoints` and `IDebuggerBreakpointSync` no longer claim to be the
+  replacing call: they add an explicit name for the destructive call, `full`
+  with an empty set to clear the key, and `partial` scoped to the main programs
+  of the named objects.
+
 ## [14.0.0] - 2026-10-11
 
 ### Changed (breaking)
