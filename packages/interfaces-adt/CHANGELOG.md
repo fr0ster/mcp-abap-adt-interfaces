@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [15.3.0] - 2026-10-12
+
+### Added
+
+- **`IAdtTransportMoveObjects<TMoved>`**: `moveObjects(sourceTask,
+  targetNumber, objects, options?)`, the transport organizer's *Move Objects*.
+  Addressed at the source task, the target named in the request, each entry by
+  its `position` in the source. Captured from Eclipse ADT 3.60.3 and measured on
+  premise (BASIS 816), 2026-10-12: one and two entries per call answered `200`
+  with the entries echoed, and re-reading both tasks showed them moved. A
+  contract of its own, so no implementation of `IAdtTransportObjectActions`
+  breaks.
+
 ## [15.2.0] - 2026-10-12
 
 ### Added

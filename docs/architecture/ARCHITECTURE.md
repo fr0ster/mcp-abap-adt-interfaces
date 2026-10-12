@@ -16,7 +16,7 @@ Measured against the tree at 30.0.0. Numbers here are counted from the emitted
 ## 1. What this package is
 
 This repository is **the contract, and nothing else** — eight packages, no
-facade over them since decision 34. **492 exported symbols**, of which 94 carry
+facade over them since decision 34. **494 exported symbols**, of which 94 carry
 runtime values: 36 string constants (24 `HEADER_*`, 10 `AUTH_TYPE_*`,
 `ADT_NO_FAILURE`, `TRANSPORT_SEARCH_CONFIGURATIONS_URL`), 7 maps of codes or
 letters (`AdtObjectErrorCodes`, `ADT_REQUEST_ERROR`, `ADT_SESSION_ERROR`, `ADT_TASK_TYPE`,

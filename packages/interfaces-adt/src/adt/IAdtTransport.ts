@@ -394,3 +394,29 @@ export interface IAdtTransportSortAndCompress<TCompressed> {
     options?: IAdtOperationOptions<E>,
   ): Promise<IAdtResponse<TCompressed, E>>;
 }
+
+/**
+ * Move entries from one task to another — the transport organizer's *Move
+ * Objects*.
+ *
+ * Addressed at the **source** task; the target is named in the request. Each
+ * entry is identified by its `position` in the source, read from
+ * {@link IAdtTransportObjectActions.readObjects}, as for `removeObject`.
+ *
+ * Measured on premise (BASIS 816), 2026-10-12: one entry and two entries in one
+ * call each answered `200` with the moved entries echoed under the source's
+ * number, and re-reading both tasks showed them moved. The echo repeats the
+ * entries that were sent, as `removeObject`'s does, so re-read both tasks to
+ * learn whether they moved.
+ *
+ * A contract of its own, like {@link IAdtTransportSortAndCompress}, so no
+ * implementation of `IAdtTransportObjectActions` breaks.
+ */
+export interface IAdtTransportMoveObjects<TMoved> {
+  moveObjects<E extends IAdtError = IAdtError>(
+    sourceTask: string,
+    targetNumber: string,
+    objects: readonly (IAbapObjectEntry & { position: string })[],
+    options?: IAdtOperationOptions<E>,
+  ): Promise<IAdtResponse<TMoved, E>>;
+}

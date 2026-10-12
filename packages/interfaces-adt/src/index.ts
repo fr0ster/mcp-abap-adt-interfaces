@@ -170,6 +170,7 @@ export type {
   AdtTaskType,
   IAbapObjectEntry,
   IAdtRequest,
+  IAdtTransportMoveObjects,
   IAdtTransportObjectActions,
   IAdtTransportSearchConfigurations,
   IAdtTransportSortAndCompress,
