@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-10-12
+
+### Added
+
+- **`IAbapRequestOptions.signal?: AbortSignal | undefined`** — the caller no
+  longer needs this request. A connection honouring it sends nothing more of
+  the request once the signal has aborted: not the request, if it has not left
+  yet, and no resend (a CSRF retry, a reconnect). A request already on the wire
+  is not recalled — the server may still act on it. Optional: every request
+  written for 2.0.0 compiles unchanged, and a connection that ignores the
+  field still satisfies `IAbapConnection`.
+- **`ADT_REQUEST_ERROR` / `AdtRequestErrorCode`** — what such a request fails
+  with: `ADT_REQUEST_ERROR.ABORTED` (`'ADT_REQUEST_ABORTED'`), as the thrown
+  error's `code`. Match on the code, not on a message.
+
 ## [2.0.0] - 2026-10-05
 
 ### Changed (breaking)
