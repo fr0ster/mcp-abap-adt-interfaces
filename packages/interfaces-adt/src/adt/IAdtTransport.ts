@@ -405,8 +405,9 @@ export interface IAdtTransportSortAndCompress<TCompressed> {
  *
  * Measured on premise (BASIS 816), 2026-10-12: one entry and two entries in one
  * call each answered `200` with the moved entries echoed under the source's
- * number, and re-reading both tasks showed them moved. The echo is the same
- * whether or not anything moved, so the read is the evidence.
+ * number, and re-reading both tasks showed them moved. The echo repeats the
+ * entries that were sent, as `removeObject`'s does, so re-read both tasks to
+ * learn whether they moved.
  *
  * A contract of its own, like {@link IAdtTransportSortAndCompress}, so no
  * implementation of `IAdtTransportObjectActions` breaks.
