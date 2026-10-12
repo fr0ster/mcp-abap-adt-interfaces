@@ -394,7 +394,7 @@ push to `master`. What it runs:
    `noFallthroughCasesInSwitch`, `noImplicitOverride`,
    `noUncheckedIndexedAccess` and `exactOptionalPropertyTypes`. `npm run
    lint:check` fails on a warning, and `noExplicitAny` is an error.
-2. **The typechecks** — 46 files of compile-only assertions (22 in
+2. **The typechecks** — 47 files of compile-only assertions (23 in
    `interfaces-adt`, 13 in `interfaces-auth`, 5 in `interfaces-auth-broker`,
    3 in `interfaces-auth-sap`, 3 in `interfaces-adt-connection`),
    including the ones that must *fail* (`@ts-expect-error`). They are the tests

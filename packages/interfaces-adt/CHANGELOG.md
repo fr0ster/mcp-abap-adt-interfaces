@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [15.4.0] - 2026-10-12
+
+### Added
+
+- **`IAdtClientOptions.signal?: AbortSignal | (() => AbortSignal | undefined) | undefined`**
+  — read at each request and handed to the connection as the request's own
+  signal (`IAbapRequestOptions.signal`, interfaces-adt-connection 2.1.0): once
+  it aborts, nothing more of that request is sent. A function answers the
+  signal of the request being sent, so one client serves several callers. A
+  release that undoes a step (an unlock after a lock) is sent without it.
+- **`IAdtError.refusal?: unknown`** — the authentication refusal the request
+  failed with, as the connection threw it: the thrown value's own `refusal`
+  (`AuthRefusedError`) or `error` (`AuthProviderFailure`), unchanged; read it
+  with `@mcp-abap-adt/auth-errors`' `classify`. Never present for an answer of
+  SAP (a `403` with an ADT message is an ADT error, not a refusal).
+
+### Changed
+
+- `@mcp-abap-adt/interfaces-adt-connection` `^2.1.0` (the request's signal and
+  `ADT_REQUEST_ERROR`).
+
 ## [15.3.0] - 2026-10-12
 
 ### Added
