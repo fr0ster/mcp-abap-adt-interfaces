@@ -56,24 +56,14 @@ So `createTask` requires `targetUser` and `removeObject` requires `position`, an
 
 `addObject` still takes an entry without a position — one that does not exist yet has none.
 
-## A request's signal, and the refusal a failure carries
+## Migrating to 16.0.0
 
-Since 15.4.0, on `@mcp-abap-adt/interfaces-adt-connection` 2.1:
-
-- **`IAdtClientOptions.signal`** — a signal, or a function answering the signal
-  for the request being sent, read at each request. The client hands it to the
-  connection as the request's own (`IAbapRequestOptions.signal`): once it
-  aborts, nothing more of that request is sent, and the request fails with
-  `ADT_REQUEST_ERROR.ABORTED`. A function lets one client serve several
-  callers. A release that undoes a step — an unlock after a lock — is sent
-  without it, so a cancelled caller does not leave a lock behind.
-- **`IAdtError.refusal`** — the authentication refusal the request failed
-  with, as the connection threw it, unchanged: the thrown value's own `refusal`
-  (an `AuthRefusedError`) or `error` (an `AuthProviderFailure`). `unknown` on
-  purpose: read it with `@mcp-abap-adt/auth-errors`' `classify`. An answer of
-  SAP never carries one — a `403` with an ADT message is an ADT error.
-
-Both are optional: options and errors written for 15.3 are unchanged.
+`IAdtClientOptions.signal` and `IAdtError.refusal` (15.4.0) are gone, with the
+per-request signal of `@mcp-abap-adt/interfaces-adt-connection` 3.0.0: ABAP
+cannot cancel or roll back a request, and a session closed with a logoff
+releases its locks (measured, see the CHANGELOG). Drop both from your code and
+move to `@mcp-abap-adt/interfaces-adt-connection` `^3.0.0`; nothing else
+changed.
 
 ## Migrating to 13.0.0
 

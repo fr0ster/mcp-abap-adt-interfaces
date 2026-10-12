@@ -11,11 +11,7 @@
  * (decision 35); what separated it is the release rate (decision 38).
  */
 export type { IAbapConnection, IAdtWireResponse } from './IAbapConnection';
-export type {
-  AdtRequestErrorCode,
-  IAbapRequestOptions,
-} from './IAbapRequestOptions';
-export { ADT_REQUEST_ERROR } from './IAbapRequestOptions';
+export type { IAbapRequestOptions } from './IAbapRequestOptions';
 export type {
   AdtSessionErrorCode,
   ICriticalSection,

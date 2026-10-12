@@ -16,7 +16,7 @@ Contracts for the MCP ABAP ADT packages: types and constants, no implementations
 | [`@mcp-abap-adt/interfaces-auth-sap`](packages/interfaces-auth-sap) | the SAP and BTP half: `ISapConfig`, `SapAuthType`, the UAA client `IAuthorizationConfig`, `ICertificateMaterialLoader`, `AUTH_TYPE_XSUAA` | `interfaces-auth` |
 | [`@mcp-abap-adt/interfaces-auth-broker`](packages/interfaces-auth-broker) | the broker's port: the destination (`IConnectionConfig`, `DestinationGrant`, `IConfig`), the stores that hold it (`ISessionStore`, `IServiceKeyStore`), `ITokenProviderResult`. What a store implements | `interfaces-auth-sap` |
 | [`@mcp-abap-adt/interfaces-calm`](packages/interfaces-calm) | SAP Cloud ALM: `ICalmConnection`, `CalmService`, `ICalmRequestOptions`, `ICalmResponse` | `interfaces-network` |
-| [`@mcp-abap-adt/interfaces-adt-connection`](packages/interfaces-adt-connection) | the ABAP connection: `IAbapConnection`, `IAbapRequestOptions`, `IAdtWireResponse`, the connection capability atoms, `ITimeoutConfig`, `ADT_SESSION_ERROR`, `ADT_REQUEST_ERROR`. What a connector implements | `interfaces-network` |
+| [`@mcp-abap-adt/interfaces-adt-connection`](packages/interfaces-adt-connection) | the ABAP connection: `IAbapConnection`, `IAbapRequestOptions`, `IAdtWireResponse`, the connection capability atoms, `ITimeoutConfig`, `ADT_SESSION_ERROR`. What a connector implements | `interfaces-network` |
 | [`@mcp-abap-adt/interfaces-adt`](packages/interfaces-adt) | ADT only: object operations, runtime, execution, feeds, service bindings. The test is who imports it — `adt-clients` and whatever replaces its objects | `interfaces-adt-connection` |
 
 ## Why these packages

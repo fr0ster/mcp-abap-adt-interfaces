@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-10-12
+
+### Removed (breaking)
+
+- **`IAbapRequestOptions.signal`, `ADT_REQUEST_ERROR` and `AdtRequestErrorCode`**
+  (added in 2.1.0). A per-request signal has no use against ADT: ABAP neither
+  cancels a request that reached it nor rolls back across requests, a
+  connection is never shared between threads, and a session closed with a
+  logoff releases its locks — measured on premise (BASIS 816, 2026-10-12),
+  including a logoff sent while a long request still ran in the same session:
+  SAP queued it and the lock was gone afterwards. What a consumer needs at its
+  end is the connection's logoff, not a signal.
+
+### Migrating from 2.1
+
+Drop `signal` from request options and any match on `ADT_REQUEST_ERROR`. Code
+written for 2.0 compiles unchanged.
+
 ## [2.1.0] - 2026-10-12
 
 ### Added

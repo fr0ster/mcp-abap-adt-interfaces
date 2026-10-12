@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [16.0.0] - 2026-10-12
+
+### Removed (breaking)
+
+- **`IAdtClientOptions.signal` and `IAdtError.refusal`** (added in 15.4.0).
+  The per-request signal is gone from the connection contract
+  (`@mcp-abap-adt/interfaces-adt-connection` 3.0.0): ABAP cannot cancel or roll
+  back a request, and a session's logoff is what releases its locks.
+  `refusal` existed to carry an authentication refusal for that work; the
+  connection's own error message already names the refusal and its hint.
+
+### Changed
+
+- `@mcp-abap-adt/interfaces-adt-connection` `^3.0.0`.
+
+### Migrating from 15.4
+
+Drop `signal` from client options and any read of `IAdtError.refusal`. Code
+written for 15.3 compiles unchanged, apart from the dependency range.
+
 ## [15.4.0] - 2026-10-12
 
 ### Added

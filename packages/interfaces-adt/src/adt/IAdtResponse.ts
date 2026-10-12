@@ -161,14 +161,6 @@ export interface IAdtError {
    * ```
    */
   readonly code?: string;
-
-  /**
-   * The authentication refusal the request failed with, as the connection threw it:
-   * the thrown value's own `refusal` (AuthRefusedError) or `error` (AuthProviderFailure),
-   * unchanged; read it with @mcp-abap-adt/auth-errors' classify. Never present for an
-   * answer of SAP (a 403 with an ADT message is an ADT error, not a refusal).
-   */
-  readonly refusal?: unknown;
 }
 
 /**
