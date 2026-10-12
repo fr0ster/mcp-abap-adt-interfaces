@@ -365,3 +365,32 @@ export interface IAdtTransportObjectActions<
     options?: IAdtOperationOptions<E>,
   ): Promise<IAdtResponse<TTaskType, E>>;
 }
+
+/**
+ * Sort a task's object list and compress it — the transport organizer's
+ * *Request/task → Object list → Sort and compress*.
+ *
+ * **Why it is a member at all.** A task can hold the same object entry more
+ * than once, and then {@link IAdtTransportObjectActions.removeObject} on one of
+ * the copies is refused: `400`, `SCTS_ADT_MSG 009`, long text TR292, *"Object
+ * entry exists more than once; sort and compress first"*. SAP will not guess
+ * which copy is meant. This is the remedy it names; ADT discovery does not
+ * list it, and Eclipse ADT calls it.
+ *
+ * Addressed at the **task**, like `removeObject`. Measured on premise (BASIS
+ * 816), 2026-10-12, on tasks holding duplicated entries: the answer was `200`
+ * with no body and no content type, and the task read back afterwards held
+ * each object once. So the answer says the request was accepted — a read
+ * ({@link IAdtTransportObjectActions.readObjects}) is what shows the list.
+ *
+ * A contract of its own rather than a seventh type argument of
+ * `IAdtTransportObjectActions`: adding it there would break every
+ * implementation of that interface; this one an implementation takes when it
+ * has the member.
+ */
+export interface IAdtTransportSortAndCompress<TCompressed> {
+  sortAndCompress<E extends IAdtError = IAdtError>(
+    taskNumber: string,
+    options?: IAdtOperationOptions<E>,
+  ): Promise<IAdtResponse<TCompressed, E>>;
+}

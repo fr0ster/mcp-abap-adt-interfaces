@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [15.2.0] - 2026-10-12
+
+### Added
+
+- **`IAdtTransportSortAndCompress<TCompressed>`**: `sortAndCompress(taskNumber,
+  options?)`, the transport organizer's *Sort and compress* of a task's object
+  list. A task holding the same entry twice refuses `removeObject` on one copy
+  with TR292, *"sort and compress first"*; ADT discovery lists no action for
+  it, and Eclipse ADT 3.60.3 calls it. Measured on premise (BASIS 816),
+  2026-10-12: `200`, no body, and the task read back held each object once. A
+  contract of its own, so no implementation of `IAdtTransportObjectActions`
+  breaks.
+
 ## [15.1.0] - 2026-10-12
 
 ### Added

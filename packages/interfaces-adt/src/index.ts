@@ -172,6 +172,7 @@ export type {
   IAdtRequest,
   IAdtTransportObjectActions,
   IAdtTransportSearchConfigurations,
+  IAdtTransportSortAndCompress,
   IListTransportsOptions,
   IListTransportsParams,
   ITransportConfig,
