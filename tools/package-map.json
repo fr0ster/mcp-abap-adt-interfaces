@@ -1,5 +1,6 @@
 {
   "ADT_NO_FAILURE": "interfaces-adt",
+  "ADT_REQUEST_ERROR": "interfaces-adt-connection",
   "ADT_SESSION_ERROR": "interfaces-adt-connection",
   "ADT_TASK_TYPE": "interfaces-adt",
   "ALLOWED_VALUE_SETS": "interfaces-auth",
@@ -22,6 +23,7 @@
   "AdtObjectErrorCodes": "interfaces-adt",
   "AdtObjectType": "interfaces-adt",
   "AdtObjectTypeLower": "interfaces-adt",
+  "AdtRequestErrorCode": "interfaces-adt-connection",
   "AdtSessionErrorCode": "interfaces-adt-connection",
   "AdtSourceObjectType": "interfaces-adt",
   "AdtSourceObjectTypeLower": "interfaces-adt",
