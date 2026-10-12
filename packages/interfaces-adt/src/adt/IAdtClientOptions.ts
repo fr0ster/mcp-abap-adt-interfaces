@@ -24,15 +24,4 @@ export interface IAdtClientOptions {
   contentTypes?: IAdtContentTypes;
   /** Whether the SAP system uses Unicode encoding. Affects Content-Type headers for source code operations. */
   unicode?: boolean;
-  /**
-   * Read at each request: a signal, or a function answering the signal for the
-   * request being sent.
-   *
-   * Handed to the connection as the request's own signal
-   * (`IAbapRequestOptions.signal`): once it aborts, nothing more of that
-   * request is sent. A function lets one client serve several callers, each
-   * request carrying its caller's signal. A release that undoes a step (an
-   * unlock after a lock) is sent without it.
-   */
-  signal?: AbortSignal | (() => AbortSignal | undefined) | undefined;
 }

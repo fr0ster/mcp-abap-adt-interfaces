@@ -160,3 +160,17 @@ void (() => {
   // @ts-expect-error a plain connection has no session to say goodbye to
   _sessionless.flushGoodbye();
 });
+
+// **No per-request signal** (removed in 3.0.0): ABAP neither cancels nor rolls
+// back a request, and a session's logoff is what releases its locks. If a
+// signal comes back into the options, this stops compiling.
+import type { IAbapRequestOptions } from '../IAbapRequestOptions';
+
+const _noSignal: IAbapRequestOptions = {
+  url: '/sap/bc/adt/discovery',
+  method: 'GET',
+  timeout: 30_000,
+  // @ts-expect-error a request carries no signal
+  signal: new AbortController().signal,
+};
+void _noSignal;
