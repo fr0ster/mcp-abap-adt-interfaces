@@ -36,6 +36,7 @@ import type {
   IAdtTransportAware,
   IAdtTransportObjectActions,
   IAdtTransportSearchConfigurations,
+  IAdtTransportSortAndCompress,
   IAdtTypeCatalogue,
   IAdtUpdatable,
   IAdtValidatable,
@@ -251,6 +252,9 @@ export type _ITraceReading = Assert<
 export type _ITraceDeletion = Assert<EveryMemberTakesAnalyse<ITraceDeletion>>;
 export type _IAdtTransportSearchConfigurations = Assert<
   EveryMemberTakesAnalyse<IAdtTransportSearchConfigurations<Probe>>
+>;
+export type _IAdtTransportSortAndCompress = Assert<
+  EveryMemberTakesAnalyse<IAdtTransportSortAndCompress<Probe>>
 >;
 export type _IAbapDebugger = Assert<
   EveryMemberTakesAnalyse<
