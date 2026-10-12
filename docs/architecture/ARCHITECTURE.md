@@ -16,10 +16,10 @@ Measured against the tree at 30.0.0. Numbers here are counted from the emitted
 ## 1. What this package is
 
 This repository is **the contract, and nothing else** — eight packages, no
-facade over them since decision 34. **443 exported symbols**, of which 92 carry
+facade over them since decision 34. **492 exported symbols**, of which 94 carry
 runtime values: 36 string constants (24 `HEADER_*`, 10 `AUTH_TYPE_*`,
-`ADT_NO_FAILURE`, `TRANSPORT_SEARCH_CONFIGURATIONS_URL`), 6 maps of codes or
-letters (`AdtObjectErrorCodes`, `ADT_SESSION_ERROR`, `ADT_TASK_TYPE`,
+`ADT_NO_FAILURE`, `TRANSPORT_SEARCH_CONFIGURATIONS_URL`), 7 maps of codes or
+letters (`AdtObjectErrorCodes`, `ADT_REQUEST_ERROR`, `ADT_SESSION_ERROR`, `ADT_TASK_TYPE`,
 `SERVICE_BINDING_VARIANT_MAP`, `NETWORK_ERROR_CODES`, `STORE_ERROR_CODES`), 7
 groups over other constants (the five header groups, `AUTH_TYPES`,
 `CALM_SERVICES`), 2 enums (`AuthMethodPriority`, `LogLevel`), and the error
@@ -394,9 +394,9 @@ push to `master`. What it runs:
    `noFallthroughCasesInSwitch`, `noImplicitOverride`,
    `noUncheckedIndexedAccess` and `exactOptionalPropertyTypes`. `npm run
    lint:check` fails on a warning, and `noExplicitAny` is an error.
-2. **The typechecks** — 40 files of compile-only assertions (21 in
-   `interfaces-adt`, 9 in `interfaces-auth`, 5 in `interfaces-auth-broker`,
-   3 in `interfaces-auth-sap`, 2 in `interfaces-adt-connection`),
+2. **The typechecks** — 46 files of compile-only assertions (22 in
+   `interfaces-adt`, 13 in `interfaces-auth`, 5 in `interfaces-auth-broker`,
+   3 in `interfaces-auth-sap`, 3 in `interfaces-adt-connection`),
    including the ones that must *fail* (`@ts-expect-error`). They are the tests
    of a package that has nothing to run.
 3. **Enumerate, edit, count** — a removal is verified by listing the targets,

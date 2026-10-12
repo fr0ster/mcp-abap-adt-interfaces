@@ -1,7 +1,7 @@
 # @mcp-abap-adt/interfaces-adt-connection
 
 The ABAP connection contract: what an ADT request is sent through, and what
-comes back off the wire. Types and one constant; no implementation.
+comes back off the wire. Types and two constants; no implementation.
 
 ```bash
 npm install @mcp-abap-adt/interfaces-adt-connection
@@ -10,10 +10,11 @@ npm install @mcp-abap-adt/interfaces-adt-connection
 | symbol | what it is |
 |---|---|
 | `IAbapConnection` | a connection an ADT request is made through: `makeAdtRequest`, connect/disconnect, the session type |
-| `IAbapRequestOptions` | what one request carries |
+| `IAbapRequestOptions` | what one request carries. Since 2.1.0 it may carry the caller's `signal`: once it aborts, nothing more of the request is sent — not the request, not a resend (a CSRF retry, a reconnect) — and the request fails with `ADT_REQUEST_ERROR.ABORTED`. A request already on the wire is not recalled: the server may still act on it |
 | `IAdtWireResponse` | the answer as it came off the wire — extends `IHttpWireResponse` from `interfaces-network` with the headers ADT sends. Since 2.0.0 its `data` is `unknown` unless the caller names the type (`makeAdtRequest<string>(…)`); it was `any` — see the CHANGELOG's migration note |
 | `ISessionLifecycleAware`, `ICriticalSection`, `IRequestProfiling`, `IDeferredResponseConnection` | the connection's capability atoms — a connection honours the ones it can |
 | `ADT_SESSION_ERROR` / `AdtSessionErrorCode` | what a session failure is called |
+| `ADT_REQUEST_ERROR` / `AdtRequestErrorCode` | what a request failure is called: `ADT_REQUEST_ABORTED`, the request's signal aborted before it was sent or before a resend |
 | `ITimeoutConfig` | the deadlines a caller gives a connection: `default`, `csrf`, `long` |
 
 ## Why this package exists
