@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `IAdtEnhancementHost.readEnhancementOptions` accepts optional `context` for
+  an include's main program, as `readEnhancementElements` does. Without it,
+  an include's options read was measured answering 400 ED/258 on E19.
+
 ## [17.0.0] - 2026-10-15
 
 ### Removed (breaking)

@@ -167,6 +167,7 @@ export interface IAdtEnhancementHost<TConfig, TElements, TOptions> {
   /**
    * …/source/main/enhancements/elements — the enhancement implementations in
    * the object's source. `context` is an include's main program (its name).
+   * An include answers 400 ED/258 without it.
    */
   readEnhancementElements<E extends IAdtError>(
     config: Partial<TConfig>,
@@ -179,14 +180,19 @@ export interface IAdtEnhancementHost<TConfig, TElements, TOptions> {
     options?: { context?: string } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TElements>>;
 
-  /** …/enhancements/options — the places in the object that can be enhanced. */
+  /**
+   * …/enhancements/options — the places in the object that can be enhanced.
+   * `context` is an include's main program (its name).
+   */
   readEnhancementOptions<E extends IAdtError>(
     config: Partial<TConfig>,
-    options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
+    options: { context?: string } & IAdtOperationOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TOptions, E>>;
   readEnhancementOptions(
     config: Partial<TConfig>,
-    options?: IAdtOperationOptions,
+    options?: { context?: string } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TOptions>>;
 }
 
