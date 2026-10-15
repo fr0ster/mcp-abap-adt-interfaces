@@ -5,10 +5,13 @@
 /**
  * Enhancement subtypes served by ADT:
  * - `enhoxhb`: BAdI implementation (ENHO/XHB).
- * - `enhoxhh`: source code plugin (ENHO/XHH), on-premise only; Cloud answers 403.
+ * - `enhoxhh`: source code plugin (ENHO/XHH). The ABAP Cloud trial refuses
+ *   the collection (403 on create and read; no discovery content type).
  * - `enhsxsb`: BAdI enhancement spot (ENHS/XSB).
- * Class enhancements (`enhoxh`) and plain spots (`enhsxs`) are not served by
- * ADT: reads answer HTTP 500, and Eclipse opens them in SAP GUI.
+ * Class enhancements (`enhoxh`) and plain spots (`enhsxs`): reads answered 500
+ * on E19 (2026-10-15) and on premise + trial in mcp-abap-adt `5046d8a6`
+ * (2026-10-02), which also measured Eclipse opening them in SAP GUI.
+ * The trial discovery lists no content type for either subtype.
  */
 export type EnhancementType = 'enhoxhb' | 'enhoxhh' | 'enhsxsb';
 

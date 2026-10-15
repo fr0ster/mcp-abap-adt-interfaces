@@ -42,11 +42,14 @@ The contract rules — what a member answers, how a strategy is supplied, how a 
 ## Enhancements and their hosts
 
 `EnhancementType` accepts `enhoxhb` (BAdI implementation, ENHO/XHB), `enhoxhh`
-(source code plugin, ENHO/XHH, on-premise only; Cloud answers 403), and `enhsxsb`
-(BAdI enhancement spot, ENHS/XSB). Class enhancements (`enhoxh`) and plain spots
-(`enhsxs`) are opened in SAP GUI by Eclipse; ADT reads measured on E19 answer
-HTTP 500. Callers migrating from 16.0 must remove those calls; the removed
-subtypes now cause compile errors.
+(source code plugin, ENHO/XHH), and `enhsxsb` (BAdI enhancement spot, ENHS/XSB).
+The ABAP Cloud trial refuses the `enhoxhh` collection (403 on create and read;
+no content type in its discovery). Class enhancements (`enhoxh`) and plain
+spots (`enhsxs`) answered 500 on reads on E19 (2026-10-15) and on premise +
+trial in mcp-abap-adt `5046d8a6` (2026-10-02), which also measured Eclipse
+opening them in SAP GUI. The trial discovery lists no content type for either.
+Callers migrating from 16.0 must remove those calls; the removed subtypes now
+cause compile errors.
 
 Creating ENHO/XHH needs `IEnhancementConfig.enhancedObject` (`uri`, `type`,
 `name`, and `program`, the main program name), `enhancementOption` (the full
