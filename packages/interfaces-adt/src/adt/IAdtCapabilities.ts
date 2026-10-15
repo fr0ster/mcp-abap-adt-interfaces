@@ -166,6 +166,41 @@ export interface IAdtMetadataReadable<TConfig, TMetadata> {
 export interface IAdtEnhancementHost<TConfig, TElements, TOptions> {
   /**
    * …/source/main/enhancements/elements — the enhancement implementations in
+   * the object's source.
+   */
+  readEnhancementElements<E extends IAdtError>(
+    config: Partial<TConfig>,
+    options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TElements, E>>;
+  readEnhancementElements(
+    config: Partial<TConfig>,
+    options?: IAdtOperationOptions,
+  ): Promise<IAdtResponse<TElements>>;
+
+  /**
+   * …/enhancements/options — the places in the object that can be enhanced.
+   */
+  readEnhancementOptions<E extends IAdtError>(
+    config: Partial<TConfig>,
+    options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TOptions, E>>;
+  readEnhancementOptions(
+    config: Partial<TConfig>,
+    options?: IAdtOperationOptions,
+  ): Promise<IAdtResponse<TOptions>>;
+}
+
+/**
+ * An include's enhancement elements and options.
+ *
+ * `context` is the include's main program by name (`SAPLSVIM` for an include
+ * of function group SVIM). Without it, both reads answered 400 ED/258
+ * "No main program for include … found" (E19, 2026-10-15).
+ * It remains optional: an include with a single main program is unmeasured.
+ */
+export interface IAdtIncludeEnhancementHost<TConfig, TElements, TOptions> {
+  /**
+   * …/source/main/enhancements/elements — the enhancement implementations in
    * the object's source. `context` is an include's main program by name —
    * `SAPLSVIM` for an include of function group SVIM; without it an include
    * answered 400 ED/258 (E19, 2026-10-15).
@@ -183,7 +218,7 @@ export interface IAdtEnhancementHost<TConfig, TElements, TOptions> {
 
   /**
    * …/enhancements/options — the places in the object that can be enhanced.
-   * `context` as for {@link IAdtEnhancementHost.readEnhancementElements}.
+   * `context` as for {@link IAdtIncludeEnhancementHost.readEnhancementElements}.
    */
   readEnhancementOptions<E extends IAdtError>(
     config: Partial<TConfig>,

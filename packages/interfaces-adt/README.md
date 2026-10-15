@@ -56,14 +56,19 @@ Creating ENHO/XHH needs `IEnhancementConfig.enhancedObject` (`uri`, `type`,
 option name), and `enhancementMode` (`S` for static or `D` for dynamic).
 
 `IAdtEnhancementHost<TConfig, TElements, TOptions>` is the capability atom for
-objects that host enhancements. `readEnhancementElements` reads
+classes, programs and function groups that host enhancements; neither member
+takes `context`. `readEnhancementElements` reads
 `…/source/main/enhancements/elements`. `readEnhancementOptions` reads
 `…/enhancements/options`, the places that can be enhanced and the full option
-names used to create plugins. Both reads take optional `context` naming an
-include's main program (`SAPLSVIM` for an include of function group SVIM); an
-include answered 400 ED/258 without it (E19, 2026-10-15). Function
-groups, programs and classes need no context. Both members accept per-call
-`analyse` and return `IAdtResponse`.
+names used to create plugins.
+
+`IAdtIncludeEnhancementHost<TConfig, TElements, TOptions>` is the independent
+atom for an include's elements and options, with the same two members. Both
+reads take optional `context` naming the include's main program (`SAPLSVIM`
+for an include of function group SVIM). Without it, both reads answered 400
+ED/258 "No main program for include … found" (E19, 2026-10-15). Context stays
+optional because an include with a single main program is unmeasured.
+Both atoms accept per-call `analyse` and return `IAdtResponse`.
 
 ## The transport request's object list
 
@@ -81,6 +86,12 @@ Two of the signatures say things a capture cannot. 1.2.0 was declared from captu
 So `createTask` requires `targetUser` and `removeObject` requires `position`, and `readObjects` was added because otherwise the second would require a value this package offers no way to obtain — leaving a caller to parse a transport document themselves for a `tm:position`. It is its own member because it answers its own thing: entries, each with its position as a value, rather than a document. What an implementation sends to get them is its own business; the contract says what must come back.
 
 `addObject` still takes an entry without a position — one that does not exist yet has none.
+
+## Migrating to 18.0.0
+
+An implementer of `IAdtEnhancementHost` drops `context`. An include host
+implements `IAdtIncludeEnhancementHost`. A caller passing `context` to a
+class, program or function-group host removes it.
 
 ## Migrating to 17.0.0
 

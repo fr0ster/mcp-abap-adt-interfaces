@@ -130,6 +130,7 @@
   "IAdtDeletable": "interfaces-adt",
   "IAdtDiscovery": "interfaces-adt",
   "IAdtEnhancementHost": "interfaces-adt",
+  "IAdtIncludeEnhancementHost": "interfaces-adt",
   "IAdtError": "interfaces-adt",
   "IAdtFailure": "interfaces-adt",
   "IAdtGroupLifecycle": "interfaces-adt",

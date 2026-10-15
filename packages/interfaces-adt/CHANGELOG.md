@@ -7,13 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [17.1.0] - 2026-10-15
+## [18.0.0] - 2026-10-15
+
+17.1.0 was tagged but never published and is superseded by 18.0.0.
+
+### Changed (breaking)
+
+- `IAdtEnhancementHost` no longer takes `context` on either member;
+  17.0.0 had it on `readEnhancementElements`.
 
 ### Added
 
-- `IAdtEnhancementHost.readEnhancementOptions` accepts optional `context` for
-  an include's main program, as `readEnhancementElements` does. Without it,
-  an include's options read was measured answering 400 ED/258 on E19.
+- `IAdtIncludeEnhancementHost<TConfig, TElements, TOptions>` takes optional
+  `context` on both reads, naming the include's main program (`SAPLSVIM` for
+  an include of function group SVIM). Without context, both reads answered
+  400 ED/258 "No main program for include … found" (E19, 2026-10-15).
+  An include with a single main program is unmeasured, so context stays optional.
+
+### Migrating from 17.0
+
+An implementer of `IAdtEnhancementHost` drops `context`. An include host
+implements `IAdtIncludeEnhancementHost`. A caller passing `context` to a
+class, program or function-group host removes it.
 
 ## [17.0.0] - 2026-10-15
 
