@@ -194,9 +194,11 @@ export interface IAdtEnhancementHost<TConfig, TElements, TOptions> {
  * An include's enhancement elements and options.
  *
  * `context` is the include's main program by name (`SAPLSVIM` for an include
- * of function group SVIM). Without it, both reads answered 400 ED/258
- * "No main program for include … found" (E19, 2026-10-15).
- * It remains optional: an include with a single main program is unmeasured.
+ * of function group SVIM). A name, not an ADT uri: the implementation owns the
+ * address and sends it as `?context=<the program's uri>`, which SAP answered
+ * 200; without it, both reads answered 400 ED/258 "No main program for include
+ * … found" (E19, 2026-10-15). It remains optional: an include with a single
+ * main program is unmeasured.
  */
 export interface IAdtIncludeEnhancementHost<TConfig, TElements, TOptions> {
   /**
