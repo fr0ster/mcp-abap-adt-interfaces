@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [17.0.0] - 2026-10-15
+
+### Removed (breaking)
+
+- `EnhancementType` no longer accepts `enhoxh` (class enhancement) or `enhsxs`
+  (plain enhancement spot). Reads answered 500 on E19 (2026-10-15) and on
+  premise + trial in mcp-abap-adt `5046d8a6` (2026-10-02), which also measured
+  Eclipse opening them in SAP GUI. Neither has a content type in trial discovery.
+  The remaining subtypes are `enhoxhb` (ENHO/XHB), `enhoxhh` (ENHO/XHH), and
+  `enhsxsb` (ENHS/XSB). The ABAP Cloud trial refuses the `enhoxhh` collection
+  (403 on create and read; no content type in its discovery).
+
+### Added
+
+- `IAdtEnhancementHost<TConfig, TElements, TOptions>` declares
+  `readEnhancementElements` and `readEnhancementOptions`, with per-call analysis
+  and optional main program context for an include's elements.
+- `IEnhancementConfig.enhancedObject`, `enhancementOption` and `enhancementMode`
+  describe the host, full option name and S/D mode needed to create ENHO/XHH.
+
+### Migrating from 16.0
+
+A caller passing `enhoxh` or `enhsxs` now gets a compile error. Remove those
+ADT calls and use SAP GUI for these objects: reads answered 500 wherever
+measured (see above). When creating ENHO/XHH, supply `enhancedObject`
+(including its main program name), the full `enhancementOption` from the
+host's options, and `enhancementMode` (`S` or `D`).
+
 ## [16.0.0] - 2026-10-12
 
 ### Removed (breaking)

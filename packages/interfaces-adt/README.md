@@ -39,6 +39,29 @@ The contract rules — what a member answers, how a strategy is supplied, how a 
 
 **There is no facade to stay compatible with.** It was pinned to its 44.0.0 surface in both directions — nothing from that release could disappear from it and nothing could appear without being written down — and `tools/check-surface.js`, `surface-44.0.0.txt`, `baseline-44.0.0.json` and `surface-added.txt` existed to enforce exactly that. The facade is deleted in its 52.0.0 (decision 34), so the property is gone along with the files that proved it; git holds them. What `check-surface.js` still asks is the half that never depended on it: is each symbol declared in the package `tools/package-map.json` assigns it to.
 
+## Enhancements and their hosts
+
+`EnhancementType` accepts `enhoxhb` (BAdI implementation, ENHO/XHB), `enhoxhh`
+(source code plugin, ENHO/XHH), and `enhsxsb` (BAdI enhancement spot, ENHS/XSB).
+The ABAP Cloud trial refuses the `enhoxhh` collection (403 on create and read;
+no content type in its discovery). Class enhancements (`enhoxh`) and plain
+spots (`enhsxs`) answered 500 on reads on E19 (2026-10-15) and on premise +
+trial in mcp-abap-adt `5046d8a6` (2026-10-02), which also measured Eclipse
+opening them in SAP GUI. The trial discovery lists no content type for either.
+Callers migrating from 16.0 must remove those calls; the removed subtypes now
+cause compile errors.
+
+Creating ENHO/XHH needs `IEnhancementConfig.enhancedObject` (`uri`, `type`,
+`name`, and `program`, the main program name), `enhancementOption` (the full
+option name), and `enhancementMode` (`S` for static or `D` for dynamic).
+
+`IAdtEnhancementHost<TConfig, TElements, TOptions>` is the capability atom for
+objects that host enhancements. `readEnhancementElements` reads
+`…/source/main/enhancements/elements`; its optional `context` names an include's
+main program. `readEnhancementOptions` reads `…/enhancements/options`, the
+places that can be enhanced and the full option names used to create plugins.
+Both members accept per-call `analyse` and return `IAdtResponse`.
+
 ## The transport request's object list
 
 `IAdtTransportObjectActions` and `IAbapObjectEntry` (`adt/IAdtTransport.ts`, since 1.2.0) declare what can be done to a request's object list and to its tasks: `removeObject`, `addObject`, `createTask`, `readActionLog`, `readObjects`.
@@ -55,6 +78,15 @@ Two of the signatures say things a capture cannot. 1.2.0 was declared from captu
 So `createTask` requires `targetUser` and `removeObject` requires `position`, and `readObjects` was added because otherwise the second would require a value this package offers no way to obtain — leaving a caller to parse a transport document themselves for a `tm:position`. It is its own member because it answers its own thing: entries, each with its position as a value, rather than a document. What an implementation sends to get them is its own business; the contract says what must come back.
 
 `addObject` still takes an entry without a position — one that does not exist yet has none.
+
+## Migrating to 17.0.0
+
+`EnhancementType` no longer has `enhoxh` or `enhsxs`, so code passing either
+stops compiling. Reads of both answered 500 wherever they were measured (see
+"Enhancements and their hosts" and the CHANGELOG), so remove those calls. To
+create an ENHO/XHH, set `enhancedObject`, `enhancementOption` and
+`enhancementMode` on `IEnhancementConfig`. The new `IAdtEnhancementHost` is
+additive. Nothing else changed.
 
 ## Migrating to 16.0.0
 

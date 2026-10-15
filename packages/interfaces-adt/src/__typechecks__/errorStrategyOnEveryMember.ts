@@ -19,6 +19,7 @@ import type {
   IAdtDataPreview,
   IAdtDeletable,
   IAdtDiscovery,
+  IAdtEnhancementHost,
   IAdtError,
   IAdtGroupLifecycle,
   IAdtLockable,
@@ -118,6 +119,9 @@ type EveryMemberTakesAnalyse<I> = false extends {
 
 export type _IAdtAbapGitClient = Assert<
   EveryMemberTakesAnalyse<IAdtAbapGitClient<Probe, Probe, Probe, Probe>>
+>;
+export type _IAdtEnhancementHost = Assert<
+  EveryMemberTakesAnalyse<IAdtEnhancementHost<Probe, Probe, Probe>>
 >;
 export type _IAdtCreatable = Assert<
   EveryMemberTakesAnalyse<IAdtCreatable<Probe, Probe>>

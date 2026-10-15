@@ -129,6 +129,7 @@
   "IAdtDataPreview": "interfaces-adt",
   "IAdtDeletable": "interfaces-adt",
   "IAdtDiscovery": "interfaces-adt",
+  "IAdtEnhancementHost": "interfaces-adt",
   "IAdtError": "interfaces-adt",
   "IAdtFailure": "interfaces-adt",
   "IAdtGroupLifecycle": "interfaces-adt",
