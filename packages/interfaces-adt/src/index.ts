@@ -36,6 +36,7 @@ export type {
   IAdtCreatable,
   IAdtDeletable,
   IAdtEnhancementHost,
+  IAdtIncludeEnhancementHost,
   IAdtLockable,
   IAdtMetadataReadable,
   IAdtMetadataUpdatable,

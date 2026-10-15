@@ -22,6 +22,7 @@ import type {
   IAdtEnhancementHost,
   IAdtError,
   IAdtGroupLifecycle,
+  IAdtIncludeEnhancementHost,
   IAdtLockable,
   IAdtMetadataReadable,
   IAdtMetadataUpdatable,
@@ -119,6 +120,9 @@ type EveryMemberTakesAnalyse<I> = false extends {
 
 export type _IAdtAbapGitClient = Assert<
   EveryMemberTakesAnalyse<IAdtAbapGitClient<Probe, Probe, Probe, Probe>>
+>;
+export type _IAdtIncludeEnhancementHost = Assert<
+  EveryMemberTakesAnalyse<IAdtIncludeEnhancementHost<Probe, Probe, Probe>>
 >;
 export type _IAdtEnhancementHost = Assert<
   EveryMemberTakesAnalyse<IAdtEnhancementHost<Probe, Probe, Probe>>
