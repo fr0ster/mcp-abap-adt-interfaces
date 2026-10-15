@@ -79,6 +79,15 @@ So `createTask` requires `targetUser` and `removeObject` requires `position`, an
 
 `addObject` still takes an entry without a position — one that does not exist yet has none.
 
+## Migrating to 17.0.0
+
+`EnhancementType` no longer has `enhoxh` or `enhsxs`, so code passing either
+stops compiling. Reads of both answered 500 wherever they were measured (see
+"Enhancements and their hosts" and the CHANGELOG), so remove those calls. To
+create an ENHO/XHH, set `enhancedObject`, `enhancementOption` and
+`enhancementMode` on `IEnhancementConfig`. The new `IAdtEnhancementHost` is
+additive. Nothing else changed.
+
 ## Migrating to 16.0.0
 
 `IAdtClientOptions.signal` and `IAdtError.refusal` (15.4.0) are gone, with the

@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [17.0.0] - 2026-10-15
+
 ### Removed (breaking)
 
 - `EnhancementType` no longer accepts `enhoxh` (class enhancement) or `enhsxs`
