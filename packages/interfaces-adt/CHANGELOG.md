@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed (breaking)
+
+- `EnhancementType` no longer accepts `enhoxh` (class enhancement) or `enhsxs`
+  (plain enhancement spot). Reads measured on E19 answered HTTP 500; Eclipse
+  opens these objects in SAP GUI. ADT serves `enhoxhb` (ENHO/XHB), `enhoxhh`
+  (ENHO/XHH, on-premise only; Cloud answers 403), and `enhsxsb` (ENHS/XSB).
+
+### Added
+
+- `IAdtEnhancementHost<TConfig, TElements, TOptions>` declares
+  `readEnhancementElements` and `readEnhancementOptions`, with per-call analysis
+  and optional main program context for an include's elements.
+- `IEnhancementConfig.enhancedObject`, `enhancementOption` and `enhancementMode`
+  describe the host, full option name and S/D mode needed to create ENHO/XHH.
+
+### Migrating from 16.0
+
+A caller passing `enhoxh` or `enhsxs` now gets a compile error. Remove those
+ADT calls and use SAP GUI for these objects: the calls never worked — SAP
+answered HTTP 500. When creating ENHO/XHH, supply `enhancedObject` (including
+its main program name), the full `enhancementOption` from the host's options,
+and `enhancementMode` (`S` or `D`).
+
 ## [16.0.0] - 2026-10-12
 
 ### Removed (breaking)

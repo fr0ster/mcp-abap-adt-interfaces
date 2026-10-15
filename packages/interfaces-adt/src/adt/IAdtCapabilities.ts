@@ -162,6 +162,34 @@ export interface IAdtMetadataReadable<TConfig, TMetadata> {
   ): Promise<IAdtResponse<TMetadata>>;
 }
 
+/** The object hosts enhancements: what is implemented in it, and where it can be enhanced. */
+export interface IAdtEnhancementHost<TConfig, TElements, TOptions> {
+  /**
+   * …/source/main/enhancements/elements — the enhancement implementations in
+   * the object's source. `context` is an include's main program (its name).
+   */
+  readEnhancementElements<E extends IAdtError>(
+    config: Partial<TConfig>,
+    options: { context?: string } & IAdtOperationOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
+  ): Promise<IAdtResponse<TElements, E>>;
+  readEnhancementElements(
+    config: Partial<TConfig>,
+    options?: { context?: string } & IAdtOperationOptions,
+  ): Promise<IAdtResponse<TElements>>;
+
+  /** …/enhancements/options — the places in the object that can be enhanced. */
+  readEnhancementOptions<E extends IAdtError>(
+    config: Partial<TConfig>,
+    options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TOptions, E>>;
+  readEnhancementOptions(
+    config: Partial<TConfig>,
+    options?: IAdtOperationOptions,
+  ): Promise<IAdtResponse<TOptions>>;
+}
+
 /**
  * The object's **source** can be written.
  *

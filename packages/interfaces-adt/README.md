@@ -39,6 +39,26 @@ The contract rules — what a member answers, how a strategy is supplied, how a 
 
 **There is no facade to stay compatible with.** It was pinned to its 44.0.0 surface in both directions — nothing from that release could disappear from it and nothing could appear without being written down — and `tools/check-surface.js`, `surface-44.0.0.txt`, `baseline-44.0.0.json` and `surface-added.txt` existed to enforce exactly that. The facade is deleted in its 52.0.0 (decision 34), so the property is gone along with the files that proved it; git holds them. What `check-surface.js` still asks is the half that never depended on it: is each symbol declared in the package `tools/package-map.json` assigns it to.
 
+## Enhancements and their hosts
+
+`EnhancementType` accepts `enhoxhb` (BAdI implementation, ENHO/XHB), `enhoxhh`
+(source code plugin, ENHO/XHH, on-premise only; Cloud answers 403), and `enhsxsb`
+(BAdI enhancement spot, ENHS/XSB). Class enhancements (`enhoxh`) and plain spots
+(`enhsxs`) are opened in SAP GUI by Eclipse; ADT reads measured on E19 answer
+HTTP 500. Callers migrating from 16.0 must remove those calls; the removed
+subtypes now cause compile errors.
+
+Creating ENHO/XHH needs `IEnhancementConfig.enhancedObject` (`uri`, `type`,
+`name`, and `program`, the main program name), `enhancementOption` (the full
+option name), and `enhancementMode` (`S` for static or `D` for dynamic).
+
+`IAdtEnhancementHost<TConfig, TElements, TOptions>` is the capability atom for
+objects that host enhancements. `readEnhancementElements` reads
+`…/source/main/enhancements/elements`; its optional `context` names an include's
+main program. `readEnhancementOptions` reads `…/enhancements/options`, the
+places that can be enhanced and the full option names used to create plugins.
+Both members accept per-call `analyse` and return `IAdtResponse`.
+
 ## The transport request's object list
 
 `IAdtTransportObjectActions` and `IAbapObjectEntry` (`adt/IAdtTransport.ts`, since 1.2.0) declare what can be done to a request's object list and to its tasks: `removeObject`, `addObject`, `createTask`, `readActionLog`, `readObjects`.
