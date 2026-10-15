@@ -60,7 +60,8 @@ objects that host enhancements. `readEnhancementElements` reads
 `…/source/main/enhancements/elements`. `readEnhancementOptions` reads
 `…/enhancements/options`, the places that can be enhanced and the full option
 names used to create plugins. Both reads take optional `context` naming an
-include's main program; an include answers 400 ED/258 without it. Function
+include's main program (`SAPLSVIM` for an include of function group SVIM); an
+include answered 400 ED/258 without it (E19, 2026-10-15). Function
 groups, programs and classes need no context. Both members accept per-call
 `analyse` and return `IAdtResponse`.
 
