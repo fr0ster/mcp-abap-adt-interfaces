@@ -57,10 +57,13 @@ option name), and `enhancementMode` (`S` for static or `D` for dynamic).
 
 `IAdtEnhancementHost<TConfig, TElements, TOptions>` is the capability atom for
 objects that host enhancements. `readEnhancementElements` reads
-`…/source/main/enhancements/elements`; its optional `context` names an include's
-main program. `readEnhancementOptions` reads `…/enhancements/options`, the
-places that can be enhanced and the full option names used to create plugins.
-Both members accept per-call `analyse` and return `IAdtResponse`.
+`…/source/main/enhancements/elements`. `readEnhancementOptions` reads
+`…/enhancements/options`, the places that can be enhanced and the full option
+names used to create plugins. Both reads take optional `context` naming an
+include's main program (`SAPLSVIM` for an include of function group SVIM); an
+include answered 400 ED/258 without it (E19, 2026-10-15). Function
+groups, programs and classes need no context. Both members accept per-call
+`analyse` and return `IAdtResponse`.
 
 ## The transport request's object list
 

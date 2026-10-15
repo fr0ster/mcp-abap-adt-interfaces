@@ -166,7 +166,9 @@ export interface IAdtMetadataReadable<TConfig, TMetadata> {
 export interface IAdtEnhancementHost<TConfig, TElements, TOptions> {
   /**
    * …/source/main/enhancements/elements — the enhancement implementations in
-   * the object's source. `context` is an include's main program (its name).
+   * the object's source. `context` is an include's main program by name —
+   * `SAPLSVIM` for an include of function group SVIM; without it an include
+   * answered 400 ED/258 (E19, 2026-10-15).
    */
   readEnhancementElements<E extends IAdtError>(
     config: Partial<TConfig>,
@@ -179,14 +181,19 @@ export interface IAdtEnhancementHost<TConfig, TElements, TOptions> {
     options?: { context?: string } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TElements>>;
 
-  /** …/enhancements/options — the places in the object that can be enhanced. */
+  /**
+   * …/enhancements/options — the places in the object that can be enhanced.
+   * `context` as for {@link IAdtEnhancementHost.readEnhancementElements}.
+   */
   readEnhancementOptions<E extends IAdtError>(
     config: Partial<TConfig>,
-    options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
+    options: { context?: string } & IAdtOperationOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TOptions, E>>;
   readEnhancementOptions(
     config: Partial<TConfig>,
-    options?: IAdtOperationOptions,
+    options?: { context?: string } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TOptions>>;
 }
 
