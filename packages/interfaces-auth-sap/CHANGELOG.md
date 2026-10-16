@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **RFC through a message server and a logon group.** `ISapConfig` gains `mshost`, `msserv`,
+  `sysid`, `group` and `saprouter` — the SAP NW RFC SDK's own connection parameter names, so a
+  consumer passes them through unchanged. With `mshost` set, the RFC wire dials the message
+  server (load-balanced logon by group) instead of one application server derived from `url`.
+  All optional; nothing changes for a config that does not set them.
+
 ## [3.3.0] - 2026-10-07
 
 ### Changed
