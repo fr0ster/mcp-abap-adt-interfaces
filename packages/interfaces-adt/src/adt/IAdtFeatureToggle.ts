@@ -2,6 +2,7 @@
  * Feature Toggle (FTG2/FT) ADT operation parameter interfaces (low-level)
  */
 
+import type { IAdtHeaders } from './IAdtContentTypes';
 import type { IAdtAnalyseOptions, IAnalyse } from './IAdtObject';
 import type { IAdtError, IAdtResponse } from './IAdtResponse';
 
@@ -120,11 +121,13 @@ export interface IFeatureToggleObject<R extends IFeatureToggleObjectResults> {
 
   getRuntimeState<E extends IAdtError>(
     config: Partial<IFeatureToggleConfig>,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<R['runtimeState'], E>>;
   getRuntimeState(
     config: Partial<IFeatureToggleConfig>,
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<R['runtimeState']>>;
 
   checkState<E extends IAdtError>(
@@ -141,11 +144,13 @@ export interface IFeatureToggleObject<R extends IFeatureToggleObjectResults> {
   readSource<E extends IAdtError>(
     config: Partial<IFeatureToggleConfig>,
     version: 'active' | 'inactive' | undefined,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<R['source'], E>>;
   readSource(
     config: Partial<IFeatureToggleConfig>,
     version?: 'active' | 'inactive',
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<R['source']>>;
 }

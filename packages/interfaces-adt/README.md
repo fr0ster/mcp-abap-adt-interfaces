@@ -33,7 +33,7 @@ npm install @mcp-abap-adt/interfaces-adt
 | `service/` | 1 | service definitions and bindings |
 | `shared/` | 1 | what more than one object type needs |
 
-Six directories, all ADT. `connection/` left for `interfaces-adt-connection` in 11.0.0. `sap/`, `auth/`, `token/`, `session/`, `serviceKey/`, `store/`, `validation/` and `Headers.ts` were here until 9.0.0 and are listed above under what left; `__typechecks__/` holds 21 files that compile shapes this contract must and must not accept, and ships in no tarball.
+Six directories, all ADT. `connection/` left for `interfaces-adt-connection` in 11.0.0. `sap/`, `auth/`, `token/`, `session/`, `serviceKey/`, `store/`, `validation/` and `Headers.ts` were here until 9.0.0 and are listed above under what left; `__typechecks__/` holds 23 files that compile shapes this contract must and must not accept, and ships in no tarball.
 
 The contract rules — what a member answers, how a strategy is supplied, how a contract is built — are in [`docs/architecture/ARCHITECTURE.md`](../../docs/architecture/ARCHITECTURE.md). Domain-by-domain documentation with examples used to sit in the facade's README; the facade is deleted, and each package documents its own contracts.
 
@@ -86,6 +86,37 @@ Two of the signatures say things a capture cannot. 1.2.0 was declared from captu
 So `createTask` requires `targetUser` and `removeObject` requires `position`, and `readObjects` was added because otherwise the second would require a value this package offers no way to obtain — leaving a caller to parse a transport document themselves for a `tm:position`. It is its own member because it answers its own thing: entries, each with its position as a value, rather than a document. What an implementation sends to get them is its own business; the contract says what must come back.
 
 `addObject` still takes an entry without a position — one that does not exist yet has none.
+
+## A read's own headers
+
+Since 18.1.0 every read member takes the headers of its one request as
+`options.headers`, typed `IAdtHeaders` (`{ accept, contentType }`). The pair is
+given whole and sent as given; it is not merged with the member's own headers
+field by field, so a partial pair does not compile. Without it, the member sends
+its own headers, as before.
+
+The field is on the read members' own options, not on `IAdtAnalyseOptions` or
+`IAdtOperationOptions`, which writes share. The read members are:
+
+- objects: `read`, `readMetadata`, `readEnhancementElements`,
+  `readEnhancementOptions`, `getVersions`, `getVersionSource`, `readTransport`;
+  feature toggles' `getRuntimeState` and `readSource`
+- the repository: `search`, `getWhereUsed`, `getWhereUsedScope`,
+  `getVirtualFoldersContents`, `getAllTypes`, `fetchNodeStructure`,
+  `getObjectStructure`, `getInactiveObjects`, `getActivationRun`,
+  `getActivationResults`, `getSqlQuery`, `getTableColumns`, `getTableContents`,
+  `discovery`, `readObjectSource`, `readObjectMetadata`, `getInclude`
+- transports: `IAdtRequest.list`, `searchConfigurations`, `readActionLog`,
+  `readObjects`
+- service bindings: `getServiceBindingTypes`, `getServiceGroup`
+- feeds: every member of `IFeedRepository`
+- runtime: `ITraceListing.list` and `ITraceReading.read` (through `ViewArgs`),
+  every member of `ICrossTrace`, `ISt05Trace`, `IAtcLog`, `IDdicActivation`,
+  `IRuntimeDumps`, `ISystemMessages` and `IGatewayErrorLog`,
+  `IAtcRunStatusReadable.getRunStatus`, `IAtcFindings.getFindings`,
+  `IApplicationLog.getObject` and `getSource`
+
+`IReadOptions.accept` is unchanged.
 
 ## Migrating to 18.0.0
 

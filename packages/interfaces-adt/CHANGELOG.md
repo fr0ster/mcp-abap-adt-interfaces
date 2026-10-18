@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Every read member takes the headers of its one request as
+  `options.headers?: IAdtHeaders`. The pair is given whole and used as given,
+  not merged with the member's own headers; without it, the member sends its
+  own headers, as before. The field is on the read members' options, not on
+  `IAdtAnalyseOptions` or `IAdtOperationOptions`, which writes share. The
+  members are listed in the README ("A read's own headers"). No new type;
+  `IReadOptions.accept` is unchanged.
+
 ## [18.0.0] - 2026-10-15
 
 17.1.0 was tagged but never published and is superseded by 18.0.0.

@@ -90,6 +90,7 @@
  */
 
 import type { IReadOptions } from '../shared/IReadOptions';
+import type { IAdtHeaders } from './IAdtContentTypes';
 import type { IAdtAnalyseOptions, IAnalyse } from './IAdtObject';
 import type { IAdtError, IAdtResponse } from './IAdtResponse';
 import type {
@@ -160,11 +161,13 @@ export interface IAdtObjectSearch<TSearch> {
    */
   search<E extends IAdtError>(
     criteria: ISearchObjectsParams,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TSearch, E>>;
   search(
     criteria: ISearchObjectsParams,
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TSearch>>;
 }
 
@@ -182,21 +185,25 @@ export interface IAdtWhereUsed<TWhereUsed, TScope> {
   /** Where an object is used. One request. */
   getWhereUsed<E extends IAdtError>(
     params: IGetWhereUsedParams,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TWhereUsed, E>>;
   getWhereUsed(
     params: IGetWhereUsedParams,
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TWhereUsed>>;
 
   /** The scope document a where-used run is filtered by. */
   getWhereUsedScope<E extends IAdtError>(
     params: IGetWhereUsedScopeParams,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TScope, E>>;
   getWhereUsedScope(
     params: IGetWhereUsedScopeParams,
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TScope>>;
 
   /**
@@ -219,11 +226,13 @@ export interface IAdtVirtualFolders<TFolders> {
   /** The repository as folders, under a preselection. */
   getVirtualFoldersContents<E extends IAdtError>(
     params: IGetVirtualFoldersContentsParams,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TFolders, E>>;
   getVirtualFoldersContents(
     params: IGetVirtualFoldersContentsParams,
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TFolders>>;
 }
 
@@ -241,13 +250,15 @@ export interface IAdtTypeCatalogue<TTypes> {
     maxItemCount: number | undefined,
     name: string | undefined,
     data: string | undefined,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TTypes, E>>;
   getAllTypes(
     maxItemCount?: number,
     name?: string,
     data?: string,
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TTypes>>;
 }
 
@@ -286,25 +297,28 @@ export interface IAdtRepositoryStructure<TNode, TObjectStructure> {
   fetchNodeStructure<E extends IAdtError>(
     parentType: string,
     parentName: string,
-    options: IGetNodeContentsOptions &
+    options: { headers?: IAdtHeaders } & IGetNodeContentsOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TNode, E>>;
   fetchNodeStructure(
     parentType: string,
     parentName: string,
-    options?: IGetNodeContentsOptions & IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IGetNodeContentsOptions &
+      IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TNode>>;
 
   /** The parts one object is made of. */
   getObjectStructure<E extends IAdtError>(
     objectType: string,
     objectName: string,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TObjectStructure, E>>;
   getObjectStructure(
     objectType: string,
     objectName: string,
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TObjectStructure>>;
 }
 
@@ -354,23 +368,31 @@ export interface IAdtGroupLifecycle<
    */
   getActivationRun<E extends IAdtError>(
     runId: string,
-    options: { withLongPolling?: boolean } & IAdtAnalyseOptions<E> & {
+    options: {
+      headers?: IAdtHeaders;
+      withLongPolling?: boolean;
+    } & IAdtAnalyseOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<TRun, E>>;
   getActivationRun(
     runId: string,
-    options?: { withLongPolling?: boolean } & IAdtAnalyseOptions,
+    options?: {
+      headers?: IAdtHeaders;
+      withLongPolling?: boolean;
+    } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TRun>>;
 
   /** What that run produced — `/activation/results/{runId}`. */
   getActivationResults<E extends IAdtError>(
     runId: string,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TResults, E>>;
   getActivationResults(
     runId: string,
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TResults>>;
 
   /**
@@ -383,10 +405,12 @@ export interface IAdtGroupLifecycle<
    * {@link IResultStrategy} the implementation was constructed with.
    */
   getInactiveObjects<E extends IAdtError>(
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TInactive, E>>;
   getInactiveObjects(
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TInactive>>;
 
   /** Whether a set can be deleted, asked before deleting it. */
@@ -417,11 +441,13 @@ export interface IAdtDataPreview<TQuery, TColumns, TContents> {
   /** A freestyle SQL query. */
   getSqlQuery<E extends IAdtError>(
     params: IGetSqlQueryParams,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TQuery, E>>;
   getSqlQuery(
     params: IGetSqlQueryParams,
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TQuery>>;
 
   /** The rows of one table. */
@@ -434,11 +460,13 @@ export interface IAdtDataPreview<TQuery, TColumns, TContents> {
    */
   getTableColumns<E extends IAdtError>(
     tableName: string,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TColumns, E>>;
   getTableColumns(
     tableName: string,
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TColumns>>;
 
   /**
@@ -450,11 +478,13 @@ export interface IAdtDataPreview<TQuery, TColumns, TContents> {
    */
   getTableContents<E extends IAdtError>(
     params: IGetTableContentsParams,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TContents, E>>;
   getTableContents(
     params: IGetTableContentsParams,
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TContents>>;
 }
 
@@ -462,11 +492,13 @@ export interface IAdtDataPreview<TQuery, TColumns, TContents> {
 export interface IAdtDiscovery<TDiscovery> {
   discovery<E extends IAdtError>(
     params: IGetDiscoveryParams | undefined,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TDiscovery, E>>;
   discovery(
     params?: IGetDiscoveryParams,
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TDiscovery>>;
 }
 
@@ -484,14 +516,15 @@ export interface IAdtObjectAccess<TSource, TMetadata, TInclude> {
     objectName: string,
     functionGroup: string | undefined,
     version: 'active' | 'inactive' | undefined,
-    options: IReadOptions & IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IReadOptions &
+      IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TSource, E>>;
   readObjectSource(
     objectType: AdtSourceObjectType,
     objectName: string,
     functionGroup?: string,
     version?: 'active' | 'inactive',
-    options?: IReadOptions & IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IReadOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TSource>>;
 
   /** Metadata of any object. */
@@ -499,13 +532,14 @@ export interface IAdtObjectAccess<TSource, TMetadata, TInclude> {
     objectType: AdtObjectType,
     objectName: string,
     functionGroup: string | undefined,
-    options: IReadOptions & IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IReadOptions &
+      IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TMetadata, E>>;
   readObjectMetadata(
     objectType: AdtObjectType,
     objectName: string,
     functionGroup?: string,
-    options?: IReadOptions & IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IReadOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TMetadata>>;
 
   /** Whether that type has source at all. Issues no request. */
@@ -522,11 +556,13 @@ export interface IAdtObjectAccess<TSource, TMetadata, TInclude> {
   /** A standalone include. */
   getInclude<E extends IAdtError>(
     includeName: string,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TInclude, E>>;
   getInclude(
     includeName: string,
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TInclude>>;
 
   /*

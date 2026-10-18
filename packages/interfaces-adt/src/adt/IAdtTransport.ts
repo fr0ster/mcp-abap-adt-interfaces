@@ -2,6 +2,7 @@
  * Transport ADT operation parameter interfaces (snake_case, low-level)
  */
 
+import type { IAdtHeaders } from './IAdtContentTypes';
 import type {
   IAdtAnalyseOptions,
   IAdtOperationOptions,
@@ -139,11 +140,12 @@ export interface IAdtRequest<TList> {
    * names.
    */
   list<E extends IAdtError>(
-    options: IListTransportsOptions &
+    options: { headers?: IAdtHeaders } & IListTransportsOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TList, E>>;
   list(
-    options: IListTransportsOptions & IAdtAnalyseOptions,
+    options: { headers?: IAdtHeaders } & IListTransportsOptions &
+      IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TList>>;
 }
 
@@ -158,10 +160,12 @@ export interface IAdtRequest<TList> {
  */
 export interface IAdtTransportSearchConfigurations<TConfigurations> {
   searchConfigurations<E extends IAdtError>(
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TConfigurations, E>>;
   searchConfigurations(
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TConfigurations>>;
 }
 
@@ -309,7 +313,7 @@ export interface IAdtTransportObjectActions<
    */
   readActionLog<E extends IAdtError = IAdtError>(
     transportNumber: string,
-    options?: IAdtOperationOptions<E>,
+    options?: { headers?: IAdtHeaders } & IAdtOperationOptions<E>,
   ): Promise<IAdtResponse<TActionLog, E>>;
   /**
    * The objects a request or task holds, each with the `tm:position` that
@@ -338,7 +342,7 @@ export interface IAdtTransportObjectActions<
    */
   readObjects<E extends IAdtError = IAdtError>(
     transportNumber: string,
-    options?: IAdtOperationOptions<E>,
+    options?: { headers?: IAdtHeaders } & IAdtOperationOptions<E>,
   ): Promise<IAdtResponse<TObjects, E>>;
   /**
    * Give a task its type.

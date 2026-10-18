@@ -1,3 +1,4 @@
+import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type { IAdtAnalyseOptions, IAnalyse } from '../adt/IAdtObject';
 import type { IAdtError, IAdtResponse } from '../adt/IAdtResponse';
 
@@ -29,45 +30,54 @@ export interface ICrossTrace<R extends ICrossTraceResults> {
 
   /** The traces this system holds. */
   list<E extends IAdtError>(
-    options: IListCrossTracesOptions &
+    options: { headers?: IAdtHeaders } & IListCrossTracesOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<R['list'], E>>;
   list(
-    options?: IListCrossTracesOptions & IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IListCrossTracesOptions &
+      IAdtAnalyseOptions,
   ): Promise<IAdtResponse<R['list']>>;
 
   getById<E extends IAdtError>(
     traceId: string,
     includeSensitiveData: boolean | undefined,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<R['trace'], E>>;
   getById(
     traceId: string,
     includeSensitiveData?: boolean,
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<R['trace']>>;
   getRecords<E extends IAdtError>(
     traceId: string,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<R['records'], E>>;
   getRecords(
     traceId: string,
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<R['records']>>;
   getRecordContent<E extends IAdtError>(
     traceId: string,
     recordNumber: number,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<R['recordContent'], E>>;
   getRecordContent(
     traceId: string,
     recordNumber: number,
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<R['recordContent']>>;
   getActivations<E extends IAdtError>(
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<R['activations'], E>>;
   getActivations(
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<R['activations']>>;
 }
