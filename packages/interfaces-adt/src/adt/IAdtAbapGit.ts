@@ -1,3 +1,4 @@
+import type { IAdtHeaders } from './IAdtContentTypes';
 import type { IAdtAnalyseOptions, IAnalyse } from './IAdtObject';
 import type { IAdtError, IAdtResponse } from './IAdtResponse';
 export interface IAbapGitLinkArgs {
@@ -67,11 +68,13 @@ export interface IAdtAbapGitClientOptions {
 export interface IAdtAbapGitClient<TRepos, TErrorLog, TPull, TExternalRepo> {
   link<E extends IAdtError>(
     args: IAbapGitLinkArgs,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<void, E>>;
   link(
     args: IAbapGitLinkArgs,
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<void>>;
   /**
    * Start a pull — one POST to `args.pullLink`.
@@ -82,24 +85,32 @@ export interface IAdtAbapGitClient<TRepos, TErrorLog, TPull, TExternalRepo> {
    */
   pull<E extends IAdtError>(
     args: IAbapGitPullArgs,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TPull, E>>;
   pull(
     args: IAbapGitPullArgs,
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TPull>>;
   unlink<E extends IAdtError>(
     args: IAbapGitUnlinkArgs,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<void, E>>;
   unlink(
     args: IAbapGitUnlinkArgs,
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<void>>;
   listRepos<E extends IAdtError>(
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TRepos, E>>;
-  listRepos(options?: IAdtAnalyseOptions): Promise<IAdtResponse<TRepos>>;
+  listRepos(
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<TRepos>>;
   /**
    * The error log of a repository's last run — one GET to `logLink`.
    *
@@ -110,18 +121,22 @@ export interface IAdtAbapGitClient<TRepos, TErrorLog, TPull, TExternalRepo> {
    */
   getErrorLog<E extends IAdtError>(
     logLink: string,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TErrorLog, E>>;
   getErrorLog(
     logLink: string,
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TErrorLog>>;
   checkExternalRepo<E extends IAdtError>(
     args: IAbapGitExternalRepoCredentials,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TExternalRepo, E>>;
   checkExternalRepo(
     args: IAbapGitExternalRepoCredentials,
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TExternalRepo>>;
 }

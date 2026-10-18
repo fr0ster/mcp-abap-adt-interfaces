@@ -13,7 +13,8 @@
 /**
  * The `Accept` and `Content-Type` of one request.
  *
- * Every read member also takes it as `options.headers`, for its one request.
+ * Every member that sends a request — a read or a write — also takes it as
+ * `options.headers`, for its one request.
  * The pair is given whole and used as given — not merged with the member's
  * own headers, field by field. Without it, the member sends its own headers.
  */

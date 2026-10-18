@@ -99,24 +99,28 @@ export interface IFeatureToggleObject<R extends IFeatureToggleObjectResults> {
   switchOn<E extends IAdtError>(
     config: Partial<IFeatureToggleConfig>,
     opts: { transportRequest: string; userSpecific?: boolean },
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<R['switched'], E>>;
   switchOn(
     config: Partial<IFeatureToggleConfig>,
     opts: { transportRequest: string; userSpecific?: boolean },
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<R['switched']>>;
 
   switchOff<E extends IAdtError>(
     config: Partial<IFeatureToggleConfig>,
     opts: { transportRequest: string; userSpecific?: boolean },
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<R['switched'], E>>;
 
   switchOff(
     config: Partial<IFeatureToggleConfig>,
     opts: { transportRequest: string; userSpecific?: boolean },
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<R['switched']>>;
 
   getRuntimeState<E extends IAdtError>(
@@ -133,12 +137,14 @@ export interface IFeatureToggleObject<R extends IFeatureToggleObjectResults> {
   checkState<E extends IAdtError>(
     config: Partial<IFeatureToggleConfig>,
     opts: { userSpecific?: boolean } | undefined,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<R['checkState'], E>>;
   checkState(
     config: Partial<IFeatureToggleConfig>,
     opts?: { userSpecific?: boolean },
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<R['checkState']>>;
 
   readSource<E extends IAdtError>(

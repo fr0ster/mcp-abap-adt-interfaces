@@ -12,6 +12,7 @@
  * that were previously easy to confuse.
  */
 
+import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type { IAdtAnalyseOptions, IAnalyse } from '../adt/IAdtObject';
 import type { IAdtError, IAdtResponse } from '../adt/IAdtResponse';
 import type { IProfilerTraceParameters } from '../runtime/IProfiler';
@@ -30,13 +31,21 @@ import type { IProfilerTraceParameters } from '../runtime/IProfiler';
 export interface ITraceScheduling<TTypes, TRequests, TScheduled> {
   /** What may be traced. The cloud flow reads these before choosing. */
   listObjectTypes<E extends IAdtError>(
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TTypes, E>>;
-  listObjectTypes(options?: IAdtAnalyseOptions): Promise<IAdtResponse<TTypes>>;
+  listObjectTypes(
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<TTypes>>;
   listProcessTypes<E extends IAdtError>(
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TTypes, E>>;
-  listProcessTypes(options?: IAdtAnalyseOptions): Promise<IAdtResponse<TTypes>>;
+  listProcessTypes(
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<TTypes>>;
 
   /**
    * The schedule — what is queued, not what has been recorded.
@@ -47,18 +56,24 @@ export interface ITraceScheduling<TTypes, TRequests, TScheduled> {
    * `400 acceptHeaderMissing`, which reads like a missing header and is not.
    */
   listRequests<E extends IAdtError>(
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TRequests, E>>;
-  listRequests(options?: IAdtAnalyseOptions): Promise<IAdtResponse<TRequests>>;
+  listRequests(
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<TRequests>>;
 
   /** The same schedule, read through the server's second, URI-keyed flavour. */
   getRequestsByUri<E extends IAdtError>(
     uri: string,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TRequests, E>>;
   getRequestsByUri(
     uri: string,
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TRequests>>;
 
   /**
@@ -68,10 +83,11 @@ export interface ITraceScheduling<TTypes, TRequests, TScheduled> {
    * is GIVEN, not what it produces.
    */
   scheduleTrace<E extends IAdtError>(
-    options: IProfilerTraceParameters &
+    options: { headers?: IAdtHeaders } & IProfilerTraceParameters &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TScheduled, E>>;
   scheduleTrace(
-    options?: IProfilerTraceParameters & IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IProfilerTraceParameters &
+      IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TScheduled>>;
 }

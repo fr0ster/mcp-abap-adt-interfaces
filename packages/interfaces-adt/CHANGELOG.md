@@ -11,13 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Every read member takes the headers of its one request as
-  `options.headers?: IAdtHeaders`. The pair is given whole and used as given,
-  not merged with the member's own headers; without it, the member sends its
-  own headers, as before. The field is on the read members' options, not on
-  `IAdtAnalyseOptions` or `IAdtOperationOptions`, which writes share. The
-  members are listed in the README ("A read's own headers"). No new type;
+- Every member that sends a request — reads and writes, the create, update,
+  delete, lock, unlock, activate and check members included — takes the
+  headers of its one request as `options.headers?: IAdtHeaders`. The pair is
+  given whole and used as given, not merged with the member's own headers;
+  without it, the member sends its own headers, as before. The field is on each
+  member's own options, not on `IAdtAnalyseOptions` or `IAdtOperationOptions`.
+  `ITraceReading.read` takes it through `ViewArgs`. No new type;
   `IReadOptions.accept` is unchanged.
+- A consumer asserting the exact parameter list of a member (`Parameters<…>`
+  compared for identity) sees `{ headers?: IAdtHeaders }` in the options; a
+  caller or an implementation compiles unchanged.
 
 ## [18.0.0] - 2026-10-15
 

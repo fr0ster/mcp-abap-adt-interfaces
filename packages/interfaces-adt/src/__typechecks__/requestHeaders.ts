@@ -1,11 +1,13 @@
 // Compile-only assertions. If these stop compiling, the types regressed.
 //
-// A read member takes the headers of its one request as `options.headers`,
-// typed `IAdtHeaders`: the pair whole, or nothing. A write does not take it —
-// the field is on the read members' own options, not on the shared
+// Every member that sends a request — a read or a write — takes the headers of
+// its one request as `options.headers`, typed `IAdtHeaders`: the pair whole, or
+// nothing. The field is on each member's own options, not on the shared
 // `IAdtAnalyseOptions` / `IAdtOperationOptions`.
 
 import type {
+  IAdtCreatable,
+  IAdtLockable,
   IAdtMetadataReadable,
   IAdtReadable,
   IAdtUpdatable,
@@ -31,6 +33,8 @@ const headers: IAdtHeaders = {
 declare const source: IAdtReadable<IClassConfig, string>;
 declare const metadata: IAdtMetadataReadable<IClassConfig, string>;
 declare const writer: IAdtUpdatable<IClassConfig, string>;
+declare const creator: IAdtCreatable<IClassConfig, string>;
+declare const locker: IAdtLockable<IClassConfig>;
 declare const feeds: IFeedRepository<
   unknown,
   unknown,
@@ -76,18 +80,31 @@ void feeds.dumps({
   headers: { contentType: 'text/plain' },
 });
 
-// A write does not take it, nor do the shared options.
+// A write takes it the same way: create, update, lock and unlock.
+void creator.create({ className: 'ZCL_X' }, { headers });
+void writer.update({ className: 'ZCL_X' }, { source: 'x', headers });
+void locker.lock({ className: 'ZCL_X' }, { headers });
+void locker.unlock({ className: 'ZCL_X' }, 'handle', { headers });
 void writer.update(
   { className: 'ZCL_X' },
   {
     source: 'x',
-    // @ts-expect-error `headers` is on the read members only.
-    headers,
+    // @ts-expect-error `contentType` is missing; the pair is not an override.
+    headers: { accept: 'text/plain' },
   },
 );
-// @ts-expect-error not on the options shared with writes.
+
+// A create still refuses source beside it.
+void creator.create(
+  { className: 'ZCL_X' },
+  // @ts-expect-error a create carries no source.
+  { headers, source: 'x' },
+);
+
+// The shared options do not carry it: each member's own signature does.
+// @ts-expect-error not on the options shared by every member.
 const _analyse: IAdtAnalyseOptions = { headers };
 void _analyse;
-// @ts-expect-error not on the options shared with writes.
+// @ts-expect-error not on the options shared by every member.
 const _operation: IAdtOperationOptions = { headers };
 void _operation;

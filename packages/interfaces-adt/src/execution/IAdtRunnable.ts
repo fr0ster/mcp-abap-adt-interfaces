@@ -14,6 +14,7 @@
  * must also profile.
  */
 
+import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type { IAdtAnalyseOptions, IAnalyse } from '../adt/IAdtObject';
 import type { IAdtError, IAdtResponse } from '../adt/IAdtResponse';
 
@@ -35,12 +36,16 @@ export interface IAdtRunnable<TTarget, TResult, TOptions = never> {
    */
   run<E extends IAdtError>(
     target: TTarget,
-    options: ([TOptions] extends [never] ? unknown : TOptions) &
+    options: { headers?: IAdtHeaders } & ([TOptions] extends [never]
+      ? unknown
+      : TOptions) &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TResult, E>>;
   run(
     target: TTarget,
-    options?: ([TOptions] extends [never] ? unknown : TOptions) &
+    options?: { headers?: IAdtHeaders } & ([TOptions] extends [never]
+      ? unknown
+      : TOptions) &
       IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TResult>>;
 }
@@ -62,11 +67,12 @@ export interface IAdtRunnable<TTarget, TResult, TOptions = never> {
 export interface IRunnableWithProfiler<TTarget, TResult, TOptions> {
   runWithProfiler<E extends IAdtError>(
     target: TTarget,
-    options: TOptions & IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & TOptions &
+      IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TResult, E>>;
   runWithProfiler(
     target: TTarget,
-    options: TOptions & IAdtAnalyseOptions,
+    options: { headers?: IAdtHeaders } & TOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TResult>>;
 }
 
@@ -82,10 +88,11 @@ export interface IRunnableWithProfiler<TTarget, TResult, TOptions> {
 export interface IRunnableWithProfiling<TTarget, TResult, TOptions> {
   runWithProfiling<E extends IAdtError>(
     target: TTarget,
-    options: TOptions & IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & TOptions &
+      IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TResult, E>>;
   runWithProfiling(
     target: TTarget,
-    options?: TOptions & IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & TOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TResult>>;
 }

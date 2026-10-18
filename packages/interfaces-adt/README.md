@@ -11,7 +11,7 @@ ADT contracts: object operations, runtime analysis, execution, feeds and service
 - Since 14.0.0 `IDebuggerIdentity` is a union by `debuggingMode` (required), `attach` takes the identity, `condition` is for line breakpoints only, and `IAbapDebugger` gains `TSettings` and five members. The CHANGELOG has the migration note.
 - Since 15.0.0 `skipCount` is gone from breakpoints (the server ignores it) and `clientId` pairs an answer row with its request. The CHANGELOG has the migration note.
 - Since 15.1.0 the plain class and program run take `debuggee` (`IDebuggeeIds`): the terminal id and IDE id a terminal-mode listener catches the run by.
-- Since 18.1.0 every read member takes `options.headers?: IAdtHeaders` for its one request: the pair whole, sent as given; without it, the member's own headers. See "A read's own headers".
+- Since 18.1.0 every member that sends a request, read or write, takes `options.headers?: IAdtHeaders` for its one request: the pair whole, sent as given; without it, the member's own headers. See "A request's own headers".
 - Since 15.3.0 `IAdtTransportMoveObjects` moves entries from one task to another, each identified by its position in the source.
 - Since 15.2.0 `IAdtTransportSortAndCompress` sorts and compresses a task's object list, the remedy SAP names when `removeObject` is refused for a duplicated entry.
 - Since 13.0.0 `IResultStrategy`, `IAnalyse` and `IAdtFailure.response` hand over an `IAdtWireResponse` whose `data` is `unknown`, not `any` (`interfaces-adt-connection` 2.0.0): narrow it before reading. The CHANGELOG has the migration note.
@@ -88,36 +88,20 @@ So `createTask` requires `targetUser` and `removeObject` requires `position`, an
 
 `addObject` still takes an entry without a position — one that does not exist yet has none.
 
-## A read's own headers
+## A request's own headers
 
-Since 18.1.0 every read member takes the headers of its one request as
-`options.headers`, typed `IAdtHeaders` (`{ accept, contentType }`). The pair is
-given whole and sent as given; it is not merged with the member's own headers
-field by field, so a partial pair does not compile. Without it, the member sends
-its own headers, as before.
+Since 18.1.0 every member that sends a request — reads and writes alike, the
+create, update, delete, lock, unlock, activate and check members included —
+takes the headers of its one request as `options.headers`, typed `IAdtHeaders`
+(`{ accept, contentType }`). The pair is given whole and sent as given; it is
+not merged with the member's own headers field by field, so a partial pair does
+not compile. Without it, the member sends its own headers, as before.
 
-The field is on the read members' own options, not on `IAdtAnalyseOptions` or
-`IAdtOperationOptions`, which writes share. The read members are:
-
-- objects: `read`, `readMetadata`, `readEnhancementElements`,
-  `readEnhancementOptions`, `getVersions`, `getVersionSource`, `readTransport`;
-  feature toggles' `getRuntimeState` and `readSource`
-- the repository: `search`, `getWhereUsed`, `getWhereUsedScope`,
-  `getVirtualFoldersContents`, `getAllTypes`, `fetchNodeStructure`,
-  `getObjectStructure`, `getInactiveObjects`, `getActivationRun`,
-  `getActivationResults`, `getSqlQuery`, `getTableColumns`, `getTableContents`,
-  `discovery`, `readObjectSource`, `readObjectMetadata`, `getInclude`
-- transports: `IAdtRequest.list`, `searchConfigurations`, `readActionLog`,
-  `readObjects`
-- service bindings: `getServiceBindingTypes`, `getServiceGroup`
-- feeds: every member of `IFeedRepository`
-- runtime: `ITraceListing.list` and `ITraceReading.read` (through `ViewArgs`),
-  every member of `ICrossTrace`, `ISt05Trace`, `IAtcLog`, `IDdicActivation`,
-  `IRuntimeDumps`, `ISystemMessages` and `IGatewayErrorLog`,
-  `IAtcRunStatusReadable.getRunStatus`, `IAtcFindings.getFindings`,
-  `IApplicationLog.getObject` and `getSource`
-
-`IReadOptions.accept` is unchanged.
+The field is on each member's own options, not on `IAdtAnalyseOptions` or
+`IAdtOperationOptions`, which every member shares: the consumer composes it per
+call. `ITraceReading.read` takes it through `ViewArgs`. The members that send no
+request — `modifyWhereUsedScope`, `supportsSourceCode`, `getObjectSourceUri` —
+do not take it. `IReadOptions.accept` is unchanged.
 
 ## Migrating to 18.0.0
 

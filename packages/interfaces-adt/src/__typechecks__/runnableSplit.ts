@@ -18,6 +18,7 @@
  */
 
 import type { IAdtWireResponse } from '@mcp-abap-adt/interfaces-adt-connection';
+import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type { IAdtAnalyseOptions } from '../adt/IAdtObject';
 import type { IAdtResponse } from '../adt/IAdtResponse';
 import type {
@@ -111,11 +112,18 @@ export type _ProfilingAtomIsOneMethod = Assert<
  * error strategy with the call now (decision 36), so the second parameter is
  * always there and carries `analyse`. `Parameters` of an overloaded member reads
  * the last overload, which is the one a caller without a strategy uses.
+ *
+ * **18.1.0 changed it on purpose too:** every member that sends a request takes
+ * the headers of that request as `options.headers` (`IAdtHeaders`), so the
+ * options carry it beside `analyse`.
  */
 export type _ExecutorRunTakesTargetAndTheErrorStrategy = Assert<
   Equal<
     Parameters<Executor['run']>,
-    [target: { name: string }, options?: IAdtAnalyseOptions]
+    [
+      target: { name: string },
+      options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
+    ]
   >
 >;
 
@@ -125,7 +133,10 @@ export type _RunnableKeepsItsOptions = Assert<
     Parameters<
       IAdtRunnable<{ name: string }, IAdtWireResponse, { deep: true }>['run']
     >,
-    [target: { name: string }, options?: { deep: true } & IAdtAnalyseOptions]
+    [
+      target: { name: string },
+      options?: { headers?: IAdtHeaders } & { deep: true } & IAdtAnalyseOptions,
+    ]
   >
 >;
 

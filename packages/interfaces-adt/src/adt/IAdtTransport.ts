@@ -269,7 +269,7 @@ export interface IAdtTransportObjectActions<
   removeObject<E extends IAdtError = IAdtError>(
     transportNumber: string,
     object: IAbapObjectEntry & { position: string },
-    options?: IAdtOperationOptions<E>,
+    options?: { headers?: IAdtHeaders } & IAdtOperationOptions<E>,
   ): Promise<IAdtResponse<TRemoved, E>>;
   /**
    * Attach one object to a request or task.
@@ -282,7 +282,7 @@ export interface IAdtTransportObjectActions<
   addObject<E extends IAdtError = IAdtError>(
     transportNumber: string,
     object: IAbapObjectEntry,
-    options?: IAdtOperationOptions<E>,
+    options?: { headers?: IAdtHeaders } & IAdtOperationOptions<E>,
   ): Promise<IAdtResponse<TAdded, E>>;
   /**
    * Create a task under a request.
@@ -305,7 +305,10 @@ export interface IAdtTransportObjectActions<
    */
   createTask<E extends IAdtError = IAdtError>(
     transportNumber: string,
-    options: { targetUser: string } & IAdtOperationOptions<E>,
+    options: {
+      headers?: IAdtHeaders;
+      targetUser: string;
+    } & IAdtOperationOptions<E>,
   ): Promise<IAdtResponse<TTask, E>>;
   /**
    * What has happened to this request: created, object added, object deleted,
@@ -366,7 +369,7 @@ export interface IAdtTransportObjectActions<
   changeTaskType<E extends IAdtError = IAdtError>(
     taskNumber: string,
     type: AdtTaskType,
-    options?: IAdtOperationOptions<E>,
+    options?: { headers?: IAdtHeaders } & IAdtOperationOptions<E>,
   ): Promise<IAdtResponse<TTaskType, E>>;
 }
 
@@ -395,7 +398,7 @@ export interface IAdtTransportObjectActions<
 export interface IAdtTransportSortAndCompress<TCompressed> {
   sortAndCompress<E extends IAdtError = IAdtError>(
     taskNumber: string,
-    options?: IAdtOperationOptions<E>,
+    options?: { headers?: IAdtHeaders } & IAdtOperationOptions<E>,
   ): Promise<IAdtResponse<TCompressed, E>>;
 }
 
@@ -421,6 +424,6 @@ export interface IAdtTransportMoveObjects<TMoved> {
     sourceTask: string,
     targetNumber: string,
     objects: readonly (IAbapObjectEntry & { position: string })[],
-    options?: IAdtOperationOptions<E>,
+    options?: { headers?: IAdtHeaders } & IAdtOperationOptions<E>,
   ): Promise<IAdtResponse<TMoved, E>>;
 }

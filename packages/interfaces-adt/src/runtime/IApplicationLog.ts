@@ -42,10 +42,12 @@ export interface IApplicationLog<TObject, TSource, TValidation> {
   ): Promise<IAdtResponse<TSource>>;
   validateName<E extends IAdtError>(
     objectName: string,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TValidation, E>>;
   validateName(
     objectName: string,
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TValidation>>;
 }

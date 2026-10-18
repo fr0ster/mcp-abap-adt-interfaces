@@ -233,11 +233,13 @@ export interface ITraceReading<
 export interface ITraceDeletion {
   delete<E extends IAdtError>(
     traceId: string,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<void, E>>;
   delete(
     traceId: string,
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<void>>;
 }
 

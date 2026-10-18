@@ -350,12 +350,14 @@ export interface IAdtGroupLifecycle<
   activateObjectsGroup<E extends IAdtError>(
     objects: IObjectReference[],
     preauditRequested: boolean | undefined,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TActivation, E>>;
   activateObjectsGroup(
     objects: IObjectReference[],
     preauditRequested?: boolean,
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TActivation>>;
 
   /**
@@ -416,23 +418,27 @@ export interface IAdtGroupLifecycle<
   /** Whether a set can be deleted, asked before deleting it. */
   checkDeletionGroup<E extends IAdtError>(
     objects: IObjectReference[],
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TDeletionCheck, E>>;
   checkDeletionGroup(
     objects: IObjectReference[],
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TDeletionCheck>>;
 
   /** Delete several objects in one request. */
   deleteObjectsGroup<E extends IAdtError>(
     objects: IObjectReference[],
     transportRequest: string | undefined,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TDeletion, E>>;
   deleteObjectsGroup(
     objects: IObjectReference[],
     transportRequest?: string,
-    options?: IAdtAnalyseOptions,
+    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TDeletion>>;
 }
 
