@@ -95,9 +95,7 @@ export interface IAdtAbapGitClient<TRepos, TErrorLog, TPull, TExternalRepo> {
   ): Promise<IAdtResponse<TPull>>;
   unlink<E extends IAdtError>(
     args: IAbapGitUnlinkArgs,
-    options: IAdtAnalyseOptions<E> & {
-      analyse: IAnalyse<E>;
-    },
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<void, E>>;
   unlink(
     args: IAbapGitUnlinkArgs,

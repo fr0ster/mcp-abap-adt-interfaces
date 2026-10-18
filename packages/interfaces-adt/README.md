@@ -11,7 +11,7 @@ ADT contracts: object operations, runtime analysis, execution, feeds and service
 - Since 14.0.0 `IDebuggerIdentity` is a union by `debuggingMode` (required), `attach` takes the identity, `condition` is for line breakpoints only, and `IAbapDebugger` gains `TSettings` and five members. The CHANGELOG has the migration note.
 - Since 15.0.0 `skipCount` is gone from breakpoints (the server ignores it) and `clientId` pairs an answer row with its request. The CHANGELOG has the migration note.
 - Since 15.1.0 the plain class and program run take `debuggee` (`IDebuggeeIds`): the terminal id and IDE id a terminal-mode listener catches the run by.
-- Since 19.0.0 a member whose request carries headers takes them as `options.headers: IAdtHeaders`, **required**, and sends exactly that pair; a member whose request carries none takes no `headers`. `IReadOptions.accept` is gone. See "A request's own headers" and "Migrating to 19.0.0".
+- Since 19.0.0 a member whose endpoint needs `Accept` and/or `Content-Type` takes the whole pair as `options.headers: IAdtHeaders`, **required**, and sends exactly that pair; a member whose endpoint needs neither takes no `headers`. `IReadOptions.accept` is gone. See "A request's own headers" and "Migrating to 19.0.0".
 - Since 15.3.0 `IAdtTransportMoveObjects` moves entries from one task to another, each identified by its position in the source.
 - Since 15.2.0 `IAdtTransportSortAndCompress` sorts and compresses a task's object list, the remedy SAP names when `removeObject` is refused for a duplicated entry.
 - Since 13.0.0 `IResultStrategy`, `IAnalyse` and `IAdtFailure.response` hand over an `IAdtWireResponse` whose `data` is `unknown`, not `any` (`interfaces-adt-connection` 2.0.0): narrow it before reading. The CHANGELOG has the migration note.
@@ -90,22 +90,22 @@ So `createTask` requires `targetUser` and `removeObject` requires `position`, an
 
 ## A request's own headers
 
-Since 19.0.0 a member whose request carries headers of its own takes them as
-`options.headers`, typed `IAdtHeaders` (`{ accept, contentType }`), and the
-field is **required**: the member sends exactly the pair it is given and
-supplies nothing itself. Both fields are required, so a partial pair does not
-compile. Because the field is required, so is the options parameter, and a
-positional parameter before it that was optional is now `T | undefined`.
+Since 19.0.0 a member takes `headers` only where its endpoint needs it. Where
+the endpoint needs `Accept`, `Content-Type`, or both, the member takes the
+**whole pair** as `options.headers`, typed `IAdtHeaders`
+(`{ accept, contentType }`), and the field is **required**: the member sends
+exactly the pair it is given and supplies nothing itself. An endpoint needing
+only one of the two still gets the whole pair — never a separate `accept` or
+`contentType`. Because the field is required, so is the options parameter, and
+a positional parameter before it that was optional is now `T | undefined`.
 
-Which members carry headers is a fact of the implementation, read from
-`@mcp-abap-adt/adt-clients`: the requests that set `Accept` or `Content-Type`.
+An endpoint needs `Content-Type` when the request carries a typed body, and
+`Accept` when the answer is parsed — by the implementation, or by the caller
+through a result strategy — or when SAP refuses any other `Accept`.
 
-- **No `headers`** — the request carries none of its own: `IAbapDebugger.deleteBreakpoint`, `deleteWatchpoint` and `stopListener`; `IAmdpDebugger.step`, `deleteDebuggee` and `stop`; `IAdtAbapGitClient.unlink`; `ITraceDeletion.delete`.
-- **Optional `headers`, pending a decision** — on some paths the requests
-  carry headers and on others they do not, or there is no implementation to
-  read: `IAdtCreatable.create`, `IAdtUpdatable.update`, `IAdtLockable.lock` and `unlock`, `IAdtMetadataReadable.readMetadata`, `IAdtDeletable.checkDeletion`, `IAdtValidatable.validate`, and `IRunnableWithProfiling.runWithProfiling`. They keep `headers?: IAdtHeaders`; when given, the pair
-  is still whole.
-- **Required `headers`** — every other member that sends a request.
+Members that take **no** `headers`: `IAdtLockable.unlock`; `IAdtRunnable.run`; `IRunnableWithProfiler.runWithProfiler`; `IRunnableWithProfiling.runWithProfiling`; `IAbapDebugger.deleteBreakpoint`, `deleteWatchpoint` and `stopListener`; `IAmdpDebugger.step`, `deleteDebuggee` and `stop`; `IAdtAbapGitClient.unlink`; `ITraceDeletion.delete`. Every other member that sends a
+request requires the pair. An implementation whose own request for a member
+needs no headers ignores them.
 
 The field is on each member's own options, not on `IAdtAnalyseOptions` or
 `IAdtOperationOptions`. `ITraceReading.read` takes it through `ViewArgs`. The
@@ -116,7 +116,8 @@ holds all of this for every member and every overload.
 ## Migrating to 19.0.0
 
 - Pass `headers: { accept, contentType }` in the options of every member that
-  requires it. A call that relied on the member's own headers no longer
+  requires it — a whole pair where the endpoint needs `Accept` and/or
+  `Content-Type`. A call that relied on the member's own headers no longer
   compiles; the headers the implementation used to send are now the caller's
   to give.
 - `IReadOptions.accept` is removed. Give `headers` instead
@@ -124,7 +125,8 @@ holds all of this for every member and every overload.
 - Where a member's options parameter was optional, it is now required; where a
   positional parameter before it was optional, pass `undefined` explicitly:
   `IAdtReadable.read` (`version`), `IAdtCheckable.check` (`status`), `IFeatureToggleObject.checkState` (`opts`) and `readSource` (`version`), `ITestRunInformation.getStatus` (`withLongPolling`), `IAdtTypeCatalogue.getAllTypes` (`maxItemCount`, `name`, `data`), `IAdtGroupLifecycle.activateObjectsGroup` (`preauditRequested`) and `deleteObjectsGroup` (`transportRequest`), `IAdtDiscovery.discovery` (`params`), `IAdtObjectAccess.readObjectSource` (`functionGroup`, `version`) and `readObjectMetadata` (`functionGroup`), `IRuntimeDumps.listByUser` (`user`), `ICrossTrace.getById` (`includeSensitiveData`).
-- Members without `headers` (`IAbapDebugger.deleteBreakpoint`, `deleteWatchpoint` and `stopListener`; `IAmdpDebugger.step`, `deleteDebuggee` and `stop`; `IAdtAbapGitClient.unlink`; `ITraceDeletion.delete`) refuse the field.
+- Members without `headers` refuse the field: `IAdtLockable.unlock`; `IAdtRunnable.run`; `IRunnableWithProfiler.runWithProfiler`; `IRunnableWithProfiling.runWithProfiling`; `IAbapDebugger.deleteBreakpoint`, `deleteWatchpoint` and `stopListener`; `IAmdpDebugger.step`, `deleteDebuggee` and `stop`; `IAdtAbapGitClient.unlink`; `ITraceDeletion.delete`. Their signatures are
+  unchanged from 18.0.0.
 - An implementation reads `options.headers` and sends it as given.
 
 ## Migrating to 18.0.0

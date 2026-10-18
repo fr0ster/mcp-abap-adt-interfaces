@@ -145,10 +145,16 @@ async function _theFailureIsTheCallers(): Promise<void> {
   }
 
   // The other members carry it too, not just the one that was asked about.
-  const created = await creatable.create({ name: 'ZCL_X' }, { analyse: t100 });
+  const created = await creatable.create(
+    { name: 'ZCL_X' },
+    { headers, analyse: t100 },
+  );
   if (!created.ok) void created.getError().t100;
 
-  const updated = await updatable.update({ name: 'ZCL_X' }, { analyse: t100 });
+  const updated = await updatable.update(
+    { name: 'ZCL_X' },
+    { headers, analyse: t100 },
+  );
   if (!updated.ok) void updated.getError().t100;
 
   const read = await readable.read({ name: 'ZCL_X' }, 'active', {

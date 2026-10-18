@@ -127,9 +127,7 @@ export interface IAmdpDebugger<TStarted, TEvents, TCommand, TPreview> {
   ): Promise<IAdtResponse<TCommand, E>>;
   stop(
     mainId: string,
-    options?: WithoutAnalyse<{
-      hardStop?: boolean;
-    }>,
+    options?: WithoutAnalyse<{ hardStop?: boolean }>,
   ): Promise<IAdtResponse<TCommand>>;
 
   /** A table variable's rows, answered at once, by column. */

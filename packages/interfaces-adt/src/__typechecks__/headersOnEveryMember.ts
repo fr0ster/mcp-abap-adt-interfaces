@@ -1,21 +1,17 @@
 // Compile-only. If this stops compiling, a member's `headers` no longer says
-// what its request carries.
+// what its endpoint needs.
 //
-// Since 19.0.0 a member whose request carries headers takes them as
-// `options.headers: IAdtHeaders`, **required**, and sends exactly that pair. A
-// member whose request carries none takes no `headers` at all. Which is which
-// was read from the implementation, `@mcp-abap-adt/adt-clients`: the requests
-// that set `Accept` or `Content-Type`.
+// Since 19.0.0 a member whose endpoint needs `Accept` and/or `Content-Type`
+// takes the whole pair as `options.headers: IAdtHeaders`, **required**, and
+// sends exactly that pair — never a separate `accept` or `contentType`. A member
+// whose endpoint needs neither takes no `headers` at all.
 //
 // For each contract below, every member answering a `Promise` is checked on
 // **every** overload, in its last parameter (the options):
 // - by default, the options are required, `headers` is required, and its type
-//   is exactly `IAdtHeaders` — assignable both ways and identical, so
+//   is exactly `IAdtHeaders` — identical and assignable both ways, so
 //   `{ accept: string; contentType?: string }` or a `Partial` fails;
 // - a member named in `None` takes no `headers`;
-// - a member named in `Pending` has requests that carry headers on some paths
-//   and not on others; until that is decided it keeps `headers?: IAdtHeaders`,
-//   whose type, when given, is still exactly `IAdtHeaders`;
 // - no member's options carry a standalone `accept` or `contentType`.
 // `Parameters<>` reads only the last overload, so the overloads are read with a
 // four-signature pattern, which yields the parameter lists of up to four
@@ -175,21 +171,7 @@ type OverloadTakesNoHeaders<P> =
       ? false
       : true;
 
-/** Pending: `headers` present, optional allowed, exactly `IAdtHeaders` when given. */
-type HeadersWholeIn<O> = O extends unknown
-  ? 'headers' extends keyof O
-    ? Same<Exclude<O['headers'], undefined>, IAdtHeaders>
-    : false
-  : never;
-type OverloadTakesWholeHeaders<P> = [OptionsOf<P>] extends [never]
-  ? false
-  : false extends HeadersWholeIn<OptionsOf<P>>
-    ? false
-    : false extends NoStandaloneHeaderFields<OptionsOf<P>>
-      ? false
-      : true;
-
-type Rule = 'required' | 'none' | 'pending' | 'excluded';
+type Rule = 'required' | 'none' | 'excluded';
 
 /** `true` when every overload of the member keeps its rule. */
 type MemberKeepsRule<F, R extends Rule> = F extends (
@@ -204,35 +186,24 @@ type MemberKeepsRule<F, R extends Rule> = F extends (
         ? false extends OverloadTakesNoHeaders<OverloadParameters<F>>
           ? false
           : true
-        : R extends 'pending'
-          ? false extends OverloadTakesWholeHeaders<OverloadParameters<F>>
-            ? false
-            : true
-          : false extends OverloadRequiresHeaders<OverloadParameters<F>>
-            ? false
-            : true
+        : false extends OverloadRequiresHeaders<OverloadParameters<F>>
+          ? false
+          : true
       : false
   : true;
 
 /**
  * `true` when every member of the contract keeps its rule: required headers,
- * unless named in `None`, `Pending` or `Excluded`.
+ * unless named in `None` or `Excluded`.
  */
 type EveryMemberTakesHeaders<
   I,
   Excluded extends keyof I = never,
   None extends keyof I = never,
-  Pending extends keyof I = never,
 > = false extends {
   [K in keyof I]-?: MemberKeepsRule<
     I[K],
-    K extends Excluded
-      ? 'excluded'
-      : K extends None
-        ? 'none'
-        : K extends Pending
-          ? 'pending'
-          : 'required'
+    K extends Excluded ? 'excluded' : K extends None ? 'none' : 'required'
   >;
 }[keyof I]
   ? false
@@ -253,40 +224,25 @@ export type _HeadersIAdtEnhancementHost = Assert<
   EveryMemberTakesHeaders<IAdtEnhancementHost<Probe, Probe, Probe>>
 >;
 export type _HeadersIAdtCreatable = Assert<
-  EveryMemberTakesHeaders<IAdtCreatable<Probe, Probe>, never, never, 'create'>
+  EveryMemberTakesHeaders<IAdtCreatable<Probe, Probe>>
 >;
 export type _HeadersIAdtReadable = Assert<
   EveryMemberTakesHeaders<IAdtReadable<Probe, Probe>>
 >;
 export type _HeadersIAdtMetadataReadable = Assert<
-  EveryMemberTakesHeaders<
-    IAdtMetadataReadable<Probe, Probe>,
-    never,
-    never,
-    'readMetadata'
-  >
+  EveryMemberTakesHeaders<IAdtMetadataReadable<Probe, Probe>>
 >;
 export type _HeadersIAdtUpdatable = Assert<
-  EveryMemberTakesHeaders<IAdtUpdatable<Probe, Probe>, never, never, 'update'>
+  EveryMemberTakesHeaders<IAdtUpdatable<Probe, Probe>>
 >;
 export type _HeadersIAdtMetadataUpdatable = Assert<
   EveryMemberTakesHeaders<IAdtMetadataUpdatable<Probe, Probe>>
 >;
 export type _HeadersIAdtDeletable = Assert<
-  EveryMemberTakesHeaders<
-    IAdtDeletable<Probe, Probe, Probe>,
-    never,
-    never,
-    'checkDeletion'
-  >
+  EveryMemberTakesHeaders<IAdtDeletable<Probe, Probe, Probe>>
 >;
 export type _HeadersIAdtValidatable = Assert<
-  EveryMemberTakesHeaders<
-    IAdtValidatable<Probe, Probe>,
-    never,
-    never,
-    'validate'
-  >
+  EveryMemberTakesHeaders<IAdtValidatable<Probe, Probe>>
 >;
 export type _HeadersIAdtCheckable = Assert<
   EveryMemberTakesHeaders<IAdtCheckable<Probe, Probe>>
@@ -295,7 +251,12 @@ export type _HeadersIAdtActivatable = Assert<
   EveryMemberTakesHeaders<IAdtActivatable<Probe, Probe>>
 >;
 export type _HeadersIAdtLockable = Assert<
-  EveryMemberTakesHeaders<IAdtLockable<Probe>, never, never, 'lock' | 'unlock'>
+  EveryMemberTakesHeaders<
+    IAdtLockable<Probe>,
+    never,
+    // no body, and the answer is never read
+    'unlock'
+  >
 >;
 export type _HeadersIAdtVersionable = Assert<
   EveryMemberTakesHeaders<IAdtVersionable<Probe, Probe, Probe>>
@@ -353,15 +314,18 @@ export type _HeadersIAdtObjectAccess = Assert<
   >
 >;
 export type _HeadersIAdtRunnable = Assert<
-  EveryMemberTakesHeaders<IAdtRunnable<Probe, Probe, Probe>>
+  EveryMemberTakesHeaders<IAdtRunnable<Probe, Probe, Probe>, never, 'run'>
 >;
 export type _HeadersIRunnableWithProfiler = Assert<
-  EveryMemberTakesHeaders<IRunnableWithProfiler<Probe, Probe, Probe>>
+  EveryMemberTakesHeaders<
+    IRunnableWithProfiler<Probe, Probe, Probe>,
+    never,
+    'runWithProfiler'
+  >
 >;
 export type _HeadersIRunnableWithProfiling = Assert<
   EveryMemberTakesHeaders<
     IRunnableWithProfiling<Probe, Probe, Probe>,
-    never,
     never,
     // adt-clients has no implementation of it to read
     'runWithProfiling'

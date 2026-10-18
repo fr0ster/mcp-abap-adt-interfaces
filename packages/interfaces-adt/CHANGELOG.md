@@ -11,12 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed (breaking)
 
-- A member whose request carries headers of its own takes them as
-  `options.headers: IAdtHeaders`, **required**: both `accept` and
-  `contentType`, sent exactly as given, nothing supplied by the member. Which
-  members carry headers was read from `@mcp-abap-adt/adt-clients` (the
-  requests that set `Accept` or `Content-Type`). The field is on each member's
-  own options, not on `IAdtAnalyseOptions` or `IAdtOperationOptions`;
+- A member whose endpoint needs `Accept` and/or `Content-Type` takes the whole
+  pair as `options.headers: IAdtHeaders`, **required**: both `accept` and
+  `contentType`, sent exactly as given, nothing supplied by the member — never
+  a separate `accept` or `contentType`. The field is on each member's own
+  options, not on `IAdtAnalyseOptions` or `IAdtOperationOptions`;
   `ITraceReading.read` takes it through `ViewArgs`, whose options are now always
   required.
 - The options parameter of those members is required, and a positional
@@ -30,10 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Unchanged on purpose
 
-- No `headers` on the members whose requests carry none: `IAbapDebugger.deleteBreakpoint`, `deleteWatchpoint` and `stopListener`; `IAmdpDebugger.step`, `deleteDebuggee` and `stop`; `IAdtAbapGitClient.unlink`; `ITraceDeletion.delete`.
-- `headers?: IAdtHeaders` stays optional, pending a decision, on the members
-  whose requests carry headers on some paths and not on others, or that have no
-  implementation to read: `IAdtCreatable.create`, `IAdtUpdatable.update`, `IAdtLockable.lock` and `unlock`, `IAdtMetadataReadable.readMetadata`, `IAdtDeletable.checkDeletion`, `IAdtValidatable.validate`, and `IRunnableWithProfiling.runWithProfiling`. When given, the pair is whole.
+- No `headers`, signatures as in 18.0.0, where the endpoint needs neither
+  header: `IAdtLockable.unlock`; `IAdtRunnable.run`; `IRunnableWithProfiler.runWithProfiler`; `IRunnableWithProfiling.runWithProfiling`; `IAbapDebugger.deleteBreakpoint`, `deleteWatchpoint` and `stopListener`; `IAmdpDebugger.step`, `deleteDebuggee` and `stop`; `IAdtAbapGitClient.unlink`; `ITraceDeletion.delete`.
 
 ### Migrating from 18.0
 

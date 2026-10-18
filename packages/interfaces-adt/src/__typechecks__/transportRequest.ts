@@ -96,9 +96,12 @@ const mine: Promise<IAdtResponse<MyShape>> = mineRequests.list({
  */
 type Requests = IAdtRequest<MyTree> & IAdtCreatable<ITransportConfig, string>;
 declare const both: Requests;
-const created: Promise<IAdtResponse<string>> = both.create({
-  description: 'x',
-});
+const created: Promise<IAdtResponse<string>> = both.create(
+  {
+    description: 'x',
+  },
+  { headers },
+);
 
 /** The implementation's reading is the one that comes back. */
 // @ts-expect-error this implementation answers MyShape, not MyTree

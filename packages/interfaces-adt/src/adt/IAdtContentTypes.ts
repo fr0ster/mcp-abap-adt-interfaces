@@ -13,10 +13,10 @@
 /**
  * The `Accept` and `Content-Type` of one request.
  *
- * A member whose request carries headers takes it as `options.headers`,
- * required, for its one request: the member sends exactly this pair and
- * supplies nothing itself. A member whose request carries none takes no
- * `headers`.
+ * A member whose endpoint needs `Accept` and/or `Content-Type` takes the whole
+ * pair as `options.headers`, required, for its one request: the member sends
+ * exactly this pair and supplies nothing itself. A member whose endpoint needs
+ * neither takes no `headers`.
  */
 export interface IAdtHeaders {
   accept: string;

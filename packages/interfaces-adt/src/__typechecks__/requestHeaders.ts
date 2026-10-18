@@ -1,8 +1,8 @@
 // Compile-only assertions. If these stop compiling, the types regressed.
 //
-// A member whose request carries headers takes them as `options.headers`,
-// typed `IAdtHeaders` and required: the pair whole, and the member sends exactly
-// that pair. A member whose request carries none takes no `headers` at all. The
+// A member whose endpoint needs `Accept` and/or `Content-Type` takes the whole
+// pair as `options.headers`, typed `IAdtHeaders` and required, and sends exactly
+// that pair. A member whose endpoint needs neither takes no `headers` at all. The
 // field is on each member's own options, not on the shared
 // `IAdtAnalyseOptions` / `IAdtOperationOptions`.
 // headersOnEveryMember.ts holds this for every member; these are call sites.
@@ -77,7 +77,7 @@ void traces.read('id', 'records');
 // @ts-expect-error the request's headers are required
 void traces.read('id', 'hitlist', {});
 
-// A member whose request carries no headers of its own takes none.
+// A member whose endpoint needs no headers takes none.
 void deletion.delete('id', {});
 // @ts-expect-error a DELETE of a trace carries no headers
 void deletion.delete('id', { headers });
@@ -98,12 +98,15 @@ void feeds.dumps({
   headers: { contentType: 'text/plain' },
 });
 
-// A write takes it the same way. create, update, lock and unlock are among the
-// members whose requests carry headers on some paths and not on others; they
-// keep `headers` optional until that is decided (headersOnEveryMember.ts).
+// A write takes it the same way: create, update and lock require the pair.
+// @ts-expect-error the request's headers are required
+void creator.create({ className: 'ZCL_X' }, {});
 void creator.create({ className: 'ZCL_X' }, { headers });
 void writer.update({ className: 'ZCL_X' }, { source: 'x', headers });
 void locker.lock({ className: 'ZCL_X' }, { headers });
+// unlock takes none: no body, and its answer is never read.
+void locker.unlock({ className: 'ZCL_X' }, 'handle');
+// @ts-expect-error an unlock carries no headers
 void locker.unlock({ className: 'ZCL_X' }, 'handle', { headers });
 void writer.update(
   { className: 'ZCL_X' },

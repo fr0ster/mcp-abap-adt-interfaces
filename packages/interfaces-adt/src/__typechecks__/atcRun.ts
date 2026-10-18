@@ -1,6 +1,5 @@
 // Compile-only assertions. If these stop compiling, the types regressed.
 
-import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type { IAdtResponse } from '../adt/IAdtResponse';
 import type { IAdtRunnable } from '../execution/IAdtRunnable';
 import type {
@@ -12,11 +11,6 @@ import type {
   IAtcRunStatusReadable,
   IAtcRunTarget,
 } from '../runtime/IAtcRun';
-
-const headers: IAdtHeaders = {
-  accept: 'application/xml',
-  contentType: 'application/xml',
-};
 
 /** What an implementation answers with when it succeeded. */
 const answered = <T>(value: T): IAdtResponse<T> => ({
@@ -62,13 +56,10 @@ const _handler: AtcHandler = {
 // `options` is optional, so a caller may pass one argument. The handler must
 // therefore treat it as absent rather than as `{}` — this call is what makes
 // that a compile-time fact and not an intention.
-void _handler.run(
-  { objects: [{ objectType: 'class', objectName: 'ZCL_X' }] },
-  { headers },
-);
+void _handler.run({ objects: [{ objectType: 'class', objectName: 'ZCL_X' }] });
 void _handler.run(
   { objects: [{ objectType: 'table', objectName: 'ZT_X' }] },
-  { headers, wait: true, maximumVerdicts: 500 },
+  { wait: true, maximumVerdicts: 500 },
 );
 
 // The target is a NON-EMPTY tuple. An empty array must not compile: "one or

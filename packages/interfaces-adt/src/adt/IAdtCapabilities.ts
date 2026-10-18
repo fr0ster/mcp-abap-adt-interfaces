@@ -81,13 +81,13 @@ export interface IAdtCreatable<TConfig, TCreated> {
    */
   create<E extends IAdtError>(
     config: Omit<TConfig, 'source'> & { source?: never },
-    options: { headers?: IAdtHeaders } & IAdtCreateOptions<E> & {
+    options: { headers: IAdtHeaders } & IAdtCreateOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<TCreated, E>>;
   create(
     config: Omit<TConfig, 'source'> & { source?: never },
-    options?: { headers?: IAdtHeaders } & IAdtCreateOptions,
+    options: { headers: IAdtHeaders } & IAdtCreateOptions,
   ): Promise<IAdtResponse<TCreated>>;
 }
 
@@ -158,15 +158,15 @@ export interface IAdtMetadataReadable<TConfig, TMetadata> {
   readMetadata<E extends IAdtError>(
     config: Partial<TConfig>,
     options: {
-      headers?: IAdtHeaders;
+      headers: IAdtHeaders;
       withLongPolling?: boolean;
       version?: 'active' | 'inactive';
     } & IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TMetadata, E>>;
   readMetadata(
     config: Partial<TConfig>,
-    options?: {
-      headers?: IAdtHeaders;
+    options: {
+      headers: IAdtHeaders;
       withLongPolling?: boolean;
       version?: 'active' | 'inactive';
     } & IAdtOperationOptions,
@@ -313,13 +313,13 @@ export interface IAdtUpdatable<TConfig, TUpdated> {
    */
   update<E extends IAdtError>(
     config: TConfig,
-    options: { headers?: IAdtHeaders } & IAdtOperationOptions<E> & {
+    options: { headers: IAdtHeaders } & IAdtOperationOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<TUpdated, E>>;
   update(
     config: TConfig,
-    options?: { headers?: IAdtHeaders } & IAdtOperationOptions,
+    options: { headers: IAdtHeaders } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TUpdated>>;
 }
 
@@ -415,13 +415,13 @@ export interface IAdtDeletable<TConfig, TDeleted, TChecked = string> {
    */
   checkDeletion<E extends IAdtError>(
     config: Partial<TConfig>,
-    options: { headers?: IAdtHeaders } & IAdtOperationOptions<E> & {
+    options: { headers: IAdtHeaders } & IAdtOperationOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<TChecked, E>>;
   checkDeletion(
     config: Partial<TConfig>,
-    options?: { headers?: IAdtHeaders } & IAdtOperationOptions,
+    options: { headers: IAdtHeaders } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TChecked>>;
 }
 
@@ -433,13 +433,13 @@ export interface IAdtValidatable<TConfig, TValidated> {
    */
   validate<E extends IAdtError>(
     config: Partial<TConfig>,
-    options: { headers?: IAdtHeaders } & IAdtOperationOptions<E> & {
+    options: { headers: IAdtHeaders } & IAdtOperationOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<TValidated, E>>;
   validate(
     config: Partial<TConfig>,
-    options?: { headers?: IAdtHeaders } & IAdtOperationOptions,
+    options: { headers: IAdtHeaders } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TValidated>>;
 }
 
@@ -496,13 +496,13 @@ export interface IAdtLockable<TConfig> {
    */
   lock<E extends IAdtError>(
     config: Partial<TConfig>,
-    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<string, E>>;
   lock(
     config: Partial<TConfig>,
-    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<string>>;
 
   /**
@@ -517,14 +517,12 @@ export interface IAdtLockable<TConfig> {
   unlock<E extends IAdtError>(
     config: Partial<TConfig>,
     lockHandle: string,
-    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
-        analyse: IAnalyse<E>;
-      },
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<void, E>>;
   unlock(
     config: Partial<TConfig>,
     lockHandle: string,
-    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
+    options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<void>>;
 }
 
