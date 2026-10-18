@@ -1,4 +1,3 @@
-import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type { IAdtAnalyseOptions, IAnalyse } from '../adt/IAdtObject';
 import type { IAdtError, IAdtResponse } from '../adt/IAdtResponse';
 
@@ -7,19 +6,11 @@ export interface ISt05Trace<TState, TDirectory> {
   readonly kind: 'st05Trace';
 
   getState<E extends IAdtError>(
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
-        analyse: IAnalyse<E>;
-      },
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TState, E>>;
-  getState(
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
-  ): Promise<IAdtResponse<TState>>;
+  getState(options?: IAdtAnalyseOptions): Promise<IAdtResponse<TState>>;
   getDirectory<E extends IAdtError>(
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
-        analyse: IAnalyse<E>;
-      },
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TDirectory, E>>;
-  getDirectory(
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
-  ): Promise<IAdtResponse<TDirectory>>;
+  getDirectory(options?: IAdtAnalyseOptions): Promise<IAdtResponse<TDirectory>>;
 }

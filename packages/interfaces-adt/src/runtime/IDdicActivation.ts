@@ -1,4 +1,3 @@
-import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type { IAdtAnalyseOptions, IAnalyse } from '../adt/IAdtObject';
 import type { IAdtError, IAdtResponse } from '../adt/IAdtResponse';
 
@@ -13,11 +12,10 @@ export interface IDdicActivation<TGraph> {
   readonly kind: 'ddicActivation';
 
   getGraph<E extends IAdtError>(
-    options: { headers: IAdtHeaders } & IGetActivationGraphOptions &
+    options: IGetActivationGraphOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TGraph, E>>;
   getGraph(
-    options: { headers: IAdtHeaders } & IGetActivationGraphOptions &
-      IAdtAnalyseOptions,
+    options?: IGetActivationGraphOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TGraph>>;
 }

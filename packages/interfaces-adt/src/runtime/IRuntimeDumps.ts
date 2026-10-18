@@ -1,4 +1,3 @@
-import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type { IAdtAnalyseOptions, IAnalyse } from '../adt/IAdtObject';
 import type { IAdtError, IAdtResponse } from '../adt/IAdtResponse';
 
@@ -24,38 +23,29 @@ export interface IRuntimeDumps<TList, TDump> {
 
   /** The dumps this system holds. */
   list<E extends IAdtError>(
-    options: { headers: IAdtHeaders } & IRuntimeDumpsListOptions &
+    options: IRuntimeDumpsListOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TList, E>>;
   list(
-    options: { headers: IAdtHeaders } & IRuntimeDumpsListOptions &
-      IAdtAnalyseOptions,
+    options?: IRuntimeDumpsListOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TList>>;
 
   listByUser<E extends IAdtError>(
     user: string | undefined,
-    options: { headers: IAdtHeaders } & Omit<
-      IRuntimeDumpsListOptions,
-      'query'
-    > &
+    options: Omit<IRuntimeDumpsListOptions, 'query'> &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TList, E>>;
   listByUser(
-    user: string | undefined,
-    options: { headers: IAdtHeaders } & Omit<
-      IRuntimeDumpsListOptions,
-      'query'
-    > &
-      IAdtAnalyseOptions,
+    user?: string,
+    options?: Omit<IRuntimeDumpsListOptions, 'query'> & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TList>>;
   getById<E extends IAdtError>(
     dumpId: string,
-    options: { headers: IAdtHeaders } & IRuntimeDumpReadOptions &
+    options: IRuntimeDumpReadOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TDump, E>>;
   getById(
     dumpId: string,
-    options: { headers: IAdtHeaders } & IRuntimeDumpReadOptions &
-      IAdtAnalyseOptions,
+    options?: IRuntimeDumpReadOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TDump>>;
 }

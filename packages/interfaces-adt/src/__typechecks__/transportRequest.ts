@@ -63,7 +63,6 @@ declare const requests: IAdtRequest<MyTree>;
 
 /** The default tree, from the contract alone. */
 const tree: Promise<IAdtResponse<MyTree>> = requests.list({
-  headers,
   configUri:
     '/sap/bc/adt/cts/transportrequests/searchconfiguration/configurations/7E5B',
 });
@@ -81,7 +80,6 @@ interface MyShape {
 }
 declare const mineRequests: IAdtRequest<MyShape>;
 const mine: Promise<IAdtResponse<MyShape>> = mineRequests.list({
-  headers,
   configUri: '/x',
 });
 

@@ -1,4 +1,3 @@
-import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type { IAdtAnalyseOptions, IAnalyse } from '../adt/IAdtObject';
 import type { IAdtError, IAdtResponse } from '../adt/IAdtResponse';
 
@@ -22,32 +21,28 @@ export interface IApplicationLog<TObject, TSource, TValidation> {
 
   getObject<E extends IAdtError>(
     objectName: string,
-    options: { headers: IAdtHeaders } & IGetApplicationLogObjectOptions &
+    options: IGetApplicationLogObjectOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TObject, E>>;
   getObject(
     objectName: string,
-    options: { headers: IAdtHeaders } & IGetApplicationLogObjectOptions &
-      IAdtAnalyseOptions,
+    options?: IGetApplicationLogObjectOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TObject>>;
   getSource<E extends IAdtError>(
     objectName: string,
-    options: { headers: IAdtHeaders } & IGetApplicationLogSourceOptions &
+    options: IGetApplicationLogSourceOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TSource, E>>;
   getSource(
     objectName: string,
-    options: { headers: IAdtHeaders } & IGetApplicationLogSourceOptions &
-      IAdtAnalyseOptions,
+    options?: IGetApplicationLogSourceOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TSource>>;
   validateName<E extends IAdtError>(
     objectName: string,
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
-        analyse: IAnalyse<E>;
-      },
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TValidation, E>>;
   validateName(
     objectName: string,
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
+    options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TValidation>>;
 }

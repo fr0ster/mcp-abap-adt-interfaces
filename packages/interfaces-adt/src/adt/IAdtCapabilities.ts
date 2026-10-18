@@ -121,20 +121,14 @@ export interface IAdtReadable<TConfig, TSource> {
   read<E extends IAdtError>(
     config: Partial<TConfig>,
     version: 'active' | 'inactive' | undefined,
-    options: {
-      headers: IAdtHeaders;
-      withLongPolling?: boolean;
-    } & IAdtOperationOptions<E> & {
+    options: { withLongPolling?: boolean } & IAdtOperationOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<TSource, E>>;
   read(
     config: Partial<TConfig>,
-    version: 'active' | 'inactive' | undefined,
-    options: {
-      headers: IAdtHeaders;
-      withLongPolling?: boolean;
-    } & IAdtOperationOptions,
+    version?: 'active' | 'inactive',
+    options?: { withLongPolling?: boolean } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TSource>>;
 }
 
@@ -158,15 +152,13 @@ export interface IAdtMetadataReadable<TConfig, TMetadata> {
   readMetadata<E extends IAdtError>(
     config: Partial<TConfig>,
     options: {
-      headers: IAdtHeaders;
       withLongPolling?: boolean;
       version?: 'active' | 'inactive';
     } & IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TMetadata, E>>;
   readMetadata(
     config: Partial<TConfig>,
-    options: {
-      headers: IAdtHeaders;
+    options?: {
       withLongPolling?: boolean;
       version?: 'active' | 'inactive';
     } & IAdtOperationOptions,
@@ -181,13 +173,11 @@ export interface IAdtEnhancementHost<TConfig, TElements, TOptions> {
    */
   readEnhancementElements<E extends IAdtError>(
     config: Partial<TConfig>,
-    options: { headers: IAdtHeaders } & IAdtOperationOptions<E> & {
-        analyse: IAnalyse<E>;
-      },
+    options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TElements, E>>;
   readEnhancementElements(
     config: Partial<TConfig>,
-    options: { headers: IAdtHeaders } & IAdtOperationOptions,
+    options?: IAdtOperationOptions,
   ): Promise<IAdtResponse<TElements>>;
 
   /**
@@ -195,13 +185,11 @@ export interface IAdtEnhancementHost<TConfig, TElements, TOptions> {
    */
   readEnhancementOptions<E extends IAdtError>(
     config: Partial<TConfig>,
-    options: { headers: IAdtHeaders } & IAdtOperationOptions<E> & {
-        analyse: IAnalyse<E>;
-      },
+    options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TOptions, E>>;
   readEnhancementOptions(
     config: Partial<TConfig>,
-    options: { headers: IAdtHeaders } & IAdtOperationOptions,
+    options?: IAdtOperationOptions,
   ): Promise<IAdtResponse<TOptions>>;
 }
 
@@ -224,19 +212,13 @@ export interface IAdtIncludeEnhancementHost<TConfig, TElements, TOptions> {
    */
   readEnhancementElements<E extends IAdtError>(
     config: Partial<TConfig>,
-    options: {
-      headers: IAdtHeaders;
-      context?: string;
-    } & IAdtOperationOptions<E> & {
+    options: { context?: string } & IAdtOperationOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<TElements, E>>;
   readEnhancementElements(
     config: Partial<TConfig>,
-    options: {
-      headers: IAdtHeaders;
-      context?: string;
-    } & IAdtOperationOptions,
+    options?: { context?: string } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TElements>>;
 
   /**
@@ -245,19 +227,13 @@ export interface IAdtIncludeEnhancementHost<TConfig, TElements, TOptions> {
    */
   readEnhancementOptions<E extends IAdtError>(
     config: Partial<TConfig>,
-    options: {
-      headers: IAdtHeaders;
-      context?: string;
-    } & IAdtOperationOptions<E> & {
+    options: { context?: string } & IAdtOperationOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<TOptions, E>>;
   readEnhancementOptions(
     config: Partial<TConfig>,
-    options: {
-      headers: IAdtHeaders;
-      context?: string;
-    } & IAdtOperationOptions,
+    options?: { context?: string } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TOptions>>;
 }
 
@@ -433,13 +409,11 @@ export interface IAdtValidatable<TConfig, TValidated> {
    */
   validate<E extends IAdtError>(
     config: Partial<TConfig>,
-    options: { headers: IAdtHeaders } & IAdtOperationOptions<E> & {
-        analyse: IAnalyse<E>;
-      },
+    options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TValidated, E>>;
   validate(
     config: Partial<TConfig>,
-    options: { headers: IAdtHeaders } & IAdtOperationOptions,
+    options?: IAdtOperationOptions,
   ): Promise<IAdtResponse<TValidated>>;
 }
 
@@ -496,13 +470,11 @@ export interface IAdtLockable<TConfig> {
    */
   lock<E extends IAdtError>(
     config: Partial<TConfig>,
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
-        analyse: IAnalyse<E>;
-      },
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<string, E>>;
   lock(
     config: Partial<TConfig>,
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
+    options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<string>>;
 
   /**
@@ -540,13 +512,11 @@ export interface IAdtVersionable<TConfig, TVersions, TSource> {
    */
   getVersions<E extends IAdtError>(
     config: Partial<TConfig>,
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
-        analyse: IAnalyse<E>;
-      },
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TVersions, E>>;
   getVersions(
     config: Partial<TConfig>,
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
+    options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TVersions>>;
 
   /**
@@ -558,13 +528,11 @@ export interface IAdtVersionable<TConfig, TVersions, TSource> {
    */
   getVersionSource<E extends IAdtError>(
     contentUri: string,
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
-        analyse: IAnalyse<E>;
-      },
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TSource, E>>;
   getVersionSource(
     contentUri: string,
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
+    options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TSource>>;
 }
 
@@ -595,18 +563,12 @@ export interface IAdtTransportAware<TConfig, TTransport> {
    */
   readTransport<E extends IAdtError>(
     config: Partial<TConfig>,
-    options: {
-      headers: IAdtHeaders;
-      withLongPolling?: boolean;
-    } & IAdtOperationOptions<E> & {
+    options: { withLongPolling?: boolean } & IAdtOperationOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<TTransport, E>>;
   readTransport(
     config: Partial<TConfig>,
-    options: {
-      headers: IAdtHeaders;
-      withLongPolling?: boolean;
-    } & IAdtOperationOptions,
+    options?: { withLongPolling?: boolean } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TTransport>>;
 }

@@ -62,38 +62,33 @@ export interface IAmdpDebugger<TStarted, TEvents, TCommand, TPreview> {
 
   start<E extends IAdtError>(
     requestUser: string,
-    options: { headers: IAdtHeaders } & WithAnalyse<
-      E,
-      IStartAmdpDebuggerOptions
-    >,
+    options: WithAnalyse<E, IStartAmdpDebuggerOptions>,
   ): Promise<IAdtResponse<TStarted, E>>;
   start(
     requestUser: string,
-    options: {
-      headers: IAdtHeaders;
-    } & WithoutAnalyse<IStartAmdpDebuggerOptions>,
+    options?: WithoutAnalyse<IStartAmdpDebuggerOptions>,
   ): Promise<IAdtResponse<TStarted>>;
 
   /** Replace the breakpoints with these; none clears them. */
   syncBreakpoints<E extends IAdtError>(
     mainId: string,
     breakpoints: readonly IAmdpBreakpoint[],
-    options: { headers: IAdtHeaders } & WithAnalyse<E>,
+    options: WithAnalyse<E>,
   ): Promise<IAdtResponse<TCommand, E>>;
   syncBreakpoints(
     mainId: string,
     breakpoints: readonly IAmdpBreakpoint[],
-    options: { headers: IAdtHeaders } & WithoutAnalyse,
+    options?: WithoutAnalyse,
   ): Promise<IAdtResponse<TCommand>>;
 
   /** Wait for what happened next: a stop, a warning, an end. */
   getEvents<E extends IAdtError>(
     mainId: string,
-    options: { headers: IAdtHeaders } & WithAnalyse<E>,
+    options: WithAnalyse<E>,
   ): Promise<IAdtResponse<TEvents, E>>;
   getEvents(
     mainId: string,
-    options: { headers: IAdtHeaders } & WithoutAnalyse,
+    options?: WithoutAnalyse,
   ): Promise<IAdtResponse<TEvents>>;
 
   step<E extends IAdtError>(

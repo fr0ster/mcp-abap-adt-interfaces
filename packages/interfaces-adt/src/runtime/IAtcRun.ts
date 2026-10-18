@@ -7,7 +7,6 @@
  * nothing here takes an execution id.
  */
 
-import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type { IAdtAnalyseOptions, IAnalyse } from '../adt/IAdtObject';
 import type { IAdtError, IAdtResponse } from '../adt/IAdtResponse';
 
@@ -145,13 +144,11 @@ export interface IAtcRunStatusReadable<TStatus> {
    */
   getRunStatus<E extends IAdtError>(
     runId: string,
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
-        analyse: IAnalyse<E>;
-      },
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TStatus, E>>;
   getRunStatus(
     runId: string,
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
+    options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TStatus>>;
 }
 
@@ -165,12 +162,10 @@ export interface IAtcFindings<TFindings> {
    */
   getFindings<E extends IAdtError>(
     worklistId: string,
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
-        analyse: IAnalyse<E>;
-      },
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TFindings, E>>;
   getFindings(
     worklistId: string,
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
+    options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TFindings>>;
 }

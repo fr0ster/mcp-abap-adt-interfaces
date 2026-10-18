@@ -57,7 +57,7 @@ void client.pull({ package: 'ZPKG' });
  * reported, and none looks a package up in the list first.
  */
 void client.unlink({ repositoryId: 'K' });
-void client.getErrorLog('/sap/bc/adt/abapgit/repos/K/log', { headers });
+void client.getErrorLog('/sap/bc/adt/abapgit/repos/K/log');
 
 // @ts-expect-error unlink is addressed by the repository's key, not its package
 void client.unlink({ package: 'ZPKG' });

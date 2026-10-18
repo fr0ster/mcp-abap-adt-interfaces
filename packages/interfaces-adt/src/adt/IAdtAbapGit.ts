@@ -102,13 +102,9 @@ export interface IAdtAbapGitClient<TRepos, TErrorLog, TPull, TExternalRepo> {
     options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<void>>;
   listRepos<E extends IAdtError>(
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
-        analyse: IAnalyse<E>;
-      },
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TRepos, E>>;
-  listRepos(
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
-  ): Promise<IAdtResponse<TRepos>>;
+  listRepos(options?: IAdtAnalyseOptions): Promise<IAdtResponse<TRepos>>;
   /**
    * The error log of a repository's last run — one GET to `logLink`.
    *
@@ -119,13 +115,11 @@ export interface IAdtAbapGitClient<TRepos, TErrorLog, TPull, TExternalRepo> {
    */
   getErrorLog<E extends IAdtError>(
     logLink: string,
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
-        analyse: IAnalyse<E>;
-      },
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TErrorLog, E>>;
   getErrorLog(
     logLink: string,
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
+    options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TErrorLog>>;
   checkExternalRepo<E extends IAdtError>(
     args: IAbapGitExternalRepoCredentials,

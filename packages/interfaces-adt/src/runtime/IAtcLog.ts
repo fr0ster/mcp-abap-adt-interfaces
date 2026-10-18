@@ -1,4 +1,3 @@
-import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type { IAdtAnalyseOptions, IAnalyse } from '../adt/IAdtObject';
 import type { IAdtError, IAdtResponse } from '../adt/IAdtResponse';
 
@@ -15,21 +14,18 @@ export interface IAtcLog<TCheckFailures, TExecutionLog> {
   readonly kind: 'atcLog';
 
   getCheckFailureLogs<E extends IAdtError>(
-    options: { headers: IAdtHeaders } & IGetCheckFailureLogsOptions &
+    options: IGetCheckFailureLogsOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TCheckFailures, E>>;
   getCheckFailureLogs(
-    options: { headers: IAdtHeaders } & IGetCheckFailureLogsOptions &
-      IAdtAnalyseOptions,
+    options?: IGetCheckFailureLogsOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TCheckFailures>>;
   getExecutionLog<E extends IAdtError>(
     executionId: string,
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
-        analyse: IAnalyse<E>;
-      },
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TExecutionLog, E>>;
   getExecutionLog(
     executionId: string,
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
+    options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TExecutionLog>>;
 }

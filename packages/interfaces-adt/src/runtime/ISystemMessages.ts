@@ -1,4 +1,3 @@
-import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type { IAdtAnalyseOptions, IAnalyse } from '../adt/IAdtObject';
 import type { IAdtError, IAdtResponse } from '../adt/IAdtResponse';
 import type { IFeedQueryOptions } from '../feeds/types';
@@ -9,21 +8,19 @@ export interface ISystemMessages<TList, TMessage> {
 
   /** The messages this system is showing. */
   list<E extends IAdtError>(
-    options: { headers: IAdtHeaders } & IFeedQueryOptions &
+    options: IFeedQueryOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TList, E>>;
   list(
-    options: { headers: IAdtHeaders } & IFeedQueryOptions & IAdtAnalyseOptions,
+    options?: IFeedQueryOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TList>>;
 
   getById<E extends IAdtError>(
     messageId: string,
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
-        analyse: IAnalyse<E>;
-      },
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TMessage, E>>;
   getById(
     messageId: string,
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
+    options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TMessage>>;
 }

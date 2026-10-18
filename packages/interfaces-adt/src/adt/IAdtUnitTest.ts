@@ -2,7 +2,6 @@
  * Unit Test ADT operation parameter interfaces (snake_case, low-level)
  */
 
-import type { IAdtHeaders } from './IAdtContentTypes';
 import type { IAdtAnalyseOptions, IAnalyse } from './IAdtObject';
 import type { IAdtError, IAdtResponse } from './IAdtResponse';
 
@@ -124,26 +123,23 @@ export interface ITestRunInformation<TStatus, TResult> {
   getStatus<E extends IAdtError>(
     runId: string,
     withLongPolling: boolean | undefined,
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
-        analyse: IAnalyse<E>;
-      },
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TStatus, E>>;
   getStatus(
     runId: string,
-    withLongPolling: boolean | undefined,
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
+    withLongPolling?: boolean,
+    options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TStatus>>;
 
   /** Fetch the result document of a finished run. */
   getResult<E extends IAdtError>(
     runId: string,
-    options: { headers: IAdtHeaders } & IUnitTestResultOptions &
+    options: IUnitTestResultOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TResult, E>>;
   getResult(
     runId: string,
-    options: { headers: IAdtHeaders } & IUnitTestResultOptions &
-      IAdtAnalyseOptions,
+    options?: IUnitTestResultOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TResult>>;
 }
 
@@ -160,12 +156,10 @@ export interface ICdsTestDoubleCheckable<TResult> {
    */
   checkCdsTestDoubles<E extends IAdtError>(
     cdsViewName: string,
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
-        analyse: IAnalyse<E>;
-      },
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TResult, E>>;
   checkCdsTestDoubles(
     cdsViewName: string,
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
+    options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TResult>>;
 }

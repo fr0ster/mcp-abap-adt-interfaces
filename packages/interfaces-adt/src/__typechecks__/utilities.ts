@@ -91,10 +91,10 @@ type AllUtilities = IAdtInformationSystem<
 declare const utils: AllUtilities;
 
 /** A caller holding the intersection reaches every family. */
-const found = utils.search({ query: 'ZCL_X' }, { headers });
+const found = utils.search({ query: 'ZCL_X' });
 // The statement is the caller's. Omitting it does not compile, which is how a
 // caller written against the pre-42.0.0 member learns they have work to do.
-const columns = utils.getTableColumns('T000', { headers });
+const columns = utils.getTableColumns('T000');
 const rows = utils.getTableContents(
   {
     table_name: 'T000',
@@ -102,7 +102,7 @@ const rows = utils.getTableContents(
   },
   { headers },
 );
-const inactive = utils.getInactiveObjects({ headers });
+const inactive = utils.getInactiveObjects();
 
 /** A caller holding one family reaches only that one. */
 declare const preview: IAdtDataPreview<string, string[], MyRow[]>;
@@ -178,12 +178,9 @@ declare const info: IAdtInformationSystem<
 >;
 
 /** Naming no strategy: the parsed hits, as before. */
-const hits: Promise<IAdtResponse<MyHit[]>> = info.search(
-  {
-    query: 'ZCL_*',
-  },
-  { headers },
-);
+const hits: Promise<IAdtResponse<MyHit[]>> = info.search({
+  query: 'ZCL_*',
+});
 
 /** A consumer's own type, chosen once — not `unknown`, and not an envelope. */
 interface RawHits {
@@ -196,10 +193,7 @@ declare const rawInfo: IAdtInformationSystem<
   string,
   MyTypes
 >;
-const raw: Promise<IAdtResponse<RawHits>> = rawInfo.search(
-  { query: 'ZCL_*' },
-  { headers },
-);
+const raw: Promise<IAdtResponse<RawHits>> = rawInfo.search({ query: 'ZCL_*' });
 
 /** The choice is the implementation's, so the wrong shape cannot be asked for. */
 // @ts-expect-error this implementation answers RawHits, not MyHit[]

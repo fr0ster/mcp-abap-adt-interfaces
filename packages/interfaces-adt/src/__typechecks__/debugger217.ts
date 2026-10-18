@@ -1,6 +1,4 @@
 // Compile-only assertions for the #217 debugger contract. If these stop compiling, the types regressed.
-
-import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type {
   IAbapDebugger,
   IClassExecuteOptions,
@@ -12,11 +10,6 @@ import type {
   IDebuggerSettings,
   IProgramExecuteOptions,
 } from '../index';
-
-const headers: IAdtHeaders = {
-  accept: 'application/xml',
-  contentType: 'application/xml',
-};
 
 // The identity, by mode.
 export const userIdentity: IDebuggerIdentity = {
@@ -132,12 +125,12 @@ declare const dbg: IAbapDebugger<
   unknown
 >;
 export async function neverRun(): Promise<void> {
-  await dbg.attach(userIdentity, 'D1', { headers });
-  await dbg.attach(terminalIdentity, 'D1', { headers, dynproDebugging: true });
+  await dbg.attach(userIdentity, 'D1');
+  await dbg.attach(terminalIdentity, 'D1', { dynproDebugging: true });
   // @ts-expect-error attach takes the identity, not a user name
   await dbg.attach('SAPUSER01', 'D1');
-  await dbg.detachDebugger({ headers, analyse: (verdict) => verdict });
-  await dbg.detachDebugger({ headers });
+  await dbg.detachDebugger({ analyse: (verdict) => verdict });
+  await dbg.detachDebugger();
 }
 
 // clientId: accepted on every kind.

@@ -5,7 +5,6 @@
  * All methods return domain types (no raw IAdtWireResponse).
  */
 
-import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type { IAdtAnalyseOptions, IAnalyse } from '../adt/IAdtObject';
 import type { IAdtError, IAdtResponse } from '../adt/IAdtResponse';
 import type { IFeedQueryOptions } from './types';
@@ -19,13 +18,9 @@ export interface IFeedRepository<
   TGatewayErrorDetail,
 > {
   list<E extends IAdtError>(
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
-        analyse: IAnalyse<E>;
-      },
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TFeeds, E>>;
-  list(
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
-  ): Promise<IAdtResponse<TFeeds>>;
+  list(options?: IAdtAnalyseOptions): Promise<IAdtResponse<TFeeds>>;
   /**
    * Feed variants for a category.
    *
@@ -43,43 +38,39 @@ export interface IFeedRepository<
    */
   variants<E extends IAdtError>(
     category: string,
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
-        analyse: IAnalyse<E>;
-      },
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TVariants, E>>;
   variants(
     category: string,
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
+    options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TVariants>>;
   dumps<E extends IAdtError>(
-    options: { headers: IAdtHeaders } & IFeedQueryOptions &
+    options: IFeedQueryOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TEntries, E>>;
   dumps(
-    options: { headers: IAdtHeaders } & IFeedQueryOptions & IAdtAnalyseOptions,
+    options?: IFeedQueryOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TEntries>>;
   systemMessages<E extends IAdtError>(
-    options: { headers: IAdtHeaders } & IFeedQueryOptions &
+    options: IFeedQueryOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TSystemMessages, E>>;
   systemMessages(
-    options: { headers: IAdtHeaders } & IFeedQueryOptions & IAdtAnalyseOptions,
+    options?: IFeedQueryOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TSystemMessages>>;
   gatewayErrors<E extends IAdtError>(
-    options: { headers: IAdtHeaders } & IFeedQueryOptions &
+    options: IFeedQueryOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TGatewayErrors, E>>;
   gatewayErrors(
-    options: { headers: IAdtHeaders } & IFeedQueryOptions & IAdtAnalyseOptions,
+    options?: IFeedQueryOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TGatewayErrors>>;
   gatewayErrorDetail<E extends IAdtError>(
     feedUrl: string,
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
-        analyse: IAnalyse<E>;
-      },
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TGatewayErrorDetail, E>>;
   gatewayErrorDetail(
     feedUrl: string,
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
+    options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TGatewayErrorDetail>>;
 }

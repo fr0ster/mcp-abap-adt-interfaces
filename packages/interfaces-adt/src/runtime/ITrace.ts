@@ -11,7 +11,6 @@
  * releases and raw bodies are in the design spec and its evidence files.
  */
 
-import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type { IAdtAnalyseOptions, IAnalyse } from '../adt/IAdtObject';
 import type { IAdtError, IAdtResponse } from '../adt/IAdtResponse';
 
@@ -90,9 +89,7 @@ export type ViewOptions<TViews, K extends keyof TViews> =
     : never;
 
 /**
- * Options are always given, since 19.0.0: they carry `headers`, the request's
- * `IAdtHeaders`. Beside it, a view's own options are required when the view
- * says so, may be left out when it allows `undefined`, and are absent when it
+ * Options are required when the view says so, and carry only `analyse` when it
  * says `void`.
  *
  * Until 10.0.0 a `void` view took no options at all. Every member takes the
@@ -106,18 +103,10 @@ export type ViewArgs<
   E extends IAdtError = IAdtError,
 > =
   ViewOptions<TViews, K> extends void
-    ? [options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E>]
+    ? [options?: IAdtAnalyseOptions<E>]
     : undefined extends ViewOptions<TViews, K>
-      ? [
-          options:
-            | ({ headers: IAdtHeaders } & IAdtAnalyseOptions<E>)
-            | ({ headers: IAdtHeaders } & NonNullable<ViewOptions<TViews, K>> &
-                IAdtAnalyseOptions<E>),
-        ]
-      : [
-          options: { headers: IAdtHeaders } & ViewOptions<TViews, K> &
-            IAdtAnalyseOptions<E>,
-        ];
+      ? [options?: ViewOptions<TViews, K> & IAdtAnalyseOptions<E>]
+      : [options: ViewOptions<TViews, K> & IAdtAnalyseOptions<E>];
 
 /** A view's own options, or nothing to add when it has none. */
 type ViewOwnOptions<TViews, K extends keyof TViews> =
@@ -144,12 +133,11 @@ export interface ITraceListing<
   TList = TEntry[],
 > {
   list<E extends IAdtError>(
-    options: { headers: IAdtHeaders } & ListingOwnOptions<TOptions> &
+    options: ListingOwnOptions<TOptions> &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TList, E>>;
   list(
-    options: { headers: IAdtHeaders } & ListingOwnOptions<TOptions> &
-      IAdtAnalyseOptions,
+    options?: ListingOwnOptions<TOptions> & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TList>>;
 }
 
@@ -169,7 +157,7 @@ export interface ITraceReading<
   read<K extends keyof TViews, E extends IAdtError>(
     traceId: string,
     view: K,
-    options: { headers: IAdtHeaders } & ViewOwnOptions<TViews, K> &
+    options: ViewOwnOptions<TViews, K> &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<ViewResult<TViews, K>, E>>;
   read<K extends keyof TViews>(

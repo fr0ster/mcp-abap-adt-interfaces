@@ -158,7 +158,6 @@ async function _theFailureIsTheCallers(): Promise<void> {
   if (!updated.ok) void updated.getError().t100;
 
   const read = await readable.read({ name: 'ZCL_X' }, 'active', {
-    headers,
     analyse: t100,
   });
   if (!read.ok) void read.getError().t100;

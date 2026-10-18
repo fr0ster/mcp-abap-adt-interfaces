@@ -2,7 +2,6 @@
  * Service Binding ADT operation parameter interfaces (snake_case, low-level)
  */
 
-import type { IAdtHeaders } from './IAdtContentTypes';
 import type { IAdtAnalyseOptions, IAnalyse } from './IAdtObject';
 import type { IAdtError, IAdtResponse } from './IAdtResponse';
 
@@ -107,10 +106,10 @@ type WithoutAnalyse<O = unknown> = O & IAdtAnalyseOptions;
  */
 export interface IAdtServiceBindingTypes<TTypes> {
   getServiceBindingTypes<E extends IAdtError>(
-    options: { headers: IAdtHeaders } & WithAnalyse<E>,
+    options: WithAnalyse<E>,
   ): Promise<IAdtResponse<TTypes, E>>;
   getServiceBindingTypes(
-    options: { headers: IAdtHeaders } & WithoutAnalyse,
+    options?: WithoutAnalyse,
   ): Promise<IAdtResponse<TTypes>>;
 }
 
@@ -123,10 +122,10 @@ export interface IAdtServiceBindingTypes<TTypes> {
 export interface IAdtServiceGroupReadable<TGroup> {
   getServiceGroup<E extends IAdtError>(
     params: IServiceGroupParams,
-    options: { headers: IAdtHeaders } & WithAnalyse<E>,
+    options: WithAnalyse<E>,
   ): Promise<IAdtResponse<TGroup, E>>;
   getServiceGroup(
     params: IServiceGroupParams,
-    options: { headers: IAdtHeaders } & WithoutAnalyse,
+    options?: WithoutAnalyse,
   ): Promise<IAdtResponse<TGroup>>;
 }

@@ -31,21 +31,13 @@ import type { IProfilerTraceParameters } from '../runtime/IProfiler';
 export interface ITraceScheduling<TTypes, TRequests, TScheduled> {
   /** What may be traced. The cloud flow reads these before choosing. */
   listObjectTypes<E extends IAdtError>(
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
-        analyse: IAnalyse<E>;
-      },
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TTypes, E>>;
-  listObjectTypes(
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
-  ): Promise<IAdtResponse<TTypes>>;
+  listObjectTypes(options?: IAdtAnalyseOptions): Promise<IAdtResponse<TTypes>>;
   listProcessTypes<E extends IAdtError>(
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
-        analyse: IAnalyse<E>;
-      },
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TTypes, E>>;
-  listProcessTypes(
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
-  ): Promise<IAdtResponse<TTypes>>;
+  listProcessTypes(options?: IAdtAnalyseOptions): Promise<IAdtResponse<TTypes>>;
 
   /**
    * The schedule — what is queued, not what has been recorded.
@@ -56,24 +48,18 @@ export interface ITraceScheduling<TTypes, TRequests, TScheduled> {
    * `400 acceptHeaderMissing`, which reads like a missing header and is not.
    */
   listRequests<E extends IAdtError>(
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
-        analyse: IAnalyse<E>;
-      },
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TRequests, E>>;
-  listRequests(
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
-  ): Promise<IAdtResponse<TRequests>>;
+  listRequests(options?: IAdtAnalyseOptions): Promise<IAdtResponse<TRequests>>;
 
   /** The same schedule, read through the server's second, URI-keyed flavour. */
   getRequestsByUri<E extends IAdtError>(
     uri: string,
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
-        analyse: IAnalyse<E>;
-      },
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TRequests, E>>;
   getRequestsByUri(
     uri: string,
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
+    options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TRequests>>;
 
   /**

@@ -117,10 +117,7 @@ interface MyVersion {
 async function _readsThePromisedCode(
   versionable: IAdtVersionable<{ className: string }, MyVersion[], string>,
 ): Promise<'unsupported' | 'other' | 'fine'> {
-  const answer = await versionable.getVersions(
-    { className: 'ZCL_X' },
-    { headers },
-  );
+  const answer = await versionable.getVersions({ className: 'ZCL_X' });
   if (answer.ok) return 'fine';
   const failure: IAdtError = answer.getError();
   return failure.code === AdtObjectErrorCodes.UNSUPPORTED_OPERATION
@@ -133,7 +130,7 @@ void _readsThePromisedCode;
 async function _lockAnswers(
   lockable: IAdtLockable<{ className: string }>,
 ): Promise<string | undefined> {
-  const answer = await lockable.lock({ className: 'ZCL_X' }, { headers });
+  const answer = await lockable.lock({ className: 'ZCL_X' });
   return answer.ok ? answer.getResult().value : undefined;
 }
 void _lockAnswers;
@@ -256,10 +253,10 @@ interface ToggleShapes extends IFeatureToggleObjectResults {
 }
 declare const toggle: IFeatureToggleObject<ToggleShapes>;
 async function _eachAnswerIsItsOwn(): Promise<void> {
-  const on = await toggle.switchOn({}, { transportRequest: 'T' }, { headers });
-  const state = await toggle.getRuntimeState({}, { headers });
+  const on = await toggle.switchOn({}, { transportRequest: 'T' });
+  const state = await toggle.getRuntimeState({});
   const checked = await toggle.checkState({}, undefined, { headers });
-  const source = await toggle.readSource({}, undefined, { headers });
+  const source = await toggle.readSource({});
   if (on.ok) {
     const v: 'switched' = on.getResult().value;
     void v;

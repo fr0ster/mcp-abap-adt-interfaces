@@ -140,12 +140,11 @@ export interface IAdtRequest<TList> {
    * names.
    */
   list<E extends IAdtError>(
-    options: { headers: IAdtHeaders } & IListTransportsOptions &
+    options: IListTransportsOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TList, E>>;
   list(
-    options: { headers: IAdtHeaders } & IListTransportsOptions &
-      IAdtAnalyseOptions,
+    options: IListTransportsOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TList>>;
 }
 
@@ -160,12 +159,10 @@ export interface IAdtRequest<TList> {
  */
 export interface IAdtTransportSearchConfigurations<TConfigurations> {
   searchConfigurations<E extends IAdtError>(
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
-        analyse: IAnalyse<E>;
-      },
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TConfigurations, E>>;
   searchConfigurations(
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
+    options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TConfigurations>>;
 }
 
@@ -316,7 +313,7 @@ export interface IAdtTransportObjectActions<
    */
   readActionLog<E extends IAdtError = IAdtError>(
     transportNumber: string,
-    options: { headers: IAdtHeaders } & IAdtOperationOptions<E>,
+    options?: IAdtOperationOptions<E>,
   ): Promise<IAdtResponse<TActionLog, E>>;
   /**
    * The objects a request or task holds, each with the `tm:position` that
@@ -345,7 +342,7 @@ export interface IAdtTransportObjectActions<
    */
   readObjects<E extends IAdtError = IAdtError>(
     transportNumber: string,
-    options: { headers: IAdtHeaders } & IAdtOperationOptions<E>,
+    options?: IAdtOperationOptions<E>,
   ): Promise<IAdtResponse<TObjects, E>>;
   /**
    * Give a task its type.
@@ -398,7 +395,7 @@ export interface IAdtTransportObjectActions<
 export interface IAdtTransportSortAndCompress<TCompressed> {
   sortAndCompress<E extends IAdtError = IAdtError>(
     taskNumber: string,
-    options: { headers: IAdtHeaders } & IAdtOperationOptions<E>,
+    options?: IAdtOperationOptions<E>,
   ): Promise<IAdtResponse<TCompressed, E>>;
 }
 

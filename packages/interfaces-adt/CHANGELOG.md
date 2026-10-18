@@ -11,34 +11,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed (breaking)
 
-- A member whose endpoint needs `Accept` and/or `Content-Type` takes the whole
-  pair as `options.headers: IAdtHeaders`, **required**: both `accept` and
-  `contentType`, sent exactly as given, nothing supplied by the member — never
-  a separate `accept` or `contentType`. The field is on each member's own
-  options, not on `IAdtAnalyseOptions` or `IAdtOperationOptions`;
-  `ITraceReading.read` takes it through `ViewArgs`, whose options are now always
-  required.
-- The options parameter of those members is required, and a positional
-  parameter before it that was optional is now `T | undefined`: `IAdtReadable.read` (`version`), `IAdtCheckable.check` (`status`), `IFeatureToggleObject.checkState` (`opts`) and `readSource` (`version`), `ITestRunInformation.getStatus` (`withLongPolling`), `IAdtTypeCatalogue.getAllTypes` (`maxItemCount`, `name`, `data`), `IAdtGroupLifecycle.activateObjectsGroup` (`preauditRequested`) and `deleteObjectsGroup` (`transportRequest`), `IAdtDiscovery.discovery` (`params`), `IAdtObjectAccess.readObjectSource` (`functionGroup`, `version`) and `readObjectMetadata` (`functionGroup`), `IRuntimeDumps.listByUser` (`user`), `ICrossTrace.getById` (`includeSensitiveData`).
-
-### Removed (breaking)
-
-- `IReadOptions.accept` — replaced by `headers: IAdtHeaders` on the members
-  typed with `IReadOptions` (`IAdtObjectAccess.readObjectSource`,
-  `readObjectMetadata`).
+- A member whose request sets both `Accept` and `Content-Type` takes them as
+  the pair `options.headers: IAdtHeaders`, **required**: both fields, sent
+  exactly as given, nothing supplied by the member. Which request sets what was
+  read from `@mcp-abap-adt/adt-clients` (the main write of a chain; the majority
+  where implementations disagree). The field is on each member's own options,
+  not on `IAdtAnalyseOptions` or `IAdtOperationOptions`. The members: `IAdtAbapGitClient`: `link`, `pull`, `checkExternalRepo`; `IAdtCreatable`: `create`; `IAdtUpdatable`: `update`; `IAdtMetadataUpdatable`: `updateMetadata`; `IAdtDeletable`: `delete`, `checkDeletion`; `IAdtCheckable`: `check`; `IAdtActivatable`: `activate`; `IFeatureToggleObject`: `checkState`; `IAdtTransportObjectActions`: `removeObject`, `addObject`, `createTask`, `changeTaskType`; `IAdtTransportMoveObjects`: `moveObjects`; `IAdtWhereUsed`: `getWhereUsed`, `getWhereUsedScope`; `IAdtVirtualFolders`: `getVirtualFoldersContents`; `IAdtRepositoryStructure`: `fetchNodeStructure`; `IAdtGroupLifecycle`: `activateObjectsGroup`, `checkDeletionGroup`, `deleteObjectsGroup`; `IAdtDataPreview`: `getSqlQuery`, `getTableContents`; `ITraceScheduling`: `scheduleTrace`; `IAbapDebugger`: `setBreakpoints`, `getChildVariables`, `getVariables`, `syncBreakpoints`, `setDebuggerSettings`; `IAmdpDebugger`: `getDataPreview`.
+- Their options parameter is required, and a positional parameter before it
+  that was optional is now `T | undefined`: `IAdtCheckable.check` (`status`), `IFeatureToggleObject.checkState` (`opts`), `IAdtGroupLifecycle.activateObjectsGroup` (`preauditRequested`) and `deleteObjectsGroup` (`transportRequest`).
 
 ### Unchanged on purpose
 
-- No `headers`, signatures as in 18.0.0, where the endpoint needs neither
-  header: `IAdtLockable.unlock`; `IAdtRunnable.run`; `IRunnableWithProfiler.runWithProfiler`; `IRunnableWithProfiling.runWithProfiling`; `IAbapDebugger.deleteBreakpoint`, `deleteWatchpoint` and `stopListener`; `IAmdpDebugger.step`, `deleteDebuggee` and `stop`; `IAdtAbapGitClient.unlink`; `ITraceDeletion.delete`.
+- A member whose request sets only one of the two headers, or neither, takes no
+  `headers` and keeps its 18.0.0 signature. `IReadOptions.accept` stays.
 
 ### Migrating from 18.0
 
-Pass `headers: { accept, contentType }` in the options of every member that
-requires it; the headers the implementation used to choose are now the
-caller's. Replace `IReadOptions.accept` with `headers`. Pass `undefined` for a
-positional parameter that was optional before the options. Implementations
-send `options.headers` as given. README, "Migrating to 19.0.0", has the list.
+Pass `headers: { accept, contentType }` in the options of every member listed
+above; the headers the implementation used to choose are now the caller's. Pass
+`undefined` for a positional parameter that was optional before the options.
+Implementations send `options.headers` as given.
 
 ## [18.0.0] - 2026-10-15
 

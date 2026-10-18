@@ -1,18 +1,20 @@
 // Compile-only. If this stops compiling, a member's `headers` no longer says
-// what its endpoint needs.
+// what its request sets.
 //
-// Since 19.0.0 a member whose endpoint needs `Accept` and/or `Content-Type`
-// takes the whole pair as `options.headers: IAdtHeaders`, **required**, and
-// sends exactly that pair — never a separate `accept` or `contentType`. A member
-// whose endpoint needs neither takes no `headers` at all.
+// Since 19.0.0 a member whose request sets both `Accept` and `Content-Type`
+// takes them as the pair `options.headers: IAdtHeaders`, **required**, and
+// sends exactly that pair. A member whose request sets only one of them, or
+// neither, is as it was: no `headers` field. Which is which was read from
+// `@mcp-abap-adt/adt-clients`, by the majority of a member's implementations
+// where they disagree.
 //
 // For each contract below, every member answering a `Promise` is checked on
 // **every** overload, in its last parameter (the options):
-// - by default, the options are required, `headers` is required, and its type
-//   is exactly `IAdtHeaders` — identical and assignable both ways, so
-//   `{ accept: string; contentType?: string }` or a `Partial` fails;
-// - a member named in `None` takes no `headers`;
-// - no member's options carry a standalone `accept` or `contentType`.
+// - a member named in `Required`: the options are required, `headers` is
+//   required, its type is exactly `IAdtHeaders` — identical and assignable both
+//   ways, so `{ accept: string; contentType?: string }` or a `Partial` fails —
+//   and the options carry no standalone `accept` or `contentType` beside it;
+// - every other member takes no `headers`.
 // `Parameters<>` reads only the last overload, so the overloads are read with a
 // four-signature pattern, which yields the parameter lists of up to four
 // overloads as a union (members here have at most two). A function member that
@@ -82,7 +84,6 @@ import type {
   ITraceReading,
   ITraceScheduling,
   ITraceView,
-  ViewArgs,
 } from '../index';
 
 type Assert<T extends true> = T;
@@ -125,7 +126,7 @@ type OptionsOf<P> = P extends readonly unknown[]
     : never
   : never;
 
-/** No member's options carry a standalone header field. */
+/** A member taking `headers` carries no standalone header field beside it. */
 type HeaderFieldNames = 'accept' | 'contentType' | 'Accept' | 'Content-Type';
 type NoStandaloneHeaderFields<O> = O extends unknown
   ? [Extract<keyof O, HeaderFieldNames>] extends [never]
@@ -158,18 +159,14 @@ type OverloadRequiresHeaders<P> = P extends readonly unknown[]
     : false
   : false;
 
-/** None: no union member of the options has `headers`. */
+/** No union member of the options has `headers`. */
 type HeadersAbsentFrom<O> = O extends unknown
   ? 'headers' extends keyof O
     ? false
     : true
   : never;
 type OverloadTakesNoHeaders<P> =
-  false extends HeadersAbsentFrom<OptionsOf<P>>
-    ? false
-    : false extends NoStandaloneHeaderFields<OptionsOf<P>>
-      ? false
-      : true;
+  false extends HeadersAbsentFrom<OptionsOf<P>> ? false : true;
 
 type Rule = 'required' | 'none' | 'excluded';
 
@@ -182,28 +179,28 @@ type MemberKeepsRule<F, R extends Rule> = F extends (
       ? false
       : true
     : F extends (...args: never[]) => Promise<unknown>
-      ? R extends 'none'
-        ? false extends OverloadTakesNoHeaders<OverloadParameters<F>>
+      ? R extends 'required'
+        ? false extends OverloadRequiresHeaders<OverloadParameters<F>>
           ? false
           : true
-        : false extends OverloadRequiresHeaders<OverloadParameters<F>>
+        : false extends OverloadTakesNoHeaders<OverloadParameters<F>>
           ? false
           : true
       : false
   : true;
 
 /**
- * `true` when every member of the contract keeps its rule: required headers,
- * unless named in `None` or `Excluded`.
+ * `true` when every member of the contract keeps its rule: the members named
+ * in `Req` require the pair, every other request-sending member takes none.
  */
 type EveryMemberTakesHeaders<
   I,
   Excluded extends keyof I = never,
-  None extends keyof I = never,
+  Req extends keyof I = never,
 > = false extends {
   [K in keyof I]-?: MemberKeepsRule<
     I[K],
-    K extends Excluded ? 'excluded' : K extends None ? 'none' : 'required'
+    K extends Excluded ? 'excluded' : K extends Req ? 'required' : 'none'
   >;
 }[keyof I]
   ? false
@@ -213,8 +210,7 @@ export type _HeadersIAdtAbapGitClient = Assert<
   EveryMemberTakesHeaders<
     IAdtAbapGitClient<Probe, Probe, Probe, Probe>,
     never,
-    // DELETE /abapgit/repos/{key}: no headers of its own
-    'unlink'
+    'link' | 'pull' | 'checkExternalRepo'
   >
 >;
 export type _HeadersIAdtIncludeEnhancementHost = Assert<
@@ -224,7 +220,7 @@ export type _HeadersIAdtEnhancementHost = Assert<
   EveryMemberTakesHeaders<IAdtEnhancementHost<Probe, Probe, Probe>>
 >;
 export type _HeadersIAdtCreatable = Assert<
-  EveryMemberTakesHeaders<IAdtCreatable<Probe, Probe>>
+  EveryMemberTakesHeaders<IAdtCreatable<Probe, Probe>, never, 'create'>
 >;
 export type _HeadersIAdtReadable = Assert<
   EveryMemberTakesHeaders<IAdtReadable<Probe, Probe>>
@@ -233,30 +229,33 @@ export type _HeadersIAdtMetadataReadable = Assert<
   EveryMemberTakesHeaders<IAdtMetadataReadable<Probe, Probe>>
 >;
 export type _HeadersIAdtUpdatable = Assert<
-  EveryMemberTakesHeaders<IAdtUpdatable<Probe, Probe>>
+  EveryMemberTakesHeaders<IAdtUpdatable<Probe, Probe>, never, 'update'>
 >;
 export type _HeadersIAdtMetadataUpdatable = Assert<
-  EveryMemberTakesHeaders<IAdtMetadataUpdatable<Probe, Probe>>
+  EveryMemberTakesHeaders<
+    IAdtMetadataUpdatable<Probe, Probe>,
+    never,
+    'updateMetadata'
+  >
 >;
 export type _HeadersIAdtDeletable = Assert<
-  EveryMemberTakesHeaders<IAdtDeletable<Probe, Probe, Probe>>
+  EveryMemberTakesHeaders<
+    IAdtDeletable<Probe, Probe, Probe>,
+    never,
+    'delete' | 'checkDeletion'
+  >
 >;
 export type _HeadersIAdtValidatable = Assert<
   EveryMemberTakesHeaders<IAdtValidatable<Probe, Probe>>
 >;
 export type _HeadersIAdtCheckable = Assert<
-  EveryMemberTakesHeaders<IAdtCheckable<Probe, Probe>>
+  EveryMemberTakesHeaders<IAdtCheckable<Probe, Probe>, never, 'check'>
 >;
 export type _HeadersIAdtActivatable = Assert<
-  EveryMemberTakesHeaders<IAdtActivatable<Probe, Probe>>
+  EveryMemberTakesHeaders<IAdtActivatable<Probe, Probe>, never, 'activate'>
 >;
 export type _HeadersIAdtLockable = Assert<
-  EveryMemberTakesHeaders<
-    IAdtLockable<Probe>,
-    never,
-    // no body, and the answer is never read
-    'unlock'
-  >
+  EveryMemberTakesHeaders<IAdtLockable<Probe>>
 >;
 export type _HeadersIAdtVersionable = Assert<
   EveryMemberTakesHeaders<IAdtVersionable<Probe, Probe, Probe>>
@@ -265,14 +264,20 @@ export type _HeadersIAdtTransportAware = Assert<
   EveryMemberTakesHeaders<IAdtTransportAware<Probe, Probe>>
 >;
 export type _HeadersIFeatureToggleObject = Assert<
-  EveryMemberTakesHeaders<IFeatureToggleObject<IFeatureToggleObjectResults>>
+  EveryMemberTakesHeaders<
+    IFeatureToggleObject<IFeatureToggleObjectResults>,
+    never,
+    'checkState'
+  >
 >;
 export type _HeadersIAdtRequest = Assert<
   EveryMemberTakesHeaders<IAdtRequest<Probe>>
 >;
 export type _HeadersIAdtTransportObjectActions = Assert<
   EveryMemberTakesHeaders<
-    IAdtTransportObjectActions<Probe, Probe, Probe, Probe, Probe, Probe>
+    IAdtTransportObjectActions<Probe, Probe, Probe, Probe, Probe, Probe>,
+    never,
+    'removeObject' | 'addObject' | 'createTask' | 'changeTaskType'
   >
 >;
 export type _HeadersITestRunInformation = Assert<
@@ -285,24 +290,42 @@ export type _HeadersIAdtObjectSearch = Assert<
   EveryMemberTakesHeaders<IAdtObjectSearch<Probe>>
 >;
 export type _HeadersIAdtWhereUsed = Assert<
-  EveryMemberTakesHeaders<IAdtWhereUsed<Probe, Probe>, 'modifyWhereUsedScope'>
+  EveryMemberTakesHeaders<
+    IAdtWhereUsed<Probe, Probe>,
+    'modifyWhereUsedScope',
+    'getWhereUsed' | 'getWhereUsedScope'
+  >
 >;
 export type _HeadersIAdtVirtualFolders = Assert<
-  EveryMemberTakesHeaders<IAdtVirtualFolders<Probe>>
+  EveryMemberTakesHeaders<
+    IAdtVirtualFolders<Probe>,
+    never,
+    'getVirtualFoldersContents'
+  >
 >;
 export type _HeadersIAdtTypeCatalogue = Assert<
   EveryMemberTakesHeaders<IAdtTypeCatalogue<Probe>>
 >;
 export type _HeadersIAdtRepositoryStructure = Assert<
-  EveryMemberTakesHeaders<IAdtRepositoryStructure<Probe, Probe>>
+  EveryMemberTakesHeaders<
+    IAdtRepositoryStructure<Probe, Probe>,
+    never,
+    'fetchNodeStructure'
+  >
 >;
 export type _HeadersIAdtGroupLifecycle = Assert<
   EveryMemberTakesHeaders<
-    IAdtGroupLifecycle<Probe, Probe, Probe, Probe, Probe, Probe>
+    IAdtGroupLifecycle<Probe, Probe, Probe, Probe, Probe, Probe>,
+    never,
+    'activateObjectsGroup' | 'checkDeletionGroup' | 'deleteObjectsGroup'
   >
 >;
 export type _HeadersIAdtDataPreview = Assert<
-  EveryMemberTakesHeaders<IAdtDataPreview<Probe, Probe, Probe>>
+  EveryMemberTakesHeaders<
+    IAdtDataPreview<Probe, Probe, Probe>,
+    never,
+    'getSqlQuery' | 'getTableContents'
+  >
 >;
 export type _HeadersIAdtDiscovery = Assert<
   EveryMemberTakesHeaders<IAdtDiscovery<Probe>>
@@ -314,25 +337,20 @@ export type _HeadersIAdtObjectAccess = Assert<
   >
 >;
 export type _HeadersIAdtRunnable = Assert<
-  EveryMemberTakesHeaders<IAdtRunnable<Probe, Probe, Probe>, never, 'run'>
+  EveryMemberTakesHeaders<IAdtRunnable<Probe, Probe, Probe>>
 >;
 export type _HeadersIRunnableWithProfiler = Assert<
-  EveryMemberTakesHeaders<
-    IRunnableWithProfiler<Probe, Probe, Probe>,
-    never,
-    'runWithProfiler'
-  >
+  EveryMemberTakesHeaders<IRunnableWithProfiler<Probe, Probe, Probe>>
 >;
 export type _HeadersIRunnableWithProfiling = Assert<
-  EveryMemberTakesHeaders<
-    IRunnableWithProfiling<Probe, Probe, Probe>,
-    never,
-    // adt-clients has no implementation of it to read
-    'runWithProfiling'
-  >
+  EveryMemberTakesHeaders<IRunnableWithProfiling<Probe, Probe, Probe>>
 >;
 export type _HeadersITraceScheduling = Assert<
-  EveryMemberTakesHeaders<ITraceScheduling<Probe, Probe, Probe>>
+  EveryMemberTakesHeaders<
+    ITraceScheduling<Probe, Probe, Probe>,
+    never,
+    'scheduleTrace'
+  >
 >;
 export type _HeadersIFeedRepository = Assert<
   EveryMemberTakesHeaders<
@@ -376,7 +394,7 @@ export type _HeadersITraceReading = Assert<
   EveryMemberTakesHeaders<ITraceReading<ProbeViews>>
 >;
 export type _HeadersITraceDeletion = Assert<
-  EveryMemberTakesHeaders<ITraceDeletion, never, 'delete'>
+  EveryMemberTakesHeaders<ITraceDeletion>
 >;
 export type _HeadersIAdtTransportSearchConfigurations = Assert<
   EveryMemberTakesHeaders<IAdtTransportSearchConfigurations<Probe>>
@@ -385,7 +403,7 @@ export type _HeadersIAdtTransportSortAndCompress = Assert<
   EveryMemberTakesHeaders<IAdtTransportSortAndCompress<Probe>>
 >;
 export type _HeadersIAdtTransportMoveObjects = Assert<
-  EveryMemberTakesHeaders<IAdtTransportMoveObjects<Probe>>
+  EveryMemberTakesHeaders<IAdtTransportMoveObjects<Probe>, never, 'moveObjects'>
 >;
 export type _HeadersIAbapDebugger = Assert<
   EveryMemberTakesHeaders<
@@ -402,16 +420,18 @@ export type _HeadersIAbapDebugger = Assert<
       Probe
     >,
     never,
-    // DELETEs with no headers of their own
-    'deleteBreakpoint' | 'deleteWatchpoint' | 'stopListener'
+    | 'setBreakpoints'
+    | 'getChildVariables'
+    | 'getVariables'
+    | 'syncBreakpoints'
+    | 'setDebuggerSettings'
   >
 >;
 export type _HeadersIAmdpDebugger = Assert<
   EveryMemberTakesHeaders<
     IAmdpDebugger<Probe, Probe, Probe, Probe>,
     never,
-    // requests with no headers of their own
-    'step' | 'deleteDebuggee' | 'stop'
+    'getDataPreview'
   >
 >;
 export type _HeadersIMemorySnapshots = Assert<
@@ -424,24 +444,4 @@ export type _HeadersIAdtServiceBindingTypes = Assert<
 >;
 export type _HeadersIAdtServiceGroupReadable = Assert<
   EveryMemberTakesHeaders<IAdtServiceGroupReadable<Probe>>
->;
-
-/**
- * `ITraceReading.read`'s second overload takes its options through `ViewArgs`,
- * whose three branches the member check above sees only as one: a view with no
- * options, with optional options, and with required options. Each is held here.
- */
-interface ProbeViewBranches {
-  none: ITraceView<Probe>;
-  optional: ITraceView<Probe, Probe | undefined>;
-  required: ITraceView<Probe, Probe>;
-}
-export type _HeadersViewArgsNone = Assert<
-  OverloadRequiresHeaders<ViewArgs<ProbeViewBranches, 'none'>>
->;
-export type _HeadersViewArgsOptional = Assert<
-  OverloadRequiresHeaders<ViewArgs<ProbeViewBranches, 'optional'>>
->;
-export type _HeadersViewArgsRequired = Assert<
-  OverloadRequiresHeaders<ViewArgs<ProbeViewBranches, 'required'>>
 >;

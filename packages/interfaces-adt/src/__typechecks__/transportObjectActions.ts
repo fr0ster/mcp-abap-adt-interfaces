@@ -42,7 +42,7 @@ declare const actions: MyActions;
 
 /** What the positions are read with, and what they are then used for. */
 export async function detachTheFirstEntry(task: string): Promise<void> {
-  const listed = await actions.readObjects(task, { headers });
+  const listed = await actions.readObjects(task);
   if (!listed.ok) return;
   const [entry] = listed.getResult().value;
   if (!entry) return;

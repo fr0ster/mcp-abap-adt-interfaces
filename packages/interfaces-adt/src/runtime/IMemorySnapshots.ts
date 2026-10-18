@@ -1,4 +1,3 @@
-import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type { IAdtAnalyseOptions, IAnalyse } from '../adt/IAdtObject';
 import type { IAdtError, IAdtResponse } from '../adt/IAdtResponse';
 
@@ -55,141 +54,106 @@ export interface IMemorySnapshots<
   readonly kind: 'memorySnapshots';
 
   list<E extends IAdtError>(
-    options: { headers: IAdtHeaders } & WithAnalyse<
-      E,
-      IMemorySnapshotsListOptions
-    >,
+    options: WithAnalyse<E, IMemorySnapshotsListOptions>,
   ): Promise<IAdtResponse<TList, E>>;
   list(
-    options: {
-      headers: IAdtHeaders;
-    } & WithoutAnalyse<IMemorySnapshotsListOptions>,
+    options?: WithoutAnalyse<IMemorySnapshotsListOptions>,
   ): Promise<IAdtResponse<TList>>;
 
   getById<E extends IAdtError>(
     snapshotId: string,
-    options: { headers: IAdtHeaders } & WithAnalyse<E>,
+    options: WithAnalyse<E>,
   ): Promise<IAdtResponse<TSnapshot, E>>;
   getById(
     snapshotId: string,
-    options: { headers: IAdtHeaders } & WithoutAnalyse,
+    options?: WithoutAnalyse,
   ): Promise<IAdtResponse<TSnapshot>>;
 
   getOverview<E extends IAdtError>(
     snapshotId: string,
-    options: { headers: IAdtHeaders } & WithAnalyse<E>,
+    options: WithAnalyse<E>,
   ): Promise<IAdtResponse<TOverview, E>>;
   getOverview(
     snapshotId: string,
-    options: { headers: IAdtHeaders } & WithoutAnalyse,
+    options?: WithoutAnalyse,
   ): Promise<IAdtResponse<TOverview>>;
 
   getRankingList<E extends IAdtError>(
     snapshotId: string,
-    options: { headers: IAdtHeaders } & WithAnalyse<
-      E,
-      ISnapshotRankingListOptions
-    >,
+    options: WithAnalyse<E, ISnapshotRankingListOptions>,
   ): Promise<IAdtResponse<TRankingList, E>>;
   getRankingList(
     snapshotId: string,
-    options: {
-      headers: IAdtHeaders;
-    } & WithoutAnalyse<ISnapshotRankingListOptions>,
+    options: WithoutAnalyse<ISnapshotRankingListOptions>,
   ): Promise<IAdtResponse<TRankingList>>;
 
   getChildren<E extends IAdtError>(
     snapshotId: string,
     parentKey: string,
-    options: { headers: IAdtHeaders } & WithAnalyse<
-      E,
-      ISnapshotChildrenOptions
-    >,
+    options: WithAnalyse<E, ISnapshotChildrenOptions>,
   ): Promise<IAdtResponse<TChildren, E>>;
   getChildren(
     snapshotId: string,
     parentKey: string,
-    options: {
-      headers: IAdtHeaders;
-    } & WithoutAnalyse<ISnapshotChildrenOptions>,
+    options: WithoutAnalyse<ISnapshotChildrenOptions>,
   ): Promise<IAdtResponse<TChildren>>;
 
   getReferences<E extends IAdtError>(
     snapshotId: string,
     objectKey: string,
-    options: { headers: IAdtHeaders } & WithAnalyse<
-      E,
-      ISnapshotReferencesOptions
-    >,
+    options: WithAnalyse<E, ISnapshotReferencesOptions>,
   ): Promise<IAdtResponse<TReferences, E>>;
   getReferences(
     snapshotId: string,
     objectKey: string,
-    options: {
-      headers: IAdtHeaders;
-    } & WithoutAnalyse<ISnapshotReferencesOptions>,
+    options: WithoutAnalyse<ISnapshotReferencesOptions>,
   ): Promise<IAdtResponse<TReferences>>;
 
   getDeltaOverview<E extends IAdtError>(
     fromId: string,
     toId: string,
-    options: { headers: IAdtHeaders } & WithAnalyse<E>,
+    options: WithAnalyse<E>,
   ): Promise<IAdtResponse<TOverview, E>>;
   getDeltaOverview(
     fromId: string,
     toId: string,
-    options: { headers: IAdtHeaders } & WithoutAnalyse,
+    options?: WithoutAnalyse,
   ): Promise<IAdtResponse<TOverview>>;
 
   getDeltaRankingList<E extends IAdtError>(
     fromId: string,
     toId: string,
-    options: { headers: IAdtHeaders } & WithAnalyse<
-      E,
-      ISnapshotRankingListOptions
-    >,
+    options: WithAnalyse<E, ISnapshotRankingListOptions>,
   ): Promise<IAdtResponse<TRankingList, E>>;
   getDeltaRankingList(
     fromId: string,
     toId: string,
-    options: {
-      headers: IAdtHeaders;
-    } & WithoutAnalyse<ISnapshotRankingListOptions>,
+    options: WithoutAnalyse<ISnapshotRankingListOptions>,
   ): Promise<IAdtResponse<TRankingList>>;
 
   getDeltaChildren<E extends IAdtError>(
     fromId: string,
     toId: string,
     parentKey: string,
-    options: { headers: IAdtHeaders } & WithAnalyse<
-      E,
-      ISnapshotChildrenOptions
-    >,
+    options: WithAnalyse<E, ISnapshotChildrenOptions>,
   ): Promise<IAdtResponse<TChildren, E>>;
   getDeltaChildren(
     fromId: string,
     toId: string,
     parentKey: string,
-    options: {
-      headers: IAdtHeaders;
-    } & WithoutAnalyse<ISnapshotChildrenOptions>,
+    options: WithoutAnalyse<ISnapshotChildrenOptions>,
   ): Promise<IAdtResponse<TChildren>>;
 
   getDeltaReferences<E extends IAdtError>(
     fromId: string,
     toId: string,
     objectKey: string,
-    options: { headers: IAdtHeaders } & WithAnalyse<
-      E,
-      ISnapshotReferencesOptions
-    >,
+    options: WithAnalyse<E, ISnapshotReferencesOptions>,
   ): Promise<IAdtResponse<TReferences, E>>;
   getDeltaReferences(
     fromId: string,
     toId: string,
     objectKey: string,
-    options: {
-      headers: IAdtHeaders;
-    } & WithoutAnalyse<ISnapshotReferencesOptions>,
+    options: WithoutAnalyse<ISnapshotReferencesOptions>,
   ): Promise<IAdtResponse<TReferences>>;
 }
