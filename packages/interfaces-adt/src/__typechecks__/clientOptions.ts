@@ -15,7 +15,6 @@ void _empty;
 // without importing adt-clients.
 declare const contentTypes: IAdtContentTypes;
 const _configured: IAdtClientOptions = {
-  enableAcceptCorrection: true,
   contentTypes,
   unicode: false,
 };
@@ -42,3 +41,10 @@ const _noRefusal: IAdtError = {
   refusal: {},
 };
 void _noRefusal;
+
+// **No accept correction** (removed in 20.0.0): the headers travel with the
+// call, and correcting a refused format is the consumer's. If the field comes
+// back, this stops compiling.
+// @ts-expect-error a client takes no accept-correction switch
+const _noAcceptCorrection: IAdtClientOptions = { enableAcceptCorrection: true };
+void _noAcceptCorrection;
