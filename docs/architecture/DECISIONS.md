@@ -1861,7 +1861,12 @@ interface IT100Failure extends IAdtError {
 }
 const t100: IAnalyse<IT100Failure> = (verdict, answer) => …;
 
-const answer = await client.getClass().activate(config, { analyse: t100 });
+const headers: IAdtHeaders = { accept: …, contentType: … };
+
+const answer = await client.getClass().activate(config, {
+  headers,
+  analyse: t100,
+});
 if (!answer.ok) answer.getError().t100;   // typed, no cast
 ```
 
