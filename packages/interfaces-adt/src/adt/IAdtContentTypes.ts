@@ -10,6 +10,14 @@
  * (concrete classes), not contract.
  */
 
+/**
+ * The `Accept` and `Content-Type` of one request.
+ *
+ * A member whose request sets both `Accept` and `Content-Type` takes the pair
+ * as `options.headers`, required, for its one request: the member sends
+ * exactly this pair and supplies nothing itself. A member whose request sets
+ * one of them or neither takes no `headers`.
+ */
 export interface IAdtHeaders {
   accept: string;
   contentType: string;

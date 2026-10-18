@@ -32,6 +32,7 @@
  * to the compiler, so a consumer never learns from the type that a failure path
  * exists.
  */
+import type { IAdtHeaders } from './IAdtContentTypes';
 import type {
   IAdtAnalyseOptions,
   IAdtCreateOptions,
@@ -80,11 +81,13 @@ export interface IAdtCreatable<TConfig, TCreated> {
    */
   create<E extends IAdtError>(
     config: Omit<TConfig, 'source'> & { source?: never },
-    options: IAdtCreateOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers: IAdtHeaders } & IAdtCreateOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TCreated, E>>;
   create(
     config: Omit<TConfig, 'source'> & { source?: never },
-    options?: IAdtCreateOptions,
+    options: { headers: IAdtHeaders } & IAdtCreateOptions,
   ): Promise<IAdtResponse<TCreated>>;
 }
 
@@ -286,11 +289,13 @@ export interface IAdtUpdatable<TConfig, TUpdated> {
    */
   update<E extends IAdtError>(
     config: TConfig,
-    options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers: IAdtHeaders } & IAdtOperationOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TUpdated, E>>;
   update(
     config: TConfig,
-    options?: IAdtOperationOptions,
+    options: { headers: IAdtHeaders } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TUpdated>>;
 }
 
@@ -323,11 +328,13 @@ export interface IAdtMetadataUpdatable<TConfig, TMetadataUpdated> {
    */
   updateMetadata<E extends IAdtError>(
     config: TConfig,
-    options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers: IAdtHeaders } & IAdtOperationOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TMetadataUpdated, E>>;
   updateMetadata(
     config: TConfig,
-    options?: IAdtOperationOptions,
+    options: { headers: IAdtHeaders } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TMetadataUpdated>>;
 }
 
@@ -351,11 +358,13 @@ export interface IAdtDeletable<TConfig, TDeleted, TChecked = string> {
    */
   delete<E extends IAdtError>(
     config: Partial<TConfig>,
-    options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers: IAdtHeaders } & IAdtOperationOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TDeleted, E>>;
   delete(
     config: Partial<TConfig>,
-    options?: IAdtOperationOptions,
+    options: { headers: IAdtHeaders } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TDeleted>>;
 
   /**
@@ -382,11 +391,13 @@ export interface IAdtDeletable<TConfig, TDeleted, TChecked = string> {
    */
   checkDeletion<E extends IAdtError>(
     config: Partial<TConfig>,
-    options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers: IAdtHeaders } & IAdtOperationOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TChecked, E>>;
   checkDeletion(
     config: Partial<TConfig>,
-    options?: IAdtOperationOptions,
+    options: { headers: IAdtHeaders } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TChecked>>;
 }
 
@@ -416,12 +427,14 @@ export interface IAdtCheckable<TConfig, TChecked> {
   check<E extends IAdtError>(
     config: Partial<TConfig>,
     status: string | undefined,
-    options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers: IAdtHeaders } & IAdtOperationOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TChecked, E>>;
   check(
     config: Partial<TConfig>,
-    status?: string,
-    options?: IAdtOperationOptions,
+    status: string | undefined,
+    options: { headers: IAdtHeaders } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TChecked>>;
 }
 
@@ -433,11 +446,13 @@ export interface IAdtActivatable<TConfig, TActivated> {
    */
   activate<E extends IAdtError>(
     config: Partial<TConfig>,
-    options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers: IAdtHeaders } & IAdtOperationOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TActivated, E>>;
   activate(
     config: Partial<TConfig>,
-    options?: IAdtOperationOptions,
+    options: { headers: IAdtHeaders } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TActivated>>;
 }
 

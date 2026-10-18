@@ -2,6 +2,7 @@
  * Feature Toggle (FTG2/FT) ADT operation parameter interfaces (low-level)
  */
 
+import type { IAdtHeaders } from './IAdtContentTypes';
 import type { IAdtAnalyseOptions, IAnalyse } from './IAdtObject';
 import type { IAdtError, IAdtResponse } from './IAdtResponse';
 
@@ -130,12 +131,14 @@ export interface IFeatureToggleObject<R extends IFeatureToggleObjectResults> {
   checkState<E extends IAdtError>(
     config: Partial<IFeatureToggleConfig>,
     opts: { userSpecific?: boolean } | undefined,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<R['checkState'], E>>;
   checkState(
     config: Partial<IFeatureToggleConfig>,
-    opts?: { userSpecific?: boolean },
-    options?: IAdtAnalyseOptions,
+    opts: { userSpecific?: boolean } | undefined,
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<R['checkState']>>;
 
   readSource<E extends IAdtError>(

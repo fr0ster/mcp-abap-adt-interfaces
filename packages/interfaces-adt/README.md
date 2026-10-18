@@ -11,10 +11,11 @@ ADT contracts: object operations, runtime analysis, execution, feeds and service
 - Since 14.0.0 `IDebuggerIdentity` is a union by `debuggingMode` (required), `attach` takes the identity, `condition` is for line breakpoints only, and `IAbapDebugger` gains `TSettings` and five members. The CHANGELOG has the migration note.
 - Since 15.0.0 `skipCount` is gone from breakpoints (the server ignores it) and `clientId` pairs an answer row with its request. The CHANGELOG has the migration note.
 - Since 15.1.0 the plain class and program run take `debuggee` (`IDebuggeeIds`): the terminal id and IDE id a terminal-mode listener catches the run by.
+- Since 19.0.0 a member whose request sets both `Accept` and `Content-Type` takes the pair as `options.headers: IAdtHeaders`, **required**, and sends exactly that pair; a member whose request sets one of them or neither is unchanged. See "A request's own headers" and "Migrating to 19.0.0".
 - Since 15.3.0 `IAdtTransportMoveObjects` moves entries from one task to another, each identified by its position in the source.
 - Since 15.2.0 `IAdtTransportSortAndCompress` sorts and compresses a task's object list, the remedy SAP names when `removeObject` is refused for a duplicated entry.
 - Since 13.0.0 `IResultStrategy`, `IAnalyse` and `IAdtFailure.response` hand over an `IAdtWireResponse` whose `data` is `unknown`, not `any` (`interfaces-adt-connection` 2.0.0): narrow it before reading. The CHANGELOG has the migration note.
-- Depends on `@mcp-abap-adt/interfaces-adt-connection` ^2.0.0, and on nothing else. Types and constants; no implementation.
+- Depends on `@mcp-abap-adt/interfaces-adt-connection` ^3.0.0, and on nothing else. Types and constants; no implementation.
 
 ## Install
 
@@ -33,7 +34,7 @@ npm install @mcp-abap-adt/interfaces-adt
 | `service/` | 1 | service definitions and bindings |
 | `shared/` | 1 | what more than one object type needs |
 
-Six directories, all ADT. `connection/` left for `interfaces-adt-connection` in 11.0.0. `sap/`, `auth/`, `token/`, `session/`, `serviceKey/`, `store/`, `validation/` and `Headers.ts` were here until 9.0.0 and are listed above under what left; `__typechecks__/` holds 21 files that compile shapes this contract must and must not accept, and ships in no tarball.
+Six directories, all ADT. `connection/` left for `interfaces-adt-connection` in 11.0.0. `sap/`, `auth/`, `token/`, `session/`, `serviceKey/`, `store/`, `validation/` and `Headers.ts` were here until 9.0.0 and are listed above under what left; `__typechecks__/` holds 24 files that compile shapes this contract must and must not accept, and ships in no tarball.
 
 The contract rules — what a member answers, how a strategy is supplied, how a contract is built — are in [`docs/architecture/ARCHITECTURE.md`](../../docs/architecture/ARCHITECTURE.md). Domain-by-domain documentation with examples used to sit in the facade's README; the facade is deleted, and each package documents its own contracts.
 
@@ -86,6 +87,42 @@ Two of the signatures say things a capture cannot. 1.2.0 was declared from captu
 So `createTask` requires `targetUser` and `removeObject` requires `position`, and `readObjects` was added because otherwise the second would require a value this package offers no way to obtain — leaving a caller to parse a transport document themselves for a `tm:position`. It is its own member because it answers its own thing: entries, each with its position as a value, rather than a document. What an implementation sends to get them is its own business; the contract says what must come back.
 
 `addObject` still takes an entry without a position — one that does not exist yet has none.
+
+## A request's own headers
+
+Since 19.0.0 a member whose request sets **both** `Accept` and `Content-Type`
+takes them as the pair `options.headers`, typed `IAdtHeaders`
+(`{ accept, contentType }`), and the field is **required**: the member sends
+exactly the pair it is given and supplies nothing itself. Both fields are
+required, so a partial pair does not compile. Because the field is required,
+so is the options parameter, and a positional parameter before it that was
+optional is now `T | undefined`.
+
+A member whose request sets only one of the two, or neither, is unchanged: it
+takes no `headers`. An existing single field, `IReadOptions.accept`, stays as
+it is. A member that takes `headers` carries no separate `accept` or
+`contentType` beside it.
+
+Which request sets what was read from `@mcp-abap-adt/adt-clients`. For a chain,
+the main write counts (the message class message's create and update: the
+PUT). Where a member's implementations disagree, the majority decides.
+
+The members that take `headers`: `IAdtAbapGitClient`: `link`, `pull`, `checkExternalRepo`; `IAdtCreatable`: `create`; `IAdtUpdatable`: `update`; `IAdtMetadataUpdatable`: `updateMetadata`; `IAdtDeletable`: `delete`, `checkDeletion`; `IAdtCheckable`: `check`; `IAdtActivatable`: `activate`; `IFeatureToggleObject`: `checkState`; `IAdtTransportObjectActions`: `removeObject`, `addObject`, `createTask`, `changeTaskType`; `IAdtTransportMoveObjects`: `moveObjects`; `IAdtWhereUsed`: `getWhereUsed`, `getWhereUsedScope`; `IAdtVirtualFolders`: `getVirtualFoldersContents`; `IAdtRepositoryStructure`: `fetchNodeStructure`; `IAdtGroupLifecycle`: `activateObjectsGroup`, `checkDeletionGroup`, `deleteObjectsGroup`; `IAdtDataPreview`: `getSqlQuery`, `getTableContents`; `ITraceScheduling`: `scheduleTrace`; `IAbapDebugger`: `setBreakpoints`, `getChildVariables`, `getVariables`, `syncBreakpoints`, `setDebuggerSettings`; `IAmdpDebugger`: `getDataPreview`.
+
+The field is on each member's own options, not on `IAdtAnalyseOptions` or
+`IAdtOperationOptions`. `src/__typechecks__/headersOnEveryMember.ts` holds this
+for every member and every overload.
+
+## Migrating to 19.0.0
+
+- Pass `headers: { accept, contentType }` in the options of every member
+  listed in "A request's own headers". A call that relied on the member's own
+  headers no longer compiles; the headers the implementation used to send are
+  now the caller's to give.
+- Their options parameter is now required. Where a positional parameter before
+  it was optional, pass `undefined` explicitly: `IAdtCheckable.check` (`status`), `IFeatureToggleObject.checkState` (`opts`), `IAdtGroupLifecycle.activateObjectsGroup` (`preauditRequested`) and `deleteObjectsGroup` (`transportRequest`).
+- Every other member is unchanged.
+- An implementation reads `options.headers` and sends it as given.
 
 ## Migrating to 18.0.0
 

@@ -352,12 +352,20 @@ implementation package:
 |---|---|
 | what an answer becomes | an `IResultStrategy`, at construction |
 | what counts as a failure | `analyse`, with the call — every member takes it |
-| the headers a request carries | your own `IAdtContentTypes` |
+| the headers of a request that sets both `Accept` and `Content-Type` | `options.headers: IAdtHeaders`, with the call — required on those members |
+| the headers of any other request | your own `IAdtContentTypes`, at construction |
 | how a request is made at all | your own `IAbapConnection` |
 | a whole family | your own implementation of those atoms |
 
+Since `interfaces-adt` 19.0.0, a member whose request sets both `Accept` and
+`Content-Type` takes the pair as `options.headers: IAdtHeaders`, required, and
+sends exactly that pair; the implementation supplies none of its own for it.
+A member whose request sets one of the two, or neither, takes no `headers`.
+The members are listed in the `interfaces-adt` README, "A request's own
+headers".
+
 The last row is the test the package is built to pass, and it is asserted rather
-than assumed: `interfaces-adt/src/__typechecks__/` contains 22 files whose job is to prove that
+than assumed: `interfaces-adt/src/__typechecks__/` contains 24 files whose job is to prove that
 something written **outside** this package can satisfy each contract — one family
 alone, composed families, a consumer's own readings, and the shapes that must
 *not* compile.

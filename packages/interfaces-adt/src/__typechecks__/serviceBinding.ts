@@ -11,6 +11,7 @@
 // by the atoms, composed; a consumer names the half they need, structurally,
 // without any type belonging to a particular object.
 
+import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type {
   IAdtActivatable,
   IAdtCreatable,
@@ -21,6 +22,11 @@ import type {
   IAdtUpdatable,
   IServiceBindingConfig,
 } from '../index';
+
+const headers: IAdtHeaders = {
+  accept: 'application/xml',
+  contentType: 'application/xml',
+};
 
 const answered = <T>(value: T): IAdtResponse<T> => ({
   ok: true,
@@ -66,11 +72,14 @@ declare const whole: WholeBinding;
 // says which object, which state and which protocol
 void whole.update({});
 
-void whole.update({
-  bindingName: 'ZAC_SRVB01',
-  desiredPublicationState: 'published',
-  serviceType: 'odatav4',
-});
+void whole.update(
+  {
+    bindingName: 'ZAC_SRVB01',
+    desiredPublicationState: 'published',
+    serviceType: 'odatav4',
+  },
+  { headers },
+);
 
 /**
  * And the half of it somebody actually needs. Publishing a binding is an update
@@ -96,11 +105,14 @@ void _publisher.update({
   desiredPublicationState: 'published',
 });
 
-void _publisher.update({
-  bindingName: 'ZAC_SRVB01',
-  desiredPublicationState: 'published',
-  serviceType: 'odatav4',
-});
+void _publisher.update(
+  {
+    bindingName: 'ZAC_SRVB01',
+    desiredPublicationState: 'published',
+    serviceType: 'odatav4',
+  },
+  { headers },
+);
 
 /** A consumer's own reading of what a create answers, named by them. */
 interface IBindingSummary {
@@ -111,7 +123,7 @@ interface IBindingSummary {
 declare const mine: IAdtCreatable<IServiceBindingConfig, IBindingSummary>;
 
 async function _mineAnswers(): Promise<IBindingSummary | undefined> {
-  const created = await mine.create({} as IServiceBindingConfig);
+  const created = await mine.create({} as IServiceBindingConfig, { headers });
   if (!created.ok) return undefined;
   // The create answers one value — the caller's, not a stack of envelopes from
   // every request the implementation made on the way.

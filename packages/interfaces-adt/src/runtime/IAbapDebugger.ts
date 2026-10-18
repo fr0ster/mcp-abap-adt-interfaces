@@ -1,3 +1,4 @@
+import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type { IAdtAnalyseOptions, IAnalyse } from '../adt/IAdtObject';
 import type { IAdtError, IAdtResponse } from '../adt/IAdtResponse';
 
@@ -214,12 +215,17 @@ export interface IAbapDebugger<
   setBreakpoints<E extends IAdtError>(
     identity: IDebuggerIdentity,
     breakpoints: readonly IDebuggerBreakpoint[],
-    options: WithAnalyse<E, { validationOnly?: boolean }>,
+    options: { headers: IAdtHeaders } & WithAnalyse<
+      E,
+      { validationOnly?: boolean }
+    >,
   ): Promise<IAdtResponse<TBreakpoints, E>>;
   setBreakpoints(
     identity: IDebuggerIdentity,
     breakpoints: readonly IDebuggerBreakpoint[],
-    options?: WithoutAnalyse<{ validationOnly?: boolean }>,
+    options: { headers: IAdtHeaders } & WithoutAnalyse<{
+      validationOnly?: boolean;
+    }>,
   ): Promise<IAdtResponse<TBreakpoints>>;
 
   deleteBreakpoint<E extends IAdtError>(
@@ -285,20 +291,20 @@ export interface IAbapDebugger<
   /** The variables under each parent id: locals, globals, an object's attributes. */
   getChildVariables<E extends IAdtError>(
     parentIds: readonly string[],
-    options: WithAnalyse<E>,
+    options: { headers: IAdtHeaders } & WithAnalyse<E>,
   ): Promise<IAdtResponse<TVariables, E>>;
   getChildVariables(
     parentIds: readonly string[],
-    options?: WithoutAnalyse,
+    options: { headers: IAdtHeaders } & WithoutAnalyse,
   ): Promise<IAdtResponse<TVariables>>;
 
   getVariables<E extends IAdtError>(
     variableIds: readonly string[],
-    options: WithAnalyse<E>,
+    options: { headers: IAdtHeaders } & WithAnalyse<E>,
   ): Promise<IAdtResponse<TVariables, E>>;
   getVariables(
     variableIds: readonly string[],
-    options?: WithoutAnalyse,
+    options: { headers: IAdtHeaders } & WithoutAnalyse,
   ): Promise<IAdtResponse<TVariables>>;
 
   step<E extends IAdtError>(
@@ -364,12 +370,12 @@ export interface IAbapDebugger<
   syncBreakpoints<E extends IAdtError>(
     identity: IDebuggerIdentity,
     sync: IDebuggerBreakpointSync,
-    options: WithAnalyse<E>,
+    options: { headers: IAdtHeaders } & WithAnalyse<E>,
   ): Promise<IAdtResponse<TBreakpoints, E>>;
   syncBreakpoints(
     identity: IDebuggerIdentity,
     sync: IDebuggerBreakpointSync,
-    options?: WithoutAnalyse,
+    options: { headers: IAdtHeaders } & WithoutAnalyse,
   ): Promise<IAdtResponse<TBreakpoints>>;
 
   /**
@@ -414,11 +420,11 @@ export interface IAbapDebugger<
    */
   setDebuggerSettings<E extends IAdtError>(
     settings: IDebuggerSettings,
-    options: WithAnalyse<E>,
+    options: { headers: IAdtHeaders } & WithAnalyse<E>,
   ): Promise<IAdtResponse<TSettings, E>>;
   setDebuggerSettings(
     settings: IDebuggerSettings,
-    options?: WithoutAnalyse,
+    options: { headers: IAdtHeaders } & WithoutAnalyse,
   ): Promise<IAdtResponse<TSettings>>;
 
   createWatchpoint<E extends IAdtError>(

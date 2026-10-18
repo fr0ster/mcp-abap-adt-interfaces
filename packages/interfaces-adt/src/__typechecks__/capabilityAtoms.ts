@@ -19,9 +19,15 @@ import type {
   IAdtUpdatable,
   IAdtVersionable,
 } from '../adt/IAdtCapabilities';
+import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type { IAdtOperationOptions } from '../adt/IAdtObject';
 import type { IAdtError, IAdtResponse } from '../adt/IAdtResponse';
 import { AdtObjectErrorCodes } from '../index';
+
+const headers: IAdtHeaders = {
+  accept: 'application/xml',
+  contentType: 'application/xml',
+};
 
 interface Config {
   name: string;
@@ -70,7 +76,7 @@ void _deleteOnlyAsUpdatable;
 // documents — `del:isDeletable` against `del:isDeleted` — and the third type
 // parameter is what keeps a contract from saying they are interchangeable.
 const _checkAnswersItsOwn: Promise<IAdtResponse<string>> =
-  _deleteOnly.checkDeletion({ name: 'Z' });
+  _deleteOnly.checkDeletion({ name: 'Z' }, { headers });
 void _checkAnswersItsOwn;
 
 // Each member's value is its own. A create answering the created object's name
@@ -183,10 +189,13 @@ void _demandingUpdate;
 void _demandingUpdate.update({ bindingName: 'ZAC_SRVB01' });
 
 // And with both, it compiles.
-void _demandingUpdate.update({
-  bindingName: 'ZAC_SRVB01',
-  serviceType: 'odatav4',
-});
+void _demandingUpdate.update(
+  {
+    bindingName: 'ZAC_SRVB01',
+    serviceType: 'odatav4',
+  },
+  { headers },
+);
 
 // **A create takes no source — and the refusal must survive a variable.**
 //
@@ -223,8 +232,8 @@ void creatable.create({ className: 'ZC' }, writeOptions);
 
 // The create that does compile: identity and metadata, no source. The source is
 // `update`'s, after `lock`.
-void creatable.create({ className: 'ZC' });
-void creatable.create({ className: 'ZC' }, { timeout: 45_000 });
+void creatable.create({ className: 'ZC' }, { headers });
+void creatable.create({ className: 'ZC' }, { headers, timeout: 45_000 });
 
 // ── A feature toggle names one result per answer (11.0.0) ───────────────────
 //
@@ -246,7 +255,7 @@ declare const toggle: IFeatureToggleObject<ToggleShapes>;
 async function _eachAnswerIsItsOwn(): Promise<void> {
   const on = await toggle.switchOn({}, { transportRequest: 'T' });
   const state = await toggle.getRuntimeState({});
-  const checked = await toggle.checkState({});
+  const checked = await toggle.checkState({}, undefined, { headers });
   const source = await toggle.readSource({});
   if (on.ok) {
     const v: 'switched' = on.getResult().value;

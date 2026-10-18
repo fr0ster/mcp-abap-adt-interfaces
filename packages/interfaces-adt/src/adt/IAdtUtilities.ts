@@ -90,6 +90,7 @@
  */
 
 import type { IReadOptions } from '../shared/IReadOptions';
+import type { IAdtHeaders } from './IAdtContentTypes';
 import type { IAdtAnalyseOptions, IAnalyse } from './IAdtObject';
 import type { IAdtError, IAdtResponse } from './IAdtResponse';
 import type {
@@ -182,21 +183,25 @@ export interface IAdtWhereUsed<TWhereUsed, TScope> {
   /** Where an object is used. One request. */
   getWhereUsed<E extends IAdtError>(
     params: IGetWhereUsedParams,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TWhereUsed, E>>;
   getWhereUsed(
     params: IGetWhereUsedParams,
-    options?: IAdtAnalyseOptions,
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TWhereUsed>>;
 
   /** The scope document a where-used run is filtered by. */
   getWhereUsedScope<E extends IAdtError>(
     params: IGetWhereUsedScopeParams,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TScope, E>>;
   getWhereUsedScope(
     params: IGetWhereUsedScopeParams,
-    options?: IAdtAnalyseOptions,
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TScope>>;
 
   /**
@@ -219,11 +224,13 @@ export interface IAdtVirtualFolders<TFolders> {
   /** The repository as folders, under a preselection. */
   getVirtualFoldersContents<E extends IAdtError>(
     params: IGetVirtualFoldersContentsParams,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TFolders, E>>;
   getVirtualFoldersContents(
     params: IGetVirtualFoldersContentsParams,
-    options?: IAdtAnalyseOptions,
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TFolders>>;
 }
 
@@ -286,13 +293,14 @@ export interface IAdtRepositoryStructure<TNode, TObjectStructure> {
   fetchNodeStructure<E extends IAdtError>(
     parentType: string,
     parentName: string,
-    options: IGetNodeContentsOptions &
+    options: { headers: IAdtHeaders } & IGetNodeContentsOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TNode, E>>;
   fetchNodeStructure(
     parentType: string,
     parentName: string,
-    options?: IGetNodeContentsOptions & IAdtAnalyseOptions,
+    options: { headers: IAdtHeaders } & IGetNodeContentsOptions &
+      IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TNode>>;
 
   /** The parts one object is made of. */
@@ -336,12 +344,14 @@ export interface IAdtGroupLifecycle<
   activateObjectsGroup<E extends IAdtError>(
     objects: IObjectReference[],
     preauditRequested: boolean | undefined,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TActivation, E>>;
   activateObjectsGroup(
     objects: IObjectReference[],
-    preauditRequested?: boolean,
-    options?: IAdtAnalyseOptions,
+    preauditRequested: boolean | undefined,
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TActivation>>;
 
   /**
@@ -392,23 +402,27 @@ export interface IAdtGroupLifecycle<
   /** Whether a set can be deleted, asked before deleting it. */
   checkDeletionGroup<E extends IAdtError>(
     objects: IObjectReference[],
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TDeletionCheck, E>>;
   checkDeletionGroup(
     objects: IObjectReference[],
-    options?: IAdtAnalyseOptions,
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TDeletionCheck>>;
 
   /** Delete several objects in one request. */
   deleteObjectsGroup<E extends IAdtError>(
     objects: IObjectReference[],
     transportRequest: string | undefined,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TDeletion, E>>;
   deleteObjectsGroup(
     objects: IObjectReference[],
-    transportRequest?: string,
-    options?: IAdtAnalyseOptions,
+    transportRequest: string | undefined,
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TDeletion>>;
 }
 
@@ -417,11 +431,13 @@ export interface IAdtDataPreview<TQuery, TColumns, TContents> {
   /** A freestyle SQL query. */
   getSqlQuery<E extends IAdtError>(
     params: IGetSqlQueryParams,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TQuery, E>>;
   getSqlQuery(
     params: IGetSqlQueryParams,
-    options?: IAdtAnalyseOptions,
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TQuery>>;
 
   /** The rows of one table. */
@@ -450,11 +466,13 @@ export interface IAdtDataPreview<TQuery, TColumns, TContents> {
    */
   getTableContents<E extends IAdtError>(
     params: IGetTableContentsParams,
-    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TContents, E>>;
   getTableContents(
     params: IGetTableContentsParams,
-    options?: IAdtAnalyseOptions,
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TContents>>;
 }
 

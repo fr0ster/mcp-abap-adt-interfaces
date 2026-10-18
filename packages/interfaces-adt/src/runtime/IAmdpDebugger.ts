@@ -1,3 +1,4 @@
+import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type { IAdtAnalyseOptions, IAnalyse } from '../adt/IAdtObject';
 import type { IAdtError, IAdtResponse } from '../adt/IAdtResponse';
 
@@ -126,9 +127,14 @@ export interface IAmdpDebugger<TStarted, TEvents, TCommand, TPreview> {
 
   /** A table variable's rows, answered at once, by column. */
   getDataPreview<E extends IAdtError>(
-    options: WithAnalyse<E, IGetAmdpDataPreviewOptions>,
+    options: { headers: IAdtHeaders } & WithAnalyse<
+      E,
+      IGetAmdpDataPreviewOptions
+    >,
   ): Promise<IAdtResponse<TPreview, E>>;
   getDataPreview(
-    options: WithoutAnalyse<IGetAmdpDataPreviewOptions>,
+    options: {
+      headers: IAdtHeaders;
+    } & WithoutAnalyse<IGetAmdpDataPreviewOptions>,
   ): Promise<IAdtResponse<TPreview>>;
 }

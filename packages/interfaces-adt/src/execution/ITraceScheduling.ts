@@ -12,6 +12,7 @@
  * that were previously easy to confuse.
  */
 
+import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type { IAdtAnalyseOptions, IAnalyse } from '../adt/IAdtObject';
 import type { IAdtError, IAdtResponse } from '../adt/IAdtResponse';
 import type { IProfilerTraceParameters } from '../runtime/IProfiler';
@@ -68,10 +69,11 @@ export interface ITraceScheduling<TTypes, TRequests, TScheduled> {
    * is GIVEN, not what it produces.
    */
   scheduleTrace<E extends IAdtError>(
-    options: IProfilerTraceParameters &
+    options: { headers: IAdtHeaders } & IProfilerTraceParameters &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TScheduled, E>>;
   scheduleTrace(
-    options?: IProfilerTraceParameters & IAdtAnalyseOptions,
+    options: { headers: IAdtHeaders } & IProfilerTraceParameters &
+      IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TScheduled>>;
 }

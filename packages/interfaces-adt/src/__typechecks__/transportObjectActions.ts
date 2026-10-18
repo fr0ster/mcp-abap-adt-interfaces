@@ -10,6 +10,7 @@
 // now wrong are written down as `@ts-expect-error` — a line that stops failing
 // if the requirement is ever loosened again by accident.
 
+import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type { IAdtResponse } from '../adt/IAdtResponse';
 import type {
   AdtTaskType,
@@ -17,6 +18,11 @@ import type {
   IAdtTransportObjectActions,
 } from '../index';
 import { ADT_TASK_TYPE } from '../index';
+
+const headers: IAdtHeaders = {
+  accept: 'application/xml',
+  contentType: 'application/xml',
+};
 
 /** A consumer's own readings — the contract declares none. */
 interface MyEntry {
@@ -40,21 +46,26 @@ export async function detachTheFirstEntry(task: string): Promise<void> {
   if (!listed.ok) return;
   const [entry] = listed.getResult().value;
   if (!entry) return;
-  await actions.removeObject(task, {
-    name: entry.name,
-    type: 'CLAS',
-    position: entry.position,
-  });
+  await actions.removeObject(
+    task,
+    {
+      name: entry.name,
+      type: 'CLAS',
+      position: entry.position,
+    },
+    { headers },
+  );
 }
 
 /** A task is created for a named user, and the number comes back. */
 export const task: Promise<IAdtResponse<{ number: string }>> =
-  actions.createTask('E1K900042', { targetUser: 'DEVELOPER' });
+  actions.createTask('E1K900042', { headers, targetUser: 'DEVELOPER' });
 
 /** An entry being added has no position yet, so `addObject` asks for none. */
 export const added: Promise<IAdtResponse<string>> = actions.addObject(
   'E1K900042',
   { name: 'ZCL_X', type: 'CLAS' },
+  { headers },
 );
 
 // @ts-expect-error removeObject needs the position, or the server no-ops
@@ -80,6 +91,7 @@ actions.createTask('E1K900042', {});
 export const typed: Promise<IAdtResponse<string>> = actions.changeTaskType(
   'E1K900042',
   'S',
+  { headers },
 );
 
 // @ts-expect-error a request type is not a task type
@@ -102,7 +114,9 @@ actions.changeTaskType('E1K900042', 'Q');
  * consumer uses.
  */
 export const fromTheConstant: Promise<IAdtResponse<string>> =
-  actions.changeTaskType('E1K900042', ADT_TASK_TYPE.developmentCorrection);
+  actions.changeTaskType('E1K900042', ADT_TASK_TYPE.developmentCorrection, {
+    headers,
+  });
 
 /** The named type is the parameter's type, not merely assignable to it. */
 export const repair: AdtTaskType = ADT_TASK_TYPE.repair;

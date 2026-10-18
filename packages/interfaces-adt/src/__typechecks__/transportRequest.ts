@@ -5,6 +5,7 @@
 // something written entirely outside the package fits too, and that a caller
 // holding the contract can reach everything the handler is for.
 
+import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type { IAdtResponse } from '../adt/IAdtResponse';
 import type {
   IAdtCreatable,
@@ -12,6 +13,11 @@ import type {
   IListTransportsOptions,
   ITransportConfig,
 } from '../index';
+
+const headers: IAdtHeaders = {
+  accept: 'application/xml',
+  contentType: 'application/xml',
+};
 
 /** A consumer's own reading of the transport list — the contract declares none. */
 interface MyTree {
@@ -88,9 +94,12 @@ const mine: Promise<IAdtResponse<MyShape>> = mineRequests.list({
  */
 type Requests = IAdtRequest<MyTree> & IAdtCreatable<ITransportConfig, string>;
 declare const both: Requests;
-const created: Promise<IAdtResponse<string>> = both.create({
-  description: 'x',
-});
+const created: Promise<IAdtResponse<string>> = both.create(
+  {
+    description: 'x',
+  },
+  { headers },
+);
 
 /** The implementation's reading is the one that comes back. */
 // @ts-expect-error this implementation answers MyShape, not MyTree
