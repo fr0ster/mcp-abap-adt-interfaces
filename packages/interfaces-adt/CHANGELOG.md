@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [18.1.0] - 2026-10-18
+
 ### Added
 
 - Every read member takes the headers of its one request as
