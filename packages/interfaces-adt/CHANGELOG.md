@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed (breaking)
+
+- `IAdtClientOptions.enableAcceptCorrection`. The contract carries how headers
+  are passed — `headers: IAdtHeaders` with the call, on the members whose
+  request sets both — and correcting a format the server refused (a `406` or
+  `415`) is the consumer's own. `@mcp-abap-adt/adt-clients` 36.0.0 removes accept
+  negotiation.
+
+### Migrating from 19.0
+
+Drop `enableAcceptCorrection` from the client options. A consumer that wants a
+refused format corrected does it itself: read the formats the server offers
+from the `406` or `415` (adt-clients exports the parsers for both), and call
+again with the `headers` that match.
+
 ## [19.0.0] - 2026-10-18
 
 ### Changed (breaking)

@@ -11,6 +11,7 @@ ADT contracts: object operations, runtime analysis, execution, feeds and service
 - Since 14.0.0 `IDebuggerIdentity` is a union by `debuggingMode` (required), `attach` takes the identity, `condition` is for line breakpoints only, and `IAbapDebugger` gains `TSettings` and five members. The CHANGELOG has the migration note.
 - Since 15.0.0 `skipCount` is gone from breakpoints (the server ignores it) and `clientId` pairs an answer row with its request. The CHANGELOG has the migration note.
 - Since 15.1.0 the plain class and program run take `debuggee` (`IDebuggeeIds`): the terminal id and IDE id a terminal-mode listener catches the run by.
+- Since 20.0.0 `IAdtClientOptions` has no `enableAcceptCorrection`: correcting a refused format is the consumer's own. See "Migrating to 20.0.0".
 - Since 19.0.0 a member whose request sets both `Accept` and `Content-Type` takes the pair as `options.headers: IAdtHeaders`, **required**, and sends exactly that pair; a member whose request sets one of them or neither is unchanged. See "A request's own headers" and "Migrating to 19.0.0".
 - Since 15.3.0 `IAdtTransportMoveObjects` moves entries from one task to another, each identified by its position in the source.
 - Since 15.2.0 `IAdtTransportSortAndCompress` sorts and compresses a task's object list, the remedy SAP names when `removeObject` is refused for a duplicated entry.
@@ -112,6 +113,15 @@ The members that take `headers`: `IAdtAbapGitClient`: `link`, `pull`, `checkExte
 The field is on each member's own options, not on `IAdtAnalyseOptions` or
 `IAdtOperationOptions`. `src/__typechecks__/headersOnEveryMember.ts` holds this
 for every member and every overload.
+
+## Migrating to 20.0.0
+
+`IAdtClientOptions.enableAcceptCorrection` is removed, so code that sets it
+stops compiling; drop the field. The contract carries how headers are passed —
+`headers: IAdtHeaders` with the call, where a member takes it — and correcting
+a format the server refused is the consumer's own: read the formats the `406`
+or `415` names (`@mcp-abap-adt/adt-clients` exports the parsers for both) and
+call again with the matching `headers`. Nothing else changed.
 
 ## Migrating to 19.0.0
 
