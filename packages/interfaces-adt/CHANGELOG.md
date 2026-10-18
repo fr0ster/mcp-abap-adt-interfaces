@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [20.0.0] - 2026-10-18
+
 ### Removed (breaking)
 
 - `IAdtClientOptions.enableAcceptCorrection`. The contract carries how headers
