@@ -7,21 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [18.1.0] - 2026-10-18
+## [19.0.0] - 2026-10-18
 
-### Added
+### Changed (breaking)
 
-- Every member that sends a request — reads and writes, the create, update,
-  delete, lock, unlock, activate and check members included — takes the
-  headers of its one request as `options.headers?: IAdtHeaders`. The pair is
-  given whole and used as given, not merged with the member's own headers;
-  without it, the member sends its own headers, as before. The field is on each
-  member's own options, not on `IAdtAnalyseOptions` or `IAdtOperationOptions`.
-  `ITraceReading.read` takes it through `ViewArgs`. No new type;
-  `IReadOptions.accept` is unchanged.
-- A consumer asserting the exact parameter list of a member (`Parameters<…>`
-  compared for identity) sees `{ headers?: IAdtHeaders }` in the options; a
-  caller or an implementation compiles unchanged.
+- A member whose request carries headers of its own takes them as
+  `options.headers: IAdtHeaders`, **required**: both `accept` and
+  `contentType`, sent exactly as given, nothing supplied by the member. Which
+  members carry headers was read from `@mcp-abap-adt/adt-clients` (the
+  requests that set `Accept` or `Content-Type`). The field is on each member's
+  own options, not on `IAdtAnalyseOptions` or `IAdtOperationOptions`;
+  `ITraceReading.read` takes it through `ViewArgs`, whose options are now always
+  required.
+- The options parameter of those members is required, and a positional
+  parameter before it that was optional is now `T | undefined`: `IAdtReadable.read` (`version`), `IAdtCheckable.check` (`status`), `IFeatureToggleObject.checkState` (`opts`) and `readSource` (`version`), `ITestRunInformation.getStatus` (`withLongPolling`), `IAdtTypeCatalogue.getAllTypes` (`maxItemCount`, `name`, `data`), `IAdtGroupLifecycle.activateObjectsGroup` (`preauditRequested`) and `deleteObjectsGroup` (`transportRequest`), `IAdtDiscovery.discovery` (`params`), `IAdtObjectAccess.readObjectSource` (`functionGroup`, `version`) and `readObjectMetadata` (`functionGroup`), `IRuntimeDumps.listByUser` (`user`), `ICrossTrace.getById` (`includeSensitiveData`).
+
+### Removed (breaking)
+
+- `IReadOptions.accept` — replaced by `headers: IAdtHeaders` on the members
+  typed with `IReadOptions` (`IAdtObjectAccess.readObjectSource`,
+  `readObjectMetadata`).
+
+### Unchanged on purpose
+
+- No `headers` on the members whose requests carry none: `IAbapDebugger.deleteBreakpoint`, `deleteWatchpoint` and `stopListener`; `IAmdpDebugger.step`, `deleteDebuggee` and `stop`; `IAdtAbapGitClient.unlink`; `ITraceDeletion.delete`.
+- `headers?: IAdtHeaders` stays optional, pending a decision, on the members
+  whose requests carry headers on some paths and not on others, or that have no
+  implementation to read: `IAdtCreatable.create`, `IAdtUpdatable.update`, `IAdtLockable.lock` and `unlock`, `IAdtMetadataReadable.readMetadata`, `IAdtDeletable.checkDeletion`, `IAdtValidatable.validate`, and `IRunnableWithProfiling.runWithProfiling`. When given, the pair is whole.
+
+### Migrating from 18.0
+
+Pass `headers: { accept, contentType }` in the options of every member that
+requires it; the headers the implementation used to choose are now the
+caller's. Replace `IReadOptions.accept` with `headers`. Pass `undefined` for a
+positional parameter that was optional before the options. Implementations
+send `options.headers` as given. README, "Migrating to 19.0.0", has the list.
 
 ## [18.0.0] - 2026-10-15
 

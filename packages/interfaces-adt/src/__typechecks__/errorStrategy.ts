@@ -7,6 +7,7 @@
 // cannot be confused — which they were until 31.0.0.
 
 import type { IAdtWireResponse } from '@mcp-abap-adt/interfaces-adt-connection';
+import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type {
   AdtNoFailure,
   IAdtActivatable,
@@ -19,6 +20,11 @@ import type {
   IAnalyse,
 } from '../index';
 import { ADT_NO_FAILURE } from '../index';
+
+const headers: IAdtHeaders = {
+  accept: 'application/xml',
+  contentType: 'application/xml',
+};
 
 const empty: IAdtWireResponse = {
   data: '',
@@ -127,7 +133,7 @@ declare const readable: IAdtReadable<{ name: string }, string> &
 async function _theFailureIsTheCallers(): Promise<void> {
   const activated = await activatable.activate(
     { name: 'ZCL_X' },
-    { analyse: t100 },
+    { headers, analyse: t100 },
   );
   if (!activated.ok) {
     // No cast, no guard: `E` was inferred from the strategy handed to the call.
@@ -146,13 +152,14 @@ async function _theFailureIsTheCallers(): Promise<void> {
   if (!updated.ok) void updated.getError().t100;
 
   const read = await readable.read({ name: 'ZCL_X' }, 'active', {
+    headers,
     analyse: t100,
   });
   if (!read.ok) void read.getError().t100;
 
   // And a member called without a strategy answers the plain contract, which is
   // what keeps every existing call site compiling.
-  const plain = await activatable.activate({ name: 'ZCL_X' });
+  const plain = await activatable.activate({ name: 'ZCL_X' }, { headers });
   if (!plain.ok) {
     const failure: IAdtError = plain.getError();
     void failure;
@@ -174,7 +181,7 @@ void _theFailureIsTheCallers;
 
 async function _aTypeArgumentWithoutAStrategy(): Promise<void> {
   // @ts-expect-error naming the failure type requires the strategy that answers it
-  await activatable.activate<IT100Failure>({ name: 'ZCL_X' });
+  await activatable.activate<IT100Failure>({ name: 'ZCL_X' }, { headers });
 
   // `IAdtOperationOptions<IT100Failure>` with no strategy in it is still a
   // writable type — `analyse` is optional, and making it conditionally required
@@ -182,7 +189,9 @@ async function _aTypeArgumentWithoutAStrategy(): Promise<void> {
   // options object that names a failure type without carrying the thing that
   // produces it does not select the parameterised signature, so the answer is
   // the plain contract and `.t100` is not there to read.
-  const named: IAdtOperationOptions<IT100Failure> = {};
+  const named: IAdtOperationOptions<IT100Failure> & { headers: IAdtHeaders } = {
+    headers,
+  };
   const answered = await activatable.activate({ name: 'ZCL_X' }, named);
   if (!answered.ok) {
     const failure: IAdtError = answered.getError();
@@ -194,7 +203,7 @@ async function _aTypeArgumentWithoutAStrategy(): Promise<void> {
   // What is allowed is the honest pair.
   const honest = await activatable.activate(
     { name: 'ZCL_X' },
-    { analyse: t100 },
+    { headers, analyse: t100 },
   );
   if (!honest.ok) void honest.getError().t100;
 }

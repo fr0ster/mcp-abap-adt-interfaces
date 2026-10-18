@@ -9,24 +9,23 @@ export interface IGatewayErrorLog<TList, TError> {
 
   /** The errors the gateway has logged. */
   list<E extends IAdtError>(
-    options: { headers?: IAdtHeaders } & IFeedQueryOptions &
+    options: { headers: IAdtHeaders } & IFeedQueryOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TList, E>>;
   list(
-    options?: { headers?: IAdtHeaders } & IFeedQueryOptions &
-      IAdtAnalyseOptions,
+    options: { headers: IAdtHeaders } & IFeedQueryOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TList>>;
 
   getById<E extends IAdtError>(
     errorType: string,
     errorId: string,
-    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<TError, E>>;
   getById(
     errorType: string,
     errorId: string,
-    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TError>>;
 }

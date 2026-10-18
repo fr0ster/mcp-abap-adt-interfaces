@@ -109,15 +109,16 @@ async function _assertions(
   noOptions: NoOptionReader,
 ) {
   // The result is typed, not `any`.
-  const gross: number | undefined = read(await family.read('t', 'hitlist'))
-    .entries[0]?.grossTime;
+  const gross: number | undefined = read(
+    await family.read('t', 'hitlist', { headers }),
+  ).entries[0]?.grossTime;
 
   // Optional options may be given or omitted.
-  await family.read('t', 'hitlist');
-  await family.read('t', 'statements', { withDetails: true });
+  await family.read('t', 'hitlist', { headers });
+  await family.read('t', 'statements', { headers, withDetails: true });
 
   // Required options must be given, and the compiler says so.
-  await required.read('t', 'recordContent', { recordNumber: 3 });
+  await required.read('t', 'recordContent', { headers, recordNumber: 3 });
   // @ts-expect-error a required option may not be omitted
   await required.read('t', 'recordContent');
 
@@ -126,18 +127,20 @@ async function _assertions(
   await family.read('t', 'callGraph');
 
   // The result type is the view's, not a union to narrow.
-  const hits = read(await family.read('t', 'hitlist'));
+  const hits = read(await family.read('t', 'hitlist', { headers }));
   // @ts-expect-error hitlist entries carry no `statement`
   const _wrong: string = hits.entries[0].statement;
 
-  const count: number = read(await noOptions.read('t', 'records')).count;
+  const count: number = read(
+    await noOptions.read('t', 'records', { headers }),
+  ).count;
 
   // The literal kind still discriminates.
   const kind: 'probe' = family.kind;
 
   // The listing carries its own options type.
   const listing: ITraceListing<ITraceEntry, { user?: string }> = family;
-  const entries = read(await listing.list({ user: 'SOMEONE' }));
+  const entries = read(await listing.list({ headers, user: 'SOMEONE' }));
 
   return { gross, count, kind, id: entries[0]?.id };
 }
@@ -154,9 +157,15 @@ export { _listingOnly, _listingAndName, _assertions };
 // the published composition IS the intersection it claims to be, and that this
 // file can instantiate it with readings of its own.
 
+import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type { IAdtRunnable } from '../execution/IAdtRunnable';
 import type { IAtcRunOptions, IAtcRunTarget } from '../runtime/IAtcRun';
 import type { IProfiler, IProfilerListOptions } from '../runtime/IProfiler';
+
+const headers: IAdtHeaders = {
+  accept: 'application/xml',
+  contentType: 'application/xml',
+};
 
 interface MyTraceEntry extends ITraceEntry {
   user: string;
@@ -219,7 +228,7 @@ const _profiler: MyProfiler = {
 void _profiler;
 
 async function _profilerCalls(p: MyProfiler) {
-  const hits: MyHitList = read(await p.read('t1', 'hitlist'));
+  const hits: MyHitList = read(await p.read('t1', 'hitlist', { headers }));
   const rows = hits.entries;
   const kind: 'profiler' = p.kind;
   const deleted = read(await p.delete('t1'));

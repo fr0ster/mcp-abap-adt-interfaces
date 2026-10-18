@@ -7,19 +7,19 @@ export interface ISt05Trace<TState, TDirectory> {
   readonly kind: 'st05Trace';
 
   getState<E extends IAdtError>(
-    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<TState, E>>;
   getState(
-    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TState>>;
   getDirectory<E extends IAdtError>(
-    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<TDirectory, E>>;
   getDirectory(
-    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TDirectory>>;
 }

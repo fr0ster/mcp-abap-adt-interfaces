@@ -140,11 +140,11 @@ export interface IAdtRequest<TList> {
    * names.
    */
   list<E extends IAdtError>(
-    options: { headers?: IAdtHeaders } & IListTransportsOptions &
+    options: { headers: IAdtHeaders } & IListTransportsOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TList, E>>;
   list(
-    options: { headers?: IAdtHeaders } & IListTransportsOptions &
+    options: { headers: IAdtHeaders } & IListTransportsOptions &
       IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TList>>;
 }
@@ -160,12 +160,12 @@ export interface IAdtRequest<TList> {
  */
 export interface IAdtTransportSearchConfigurations<TConfigurations> {
   searchConfigurations<E extends IAdtError>(
-    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<TConfigurations, E>>;
   searchConfigurations(
-    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TConfigurations>>;
 }
 
@@ -269,7 +269,7 @@ export interface IAdtTransportObjectActions<
   removeObject<E extends IAdtError = IAdtError>(
     transportNumber: string,
     object: IAbapObjectEntry & { position: string },
-    options?: { headers?: IAdtHeaders } & IAdtOperationOptions<E>,
+    options: { headers: IAdtHeaders } & IAdtOperationOptions<E>,
   ): Promise<IAdtResponse<TRemoved, E>>;
   /**
    * Attach one object to a request or task.
@@ -282,7 +282,7 @@ export interface IAdtTransportObjectActions<
   addObject<E extends IAdtError = IAdtError>(
     transportNumber: string,
     object: IAbapObjectEntry,
-    options?: { headers?: IAdtHeaders } & IAdtOperationOptions<E>,
+    options: { headers: IAdtHeaders } & IAdtOperationOptions<E>,
   ): Promise<IAdtResponse<TAdded, E>>;
   /**
    * Create a task under a request.
@@ -306,7 +306,7 @@ export interface IAdtTransportObjectActions<
   createTask<E extends IAdtError = IAdtError>(
     transportNumber: string,
     options: {
-      headers?: IAdtHeaders;
+      headers: IAdtHeaders;
       targetUser: string;
     } & IAdtOperationOptions<E>,
   ): Promise<IAdtResponse<TTask, E>>;
@@ -316,7 +316,7 @@ export interface IAdtTransportObjectActions<
    */
   readActionLog<E extends IAdtError = IAdtError>(
     transportNumber: string,
-    options?: { headers?: IAdtHeaders } & IAdtOperationOptions<E>,
+    options: { headers: IAdtHeaders } & IAdtOperationOptions<E>,
   ): Promise<IAdtResponse<TActionLog, E>>;
   /**
    * The objects a request or task holds, each with the `tm:position` that
@@ -345,7 +345,7 @@ export interface IAdtTransportObjectActions<
    */
   readObjects<E extends IAdtError = IAdtError>(
     transportNumber: string,
-    options?: { headers?: IAdtHeaders } & IAdtOperationOptions<E>,
+    options: { headers: IAdtHeaders } & IAdtOperationOptions<E>,
   ): Promise<IAdtResponse<TObjects, E>>;
   /**
    * Give a task its type.
@@ -369,7 +369,7 @@ export interface IAdtTransportObjectActions<
   changeTaskType<E extends IAdtError = IAdtError>(
     taskNumber: string,
     type: AdtTaskType,
-    options?: { headers?: IAdtHeaders } & IAdtOperationOptions<E>,
+    options: { headers: IAdtHeaders } & IAdtOperationOptions<E>,
   ): Promise<IAdtResponse<TTaskType, E>>;
 }
 
@@ -398,7 +398,7 @@ export interface IAdtTransportObjectActions<
 export interface IAdtTransportSortAndCompress<TCompressed> {
   sortAndCompress<E extends IAdtError = IAdtError>(
     taskNumber: string,
-    options?: { headers?: IAdtHeaders } & IAdtOperationOptions<E>,
+    options: { headers: IAdtHeaders } & IAdtOperationOptions<E>,
   ): Promise<IAdtResponse<TCompressed, E>>;
 }
 
@@ -424,6 +424,6 @@ export interface IAdtTransportMoveObjects<TMoved> {
     sourceTask: string,
     targetNumber: string,
     objects: readonly (IAbapObjectEntry & { position: string })[],
-    options?: { headers?: IAdtHeaders } & IAdtOperationOptions<E>,
+    options: { headers: IAdtHeaders } & IAdtOperationOptions<E>,
   ): Promise<IAdtResponse<TMoved, E>>;
 }

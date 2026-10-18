@@ -99,20 +99,20 @@ export interface IFeatureToggleObject<R extends IFeatureToggleObjectResults> {
   switchOn<E extends IAdtError>(
     config: Partial<IFeatureToggleConfig>,
     opts: { transportRequest: string; userSpecific?: boolean },
-    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<R['switched'], E>>;
   switchOn(
     config: Partial<IFeatureToggleConfig>,
     opts: { transportRequest: string; userSpecific?: boolean },
-    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<R['switched']>>;
 
   switchOff<E extends IAdtError>(
     config: Partial<IFeatureToggleConfig>,
     opts: { transportRequest: string; userSpecific?: boolean },
-    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<R['switched'], E>>;
@@ -120,43 +120,43 @@ export interface IFeatureToggleObject<R extends IFeatureToggleObjectResults> {
   switchOff(
     config: Partial<IFeatureToggleConfig>,
     opts: { transportRequest: string; userSpecific?: boolean },
-    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<R['switched']>>;
 
   getRuntimeState<E extends IAdtError>(
     config: Partial<IFeatureToggleConfig>,
-    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<R['runtimeState'], E>>;
   getRuntimeState(
     config: Partial<IFeatureToggleConfig>,
-    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<R['runtimeState']>>;
 
   checkState<E extends IAdtError>(
     config: Partial<IFeatureToggleConfig>,
     opts: { userSpecific?: boolean } | undefined,
-    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<R['checkState'], E>>;
   checkState(
     config: Partial<IFeatureToggleConfig>,
-    opts?: { userSpecific?: boolean },
-    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
+    opts: { userSpecific?: boolean } | undefined,
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<R['checkState']>>;
 
   readSource<E extends IAdtError>(
     config: Partial<IFeatureToggleConfig>,
     version: 'active' | 'inactive' | undefined,
-    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<R['source'], E>>;
   readSource(
     config: Partial<IFeatureToggleConfig>,
-    version?: 'active' | 'inactive',
-    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
+    version: 'active' | 'inactive' | undefined,
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<R['source']>>;
 }

@@ -5,6 +5,7 @@
 // something written entirely outside the package fits too, and that a caller
 // holding the contract can reach everything the handler is for.
 
+import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type { IAdtResponse } from '../adt/IAdtResponse';
 import type {
   IAdtCreatable,
@@ -12,6 +13,11 @@ import type {
   IListTransportsOptions,
   ITransportConfig,
 } from '../index';
+
+const headers: IAdtHeaders = {
+  accept: 'application/xml',
+  contentType: 'application/xml',
+};
 
 /** A consumer's own reading of the transport list — the contract declares none. */
 interface MyTree {
@@ -57,6 +63,7 @@ declare const requests: IAdtRequest<MyTree>;
 
 /** The default tree, from the contract alone. */
 const tree: Promise<IAdtResponse<MyTree>> = requests.list({
+  headers,
   configUri:
     '/sap/bc/adt/cts/transportrequests/searchconfiguration/configurations/7E5B',
 });
@@ -74,6 +81,7 @@ interface MyShape {
 }
 declare const mineRequests: IAdtRequest<MyShape>;
 const mine: Promise<IAdtResponse<MyShape>> = mineRequests.list({
+  headers,
   configUri: '/x',
 });
 

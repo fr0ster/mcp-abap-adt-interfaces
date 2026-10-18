@@ -13,11 +13,11 @@ export interface IDdicActivation<TGraph> {
   readonly kind: 'ddicActivation';
 
   getGraph<E extends IAdtError>(
-    options: { headers?: IAdtHeaders } & IGetActivationGraphOptions &
+    options: { headers: IAdtHeaders } & IGetActivationGraphOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TGraph, E>>;
   getGraph(
-    options?: { headers?: IAdtHeaders } & IGetActivationGraphOptions &
+    options: { headers: IAdtHeaders } & IGetActivationGraphOptions &
       IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TGraph>>;
 }

@@ -6,8 +6,14 @@
 // the shapes a feed reading answers are the implementation's: this file declares
 // its own, which is exactly what a consumer replacing `adt-clients` does.
 
+import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type { IAdtResponse } from '../adt/IAdtResponse';
 import type { IFeedRepository } from '../feeds/IFeedRepository';
+
+const headers: IAdtHeaders = {
+  accept: 'application/xml',
+  contentType: 'application/xml',
+};
 
 /** A consumer's own readings. Nothing here comes from the contract. */
 interface MyFeed {
@@ -33,8 +39,10 @@ type Feeds = IFeedRepository<
 declare const feeds: Feeds;
 
 /** A category is passed, and the result is the reading this implementation performs. */
-const withCategory: Promise<IAdtResponse<MyVariant[]>> =
-  feeds.variants('dumps');
+const withCategory: Promise<IAdtResponse<MyVariant[]>> = feeds.variants(
+  'dumps',
+  { headers },
+);
 
 /** No category is refused at compile time, not at 400. */
 const withoutCategory: Promise<IAdtResponse<MyVariant[]>> =
@@ -43,8 +51,10 @@ const withoutCategory: Promise<IAdtResponse<MyVariant[]>> =
 
 /** Not a union: any string is accepted, because none could be enumerated. */
 declare const fromConfig: string;
-const anyString: Promise<IAdtResponse<MyVariant[]>> =
-  feeds.variants(fromConfig);
+const anyString: Promise<IAdtResponse<MyVariant[]>> = feeds.variants(
+  fromConfig,
+  { headers },
+);
 
 /** The contract names no shape of its own, so this one cannot be assumed. */
 // @ts-expect-error this implementation answers MyVariant[], not MyFeed[]

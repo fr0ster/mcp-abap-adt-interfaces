@@ -13,10 +13,10 @@
 /**
  * The `Accept` and `Content-Type` of one request.
  *
- * Every member that sends a request — a read or a write — also takes it as
- * `options.headers`, for its one request.
- * The pair is given whole and used as given — not merged with the member's
- * own headers, field by field. Without it, the member sends its own headers.
+ * A member whose request carries headers takes it as `options.headers`,
+ * required, for its one request: the member sends exactly this pair and
+ * supplies nothing itself. A member whose request carries none takes no
+ * `headers`.
  */
 export interface IAdtHeaders {
   accept: string;

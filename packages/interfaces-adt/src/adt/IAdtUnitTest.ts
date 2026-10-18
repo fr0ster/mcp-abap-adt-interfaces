@@ -124,25 +124,25 @@ export interface ITestRunInformation<TStatus, TResult> {
   getStatus<E extends IAdtError>(
     runId: string,
     withLongPolling: boolean | undefined,
-    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<TStatus, E>>;
   getStatus(
     runId: string,
-    withLongPolling?: boolean,
-    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
+    withLongPolling: boolean | undefined,
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TStatus>>;
 
   /** Fetch the result document of a finished run. */
   getResult<E extends IAdtError>(
     runId: string,
-    options: { headers?: IAdtHeaders } & IUnitTestResultOptions &
+    options: { headers: IAdtHeaders } & IUnitTestResultOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TResult, E>>;
   getResult(
     runId: string,
-    options?: { headers?: IAdtHeaders } & IUnitTestResultOptions &
+    options: { headers: IAdtHeaders } & IUnitTestResultOptions &
       IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TResult>>;
 }
@@ -160,12 +160,12 @@ export interface ICdsTestDoubleCheckable<TResult> {
    */
   checkCdsTestDoubles<E extends IAdtError>(
     cdsViewName: string,
-    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<TResult, E>>;
   checkCdsTestDoubles(
     cdsViewName: string,
-    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TResult>>;
 }

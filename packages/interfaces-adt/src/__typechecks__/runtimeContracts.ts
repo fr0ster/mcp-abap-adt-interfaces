@@ -6,6 +6,7 @@
 // everything else, and what the answer becomes is the implementation's, chosen
 // when it was constructed.
 
+import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type {
   IAdtResponse,
   ICrossTrace,
@@ -13,6 +14,11 @@ import type {
   IRuntimeDumps,
   ISystemMessages,
 } from '../index';
+
+const headers: IAdtHeaders = {
+  accept: 'application/xml',
+  contentType: 'application/xml',
+};
 
 const answered = <T>(value: T): IAdtResponse<T> => ({
   ok: true,
@@ -44,12 +50,14 @@ void new ShortDumps();
 
 /** Naming no reading answers the document, so an unchanged consumer compiles. */
 declare const dumps: IRuntimeDumps<string, string>;
-const _document: Promise<IAdtResponse<string>> = dumps.getById('D1');
+const _document: Promise<IAdtResponse<string>> = dumps.getById('D1', {
+  headers,
+});
 void _document;
 
 /** A caller is made to ask before reading — decision 21, as a type. */
 async function _mustAsk(): Promise<string> {
-  const answer = await dumps.getById('D1');
+  const answer = await dumps.getById('D1', { headers });
   if (!answer.ok) return answer.getError().message;
   return answer.getResult().value;
 }
@@ -68,7 +76,7 @@ interface MyCrossTrace extends ICrossTraceResults {
   activations: string;
 }
 declare const traces: ICrossTrace<MyCrossTrace>;
-const _ids: Promise<IAdtResponse<string[]>> = traces.list();
+const _ids: Promise<IAdtResponse<string[]>> = traces.list({ headers });
 void _ids;
 
 /**

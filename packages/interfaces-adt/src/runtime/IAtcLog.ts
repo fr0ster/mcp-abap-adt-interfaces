@@ -15,21 +15,21 @@ export interface IAtcLog<TCheckFailures, TExecutionLog> {
   readonly kind: 'atcLog';
 
   getCheckFailureLogs<E extends IAdtError>(
-    options: { headers?: IAdtHeaders } & IGetCheckFailureLogsOptions &
+    options: { headers: IAdtHeaders } & IGetCheckFailureLogsOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TCheckFailures, E>>;
   getCheckFailureLogs(
-    options?: { headers?: IAdtHeaders } & IGetCheckFailureLogsOptions &
+    options: { headers: IAdtHeaders } & IGetCheckFailureLogsOptions &
       IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TCheckFailures>>;
   getExecutionLog<E extends IAdtError>(
     executionId: string,
-    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<TExecutionLog, E>>;
   getExecutionLog(
     executionId: string,
-    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TExecutionLog>>;
 }

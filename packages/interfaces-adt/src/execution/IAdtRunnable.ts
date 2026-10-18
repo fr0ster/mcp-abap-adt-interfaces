@@ -36,14 +36,14 @@ export interface IAdtRunnable<TTarget, TResult, TOptions = never> {
    */
   run<E extends IAdtError>(
     target: TTarget,
-    options: { headers?: IAdtHeaders } & ([TOptions] extends [never]
+    options: { headers: IAdtHeaders } & ([TOptions] extends [never]
       ? unknown
       : TOptions) &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TResult, E>>;
   run(
     target: TTarget,
-    options?: { headers?: IAdtHeaders } & ([TOptions] extends [never]
+    options: { headers: IAdtHeaders } & ([TOptions] extends [never]
       ? unknown
       : TOptions) &
       IAdtAnalyseOptions,
@@ -67,12 +67,12 @@ export interface IAdtRunnable<TTarget, TResult, TOptions = never> {
 export interface IRunnableWithProfiler<TTarget, TResult, TOptions> {
   runWithProfiler<E extends IAdtError>(
     target: TTarget,
-    options: { headers?: IAdtHeaders } & TOptions &
+    options: { headers: IAdtHeaders } & TOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TResult, E>>;
   runWithProfiler(
     target: TTarget,
-    options: { headers?: IAdtHeaders } & TOptions & IAdtAnalyseOptions,
+    options: { headers: IAdtHeaders } & TOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TResult>>;
 }
 

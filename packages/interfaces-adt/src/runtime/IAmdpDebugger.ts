@@ -62,15 +62,15 @@ export interface IAmdpDebugger<TStarted, TEvents, TCommand, TPreview> {
 
   start<E extends IAdtError>(
     requestUser: string,
-    options: { headers?: IAdtHeaders } & WithAnalyse<
+    options: { headers: IAdtHeaders } & WithAnalyse<
       E,
       IStartAmdpDebuggerOptions
     >,
   ): Promise<IAdtResponse<TStarted, E>>;
   start(
     requestUser: string,
-    options?: {
-      headers?: IAdtHeaders;
+    options: {
+      headers: IAdtHeaders;
     } & WithoutAnalyse<IStartAmdpDebuggerOptions>,
   ): Promise<IAdtResponse<TStarted>>;
 
@@ -78,70 +78,70 @@ export interface IAmdpDebugger<TStarted, TEvents, TCommand, TPreview> {
   syncBreakpoints<E extends IAdtError>(
     mainId: string,
     breakpoints: readonly IAmdpBreakpoint[],
-    options: { headers?: IAdtHeaders } & WithAnalyse<E>,
+    options: { headers: IAdtHeaders } & WithAnalyse<E>,
   ): Promise<IAdtResponse<TCommand, E>>;
   syncBreakpoints(
     mainId: string,
     breakpoints: readonly IAmdpBreakpoint[],
-    options?: { headers?: IAdtHeaders } & WithoutAnalyse,
+    options: { headers: IAdtHeaders } & WithoutAnalyse,
   ): Promise<IAdtResponse<TCommand>>;
 
   /** Wait for what happened next: a stop, a warning, an end. */
   getEvents<E extends IAdtError>(
     mainId: string,
-    options: { headers?: IAdtHeaders } & WithAnalyse<E>,
+    options: { headers: IAdtHeaders } & WithAnalyse<E>,
   ): Promise<IAdtResponse<TEvents, E>>;
   getEvents(
     mainId: string,
-    options?: { headers?: IAdtHeaders } & WithoutAnalyse,
+    options: { headers: IAdtHeaders } & WithoutAnalyse,
   ): Promise<IAdtResponse<TEvents>>;
 
   step<E extends IAdtError>(
     mainId: string,
     debuggeeId: string,
     step: IAmdpStepMethod,
-    options: { headers?: IAdtHeaders } & WithAnalyse<E>,
+    options: WithAnalyse<E>,
   ): Promise<IAdtResponse<TCommand, E>>;
   step(
     mainId: string,
     debuggeeId: string,
     step: IAmdpStepMethod,
-    options?: { headers?: IAdtHeaders } & WithoutAnalyse,
+    options?: WithoutAnalyse,
   ): Promise<IAdtResponse<TCommand>>;
 
   /** End a debuggee: its execution is cancelled. */
   deleteDebuggee<E extends IAdtError>(
     mainId: string,
     debuggeeId: string,
-    options: { headers?: IAdtHeaders } & WithAnalyse<E>,
+    options: WithAnalyse<E>,
   ): Promise<IAdtResponse<TCommand, E>>;
   deleteDebuggee(
     mainId: string,
     debuggeeId: string,
-    options?: { headers?: IAdtHeaders } & WithoutAnalyse,
+    options?: WithoutAnalyse,
   ): Promise<IAdtResponse<TCommand>>;
 
   stop<E extends IAdtError>(
     mainId: string,
-    options: { headers?: IAdtHeaders } & WithAnalyse<E, { hardStop?: boolean }>,
+    options: WithAnalyse<E, { hardStop?: boolean }>,
   ): Promise<IAdtResponse<TCommand, E>>;
   stop(
     mainId: string,
-    options?: { headers?: IAdtHeaders } & WithoutAnalyse<{
+    options?: WithoutAnalyse<{
       hardStop?: boolean;
     }>,
   ): Promise<IAdtResponse<TCommand>>;
 
   /** A table variable's rows, answered at once, by column. */
   getDataPreview<E extends IAdtError>(
-    options: { headers?: IAdtHeaders } & WithAnalyse<
+    options: { headers: IAdtHeaders } & WithAnalyse<
       E,
       IGetAmdpDataPreviewOptions
     >,
   ): Promise<IAdtResponse<TPreview, E>>;
   getDataPreview(
     options: {
-      headers?: IAdtHeaders;
+      headers: IAdtHeaders;
     } & WithoutAnalyse<IGetAmdpDataPreviewOptions>,
   ): Promise<IAdtResponse<TPreview>>;
 }

@@ -111,7 +111,10 @@ interface MyVersion {
 async function _readsThePromisedCode(
   versionable: IAdtVersionable<{ className: string }, MyVersion[], string>,
 ): Promise<'unsupported' | 'other' | 'fine'> {
-  const answer = await versionable.getVersions({ className: 'ZCL_X' });
+  const answer = await versionable.getVersions(
+    { className: 'ZCL_X' },
+    { headers },
+  );
   if (answer.ok) return 'fine';
   const failure: IAdtError = answer.getError();
   return failure.code === AdtObjectErrorCodes.UNSUPPORTED_OPERATION
@@ -226,6 +229,7 @@ void creatable.create({ className: 'ZC' }, writeOptions);
 void creatable.create({ className: 'ZC' });
 void creatable.create({ className: 'ZC' }, { timeout: 45_000 });
 
+import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 // ── A feature toggle names one result per answer (11.0.0) ───────────────────
 //
 // All five members answered one `TState`, so a result strategy given at
@@ -236,6 +240,11 @@ import type {
   IFeatureToggleObjectResults,
 } from '../adt/IAdtFeatureToggle';
 
+const headers: IAdtHeaders = {
+  accept: 'application/xml',
+  contentType: 'application/xml',
+};
+
 interface ToggleShapes extends IFeatureToggleObjectResults {
   switched: 'switched';
   runtimeState: { active: boolean };
@@ -244,10 +253,10 @@ interface ToggleShapes extends IFeatureToggleObjectResults {
 }
 declare const toggle: IFeatureToggleObject<ToggleShapes>;
 async function _eachAnswerIsItsOwn(): Promise<void> {
-  const on = await toggle.switchOn({}, { transportRequest: 'T' });
-  const state = await toggle.getRuntimeState({});
-  const checked = await toggle.checkState({});
-  const source = await toggle.readSource({});
+  const on = await toggle.switchOn({}, { transportRequest: 'T' }, { headers });
+  const state = await toggle.getRuntimeState({}, { headers });
+  const checked = await toggle.checkState({}, undefined, { headers });
+  const source = await toggle.readSource({}, undefined, { headers });
   if (on.ok) {
     const v: 'switched' = on.getResult().value;
     void v;

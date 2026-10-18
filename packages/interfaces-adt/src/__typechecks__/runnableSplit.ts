@@ -113,16 +113,16 @@ export type _ProfilingAtomIsOneMethod = Assert<
  * always there and carries `analyse`. `Parameters` of an overloaded member reads
  * the last overload, which is the one a caller without a strategy uses.
  *
- * **18.1.0 changed it on purpose too:** every member that sends a request takes
- * the headers of that request as `options.headers` (`IAdtHeaders`), so the
- * options carry it beside `analyse`.
+ * **19.0.0 changed it on purpose too:** a member whose request carries headers
+ * takes them as `options.headers: IAdtHeaders`, required, so the options are
+ * required and carry it beside `analyse`.
  */
 export type _ExecutorRunTakesTargetAndTheErrorStrategy = Assert<
   Equal<
     Parameters<Executor['run']>,
     [
       target: { name: string },
-      options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
+      options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
     ]
   >
 >;
@@ -135,7 +135,7 @@ export type _RunnableKeepsItsOptions = Assert<
     >,
     [
       target: { name: string },
-      options?: { headers?: IAdtHeaders } & { deep: true } & IAdtAnalyseOptions,
+      options: { headers: IAdtHeaders } & { deep: true } & IAdtAnalyseOptions,
     ]
   >
 >;

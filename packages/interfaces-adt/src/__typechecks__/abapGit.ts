@@ -7,7 +7,13 @@
 // types; what a consumer needs to *call* these members stayed.
 
 import type { IAbapGitLinkArgs, IAdtAbapGitClient } from '../adt/IAdtAbapGit';
+import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type { IAdtResponse } from '../adt/IAdtResponse';
+
+const headers: IAdtHeaders = {
+  accept: 'application/xml',
+  contentType: 'application/xml',
+};
 
 const answered = <T>(value: T): IAdtResponse<T> => ({
   ok: true,
@@ -35,10 +41,13 @@ void _client;
  * caller, because it is about their application rather than about ADT.
  */
 declare const client: MyClient;
-void client.pull({
-  package: 'ZPKG',
-  pullLink: '/sap/bc/adt/abapgit/repos/K/pull',
-});
+void client.pull(
+  {
+    package: 'ZPKG',
+    pullLink: '/sap/bc/adt/abapgit/repos/K/pull',
+  },
+  { headers },
+);
 
 // @ts-expect-error a pull cannot be started without the link it posts to
 void client.pull({ package: 'ZPKG' });
@@ -48,7 +57,7 @@ void client.pull({ package: 'ZPKG' });
  * reported, and none looks a package up in the list first.
  */
 void client.unlink({ repositoryId: 'K' });
-void client.getErrorLog('/sap/bc/adt/abapgit/repos/K/log');
+void client.getErrorLog('/sap/bc/adt/abapgit/repos/K/log', { headers });
 
 // @ts-expect-error unlink is addressed by the repository's key, not its package
 void client.unlink({ package: 'ZPKG' });

@@ -9,22 +9,21 @@ export interface ISystemMessages<TList, TMessage> {
 
   /** The messages this system is showing. */
   list<E extends IAdtError>(
-    options: { headers?: IAdtHeaders } & IFeedQueryOptions &
+    options: { headers: IAdtHeaders } & IFeedQueryOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TList, E>>;
   list(
-    options?: { headers?: IAdtHeaders } & IFeedQueryOptions &
-      IAdtAnalyseOptions,
+    options: { headers: IAdtHeaders } & IFeedQueryOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TList>>;
 
   getById<E extends IAdtError>(
     messageId: string,
-    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<TMessage, E>>;
   getById(
     messageId: string,
-    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TMessage>>;
 }

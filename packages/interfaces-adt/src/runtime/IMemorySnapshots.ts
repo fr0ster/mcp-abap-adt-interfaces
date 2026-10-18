@@ -55,38 +55,38 @@ export interface IMemorySnapshots<
   readonly kind: 'memorySnapshots';
 
   list<E extends IAdtError>(
-    options: { headers?: IAdtHeaders } & WithAnalyse<
+    options: { headers: IAdtHeaders } & WithAnalyse<
       E,
       IMemorySnapshotsListOptions
     >,
   ): Promise<IAdtResponse<TList, E>>;
   list(
-    options?: {
-      headers?: IAdtHeaders;
+    options: {
+      headers: IAdtHeaders;
     } & WithoutAnalyse<IMemorySnapshotsListOptions>,
   ): Promise<IAdtResponse<TList>>;
 
   getById<E extends IAdtError>(
     snapshotId: string,
-    options: { headers?: IAdtHeaders } & WithAnalyse<E>,
+    options: { headers: IAdtHeaders } & WithAnalyse<E>,
   ): Promise<IAdtResponse<TSnapshot, E>>;
   getById(
     snapshotId: string,
-    options?: { headers?: IAdtHeaders } & WithoutAnalyse,
+    options: { headers: IAdtHeaders } & WithoutAnalyse,
   ): Promise<IAdtResponse<TSnapshot>>;
 
   getOverview<E extends IAdtError>(
     snapshotId: string,
-    options: { headers?: IAdtHeaders } & WithAnalyse<E>,
+    options: { headers: IAdtHeaders } & WithAnalyse<E>,
   ): Promise<IAdtResponse<TOverview, E>>;
   getOverview(
     snapshotId: string,
-    options?: { headers?: IAdtHeaders } & WithoutAnalyse,
+    options: { headers: IAdtHeaders } & WithoutAnalyse,
   ): Promise<IAdtResponse<TOverview>>;
 
   getRankingList<E extends IAdtError>(
     snapshotId: string,
-    options: { headers?: IAdtHeaders } & WithAnalyse<
+    options: { headers: IAdtHeaders } & WithAnalyse<
       E,
       ISnapshotRankingListOptions
     >,
@@ -94,14 +94,14 @@ export interface IMemorySnapshots<
   getRankingList(
     snapshotId: string,
     options: {
-      headers?: IAdtHeaders;
+      headers: IAdtHeaders;
     } & WithoutAnalyse<ISnapshotRankingListOptions>,
   ): Promise<IAdtResponse<TRankingList>>;
 
   getChildren<E extends IAdtError>(
     snapshotId: string,
     parentKey: string,
-    options: { headers?: IAdtHeaders } & WithAnalyse<
+    options: { headers: IAdtHeaders } & WithAnalyse<
       E,
       ISnapshotChildrenOptions
     >,
@@ -110,14 +110,14 @@ export interface IMemorySnapshots<
     snapshotId: string,
     parentKey: string,
     options: {
-      headers?: IAdtHeaders;
+      headers: IAdtHeaders;
     } & WithoutAnalyse<ISnapshotChildrenOptions>,
   ): Promise<IAdtResponse<TChildren>>;
 
   getReferences<E extends IAdtError>(
     snapshotId: string,
     objectKey: string,
-    options: { headers?: IAdtHeaders } & WithAnalyse<
+    options: { headers: IAdtHeaders } & WithAnalyse<
       E,
       ISnapshotReferencesOptions
     >,
@@ -126,25 +126,25 @@ export interface IMemorySnapshots<
     snapshotId: string,
     objectKey: string,
     options: {
-      headers?: IAdtHeaders;
+      headers: IAdtHeaders;
     } & WithoutAnalyse<ISnapshotReferencesOptions>,
   ): Promise<IAdtResponse<TReferences>>;
 
   getDeltaOverview<E extends IAdtError>(
     fromId: string,
     toId: string,
-    options: { headers?: IAdtHeaders } & WithAnalyse<E>,
+    options: { headers: IAdtHeaders } & WithAnalyse<E>,
   ): Promise<IAdtResponse<TOverview, E>>;
   getDeltaOverview(
     fromId: string,
     toId: string,
-    options?: { headers?: IAdtHeaders } & WithoutAnalyse,
+    options: { headers: IAdtHeaders } & WithoutAnalyse,
   ): Promise<IAdtResponse<TOverview>>;
 
   getDeltaRankingList<E extends IAdtError>(
     fromId: string,
     toId: string,
-    options: { headers?: IAdtHeaders } & WithAnalyse<
+    options: { headers: IAdtHeaders } & WithAnalyse<
       E,
       ISnapshotRankingListOptions
     >,
@@ -153,7 +153,7 @@ export interface IMemorySnapshots<
     fromId: string,
     toId: string,
     options: {
-      headers?: IAdtHeaders;
+      headers: IAdtHeaders;
     } & WithoutAnalyse<ISnapshotRankingListOptions>,
   ): Promise<IAdtResponse<TRankingList>>;
 
@@ -161,7 +161,7 @@ export interface IMemorySnapshots<
     fromId: string,
     toId: string,
     parentKey: string,
-    options: { headers?: IAdtHeaders } & WithAnalyse<
+    options: { headers: IAdtHeaders } & WithAnalyse<
       E,
       ISnapshotChildrenOptions
     >,
@@ -171,7 +171,7 @@ export interface IMemorySnapshots<
     toId: string,
     parentKey: string,
     options: {
-      headers?: IAdtHeaders;
+      headers: IAdtHeaders;
     } & WithoutAnalyse<ISnapshotChildrenOptions>,
   ): Promise<IAdtResponse<TChildren>>;
 
@@ -179,7 +179,7 @@ export interface IMemorySnapshots<
     fromId: string,
     toId: string,
     objectKey: string,
-    options: { headers?: IAdtHeaders } & WithAnalyse<
+    options: { headers: IAdtHeaders } & WithAnalyse<
       E,
       ISnapshotReferencesOptions
     >,
@@ -189,7 +189,7 @@ export interface IMemorySnapshots<
     toId: string,
     objectKey: string,
     options: {
-      headers?: IAdtHeaders;
+      headers: IAdtHeaders;
     } & WithoutAnalyse<ISnapshotReferencesOptions>,
   ): Promise<IAdtResponse<TReferences>>;
 }

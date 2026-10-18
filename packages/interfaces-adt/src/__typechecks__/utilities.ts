@@ -29,6 +29,7 @@ interface MyTypes {
   types: string[];
 }
 
+import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type {
   IAdtDataPreview,
   IAdtDiscovery,
@@ -41,6 +42,11 @@ import type {
   IGetSqlQueryParams,
   IGetTableContentsParams,
 } from '../index';
+
+const headers: IAdtHeaders = {
+  accept: 'application/xml',
+  contentType: 'application/xml',
+};
 
 /** What a consumer's implementation returns when it succeeded. */
 const succeeded = <T>(value: T): IAdtResponse<T> => ({
@@ -85,15 +91,18 @@ type AllUtilities = IAdtInformationSystem<
 declare const utils: AllUtilities;
 
 /** A caller holding the intersection reaches every family. */
-const found = utils.search({ query: 'ZCL_X' });
+const found = utils.search({ query: 'ZCL_X' }, { headers });
 // The statement is the caller's. Omitting it does not compile, which is how a
 // caller written against the pre-42.0.0 member learns they have work to do.
-const columns = utils.getTableColumns('T000');
-const rows = utils.getTableContents({
-  table_name: 'T000',
-  sql_query: 'SELECT T000~MANDT FROM T000',
-});
-const inactive = utils.getInactiveObjects();
+const columns = utils.getTableColumns('T000', { headers });
+const rows = utils.getTableContents(
+  {
+    table_name: 'T000',
+    sql_query: 'SELECT T000~MANDT FROM T000',
+  },
+  { headers },
+);
+const inactive = utils.getInactiveObjects({ headers });
 
 /** A caller holding one family reaches only that one. */
 declare const preview: IAdtDataPreview<string, string[], MyRow[]>;
@@ -140,7 +149,9 @@ async function idOfType(
   structure: IAdtRepositoryStructure<MyNode, string>,
   wanted: string,
 ): Promise<string | undefined> {
-  const answer = await structure.fetchNodeStructure('PROG/P', 'ZMY_PROGRAM');
+  const answer = await structure.fetchNodeStructure('PROG/P', 'ZMY_PROGRAM', {
+    headers,
+  });
   if (!answer.ok) {
     // The contract makes this branch unavoidable, which is the point: a walk
     // cannot silently treat a refusal as a level with nothing under it.
@@ -167,9 +178,12 @@ declare const info: IAdtInformationSystem<
 >;
 
 /** Naming no strategy: the parsed hits, as before. */
-const hits: Promise<IAdtResponse<MyHit[]>> = info.search({
-  query: 'ZCL_*',
-});
+const hits: Promise<IAdtResponse<MyHit[]>> = info.search(
+  {
+    query: 'ZCL_*',
+  },
+  { headers },
+);
 
 /** A consumer's own type, chosen once — not `unknown`, and not an envelope. */
 interface RawHits {
@@ -182,7 +196,10 @@ declare const rawInfo: IAdtInformationSystem<
   string,
   MyTypes
 >;
-const raw: Promise<IAdtResponse<RawHits>> = rawInfo.search({ query: 'ZCL_*' });
+const raw: Promise<IAdtResponse<RawHits>> = rawInfo.search(
+  { query: 'ZCL_*' },
+  { headers },
+);
 
 /** The choice is the implementation's, so the wrong shape cannot be asked for. */
 // @ts-expect-error this implementation answers RawHits, not MyHit[]

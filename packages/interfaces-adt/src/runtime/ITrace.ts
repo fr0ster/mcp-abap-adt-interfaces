@@ -90,7 +90,9 @@ export type ViewOptions<TViews, K extends keyof TViews> =
     : never;
 
 /**
- * Options are required when the view says so, and carry only `analyse` when it
+ * Options are always given, since 19.0.0: they carry `headers`, the request's
+ * `IAdtHeaders`. Beside it, a view's own options are required when the view
+ * says so, may be left out when it allows `undefined`, and are absent when it
  * says `void`.
  *
  * Until 10.0.0 a `void` view took no options at all. Every member takes the
@@ -104,14 +106,16 @@ export type ViewArgs<
   E extends IAdtError = IAdtError,
 > =
   ViewOptions<TViews, K> extends void
-    ? [options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E>]
+    ? [options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E>]
     : undefined extends ViewOptions<TViews, K>
       ? [
-          options?: { headers?: IAdtHeaders } & ViewOptions<TViews, K> &
-            IAdtAnalyseOptions<E>,
+          options:
+            | ({ headers: IAdtHeaders } & IAdtAnalyseOptions<E>)
+            | ({ headers: IAdtHeaders } & NonNullable<ViewOptions<TViews, K>> &
+                IAdtAnalyseOptions<E>),
         ]
       : [
-          options: { headers?: IAdtHeaders } & ViewOptions<TViews, K> &
+          options: { headers: IAdtHeaders } & ViewOptions<TViews, K> &
             IAdtAnalyseOptions<E>,
         ];
 
@@ -140,11 +144,11 @@ export interface ITraceListing<
   TList = TEntry[],
 > {
   list<E extends IAdtError>(
-    options: { headers?: IAdtHeaders } & ListingOwnOptions<TOptions> &
+    options: { headers: IAdtHeaders } & ListingOwnOptions<TOptions> &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TList, E>>;
   list(
-    options?: { headers?: IAdtHeaders } & ListingOwnOptions<TOptions> &
+    options: { headers: IAdtHeaders } & ListingOwnOptions<TOptions> &
       IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TList>>;
 }
@@ -165,7 +169,7 @@ export interface ITraceReading<
   read<K extends keyof TViews, E extends IAdtError>(
     traceId: string,
     view: K,
-    options: { headers?: IAdtHeaders } & ViewOwnOptions<TViews, K> &
+    options: { headers: IAdtHeaders } & ViewOwnOptions<TViews, K> &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<ViewResult<TViews, K>, E>>;
   read<K extends keyof TViews>(
@@ -233,13 +237,13 @@ export interface ITraceReading<
 export interface ITraceDeletion {
   delete<E extends IAdtError>(
     traceId: string,
-    options: { headers?: IAdtHeaders } & IAdtAnalyseOptions<E> & {
-        analyse: IAnalyse<E>;
-      },
+    options: IAdtAnalyseOptions<E> & {
+      analyse: IAnalyse<E>;
+    },
   ): Promise<IAdtResponse<void, E>>;
   delete(
     traceId: string,
-    options?: { headers?: IAdtHeaders } & IAdtAnalyseOptions,
+    options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<void>>;
 }
 
