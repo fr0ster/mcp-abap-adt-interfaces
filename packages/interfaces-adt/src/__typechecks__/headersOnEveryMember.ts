@@ -40,6 +40,7 @@ import type {
   IAdtMetadataReadable,
   IAdtMetadataUpdatable,
   IAdtObjectAccess,
+  IAdtObjectProperties,
   IAdtObjectSearch,
   IAdtReadable,
   IAdtRepositoryStructure,
@@ -305,6 +306,9 @@ export type _HeadersIAdtVirtualFolders = Assert<
 >;
 export type _HeadersIAdtTypeCatalogue = Assert<
   EveryMemberTakesHeaders<IAdtTypeCatalogue<Probe>>
+>;
+export type _HeadersIAdtObjectProperties = Assert<
+  EveryMemberTakesHeaders<IAdtObjectProperties<Probe>>
 >;
 export type _HeadersIAdtRepositoryStructure = Assert<
   EveryMemberTakesHeaders<

@@ -203,6 +203,7 @@ export type {
   IAdtGroupLifecycle,
   IAdtInformationSystem,
   IAdtObjectAccess,
+  IAdtObjectProperties,
   IAdtObjectSearch,
   IAdtRepositoryStructure,
   IAdtTypeCatalogue,

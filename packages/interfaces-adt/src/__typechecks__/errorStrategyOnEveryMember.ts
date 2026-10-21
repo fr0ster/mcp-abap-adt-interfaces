@@ -27,6 +27,7 @@ import type {
   IAdtMetadataReadable,
   IAdtMetadataUpdatable,
   IAdtObjectAccess,
+  IAdtObjectProperties,
   IAdtObjectSearch,
   IAdtReadable,
   IAdtRepositoryStructure,
@@ -189,6 +190,9 @@ export type _IAdtVirtualFolders = Assert<
 >;
 export type _IAdtTypeCatalogue = Assert<
   EveryMemberTakesAnalyse<IAdtTypeCatalogue<Probe>>
+>;
+export type _IAdtObjectProperties = Assert<
+  EveryMemberTakesAnalyse<IAdtObjectProperties<Probe>>
 >;
 export type _IAdtRepositoryStructure = Assert<
   EveryMemberTakesAnalyse<IAdtRepositoryStructure<Probe, Probe>>

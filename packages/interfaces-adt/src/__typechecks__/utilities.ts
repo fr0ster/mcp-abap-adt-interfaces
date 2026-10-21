@@ -36,6 +36,7 @@ import type {
   IAdtGroupLifecycle,
   IAdtInformationSystem,
   IAdtObjectAccess,
+  IAdtObjectProperties,
   IAdtRepositoryStructure,
   IAdtResponse,
   IGetNodeContentsOptions,
@@ -74,6 +75,22 @@ class MyDataPreview implements IAdtDataPreview<string, string[], MyRow[]> {
   }
 }
 
+/**
+ * The object-properties atom alone, with a reading of its own: one member,
+ * any object uri.
+ */
+interface MyProperties {
+  readonly type: string;
+  readonly packageName: string;
+}
+class MyObjectProperties implements IAdtObjectProperties<MyProperties> {
+  async getObjectProperties(
+    _objectUri: string,
+  ): Promise<IAdtResponse<MyProperties>> {
+    return succeeded({ type: 'TRAN/T', packageName: 'SEDT' });
+  }
+}
+
 /** The whole surface is the intersection — spelled, not named. */
 type AllUtilities = IAdtInformationSystem<
   MyHit[],
@@ -86,7 +103,8 @@ type AllUtilities = IAdtInformationSystem<
   IAdtGroupLifecycle<string, string, string, string, string, string> &
   IAdtDataPreview<string, string[], MyRow[]> &
   IAdtDiscovery<string> &
-  IAdtObjectAccess<string, string, string>;
+  IAdtObjectAccess<string, string, string> &
+  IAdtObjectProperties<MyProperties>;
 
 declare const utils: AllUtilities;
 
@@ -103,11 +121,25 @@ const rows = utils.getTableContents(
   { headers },
 );
 const inactive = utils.getInactiveObjects();
+const properties = utils.getObjectProperties(
+  '/sap/bc/adt/vit/wb/object_type/trant/object_name/SE38',
+);
 
 /** A caller holding one family reaches only that one. */
 declare const preview: IAdtDataPreview<string, string[], MyRow[]>;
 // @ts-expect-error search belongs to the information system, not data preview
 preview.search({ query: 'ZCL_X' });
+
+/** The composite does not carry the object-properties atom. */
+declare const informationSystem: IAdtInformationSystem<
+  MyHit[],
+  MyWhereUsed,
+  string,
+  string,
+  MyTypes
+>;
+// @ts-expect-error getObjectProperties is IAdtObjectProperties', declared beside the composite
+informationSystem.getObjectProperties('/sap/bc/adt/oo/classes/zcl_x');
 
 /**
  * An implementation may take arguments the contract does not name.
@@ -208,11 +240,13 @@ info.search({ query: 'ZCL_*' }, (data: unknown) => String(data));
 export {
   idOfType,
   MyDataPreview,
+  MyObjectProperties,
   NodeReaderWithExtras,
   found,
   columns,
   rows,
   inactive,
+  properties,
   hits,
   raw,
   wrong,
