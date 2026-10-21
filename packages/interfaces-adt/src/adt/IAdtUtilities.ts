@@ -34,6 +34,12 @@
  * known in advance. Had the atoms been drawn from the observation, one of the
  * three would have evaporated when its member did.
  *
+ * Its endpoint came back as {@link IAdtObjectProperties}, one member for any
+ * object uri, and the legacy implementation refuses that one too: a member of
+ * the information system's family, refused because legacy discovery lists no
+ * such endpoint — again a resource absent, not a family drawn around a
+ * refusal.
+ *
  * A few members compute a string and issue no request — `supportsSourceCode`,
  * `getObjectSourceUri`, `modifyWhereUsedScope`. They stay with the family whose
  * requests they prepare, because a consumer replacing that family needs them to
@@ -63,6 +69,9 @@
  * resources nothing else reaches. Deleted in `@mcp-abap-adt/adt-clients` with
  * those three endpoints recorded, so a typed handler can be built where one is
  * wanted rather than a generic member kept in case one is.
+ * One of them has been: `/informationsystem/objectproperties/values`, the
+ * resource `getTypeInfo` and `getTransaction` both reached, is reached again
+ * by {@link IAdtObjectProperties} — one member, any object uri.
  *
  * Two were closed from evidence rather than measurement: `getAllTypes` answers
  * the named-item list a trace catalogue answers with, and
@@ -256,6 +265,41 @@ export interface IAdtTypeCatalogue<TTypes> {
     data?: string,
     options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TTypes>>;
+}
+
+/**
+ * `/informationsystem/objectproperties/values?uri={objectUri}` — the
+ * properties of one repository object, named by its ADT uri.
+ *
+ * The resource `getTransaction` and `getTypeInfo` reached before they were
+ * removed (see the file comment): one endpoint, so one member, for any object.
+ * Measured on premise (SAP_BASIS 816, 2026-10-21): `200`,
+ * `application/vnd.sap.adt.repository.objproperties.result.v1+xml`, an
+ * `opr:objectProperties` document — the `opr:object` with the object's `name`,
+ * `type`, `text` and `package`, then one `opr:property` per facet (`APPL`,
+ * `PACKAGE`, …). A transaction is named by its workbench uri,
+ * `/sap/bc/adt/vit/wb/object_type/trant/object_name/{name}`; the
+ * `/sap/bc/adt/transactions/{name}` uri `getTransaction` sent answers `422`.
+ *
+ * **Its own atom, not part of {@link IAdtInformationSystem}.** The composite
+ * names the four endpoints an implementation offering it already implements;
+ * adding a fifth would make every one of them stop compiling over a member it
+ * never claimed. An implementation offering this one declares it beside the
+ * composite.
+ */
+export interface IAdtObjectProperties<TProperties> {
+  /**
+   * The properties of the object `objectUri` names: its name, type, text and
+   * package, and one property per facet. The uri is sent URL-encoded.
+   */
+  getObjectProperties<E extends IAdtError>(
+    objectUri: string,
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TProperties, E>>;
+  getObjectProperties(
+    objectUri: string,
+    options?: IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<TProperties>>;
 }
 
 /**

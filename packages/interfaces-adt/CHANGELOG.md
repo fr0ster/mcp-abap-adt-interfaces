@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `IAdtObjectProperties<TProperties>`: `getObjectProperties(objectUri, options?)`
+  over `/sap/bc/adt/repository/informationsystem/objectproperties/values?uri=`,
+  the uri sent URL-encoded, with the two call signatures every atom has (a
+  caller's error strategy, or the library's verdict). Measured on premise
+  (SAP_BASIS 816, 2026-10-21): `200`,
+  `application/vnd.sap.adt.repository.objproperties.result.v1+xml`, an
+  `opr:objectProperties` document; a transaction is named by its workbench uri
+  `/sap/bc/adt/vit/wb/object_type/trant/object_name/{name}`, and the
+  `/sap/bc/adt/transactions/{name}` uri answers `422`. Its own atom, not part
+  of `IAdtInformationSystem`, so no existing implementation has to change.
+
 ## [20.0.0] - 2026-10-18
 
 ### Removed (breaking)
