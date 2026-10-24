@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [20.2.0] - 2026-10-24
+
 ### Added
 
 - The result-set contracts, each in its object's `IAdtX.ts` beside its config,
