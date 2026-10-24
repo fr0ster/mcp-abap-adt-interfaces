@@ -2,6 +2,8 @@
  * Function Group ADT operation parameter interfaces (snake_case, low-level)
  */
 
+import type { IResultStrategy } from './IAdtResponse';
+
 // Builder configuration (camelCase)
 // Note: packageName is required for create operations (validated in builder methods)
 // description is required for create/validate operations
@@ -23,4 +25,23 @@ export interface IFunctionGroupConfig {
   description?: string; // Required for create/validate operations, optional for others
   masterSystem?: string; // SAP system ID (three characters) — required on on-premise where systeminfo endpoint is unavailable
   responsible?: string; // User responsible for the object — falls back to SAP_USERNAME env var
+}
+
+/** One strategy per member of a functionGroup implementation. See `IClassResults`. */
+export interface IFunctionGroupResults {
+  readonly created: IResultStrategy<unknown>;
+  readonly source: IResultStrategy<unknown>;
+  readonly metadata: IResultStrategy<unknown>;
+  /** Enhancement implementations in the host's source. */
+  readonly enhancementElements: IResultStrategy<unknown>;
+  /** Places in the host that can be enhanced. */
+  readonly enhancementOptions: IResultStrategy<unknown>;
+  readonly check: IResultStrategy<unknown>;
+  readonly activation: IResultStrategy<unknown>;
+  readonly validation: IResultStrategy<unknown>;
+  readonly deletion: IResultStrategy<unknown>;
+  readonly metadataUpdated: IResultStrategy<unknown>;
+  readonly transport: IResultStrategy<unknown>;
+  /** What a deletion check answers: `del:checkResponse`. */
+  readonly deletionCheck: IResultStrategy<unknown>;
 }

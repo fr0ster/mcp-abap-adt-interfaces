@@ -2,6 +2,8 @@
  * Data Element ADT operation parameter interfaces (snake_case, low-level)
  */
 
+import type { IResultStrategy } from './IAdtResponse';
+
 export type DataElementTypeKind =
   | 'domain'
   | 'predefinedAbapType'
@@ -47,4 +49,19 @@ export interface IDataElementConfig {
     | 'refToPredefinedAbapType'
     | 'refToDictionaryType'
     | 'refToClifType';
+}
+
+/** One strategy per member of a dataElement implementation. See `IClassResults`. */
+export interface IDataElementResults {
+  readonly created: IResultStrategy<unknown>;
+  readonly source: IResultStrategy<unknown>;
+  readonly metadata: IResultStrategy<unknown>;
+  readonly check: IResultStrategy<unknown>;
+  readonly activation: IResultStrategy<unknown>;
+  readonly validation: IResultStrategy<unknown>;
+  readonly deletion: IResultStrategy<unknown>;
+  readonly metadataUpdated: IResultStrategy<unknown>;
+  readonly transport: IResultStrategy<unknown>;
+  /** What a deletion check answers: `del:checkResponse`. */
+  readonly deletionCheck: IResultStrategy<unknown>;
 }

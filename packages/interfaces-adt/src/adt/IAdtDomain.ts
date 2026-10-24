@@ -2,6 +2,8 @@
  * Domain ADT operation parameter interfaces (snake_case, low-level)
  */
 
+import type { IResultStrategy } from './IAdtResponse';
+
 export interface IFixedValue {
   low: string;
   text: string;
@@ -27,4 +29,19 @@ export interface IDomainConfig {
   packageName?: string; // Required for create/update operations, optional for others
   transportRequest?: string; // Only optional parameter
   description?: string; // Required for create/update/validate operations, optional for others
+}
+
+/** One strategy per member of a domain implementation. See `IClassResults`. */
+export interface IDomainResults {
+  readonly created: IResultStrategy<unknown>;
+  readonly source: IResultStrategy<unknown>;
+  readonly metadata: IResultStrategy<unknown>;
+  readonly check: IResultStrategy<unknown>;
+  readonly activation: IResultStrategy<unknown>;
+  readonly validation: IResultStrategy<unknown>;
+  readonly deletion: IResultStrategy<unknown>;
+  readonly metadataUpdated: IResultStrategy<unknown>;
+  readonly transport: IResultStrategy<unknown>;
+  /** What a deletion check answers: `del:checkResponse`. */
+  readonly deletionCheck: IResultStrategy<unknown>;
 }
