@@ -1,3 +1,4 @@
+import type { IResultStrategy } from './IAdtResponse';
 // Nested shapes a message-class read answers with
 // (promoted from adt-clients src/core/messageClass/xml.ts — minimal closure
 // needed to compile the Config/State types below)
@@ -32,4 +33,34 @@ export interface IMessageClassMessageConfig {
   description?: string;
   /** Transport request — sent as &corrNr= on the parent-class PUT for create/update/delete (transportable packages) */
   transportRequest?: string;
+}
+
+/** One strategy per member of a messageClass implementation. See `IClassResults`. */
+export interface IMessageClassResults {
+  readonly created: IResultStrategy<unknown>;
+  readonly source: IResultStrategy<unknown>;
+  readonly metadata: IResultStrategy<unknown>;
+  readonly validation: IResultStrategy<unknown>;
+  readonly deletion: IResultStrategy<unknown>;
+  readonly metadataUpdated: IResultStrategy<unknown>;
+  /** What a deletion check answers: `del:checkResponse`. */
+  readonly deletionCheck: IResultStrategy<unknown>;
+}
+
+/**
+ * What each member of the message-level handler answers.
+ *
+ * A message is written through its **parent class's** document: ADT has no
+ * resource for one message, so `create`, `update` and `delete` all PUT the
+ * whole class with that message added, changed or removed. Every one of them
+ * therefore answers what that PUT answered.
+ */
+export interface IMessageClassMessageResults<
+  TRead = string,
+  TWritten = string,
+  TDeleted = string,
+> {
+  readonly read: IResultStrategy<TRead>;
+  readonly written: IResultStrategy<TWritten>;
+  readonly deleted: IResultStrategy<TDeleted>;
 }

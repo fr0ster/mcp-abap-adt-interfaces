@@ -4,7 +4,7 @@
 
 import type { IAdtHeaders } from './IAdtContentTypes';
 import type { IAdtAnalyseOptions, IAnalyse } from './IAdtObject';
-import type { IAdtError, IAdtResponse } from './IAdtResponse';
+import type { IAdtError, IAdtResponse, IResultStrategy } from './IAdtResponse';
 
 export interface IFeatureToggleReleasePlan {
   version: string;
@@ -151,4 +151,27 @@ export interface IFeatureToggleObject<R extends IFeatureToggleObjectResults> {
     version?: 'active' | 'inactive',
     options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<R['source']>>;
+}
+
+/** One strategy per member of a feature-toggle implementation. */
+export interface IFeatureToggleResults {
+  readonly created: IResultStrategy<unknown>;
+  readonly source: IResultStrategy<unknown>;
+  readonly metadata: IResultStrategy<unknown>;
+  readonly check: IResultStrategy<unknown>;
+  readonly activation: IResultStrategy<unknown>;
+  readonly validation: IResultStrategy<unknown>;
+  readonly deletion: IResultStrategy<unknown>;
+  readonly updated: IResultStrategy<unknown>;
+  readonly sourceDocument: IResultStrategy<unknown>;
+  /** What a deletion check answers: `del:checkResponse`. */
+  readonly deletionCheck: IResultStrategy<unknown>;
+  /** What the object's own document answers when written. */
+  readonly metadataUpdated: IResultStrategy<unknown>;
+  /** What `switchOn` and `switchOff` answer — nothing worth reading. */
+  readonly switched: IResultStrategy<unknown>;
+  /** What `getRuntimeState` answers: the `…/states` JSON. */
+  readonly runtimeState: IResultStrategy<unknown>;
+  /** What `checkState` answers: the `…/check` JSON. */
+  readonly checkState: IResultStrategy<unknown>;
 }

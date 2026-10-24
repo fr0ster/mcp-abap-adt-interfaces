@@ -22,12 +22,22 @@ export type {
   IAdtAbapGitClient,
   IAdtAbapGitClientOptions,
 } from './adt/IAdtAbapGit';
-export type { IAccessControlConfig } from './adt/IAdtAccessControl';
-export type { IAppendStructureConfig } from './adt/IAdtAppendStructure';
-export type { IAuthorizationFieldConfig } from './adt/IAdtAuthorizationField';
+export type {
+  IAccessControlConfig,
+  IAccessControlResults,
+} from './adt/IAdtAccessControl';
+export type {
+  IAppendStructureConfig,
+  IAppendStructureResults,
+} from './adt/IAdtAppendStructure';
+export type {
+  IAuthorizationFieldConfig,
+  IAuthorizationFieldResults,
+} from './adt/IAdtAuthorizationField';
 export type {
   BehaviorDefinitionImplementationType,
   IBehaviorDefinitionConfig,
+  IBehaviorDefinitionResults,
 } from './adt/IAdtBehaviorDefinition';
 export type { IBehaviorImplementationConfig } from './adt/IAdtBehaviorImplementation';
 export type {
@@ -48,6 +58,7 @@ export type {
 } from './adt/IAdtCapabilities';
 export type {
   IClassConfig,
+  IClassResults,
   ILocalDefinitionsConfig,
   ILocalMacrosConfig,
   ILocalTestClassConfig,
@@ -62,15 +73,18 @@ export type {
   DataElementTypeKind,
   ICreateDataElementParams,
   IDataElementConfig,
+  IDataElementResults,
 } from './adt/IAdtDataElement';
-export type { IDdlConfig } from './adt/IAdtDdl';
+export type { IDdlConfig, IDdlResults } from './adt/IAdtDdl';
 export type {
   IDomainConfig,
+  IDomainResults,
   IFixedValue,
 } from './adt/IAdtDomain';
 export type {
   EnhancementType,
   IEnhancementConfig,
+  IEnhancementResults,
 } from './adt/IAdtEnhancement';
 export type {
   IFeatureToggleAttribute,
@@ -80,22 +94,35 @@ export type {
   IFeatureToggleObjectResults,
   IFeatureTogglePlanning,
   IFeatureToggleReleasePlan,
+  IFeatureToggleResults,
   IFeatureToggleRollout,
   IFeatureToggleSource,
 } from './adt/IAdtFeatureToggle';
-export type { IFunctionGroupConfig } from './adt/IAdtFunctionGroup';
-export type { IFunctionIncludeConfig } from './adt/IAdtFunctionInclude';
+export type {
+  IFunctionGroupConfig,
+  IFunctionGroupResults,
+} from './adt/IAdtFunctionGroup';
+export type {
+  IFunctionIncludeConfig,
+  IFunctionIncludeResults,
+} from './adt/IAdtFunctionInclude';
 export type {
   ICreateFunctionModuleParams,
   IFunctionModuleConfig,
+  IFunctionModuleResults,
 } from './adt/IAdtFunctionModule';
-export type { IIncludeConfig } from './adt/IAdtInclude';
-export type { IInterfaceConfig } from './adt/IAdtInterface';
+export type { IIncludeConfig, IIncludeResults } from './adt/IAdtInclude';
+export type { IInterfaceConfig, IInterfaceResults } from './adt/IAdtInterface';
 export type {
   IMessageClassConfig,
   IMessageClassMessageConfig,
+  IMessageClassMessageResults,
+  IMessageClassResults,
 } from './adt/IAdtMessageClass';
-export type { IMetadataExtensionConfig } from './adt/IAdtMetadataExtension';
+export type {
+  IMetadataExtensionConfig,
+  IMetadataExtensionResults,
+} from './adt/IAdtMetadataExtension';
 export type {
   IAdtAnalyseOptions,
   IAdtCreateOptions,
@@ -104,8 +131,8 @@ export type {
 } from './adt/IAdtObject';
 export { AdtObjectErrorCodes } from './adt/IAdtObject';
 export type { IAdtObjectConfig } from './adt/IAdtObjectState';
-export type { IPackageConfig } from './adt/IAdtPackage';
-export type { IProgramConfig } from './adt/IAdtProgram';
+export type { IPackageConfig, IPackageResults } from './adt/IAdtPackage';
+export type { IProgramConfig, IProgramResults } from './adt/IAdtProgram';
 export type {
   AdtFailureOrigin,
   AdtNoFailure,
@@ -117,9 +144,13 @@ export type {
   IResultStrategy,
 } from './adt/IAdtResponse';
 export { ADT_NO_FAILURE } from './adt/IAdtResponse';
-export type { IScalarFunctionConfig } from './adt/IAdtScalarFunction';
+export type {
+  IScalarFunctionConfig,
+  IScalarFunctionResults,
+} from './adt/IAdtScalarFunction';
 export type {
   IScalarFunctionImplementationConfig,
+  IScalarFunctionImplementationResults,
   ScalarFunctionEngine,
 } from './adt/IAdtScalarFunctionImplementation';
 export type {
@@ -129,13 +160,18 @@ export type {
   IAdtServiceGroupReadable,
   ICreateServiceBindingParams,
   IServiceBindingConfig,
+  IServiceBindingPublicationConfig,
   IServiceGroupParams,
+  IServiceResults,
   ServiceBindingType,
   ServiceBindingVariant,
   ServiceBindingVersion,
 } from './adt/IAdtServiceBinding';
 export { SERVICE_BINDING_VARIANT_MAP } from './adt/IAdtServiceBinding';
-export type { IServiceDefinitionConfig } from './adt/IAdtServiceDefinition';
+export type {
+  IServiceDefinitionConfig,
+  IServiceDefinitionResults,
+} from './adt/IAdtServiceDefinition';
 export type {
   AdtObjectType,
   AdtObjectTypeLower,
@@ -155,10 +191,12 @@ export type {
   IStructureConfig,
   IStructureField,
   IStructureInclude,
+  IStructureResults,
 } from './adt/IAdtStructure';
-export type { ITableConfig } from './adt/IAdtTable';
+export type { ITableConfig, ITableResults } from './adt/IAdtTable';
 export type {
   ITableTypeConfig,
+  ITableTypeResults,
   TableTypeAccessType,
   TableTypePrimaryKeyDefinition,
   TableTypePrimaryKeyKind,
@@ -166,6 +204,7 @@ export type {
 } from './adt/IAdtTableType';
 export type {
   ITransformationConfig,
+  ITransformationResults,
   TransformationType,
 } from './adt/IAdtTransformation';
 export type {
@@ -179,6 +218,7 @@ export type {
   IListTransportsOptions,
   IListTransportsParams,
   ITransportConfig,
+  ITransportResults,
   ITransportSearchConfiguration,
 } from './adt/IAdtTransport';
 export {
@@ -210,6 +250,7 @@ export type {
   IAdtVirtualFolders,
   IAdtWhereUsed,
   IGetNodeContentsOptions,
+  IUtilResults,
 } from './adt/IAdtUtilities';
 export type {
   IClassExecuteOptions,

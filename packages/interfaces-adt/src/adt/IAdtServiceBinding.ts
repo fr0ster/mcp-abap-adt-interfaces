@@ -3,7 +3,7 @@
  */
 
 import type { IAdtAnalyseOptions, IAnalyse } from './IAdtObject';
-import type { IAdtError, IAdtResponse } from './IAdtResponse';
+import type { IAdtError, IAdtResponse, IResultStrategy } from './IAdtResponse';
 
 export type ServiceBindingType = 'ODATA' | 'INA' | 'SQL';
 export type ServiceBindingVersion = 'V2' | 'V4' | '0001' | '0000' | string;
@@ -129,3 +129,62 @@ export interface IAdtServiceGroupReadable<TGroup> {
     options?: WithoutAnalyse,
   ): Promise<IAdtResponse<TGroup>>;
 }
+
+/**
+ * One strategy per member of a service binding implementation.
+ *
+ * A record rather than fourteen positional type parameters — the fourteenth
+ * would be unnameable without spelling the thirteen before it, and a consumer
+ * overriding one reading writes the key. `IServiceBindingResults` in the
+ * contract names five of these; the rest belong to the capability atoms.
+ */
+export interface IServiceResults {
+  /** What the create answers: the binding's own document. */
+  readonly created: IResultStrategy<unknown>;
+  /** What a read answers: the binding document, active or inactive. */
+  readonly source: IResultStrategy<unknown>;
+  /** The same document, read as metadata — a binding has no second resource. */
+  readonly metadata: IResultStrategy<unknown>;
+  /** What a check run answers: `chkl:messages`, whose `E` entries are the verdict. */
+  readonly check: IResultStrategy<unknown>;
+  /** What activation answers. */
+  readonly activation: IResultStrategy<unknown>;
+  /** What the pre-create transport check answers. */
+  readonly validation: IResultStrategy<unknown>;
+  /** What the deletion answers. */
+  readonly deletion: IResultStrategy<unknown>;
+  /** What a deletion check answers: `del:checkResponse`. */
+  readonly deletionCheck: IResultStrategy<unknown>;
+  /** What a publication change answers. */
+  readonly updated: IResultStrategy<unknown>;
+  /** What the transport check answers. */
+  readonly transport: IResultStrategy<unknown>;
+  /** The binding types this system offers. */
+  readonly bindingTypes: IResultStrategy<unknown>;
+  /** What generating the service answers. */
+  /** What an OData v2 or v4 read of the binding answers. */
+  readonly odata: IResultStrategy<unknown>;
+  /** What publishing or withdrawing answers. */
+  readonly publication: IResultStrategy<unknown>;
+  /** What classifying the binding answers. */
+}
+
+/**
+ * What a caller must name to change a binding's publication, **in the signature
+ * they call**.
+ *
+ * `Partial<IServiceBindingConfig>` is what `IAdtUpdatable` gives every other
+ * type, and for a binding it is too loose in two ways a compiler could catch:
+ * `serviceType` is optional there, and `desiredPublicationState` still admits
+ * `'unchanged'`. Both compiled and then threw before reaching the wire, which
+ * is a demand made where the caller cannot see it.
+ */
+export type IServiceBindingPublicationConfig =
+  Partial<IServiceBindingConfig> & {
+    /** Which binding. Without it there is no object to publish. */
+    bindingName: string;
+    /** `unchanged` is not one of them: there is no request that changes nothing. */
+    desiredPublicationState: 'published' | 'unpublished';
+    /** Selects the endpoint, `odatav2` or `odatav4`. */
+    serviceType: GeneratedServiceType;
+  };

@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [20.2.0] - 2026-10-24
+
+### Added
+
+- The result-set contracts, each in its object's `IAdtX.ts` beside its config,
+  under the name `@mcp-abap-adt/adt-clients` gave it: `IClassResults` (one
+  interface, also what behavior implementation and the local includes take),
+  `IProgramResults`, `IIncludeResults`, `IInterfaceResults`, `IDomainResults`,
+  `IDataElementResults`, `IAuthorizationFieldResults`, `IStructureResults`,
+  `ITableResults`, `ITableTypeResults`, `IDdlResults`, `IFunctionGroupResults`,
+  `IFunctionModuleResults`, `IFunctionIncludeResults`, `IPackageResults`,
+  `IMessageClassResults`, `IMessageClassMessageResults<TRead, TWritten,
+  TDeleted>` (generics and defaults kept), `IAccessControlResults`,
+  `ITransformationResults`, `IServiceDefinitionResults`,
+  `IScalarFunctionResults`, `IScalarFunctionImplementationResults`,
+  `IUtilResults` (`IAdtUtilities.ts`), `IServiceResults`
+  (`IAdtServiceBinding.ts`), `IFeatureToggleResults`,
+  `IAppendStructureResults`, `IBehaviorDefinitionResults`,
+  `IMetadataExtensionResults`, `IEnhancementResults` and `ITransportResults`
+  (`IAdtTransport.ts`). Each is a `readonly` slot map of
+  `IResultStrategy<unknown>`: a consumer composes its client contract from these
+  and the atoms, so the contract no longer has to be taken from the
+  implementation.
+- `IServiceBindingPublicationConfig`: what a caller must name to change a
+  binding's publication, in the signature they call.
+
 ## [20.1.0] - 2026-10-21
 
 ### Added

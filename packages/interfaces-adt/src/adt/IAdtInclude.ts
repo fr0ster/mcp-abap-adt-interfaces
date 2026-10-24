@@ -14,6 +14,8 @@
  * system will accept the request.
  */
 
+import type { IResultStrategy } from './IAdtResponse';
+
 // Deliberately NOT here: a main-program context. A read include carries
 // `include:contextRefCount`, so the system tracks how many programs include
 // this one — but nothing measured says the *create* call accepts a context, and
@@ -32,4 +34,21 @@ export interface IIncludeConfig {
   description?: string; // Required for create/validate operations, optional for others
   source?: string;
   onLock?: (lockHandle: string) => void;
+}
+
+/** One strategy per member of a include implementation. See `IClassResults`. */
+export interface IIncludeResults {
+  readonly created: IResultStrategy<unknown>;
+  readonly source: IResultStrategy<unknown>;
+  readonly metadata: IResultStrategy<unknown>;
+  /** Enhancement implementations in the host's source. */
+  readonly enhancementElements: IResultStrategy<unknown>;
+  /** Places in the host that can be enhanced. */
+  readonly enhancementOptions: IResultStrategy<unknown>;
+  readonly activation: IResultStrategy<unknown>;
+  readonly validation: IResultStrategy<unknown>;
+  readonly deletion: IResultStrategy<unknown>;
+  readonly updated: IResultStrategy<unknown>;
+  /** What a deletion check answers: `del:checkResponse`. */
+  readonly deletionCheck: IResultStrategy<unknown>;
 }

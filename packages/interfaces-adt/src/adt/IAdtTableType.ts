@@ -2,6 +2,8 @@
  * Table Type ADT operation parameter interfaces (snake_case, low-level)
  */
 
+import type { IResultStrategy } from './IAdtResponse';
+
 export type TableTypeRowKind =
   | 'dictionaryType'
   | 'predefinedAbapType'
@@ -49,4 +51,23 @@ export interface ITableTypeConfig {
   // XML-based TableType parameters (TableType is XML-based entity like Domain/DataElement)
   rowTypeName?: string; // Structure name for dictionaryType (required for update)
   description?: string; // Required for create/validate operations, optional for others
+}
+
+/** One strategy per member of a tableType implementation. See `IClassResults`. */
+export interface ITableTypeResults {
+  readonly created: IResultStrategy<unknown>;
+  readonly source: IResultStrategy<unknown>;
+  readonly metadata: IResultStrategy<unknown>;
+  readonly check: IResultStrategy<unknown>;
+  readonly activation: IResultStrategy<unknown>;
+  readonly validation: IResultStrategy<unknown>;
+  readonly deletion: IResultStrategy<unknown>;
+  readonly metadataUpdated: IResultStrategy<unknown>;
+  readonly transport: IResultStrategy<unknown>;
+  /** What a deletion check answers: `del:checkResponse`. */
+  readonly deletionCheck: IResultStrategy<unknown>;
+  /** The version history — an Atom feed; `objectVersions` reads it. */
+  readonly versions: IResultStrategy<unknown>;
+  /** One version's source. */
+  readonly versionSource: IResultStrategy<unknown>;
 }
