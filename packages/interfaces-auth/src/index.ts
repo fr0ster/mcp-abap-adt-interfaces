@@ -80,6 +80,11 @@ export type {
   ISecretLoginCredential,
 } from './auth/ICredentials';
 export type {
+  INegotiateTokenSource,
+  NegotiateTokenAnswer,
+  NegotiateTokenOptions,
+} from './auth/INegotiateTokenSource';
+export type {
   ConfigDiagnosticField,
   ConfigDiagnosticOf,
   ConfigDiagnosticValues,
@@ -112,6 +117,7 @@ export type {
   SncCandidate,
   SncFactsOf,
   SncProblemFacts,
+  SpnegoFactsOf,
   SystemRefusedFacts,
 } from './error/facts';
 export type {
@@ -120,6 +126,7 @@ export type {
   IAuthProviderError,
   SamlAssertionError,
   SncError,
+  SpnegoError,
 } from './error/IAuthProviderError';
 export type { IAuthProviderFailure } from './error/IAuthProviderFailure';
 export type {
@@ -140,6 +147,7 @@ export type {
   InteractiveOutcome,
   LogonTargetRefusal,
   LogonTargetWire,
+  NegotiateSourceProblem,
   NotPreparedProvider,
   OAuthErrorCode,
   Operation,
@@ -154,6 +162,7 @@ export type {
   SncProblem,
   SncQop,
   SncUnusableReason,
+  SpnegoProblem,
   SystemCode,
   SystemRefusedVerdict,
   TlsFailureCode,
@@ -178,6 +187,7 @@ export {
   INTERACTIVE_OUTCOMES,
   LOGON_TARGET_REFUSALS,
   LOGON_TARGET_WIRES,
+  NEGOTIATE_SOURCE_PROBLEMS,
   NOT_PREPARED_PROVIDERS,
   OAUTH_ERROR_CODES,
   OPERATIONS,
@@ -191,6 +201,7 @@ export {
   SNC_PROBLEMS,
   SNC_QOP_VALUES,
   SNC_UNUSABLE_REASONS,
+  SPNEGO_PROBLEMS,
   SYSTEM_CODES,
   SYSTEM_REFUSED_VERDICTS,
   TLS_FAILURE_CODES,

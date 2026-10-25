@@ -33,6 +33,7 @@ import type {
   SncCandidateSource,
   SncProblem,
   SncUnusableReason,
+  SpnegoProblem,
   SystemCode,
   SystemRefusedVerdict,
   TlsFailureCode,
@@ -246,6 +247,18 @@ export type SncFactsOf<P extends SncProblem> = P extends unknown
   ? Closed<OpenSncFactsOf<P>, AnyFactKey>
   : never;
 
+// ---- spnego -----------------------------------------------------------------
+
+/** The facts of one SPNego problem: the problem and what was being done. */
+type OpenSpnegoFactsOf<P extends SpnegoProblem> = P extends unknown
+  ? { readonly problem: P; readonly operation: Operation }
+  : never;
+
+/** The facts of one SPNego problem; every fact another kind carries is `?: never`. */
+export type SpnegoFactsOf<P extends SpnegoProblem> = P extends unknown
+  ? Closed<OpenSpnegoFactsOf<P>, AnyFactKey>
+  : never;
+
 // ---- configuration --------------------------------------------------------
 
 /** The facts of one configuration case; `allowed` only where a value set applies. */
@@ -375,6 +388,7 @@ interface OpenAuthProviderErrorFacts {
   readonly 'interactive-login': OpenInteractiveLoginFacts;
   readonly 'saml-assertion': OpenSamlFactsOf<AssertionRule>;
   readonly snc: OpenSncFactsOf<SncProblem>;
+  readonly spnego: OpenSpnegoFactsOf<SpnegoProblem>;
   readonly 'credential-refused': {
     readonly credential: CredentialKind;
     readonly at?: RejectionMoment;

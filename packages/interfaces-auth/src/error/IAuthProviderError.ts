@@ -10,7 +10,7 @@
  * assertion elsewhere is refused by the producers' shape check, not by the
  * compiler.)
  *
- * **Narrow on `kind`, then `variant`.** For `saml-assertion`, `snc` and
+ * **Narrow on `kind`, then `variant`.** For `saml-assertion`, `snc`, `spnego` and
  * `configuration` the value that decides which diagnostic may appear — the
  * rule, the problem, the case — is lifted onto the error as `variant` (and
  * stays in `facts` as `rule` / `problem` / `case`, the same value), so
@@ -53,6 +53,7 @@ import type {
   ConfigFactsOf,
   SamlFactsOf,
   SncFactsOf,
+  SpnegoFactsOf,
 } from './facts';
 import type {
   AssertionRule,
@@ -60,6 +61,7 @@ import type {
   ConfigCase,
   PlainKind,
   SncProblem,
+  SpnegoProblem,
 } from './kinds';
 
 /** The brand: declared, not exported — unnameable outside this file. */
@@ -113,6 +115,15 @@ export type SncError = {
   } & DiagOf<SncDiagnosticOf<P>>;
 }[SncProblem];
 
+/** A SPNego problem, one object type per problem; no diagnostics. */
+export type SpnegoError = {
+  [P in SpnegoProblem]: Common<'spnego'> & {
+    readonly variant: P;
+    readonly facts: SpnegoFactsOf<P>;
+    readonly diagnostics?: never;
+  };
+}[SpnegoProblem];
+
 /** A configuration mistake, one object type per case. */
 export type ConfigurationError = {
   [C in ConfigCase]: Common<'configuration'> & {
@@ -134,11 +145,13 @@ export type AuthProviderErrorOf<K extends AuthProviderErrorKind> =
     ? SamlAssertionError
     : K extends 'snc'
       ? SncError
-      : K extends 'configuration'
-        ? ConfigurationError
-        : K extends PlainKind
-          ? PlainError<K>
-          : never;
+      : K extends 'spnego'
+        ? SpnegoError
+        : K extends 'configuration'
+          ? ConfigurationError
+          : K extends PlainKind
+            ? PlainError<K>
+            : never;
 
 /** Any error of the contract. */
 export type IAuthProviderError = {

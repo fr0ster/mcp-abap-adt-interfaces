@@ -24,6 +24,7 @@ export const AUTH_PROVIDER_ERROR_KINDS = Object.freeze([
   'interactive-login',
   'saml-assertion',
   'snc',
+  'spnego',
   'credential-refused',
   'system-refused',
   'renewal-unchanged',
@@ -36,8 +37,8 @@ export const AUTH_PROVIDER_ERROR_KINDS = Object.freeze([
 ] as const);
 export type AuthProviderErrorKind = (typeof AUTH_PROVIDER_ERROR_KINDS)[number];
 
-/** The kinds that carry diagnostics, each narrowed further by its `variant`. */
-export type VariantKind = 'saml-assertion' | 'snc' | 'configuration';
+/** The kinds narrowed by a `variant` (all but `spnego` also carry diagnostics). */
+export type VariantKind = 'saml-assertion' | 'snc' | 'spnego' | 'configuration';
 /** Every other kind: one object type, no variant, no diagnostics. */
 export type PlainKind = Exclude<AuthProviderErrorKind, VariantKind>;
 
@@ -104,12 +105,14 @@ export const CONFIG_FIELDS = Object.freeze([
   'replayStore',
   'scope',
   'scopes',
+  'servicePrincipal',
   'show',
   'sncLib',
   'spEntityId',
   'subjectToken',
   'subjectTokenType',
   'tokenEndpoint',
+  'tokenSource',
   'tokenUrl',
   'transport',
   'uaaUrl',
@@ -209,6 +212,8 @@ export const OPERATIONS = Object.freeze([
   'preparing',
   'establishing',
   'authorizing',
+  'obtaining-negotiate-token',
+  'presenting-negotiate-token',
 ] as const);
 export type Operation = (typeof OPERATIONS)[number];
 
@@ -511,6 +516,36 @@ export type SncUnusableReason = (typeof SNC_UNUSABLE_REASONS)[number];
 export const SNC_ARCHS = Object.freeze(['ia32', 'x64', 'arm64'] as const);
 export type SncArch = (typeof SNC_ARCHS)[number];
 
+// ---- SPNego ----------------------------------------------------------------
+
+/**
+ * What went wrong obtaining or presenting a Kerberos (SPNego) token. The first
+ * six are facts a token source answers; the last two the provider finds in a
+ * token it was given.
+ */
+export const SPNEGO_PROBLEMS = Object.freeze([
+  'no-credential',
+  'service-unknown',
+  'kdc-unreachable',
+  'clock-skew',
+  'binding-unavailable',
+  'source-failed',
+  'ntlm-token',
+  'token-unreadable',
+] as const);
+export type SpnegoProblem = (typeof SPNEGO_PROBLEMS)[number];
+
+/** The problems a token source may answer (`INegotiateTokenSource`): the first six. */
+export const NEGOTIATE_SOURCE_PROBLEMS = Object.freeze([
+  'no-credential',
+  'service-unknown',
+  'kdc-unreachable',
+  'clock-skew',
+  'binding-unavailable',
+  'source-failed',
+] as const);
+export type NegotiateSourceProblem = (typeof NEGOTIATE_SOURCE_PROBLEMS)[number];
+
 // ---- interactive login and credentials ------------------------------------
 
 /**
@@ -553,6 +588,7 @@ export const CREDENTIAL_KINDS = Object.freeze([
   'saml-session',
   'token',
   'refresh-token',
+  'kerberos-ticket',
 ] as const);
 export type CredentialKind = (typeof CREDENTIAL_KINDS)[number];
 

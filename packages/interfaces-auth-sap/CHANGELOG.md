@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.0] - 2026-10-25
+
+### Changed
+
+- **Accepts `@mcp-abap-adt/interfaces-auth` `^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0`.**
+  8.0.0 adds the error kind `spnego` and the SPNego token source. What this
+  package's exported types reach in `interfaces-auth` — `ICertificateMaterial`
+  and `AUTH_TYPE_BASIC` / `AUTH_TYPE_JWT` — is declared identically in 8.0.0,
+  and none reaches the error kinds, so the range widens in a minor (the rule of
+  #123).
+
+### Migrating to 3.5.0
+
+Nothing to do.
+
 ## [3.4.0] - 2026-10-16
 
 ### Added

@@ -682,7 +682,8 @@ const certWithOauth = { ...certFactsOk, oauthError: 'access_denied' } as const;
 // @ts-expect-error an oauthError on client-certificate facts
 const _x13: IAuthProviderError = { ...certificate, facts: certWithOauth };
 
-// 7.0.0 adds the kind renewal-declined and removes the outcome browser-launch-failed
+// 7.0.0 adds the kind renewal-declined and removes the outcome browser-launch-failed;
+// 8.0.0 adds the kind spnego (a handler map written for 7 stops compiling)
 export type KindsAndOutcomesAt7 = [
   Expect<
     Same<
@@ -695,6 +696,7 @@ export type KindsAndOutcomesAt7 = [
       | 'interactive-login'
       | 'saml-assertion'
       | 'snc'
+      | 'spnego'
       | 'credential-refused'
       | 'system-refused'
       | 'renewal-unchanged'
@@ -764,6 +766,7 @@ const handlersAt7: Handlers = {
   },
   'saml-assertion': (f) => f.rule,
   snc: (f) => f.problem,
+  spnego: (f) => f.problem,
   'credential-refused': (f) => f.credential,
   'system-refused': (f) => f.verdict,
   'renewal-unchanged': (f) => f.source,

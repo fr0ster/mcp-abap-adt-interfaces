@@ -5,7 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [8.0.0] - 2026-10-25
+
+A major, by this package's own rule: a new error kind is a major. An
+exhaustive `switch (error.kind)` or an auth-errors `matchKind` handler map
+written for 7.x stops compiling until it handles `spnego`.
+
+### Added
+- **The SPNego token source** (`src/auth/INegotiateTokenSource.ts`):
+  `INegotiateTokenSource` (`token(servicePrincipal, options)`),
+  `NegotiateTokenOptions` (`signal?`) and `NegotiateTokenAnswer` — a base64
+  token, or a `problem` from `NEGOTIATE_SOURCE_PROBLEMS`. A source answers
+  facts, never errors or text; the provider mints the refusal. The principal
+  is the GSS host-based name `service@host`; a source returns a fresh token per
+  call and caches none.
+- **The error kind `spnego`**, a variant kind with no diagnostics: `SpnegoError`
+  (`variant` and `facts.problem` the problem, `facts.operation`), `SpnegoFactsOf`,
+  `SPNEGO_PROBLEMS` / `SpnegoProblem` (`no-credential`, `service-unknown`,
+  `kdc-unreachable`, `clock-skew`, `binding-unavailable`, `source-failed`,
+  `ntlm-token`, `token-unreadable`), and `NEGOTIATE_SOURCE_PROBLEMS` /
+  `NegotiateSourceProblem` (the first six). `VariantKind` gains `'spnego'`.
+- `OPERATIONS` gains `obtaining-negotiate-token` and
+  `presenting-negotiate-token`; `CONFIG_FIELDS` gains `servicePrincipal` and
+  `tokenSource`; `CREDENTIAL_KINDS` gains `kerberos-ticket`.
+
+### Migration
+- A `switch (error.kind)` whose `default` is `unreachableKind(error)`, or a
+  `matchKind` handler map, needs a `spnego` case; the variant is the problem
+  (`error.variant`, `error.facts.problem`). `spnego` carries no diagnostics.
+- A consumer that does not use SPNego changes nothing else: no existing type,
+  member or kind was removed or changed.
 
 ### Corrected
 - The 7.5.0 entry below says auth-providers ships "the system browser, Chrome,
