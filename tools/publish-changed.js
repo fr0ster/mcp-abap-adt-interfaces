@@ -282,107 +282,118 @@ if (pending.length === 0) {
 // Each one refuses to publish something that cannot be traced back to this
 // repository's history, or that would move the `latest` dist-tag backwards.
 
-// Two questions, because neither command alone is immune to configuration:
-// tracked changes (`--untracked-files=no`), and untracked files with only the
-// repository's own .gitignore files applied. `--exclude-standard` is left out
-// on purpose: it reads core.excludesFile and .git/info/exclude, which are not in
-// the committed tree and can hide a source file that would be published.
-//
-// Tracked changes are asked of the whole tree: an edited build script or
-// configuration changes what the check proves. Untracked files are asked only
-// of the packages' directories, the only places a tarball is packed from; a
-// file of the operator's machine at the root (an editor's or an agent's local
-// settings) is no part of any release and blocked one.
-if (
-  captureGit(['status', '--porcelain', '--untracked-files=no']).trim() !== '' ||
-  captureGit([
-    'ls-files',
-    '--others',
-    '--exclude-per-directory=.gitignore',
-    '--',
-    ...publishOrder,
-  ]).trim() !== ''
-)
-  fail(
-    'the working tree is dirty. Publish only what is committed, or the tarball\n' +
-      'holds changes no commit and no tag describes.',
-  );
-
-// `assume-unchanged` (also what core.ignoreStat sets) and `skip-worktree` tell
-// git not to look at a tracked file, so an edited one is invisible to the status
-// above. `ls-files -v` marks the first with a lowercase tag and the second with
-// `S` (`s` when both are set).
-const flagged = captureGit(['ls-files', '-v'])
-  .split('\n')
-  .filter((line) => {
-    const tag = line.charAt(0);
-    return tag === 'S' || (tag !== '' && tag !== tag.toUpperCase());
-  })
-  .map((line) => line.slice(2));
-if (flagged.length > 0)
-  fail(
-    `${flagged.length} index entries are flagged assume-unchanged or skip-worktree, which hide edits\n` +
-      'from the dirty-tree guard (core.ignoreStat sets the first):\n' +
-      `${flagged
-        .slice(0, 10)
-        .map((f) => `  ${f}`)
-        .join('\n')}\n` +
-      'Clear them with `git update-index --no-assume-unchanged` and\n' +
-      '`git update-index --no-skip-worktree`, then check the tree again.',
-  );
-
-for (const p of pending) {
-  if (!semver.valid(p.local))
-    fail(`${p.name} has version "${p.local}", which is not valid semver.`);
-
-  const tag = tagFor(p.dir, p.local);
-
-  if (!gitSucceeds(['rev-parse', '-q', '--verify', `refs/tags/${tag}`]))
+/**
+ * Every guard on the tree and the tags. Run before the check and again after
+ * the pause: the pause waits for as long as the operator is away, and what is
+ * published is the tree as it is when Enter is pressed, not as it was checked.
+ */
+function guard() {
+  // Two questions, because neither command alone is immune to configuration:
+  // tracked changes (`--untracked-files=no`), and untracked files with only the
+  // repository's own .gitignore files applied. `--exclude-standard` is left out
+  // on purpose: it reads core.excludesFile and .git/info/exclude, which are not in
+  // the committed tree and can hide a source file that would be published.
+  //
+  // Tracked changes are asked of the whole tree: an edited build script or
+  // configuration changes what the check proves. Untracked files are asked only
+  // of the packages' directories, the only places a tarball is packed from; a
+  // file of the operator's machine at the root (an editor's or an agent's local
+  // settings) is no part of any release and blocked one.
+  if (
+    captureGit(['status', '--porcelain', '--untracked-files=no']).trim() !==
+      '' ||
+    captureGit([
+      'ls-files',
+      '--others',
+      '--exclude-per-directory=.gitignore',
+      '--',
+      ...publishOrder,
+    ]).trim() !== ''
+  )
     fail(
-      `${p.name} ${p.local} has no tag ${tag}.\n` +
-        'A published version that is not tagged cannot be checked out again.',
+      'the working tree is dirty. Publish only what is committed, or the tarball\n' +
+        'holds changes no commit and no tag describes.',
     );
 
-  if (!gitSucceeds(['merge-base', '--is-ancestor', tag, 'HEAD']))
+  // `assume-unchanged` (also what core.ignoreStat sets) and `skip-worktree` tell
+  // git not to look at a tracked file, so an edited one is invisible to the status
+  // above. `ls-files -v` marks the first with a lowercase tag and the second with
+  // `S` (`s` when both are set).
+  const flagged = captureGit(['ls-files', '-v'])
+    .split('\n')
+    .filter((line) => {
+      const tag = line.charAt(0);
+      return tag === 'S' || (tag !== '' && tag !== tag.toUpperCase());
+    })
+    .map((line) => line.slice(2));
+  if (flagged.length > 0)
     fail(
-      `${tag} is not an ancestor of HEAD.\n` +
-        'HEAD is not the history that tag belongs to.',
+      `${flagged.length} index entries are flagged assume-unchanged or skip-worktree, which hide edits\n` +
+        'from the dirty-tree guard (core.ignoreStat sets the first):\n' +
+        `${flagged
+          .slice(0, 10)
+          .map((f) => `  ${f}`)
+          .join('\n')}\n` +
+        'Clear them with `git update-index --no-assume-unchanged` and\n' +
+        '`git update-index --no-skip-worktree`, then check the tree again.',
     );
 
-  // Ancestry alone is not traceability: a commit after the tag can change a
-  // package without bumping it, and the tarball would then carry content the
-  // tagged version never had. The tree has to BE the tagged tree.
-  if (!gitSucceeds(['diff', '--quiet', tag, 'HEAD'])) {
-    const changed = captureGit(['diff', '--name-only', tag, 'HEAD'])
-      .trim()
-      .split('\n')
-      .slice(0, 10);
-    fail(
-      `HEAD differs from ${tag}, so the tarball would not be what that tag names:\n` +
-        `${changed.map((f) => `  ${f}`).join('\n')}\n` +
-        `Publish the tagged tree (git checkout ${tag}) or bump and tag again.`,
-    );
+  for (const p of pending) {
+    if (!semver.valid(p.local))
+      fail(`${p.name} has version "${p.local}", which is not valid semver.`);
+
+    const tag = tagFor(p.dir, p.local);
+
+    if (!gitSucceeds(['rev-parse', '-q', '--verify', `refs/tags/${tag}`]))
+      fail(
+        `${p.name} ${p.local} has no tag ${tag}.\n` +
+          'A published version that is not tagged cannot be checked out again.',
+      );
+
+    if (!gitSucceeds(['merge-base', '--is-ancestor', tag, 'HEAD']))
+      fail(
+        `${tag} is not an ancestor of HEAD.\n` +
+          'HEAD is not the history that tag belongs to.',
+      );
+
+    // Ancestry alone is not traceability: a commit after the tag can change a
+    // package without bumping it, and the tarball would then carry content the
+    // tagged version never had. The tree has to BE the tagged tree.
+    if (!gitSucceeds(['diff', '--quiet', tag, 'HEAD'])) {
+      const changed = captureGit(['diff', '--name-only', tag, 'HEAD'])
+        .trim()
+        .split('\n')
+        .slice(0, 10);
+      fail(
+        `HEAD differs from ${tag}, so the tarball would not be what that tag names:\n` +
+          `${changed.map((f) => `  ${f}`).join('\n')}\n` +
+          `Publish the tagged tree (git checkout ${tag}) or bump and tag again.`,
+      );
+    }
+
+    // A prerelease published without a dist-tag becomes `latest`, which is how a
+    // beta reaches everyone who asked for the stable line.
+    if (semver.prerelease(p.local) && TARGETS_LATEST)
+      fail(
+        `${p.name} ${p.local} is a prerelease and this publish targets \`latest\`\n` +
+          `(${NPM_TAG === null ? 'no --tag was given' : '--tag=latest names it explicitly'}).\n` +
+          'A prerelease on `latest` reaches everyone who asked for the stable line.\n' +
+          'Pass --tag=next, or another name that is not `latest`.',
+      );
+
+    // Only `latest` can be moved backwards, so this asks about the dist-tag
+    // rather than about the greatest version that exists.
+    if (TARGETS_LATEST && p.latest !== null && semver.gt(p.latest, p.local))
+      fail(
+        `${p.name} ${p.local} is lower than the published latest ${p.latest}.\n` +
+          'Publishing it to `latest` would move that tag backwards. Pass a --tag\n' +
+          'other than `latest` to publish it somewhere else.',
+      );
   }
-
-  // A prerelease published without a dist-tag becomes `latest`, which is how a
-  // beta reaches everyone who asked for the stable line.
-  if (semver.prerelease(p.local) && TARGETS_LATEST)
-    fail(
-      `${p.name} ${p.local} is a prerelease and this publish targets \`latest\`\n` +
-        `(${NPM_TAG === null ? 'no --tag was given' : '--tag=latest names it explicitly'}).\n` +
-        'A prerelease on `latest` reaches everyone who asked for the stable line.\n' +
-        'Pass --tag=next, or another name that is not `latest`.',
-    );
-
-  // Only `latest` can be moved backwards, so this asks about the dist-tag
-  // rather than about the greatest version that exists.
-  if (TARGETS_LATEST && p.latest !== null && semver.gt(p.latest, p.local))
-    fail(
-      `${p.name} ${p.local} is lower than the published latest ${p.latest}.\n` +
-        'Publishing it to `latest` would move that tag backwards. Pass a --tag\n' +
-        'other than `latest` to publish it somewhere else.',
-    );
 }
+
+guard();
+const HEAD = captureGit(['rev-parse', 'HEAD']).trim();
 
 console.log(
   `\nTo publish${NPM_TAG ? ` under the "${NPM_TAG}" tag` : ''}, in dependency order: ${pending
@@ -500,6 +511,15 @@ const answer = readLine();
 if (answer !== '')
   fail(
     `${answer === null ? 'No answer was given' : 'The answer was not Enter'}. Nothing was published.`,
+  );
+
+// Nothing that changed while the run waited is published: the same guards
+// again, and HEAD must be the commit the check ran on.
+guard();
+if (captureGit(['rev-parse', 'HEAD']).trim() !== HEAD)
+  fail(
+    'HEAD moved while the run waited, so the check did not run on what would be\n' +
+      'published. Nothing was published; run it again.',
   );
 
 // --- publish --------------------------------------------------------------

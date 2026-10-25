@@ -232,6 +232,12 @@ if (args[0] === 'run') {
     process.exit(1);
   }
   process.stderr.write('warning in ' + args[1] + '\\n');
+  // Something changes the tree after the guards and before the publish: the
+  // last step of the check is the latest moment a fake can reach.
+  if (args[1] === 'test:check' && state.touchDuringCheck)
+    fs.appendFileSync(state.touchDuringCheck, 'changed\\n');
+  if (args[1] === 'test:check' && state.commitDuringCheck)
+    require('node:child_process').execFileSync('git', ['commit', '-q', '--allow-empty', '-m', 'moved'], { cwd: state.commitDuringCheck, env: { ...process.env, GIT_CONFIG_GLOBAL: '/dev/null', GIT_CONFIG_SYSTEM: '/dev/null' } });
   process.exit(0);
 }
 
@@ -1307,6 +1313,45 @@ check('core.ignoreCase does not let .gitignore hide an untracked file', () => {
   const result = run(dir, bin);
   assert.strictEqual(result.status, 1, result.stdout + result.stderr);
   assert.match(result.stderr, /the working tree is dirty/);
+  assert.deepStrictEqual(publishes(readLog(logPath)), []);
+});
+
+for (const [label, change] of [
+  [
+    'an edited package file',
+    (dir) => ({
+      touchDuringCheck: path.join(dir, 'packages/alpha/package.json'),
+    }),
+  ],
+  [
+    'a new untracked package file',
+    (dir) => ({
+      touchDuringCheck: path.join(dir, 'packages/alpha/new.js'),
+    }),
+  ],
+])
+  check(`${label} after the first guards publishes nothing`, () => {
+    const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
+    const { bin, logPath } = installFakeNpm(dir, {
+      ...alphaManifests(dir),
+      ...change(dir),
+    });
+    const result = run(dir, bin);
+    assert.strictEqual(result.status, 1, result.stdout + result.stderr);
+    assert.match(result.stdout, /Press Enter/);
+    assert.match(result.stderr, /the working tree is dirty/);
+    assert.deepStrictEqual(publishes(readLog(logPath)), []);
+  });
+
+check('HEAD moving after the first guards publishes nothing', () => {
+  const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
+  const { bin, logPath } = installFakeNpm(dir, {
+    ...alphaManifests(dir),
+    commitDuringCheck: dir,
+  });
+  const result = run(dir, bin);
+  assert.strictEqual(result.status, 1, result.stdout + result.stderr);
+  assert.match(result.stderr, /HEAD moved while the run waited/);
   assert.deepStrictEqual(publishes(readLog(logPath)), []);
 });
 
