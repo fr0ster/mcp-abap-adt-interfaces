@@ -170,10 +170,40 @@ function tagFor(dir, version) {
   return `${dir}-v${version}`;
 }
 
+/**
+ * Variables that make git look at a repository, index or object store other
+ * than ROOT's. Inherited, they would send every guard to a clean clone with the
+ * same tags while npm publishes from ROOT.
+ */
+const GIT_REDIRECTS = [
+  'GIT_DIR',
+  'GIT_WORK_TREE',
+  'GIT_INDEX_FILE',
+  'GIT_OBJECT_DIRECTORY',
+  'GIT_ALTERNATE_OBJECT_DIRECTORIES',
+  'GIT_COMMON_DIR',
+  'GIT_NAMESPACE',
+  'GIT_CEILING_DIRECTORIES',
+  'GIT_DISCOVERY_ACROSS_FILESYSTEM',
+];
+
+/** Captured output of `git <args>` run in ROOT, with no redirection inherited. */
+function captureGit(args) {
+  const env = { ...process.env };
+  for (const name of GIT_REDIRECTS) delete env[name];
+  // Pinned explicitly: `-C` alone leaves a repository-local `core.worktree`
+  // free to point status and ls-files at another tree.
+  return capture(
+    'git',
+    [`--git-dir=${path.join(ROOT, '.git')}`, `--work-tree=${ROOT}`, ...args],
+    { env },
+  );
+}
+
 /** True when `git <args>` exits 0; for the questions git answers by status. */
 function gitSucceeds(args) {
   try {
-    capture('git', args);
+    captureGit(args);
     return true;
   } catch {
     return false;
@@ -234,10 +264,45 @@ if (pending.length === 0) {
 // Each one refuses to publish something that cannot be traced back to this
 // repository's history, or that would move the `latest` dist-tag backwards.
 
-if (capture('git', ['status', '--porcelain']).trim() !== '')
+// Two questions, because neither command alone is immune to configuration:
+// tracked changes (`--untracked-files=no`), and untracked files with only the
+// repository's own .gitignore files applied. `--exclude-standard` is left out
+// on purpose: it reads core.excludesFile and .git/info/exclude, which are not in
+// the committed tree and can hide a source file that would be published.
+if (
+  captureGit(['status', '--porcelain', '--untracked-files=no']).trim() !== '' ||
+  captureGit([
+    'ls-files',
+    '--others',
+    '--exclude-per-directory=.gitignore',
+  ]).trim() !== ''
+)
   fail(
     'the working tree is dirty. Publish only what is committed, or the tarball\n' +
       'holds changes no commit and no tag describes.',
+  );
+
+// `assume-unchanged` (also what core.ignoreStat sets) and `skip-worktree` tell
+// git not to look at a tracked file, so an edited one is invisible to the status
+// above. `ls-files -v` marks the first with a lowercase tag and the second with
+// `S` (`s` when both are set).
+const flagged = captureGit(['ls-files', '-v'])
+  .split('\n')
+  .filter((line) => {
+    const tag = line.charAt(0);
+    return tag === 'S' || (tag !== '' && tag !== tag.toUpperCase());
+  })
+  .map((line) => line.slice(2));
+if (flagged.length > 0)
+  fail(
+    `${flagged.length} index entries are flagged assume-unchanged or skip-worktree, which hide edits\n` +
+      'from the dirty-tree guard (core.ignoreStat sets the first):\n' +
+      `${flagged
+        .slice(0, 10)
+        .map((f) => `  ${f}`)
+        .join('\n')}\n` +
+      'Clear them with `git update-index --no-assume-unchanged` and\n' +
+      '`git update-index --no-skip-worktree`, then check the tree again.',
   );
 
 for (const p of pending) {
@@ -262,7 +327,7 @@ for (const p of pending) {
   // package without bumping it, and the tarball would then carry content the
   // tagged version never had. The tree has to BE the tagged tree.
   if (!gitSucceeds(['diff', '--quiet', tag, 'HEAD'])) {
-    const changed = capture('git', ['diff', '--name-only', tag, 'HEAD'])
+    const changed = captureGit(['diff', '--name-only', tag, 'HEAD'])
       .trim()
       .split('\n')
       .slice(0, 10);
