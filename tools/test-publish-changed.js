@@ -631,6 +631,52 @@ check(
   },
 );
 
+const FLAGGED = /index entries are flagged/;
+
+check('core.ignoreStat hiding an edited tracked file stops the run', () => {
+  const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
+  const file = path.join(dir, 'packages/alpha/package.json');
+  git(dir, ['config', 'core.ignoreStat', 'true']);
+  // ignoreStat sets assume-unchanged on entries git itself updates.
+  fs.utimesSync(file, new Date(), new Date());
+  git(dir, ['add', '-A']);
+  fs.appendFileSync(file, '\n');
+  assert.strictEqual(
+    git(dir, ['status', '--porcelain', '--untracked-files=no']).trim(),
+    '',
+    'ignoreStat hides nothing',
+  );
+
+  const { bin, logPath } = installFakeNpm(dir, alphaManifests(dir));
+  const result = run(dir, bin);
+  assert.strictEqual(result.status, 1, result.stdout + result.stderr);
+  assert.match(result.stderr, FLAGGED);
+  assert.deepStrictEqual(publishes(readLog(logPath)), []);
+});
+
+check('a skip-worktree tracked file stops the run', () => {
+  const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
+  const rel = 'packages/alpha/package.json';
+  git(dir, ['update-index', '--skip-worktree', rel]);
+  fs.appendFileSync(path.join(dir, rel), '\n');
+
+  const { bin, logPath } = installFakeNpm(dir, alphaManifests(dir));
+  const result = run(dir, bin);
+  assert.strictEqual(result.status, 1, result.stdout + result.stderr);
+  assert.match(result.stderr, FLAGGED);
+  assert.deepStrictEqual(publishes(readLog(logPath)), []);
+});
+
+check('a clean tree with no index flags still publishes', () => {
+  const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
+  const { bin, logPath } = installFakeNpm(dir, alphaManifests(dir));
+  const result = run(dir, bin);
+  assert.strictEqual(result.status, 0, result.stdout + result.stderr);
+  assert.deepStrictEqual(publishes(readLog(logPath)), [
+    'publish ./packages/alpha --ignore-scripts',
+  ]);
+});
+
 check('publishes every pending package, in workspace order', () => {
   const dir = fixture([
     { dir: 'alpha', version: '1.1.0' },

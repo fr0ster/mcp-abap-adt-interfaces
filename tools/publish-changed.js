@@ -282,6 +282,29 @@ if (
       'holds changes no commit and no tag describes.',
   );
 
+// `assume-unchanged` (also what core.ignoreStat sets) and `skip-worktree` tell
+// git not to look at a tracked file, so an edited one is invisible to the status
+// above. `ls-files -v` marks the first with a lowercase tag and the second with
+// `S` (`s` when both are set).
+const flagged = captureGit(['ls-files', '-v'])
+  .split('\n')
+  .filter((line) => {
+    const tag = line.charAt(0);
+    return tag === 'S' || (tag !== '' && tag !== tag.toUpperCase());
+  })
+  .map((line) => line.slice(2));
+if (flagged.length > 0)
+  fail(
+    `${flagged.length} index entries are flagged assume-unchanged or skip-worktree, which hide edits\n` +
+      'from the dirty-tree guard (core.ignoreStat sets the first):\n' +
+      `${flagged
+        .slice(0, 10)
+        .map((f) => `  ${f}`)
+        .join('\n')}\n` +
+      'Clear them with `git update-index --no-assume-unchanged` and\n' +
+      '`git update-index --no-skip-worktree`, then check the tree again.',
+  );
+
 for (const p of pending) {
   if (!semver.valid(p.local))
     fail(`${p.name} has version "${p.local}", which is not valid semver.`);
