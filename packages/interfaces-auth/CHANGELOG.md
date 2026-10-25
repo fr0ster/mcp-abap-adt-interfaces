@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [8.0.1] - 2026-10-25
+
+A patch, by the owner's decision: it corrects a design error of 8.0.0 — a
+problem the design missed. Measured on a macOS arm64 GitHub runner
+(GSS.framework / Heimdal) with no ticket cache, the SPNEGO mechanism answers
+"An unsupported mechanism was requested: unknown mech-code 0 for mech unknown":
+no usable mechanism to negotiate with.
+
+### Added
+- The `spnego` problem `no-mechanism`, in `SPNEGO_PROBLEMS` and in
+  `NEGOTIATE_SOURCE_PROBLEMS` (a token source may answer it; seven now, then the
+  provider's own `ntlm-token` and `token-unreadable`). An exhaustive switch over
+  `SpnegoProblem` or `NegotiateSourceProblem` now needs the `no-mechanism` case.
+
 ## [8.0.0] - 2026-10-25
 
 A major, by this package's own rule: a new error kind is a major. An

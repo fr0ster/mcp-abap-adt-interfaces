@@ -48,7 +48,9 @@ export type SpnegoLists = [
   Expect<Has<ConfigField, 'servicePrincipal'>>,
   Expect<Has<ConfigField, 'tokenSource'>>,
   Expect<Has<CredentialKind, 'kerberos-ticket'>>,
-  // a source answers six problems; the provider adds two
+  // a source answers seven problems; the provider adds two
+  Expect<Has<SpnegoProblem, 'no-mechanism'>>,
+  Expect<Has<NegotiateSourceProblem, 'no-mechanism'>>,
   Expect<
     Equal<
       Exclude<SpnegoProblem, NegotiateSourceProblem>,
@@ -201,3 +203,21 @@ if (answer.ok) {
   const p: NegotiateSourceProblem = answer.problem;
   use(p);
 }
+
+// ---- an exhaustive switch over the source's problems needs `no-mechanism` ---
+
+function exhaustiveSourceProblem(p: NegotiateSourceProblem): string {
+  switch (p) {
+    case 'no-credential':
+    case 'service-unknown':
+    case 'kdc-unreachable':
+    case 'clock-skew':
+    case 'binding-unavailable':
+    case 'source-failed':
+      return p;
+    default:
+      // @ts-expect-error 'no-mechanism' is not handled above: not exhaustive
+      return ((x: never) => x)(p);
+  }
+}
+use(exhaustiveSourceProblem);
