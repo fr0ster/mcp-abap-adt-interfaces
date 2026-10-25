@@ -89,7 +89,12 @@ for (const dir of fs.readdirSync(packagesDir)) {
     // other name from `src/error` is still refused there.
     // The authorization parts (7.4.0) name the strategy that labels a
     // transport (`IAnswerTransport.label`): exactly `InteractiveLoginStrategy`.
+    // The SPNego token source (8.0.0) answers a problem out of a closed list:
+    // exactly `NegotiateSourceProblem`.
     const EXTRA = {
+      [path.join(src, 'auth', 'INegotiateTokenSource.ts')]: new Set([
+        'NegotiateSourceProblem',
+      ]),
       [path.join(src, 'auth', 'IAuthorizationParts.ts')]: new Set([
         'InteractiveLoginStrategy',
       ]),
