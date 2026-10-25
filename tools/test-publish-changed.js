@@ -82,6 +82,7 @@ function fixture(packages) {
       {
         name: 'fixture',
         private: true,
+        scripts: { check: 'npm run build && npm run test:check' },
         publishOrder: packages.map((p) => `packages/${p.dir}`),
       },
       null,
@@ -222,7 +223,23 @@ if (args[0] === 'view') {
   process.exit(0);
 }
 
-if (args[0] === 'run' && args[1] === 'check') process.exit(state.failCheck ? 1 : 0);
+// A check step: it says something on each stream, so the cases can tell where
+// its output went, and fails when told to.
+if (args[0] === 'run') {
+  process.stdout.write('output of ' + args[1] + '\\n');
+  if (state.failCheck || state.failStep === args[1]) {
+    process.stderr.write('error in ' + args[1] + '\\n');
+    process.exit(1);
+  }
+  process.stderr.write('warning in ' + args[1] + '\\n');
+  // Something changes the tree after the guards and before the publish: the
+  // last step of the check is the latest moment a fake can reach.
+  if (args[1] === 'test:check' && state.touchDuringCheck)
+    fs.appendFileSync(state.touchDuringCheck, 'changed\\n');
+  if (args[1] === 'test:check' && state.commitDuringCheck)
+    require('node:child_process').execFileSync('git', ['commit', '-q', '--allow-empty', '-m', 'moved'], { cwd: state.commitDuringCheck, env: { ...process.env, GIT_CONFIG_GLOBAL: '/dev/null', GIT_CONFIG_SYSTEM: '/dev/null' } });
+  process.exit(0);
+}
 
 if (args[0] === 'publish') {
   // npm takes a spec as a local folder only when it is plainly one ('./',
@@ -277,13 +294,16 @@ process.exit(1);
   return { bin, logPath };
 }
 
-function run(dir, bin, args = [], extraEnv = {}) {
+// `input` is what the operator types; the default is the Enter that lets the
+// publishes go.
+function run(dir, bin, args = [], extraEnv = {}, input = '\n') {
   return spawnSync(
     process.execPath,
     [path.join(dir, 'tools', 'publish-changed.js'), ...args],
     {
       cwd: dir,
       encoding: 'utf8',
+      input,
       env: {
         // gitEnv(), not process.env: the script runs git itself, so ambient
         // settings reach its guards too. Measured: several of them make
@@ -411,7 +431,7 @@ const BLINDING_GIT_ENVS = [
 for (const [label, blinding] of BLINDING_GIT_ENVS)
   check(`the dirty-tree guard survives ${label}`, () => {
     const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
-    fs.writeFileSync(path.join(dir, 'stray.txt'), 'uncommitted');
+    fs.writeFileSync(path.join(dir, 'packages/alpha/stray.txt'), 'uncommitted');
 
     const hostile = blinding(dir);
     const previous = Object.keys(hostile).map((name) => [
@@ -1122,7 +1142,7 @@ check('a failing check publishes nothing', () => {
 
   const result = run(dir, bin);
   assert.strictEqual(result.status, 1);
-  assert.match(result.stderr, /npm run check failed\. Nothing was published/);
+  assert.match(result.stderr, /npm run build failed\. Nothing was published/);
   assert.deepStrictEqual(publishes(readLog(logPath)), []);
 });
 
@@ -1140,6 +1160,199 @@ check('a package the registry has never seen is publishable', () => {
   assert.deepStrictEqual(publishes(readLog(logPath)), [
     'publish ./packages/alpha --ignore-scripts',
   ]);
+});
+
+// --- the check's log and the pause ------------------------------------------
+
+/** The log path the run named, read from its own words. */
+const logOf = (result) => {
+  const marker = 'output: ';
+  const line = result.stdout.split('\n').find((l) => l.includes(marker));
+  assert.ok(line, `no log path in:\n${result.stdout}`);
+  return line.slice(line.indexOf(marker) + marker.length).trim();
+};
+
+check(
+  'the check runs step by step into a log, one line each on the terminal',
+  () => {
+    const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
+    const { bin, logPath } = installFakeNpm(dir, alphaManifests(dir));
+    const result = run(dir, bin);
+    assert.strictEqual(result.status, 0, result.stdout + result.stderr);
+    const runs = readLog(logPath)
+      .filter((a) => a[0] === 'run')
+      .map((a) => a[1]);
+    assert.deepStrictEqual(runs, ['build', 'test:check']);
+    assert.match(result.stdout, / {2}ok {2}npm run build \(\d+s\)/);
+    assert.match(result.stdout, / {2}ok {2}npm run test:check \(\d+s\)/);
+    // Neither stream of a step reaches the terminal; both are in the log.
+    const terminal = result.stdout + result.stderr;
+    assert.doesNotMatch(terminal, /output of|warning in/);
+    const log = fs.readFileSync(logOf(result), 'utf8');
+    for (const text of [
+      'output of build',
+      'warning in build',
+      'output of test:check',
+      'warning in test:check',
+    ])
+      assert.ok(log.includes(text), `${text} is not in the log`);
+  },
+);
+
+check('a failed step prints its own tail and the log path, and stops', () => {
+  const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
+  const { bin, logPath } = installFakeNpm(dir, {
+    ...alphaManifests(dir),
+    failStep: 'test:check',
+  });
+  const result = run(dir, bin);
+  assert.strictEqual(result.status, 1, result.stdout + result.stderr);
+  assert.match(result.stdout, /FAIL {2}npm run test:check/);
+  assert.match(result.stderr, /error in test:check/);
+  // The tail is the failed step's: the step before it passed and is not repeated.
+  assert.doesNotMatch(result.stderr, /output of build/);
+  assert.match(
+    result.stderr,
+    /npm run test:check failed\. Nothing was published/,
+  );
+  assert.ok(result.stderr.includes(logOf(result)), 'the log path is not named');
+  assert.doesNotMatch(result.stdout, /Press Enter/);
+  assert.deepStrictEqual(publishes(readLog(logPath)), []);
+});
+
+check('a check that is not a plain chain runs as one step', () => {
+  const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
+  const manifest = path.join(dir, 'package.json');
+  const root = readJson(manifest);
+  root.scripts.check = 'npm run build && node tools/x.js';
+  fs.writeFileSync(manifest, JSON.stringify(root, null, 2));
+  git(dir, ['commit', '-qam', 'check']);
+  git(dir, ['tag', '-f', 'alpha-v1.1.0']);
+  const { bin, logPath } = installFakeNpm(dir, alphaManifests(dir));
+  const result = run(dir, bin);
+  assert.strictEqual(result.status, 0, result.stdout + result.stderr);
+  const runs = readLog(logPath)
+    .filter((a) => a[0] === 'run')
+    .map((a) => a[1]);
+  assert.deepStrictEqual(runs, ['check']);
+});
+
+for (const [label, input, words] of [
+  ['the end of input', '', /No answer was given\. Nothing was published/],
+  [
+    'an answer other than Enter',
+    'n\n',
+    /The answer was not Enter\. Nothing was published/,
+  ],
+])
+  check(`${label} at the pause publishes nothing`, () => {
+    const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
+    const { bin, logPath } = installFakeNpm(dir, alphaManifests(dir));
+    const result = run(dir, bin, [], {}, input);
+    assert.strictEqual(result.status, 1, result.stdout + result.stderr);
+    assert.match(result.stdout, /Press Enter to publish 1 package/);
+    assert.match(result.stderr, words);
+    assert.deepStrictEqual(publishes(readLog(logPath)), []);
+  });
+
+check('Enter after a carriage return still publishes', () => {
+  const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
+  const { bin, logPath } = installFakeNpm(dir, alphaManifests(dir));
+  const result = run(dir, bin, [], {}, '\r\n');
+  assert.strictEqual(result.status, 0, result.stdout + result.stderr);
+  assert.deepStrictEqual(publishes(readLog(logPath)), [
+    'publish ./packages/alpha --ignore-scripts',
+  ]);
+});
+
+check('an untracked file outside the packages does not stop the run', () => {
+  const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
+  fs.mkdirSync(path.join(dir, '.claude'));
+  fs.writeFileSync(path.join(dir, '.claude/settings.local.json'), '{}\n');
+  const { bin, logPath } = installFakeNpm(dir, alphaManifests(dir));
+  const result = run(dir, bin);
+  assert.strictEqual(result.status, 0, result.stdout + result.stderr);
+  assert.deepStrictEqual(publishes(readLog(logPath)), [
+    'publish ./packages/alpha --ignore-scripts',
+  ]);
+});
+
+check(
+  'a modified tracked file outside the packages still stops the run',
+  () => {
+    const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
+    fs.appendFileSync(path.join(dir, 'package.json'), '\n');
+    const { bin, logPath } = installFakeNpm(dir, alphaManifests(dir));
+    const result = run(dir, bin);
+    assert.strictEqual(result.status, 1, result.stdout + result.stderr);
+    assert.match(result.stderr, /the working tree is dirty/);
+    assert.deepStrictEqual(publishes(readLog(logPath)), []);
+  },
+);
+
+check('core.ignoreCase does not let .gitignore hide an untracked file', () => {
+  const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
+  fs.writeFileSync(path.join(dir, '.gitignore'), 'build/\n');
+  git(dir, ['add', '.gitignore']);
+  git(dir, ['commit', '-qm', 'ignore build']);
+  git(dir, ['tag', '-f', 'alpha-v1.1.0']);
+  git(dir, ['config', 'core.ignoreCase', 'true']);
+  fs.mkdirSync(path.join(dir, 'packages/alpha/BUILD'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'packages/alpha/BUILD/x.js'), 'x\n');
+  // The configuration must really hide the file, or the case proves nothing.
+  assert.strictEqual(
+    git(dir, [
+      'ls-files',
+      '--others',
+      '--exclude-per-directory=.gitignore',
+    ]).trim(),
+    '',
+    'core.ignoreCase hides nothing',
+  );
+  const { bin, logPath } = installFakeNpm(dir, alphaManifests(dir));
+  const result = run(dir, bin);
+  assert.strictEqual(result.status, 1, result.stdout + result.stderr);
+  assert.match(result.stderr, /the working tree is dirty/);
+  assert.deepStrictEqual(publishes(readLog(logPath)), []);
+});
+
+for (const [label, change] of [
+  [
+    'an edited package file',
+    (dir) => ({
+      touchDuringCheck: path.join(dir, 'packages/alpha/package.json'),
+    }),
+  ],
+  [
+    'a new untracked package file',
+    (dir) => ({
+      touchDuringCheck: path.join(dir, 'packages/alpha/new.js'),
+    }),
+  ],
+])
+  check(`${label} after the first guards publishes nothing`, () => {
+    const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
+    const { bin, logPath } = installFakeNpm(dir, {
+      ...alphaManifests(dir),
+      ...change(dir),
+    });
+    const result = run(dir, bin);
+    assert.strictEqual(result.status, 1, result.stdout + result.stderr);
+    assert.match(result.stdout, /Press Enter/);
+    assert.match(result.stderr, /the working tree is dirty/);
+    assert.deepStrictEqual(publishes(readLog(logPath)), []);
+  });
+
+check('HEAD moving after the first guards publishes nothing', () => {
+  const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
+  const { bin, logPath } = installFakeNpm(dir, {
+    ...alphaManifests(dir),
+    commitDuringCheck: dir,
+  });
+  const result = run(dir, bin);
+  assert.strictEqual(result.status, 1, result.stdout + result.stderr);
+  assert.match(result.stderr, /HEAD moved while the run waited/);
+  assert.deepStrictEqual(publishes(readLog(logPath)), []);
 });
 
 if (failures.length) {

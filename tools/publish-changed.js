@@ -30,6 +30,15 @@
 // package's prepublishOnly, which is the same full check five times over; the
 // publishes here pass --ignore-scripts because the check has already run.
 //
+// **The check writes to a log file, not to the terminal.** Its output is long
+// enough that a terminal's scrollback dropped the error of a failed build, and
+// the publish that followed asked for the browser login in the middle of it.
+// So each step of the check (`npm run a && npm run b ...`, run one by one) gets
+// one summary line on the terminal; a failed step prints the tail of its own
+// output and the log's path, and nothing is published. Then the run waits for
+// Enter, once, before the first `npm publish`: the operator comes back for the
+// login prompt instead of watching for it.
+//
 // What it guarantees: the tarball holds the tree the release tag names. A tag
 // that is merely an ancestor of HEAD does not give that — a commit after the tag
 // can change a package without bumping its version, and the tarball then carries
@@ -39,6 +48,7 @@
 //   npm run release:publish -- --dry-run
 //   npm run release:publish -- --tag=next     # for a prerelease version
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const semver = require('semver');
@@ -192,10 +202,18 @@ function captureGit(args) {
   const env = { ...process.env };
   for (const name of GIT_REDIRECTS) delete env[name];
   // Pinned explicitly: `-C` alone leaves a repository-local `core.worktree`
-  // free to point status and ls-files at another tree.
+  // free to point status and ls-files at another tree. `core.ignoreCase=true`
+  // matches .gitignore patterns without case, so `build/` hid an untracked
+  // `BUILD/` that npm would pack (measured); the guard matches as written.
   return capture(
     'git',
-    [`--git-dir=${path.join(ROOT, '.git')}`, `--work-tree=${ROOT}`, ...args],
+    [
+      `--git-dir=${path.join(ROOT, '.git')}`,
+      `--work-tree=${ROOT}`,
+      '-c',
+      'core.ignoreCase=false',
+      ...args,
+    ],
     { env },
   );
 }
@@ -264,99 +282,118 @@ if (pending.length === 0) {
 // Each one refuses to publish something that cannot be traced back to this
 // repository's history, or that would move the `latest` dist-tag backwards.
 
-// Two questions, because neither command alone is immune to configuration:
-// tracked changes (`--untracked-files=no`), and untracked files with only the
-// repository's own .gitignore files applied. `--exclude-standard` is left out
-// on purpose: it reads core.excludesFile and .git/info/exclude, which are not in
-// the committed tree and can hide a source file that would be published.
-if (
-  captureGit(['status', '--porcelain', '--untracked-files=no']).trim() !== '' ||
-  captureGit([
-    'ls-files',
-    '--others',
-    '--exclude-per-directory=.gitignore',
-  ]).trim() !== ''
-)
-  fail(
-    'the working tree is dirty. Publish only what is committed, or the tarball\n' +
-      'holds changes no commit and no tag describes.',
-  );
-
-// `assume-unchanged` (also what core.ignoreStat sets) and `skip-worktree` tell
-// git not to look at a tracked file, so an edited one is invisible to the status
-// above. `ls-files -v` marks the first with a lowercase tag and the second with
-// `S` (`s` when both are set).
-const flagged = captureGit(['ls-files', '-v'])
-  .split('\n')
-  .filter((line) => {
-    const tag = line.charAt(0);
-    return tag === 'S' || (tag !== '' && tag !== tag.toUpperCase());
-  })
-  .map((line) => line.slice(2));
-if (flagged.length > 0)
-  fail(
-    `${flagged.length} index entries are flagged assume-unchanged or skip-worktree, which hide edits\n` +
-      'from the dirty-tree guard (core.ignoreStat sets the first):\n' +
-      `${flagged
-        .slice(0, 10)
-        .map((f) => `  ${f}`)
-        .join('\n')}\n` +
-      'Clear them with `git update-index --no-assume-unchanged` and\n' +
-      '`git update-index --no-skip-worktree`, then check the tree again.',
-  );
-
-for (const p of pending) {
-  if (!semver.valid(p.local))
-    fail(`${p.name} has version "${p.local}", which is not valid semver.`);
-
-  const tag = tagFor(p.dir, p.local);
-
-  if (!gitSucceeds(['rev-parse', '-q', '--verify', `refs/tags/${tag}`]))
+/**
+ * Every guard on the tree and the tags. Run before the check and again after
+ * the pause: the pause waits for as long as the operator is away, and what is
+ * published is the tree as it is when Enter is pressed, not as it was checked.
+ */
+function guard() {
+  // Two questions, because neither command alone is immune to configuration:
+  // tracked changes (`--untracked-files=no`), and untracked files with only the
+  // repository's own .gitignore files applied. `--exclude-standard` is left out
+  // on purpose: it reads core.excludesFile and .git/info/exclude, which are not in
+  // the committed tree and can hide a source file that would be published.
+  //
+  // Tracked changes are asked of the whole tree: an edited build script or
+  // configuration changes what the check proves. Untracked files are asked only
+  // of the packages' directories, the only places a tarball is packed from; a
+  // file of the operator's machine at the root (an editor's or an agent's local
+  // settings) is no part of any release and blocked one.
+  if (
+    captureGit(['status', '--porcelain', '--untracked-files=no']).trim() !==
+      '' ||
+    captureGit([
+      'ls-files',
+      '--others',
+      '--exclude-per-directory=.gitignore',
+      '--',
+      ...publishOrder,
+    ]).trim() !== ''
+  )
     fail(
-      `${p.name} ${p.local} has no tag ${tag}.\n` +
-        'A published version that is not tagged cannot be checked out again.',
+      'the working tree is dirty. Publish only what is committed, or the tarball\n' +
+        'holds changes no commit and no tag describes.',
     );
 
-  if (!gitSucceeds(['merge-base', '--is-ancestor', tag, 'HEAD']))
+  // `assume-unchanged` (also what core.ignoreStat sets) and `skip-worktree` tell
+  // git not to look at a tracked file, so an edited one is invisible to the status
+  // above. `ls-files -v` marks the first with a lowercase tag and the second with
+  // `S` (`s` when both are set).
+  const flagged = captureGit(['ls-files', '-v'])
+    .split('\n')
+    .filter((line) => {
+      const tag = line.charAt(0);
+      return tag === 'S' || (tag !== '' && tag !== tag.toUpperCase());
+    })
+    .map((line) => line.slice(2));
+  if (flagged.length > 0)
     fail(
-      `${tag} is not an ancestor of HEAD.\n` +
-        'HEAD is not the history that tag belongs to.',
+      `${flagged.length} index entries are flagged assume-unchanged or skip-worktree, which hide edits\n` +
+        'from the dirty-tree guard (core.ignoreStat sets the first):\n' +
+        `${flagged
+          .slice(0, 10)
+          .map((f) => `  ${f}`)
+          .join('\n')}\n` +
+        'Clear them with `git update-index --no-assume-unchanged` and\n' +
+        '`git update-index --no-skip-worktree`, then check the tree again.',
     );
 
-  // Ancestry alone is not traceability: a commit after the tag can change a
-  // package without bumping it, and the tarball would then carry content the
-  // tagged version never had. The tree has to BE the tagged tree.
-  if (!gitSucceeds(['diff', '--quiet', tag, 'HEAD'])) {
-    const changed = captureGit(['diff', '--name-only', tag, 'HEAD'])
-      .trim()
-      .split('\n')
-      .slice(0, 10);
-    fail(
-      `HEAD differs from ${tag}, so the tarball would not be what that tag names:\n` +
-        `${changed.map((f) => `  ${f}`).join('\n')}\n` +
-        `Publish the tagged tree (git checkout ${tag}) or bump and tag again.`,
-    );
+  for (const p of pending) {
+    if (!semver.valid(p.local))
+      fail(`${p.name} has version "${p.local}", which is not valid semver.`);
+
+    const tag = tagFor(p.dir, p.local);
+
+    if (!gitSucceeds(['rev-parse', '-q', '--verify', `refs/tags/${tag}`]))
+      fail(
+        `${p.name} ${p.local} has no tag ${tag}.\n` +
+          'A published version that is not tagged cannot be checked out again.',
+      );
+
+    if (!gitSucceeds(['merge-base', '--is-ancestor', tag, 'HEAD']))
+      fail(
+        `${tag} is not an ancestor of HEAD.\n` +
+          'HEAD is not the history that tag belongs to.',
+      );
+
+    // Ancestry alone is not traceability: a commit after the tag can change a
+    // package without bumping it, and the tarball would then carry content the
+    // tagged version never had. The tree has to BE the tagged tree.
+    if (!gitSucceeds(['diff', '--quiet', tag, 'HEAD'])) {
+      const changed = captureGit(['diff', '--name-only', tag, 'HEAD'])
+        .trim()
+        .split('\n')
+        .slice(0, 10);
+      fail(
+        `HEAD differs from ${tag}, so the tarball would not be what that tag names:\n` +
+          `${changed.map((f) => `  ${f}`).join('\n')}\n` +
+          `Publish the tagged tree (git checkout ${tag}) or bump and tag again.`,
+      );
+    }
+
+    // A prerelease published without a dist-tag becomes `latest`, which is how a
+    // beta reaches everyone who asked for the stable line.
+    if (semver.prerelease(p.local) && TARGETS_LATEST)
+      fail(
+        `${p.name} ${p.local} is a prerelease and this publish targets \`latest\`\n` +
+          `(${NPM_TAG === null ? 'no --tag was given' : '--tag=latest names it explicitly'}).\n` +
+          'A prerelease on `latest` reaches everyone who asked for the stable line.\n' +
+          'Pass --tag=next, or another name that is not `latest`.',
+      );
+
+    // Only `latest` can be moved backwards, so this asks about the dist-tag
+    // rather than about the greatest version that exists.
+    if (TARGETS_LATEST && p.latest !== null && semver.gt(p.latest, p.local))
+      fail(
+        `${p.name} ${p.local} is lower than the published latest ${p.latest}.\n` +
+          'Publishing it to `latest` would move that tag backwards. Pass a --tag\n' +
+          'other than `latest` to publish it somewhere else.',
+      );
   }
-
-  // A prerelease published without a dist-tag becomes `latest`, which is how a
-  // beta reaches everyone who asked for the stable line.
-  if (semver.prerelease(p.local) && TARGETS_LATEST)
-    fail(
-      `${p.name} ${p.local} is a prerelease and this publish targets \`latest\`\n` +
-        `(${NPM_TAG === null ? 'no --tag was given' : '--tag=latest names it explicitly'}).\n` +
-        'A prerelease on `latest` reaches everyone who asked for the stable line.\n' +
-        'Pass --tag=next, or another name that is not `latest`.',
-    );
-
-  // Only `latest` can be moved backwards, so this asks about the dist-tag
-  // rather than about the greatest version that exists.
-  if (TARGETS_LATEST && p.latest !== null && semver.gt(p.latest, p.local))
-    fail(
-      `${p.name} ${p.local} is lower than the published latest ${p.latest}.\n` +
-        'Publishing it to `latest` would move that tag backwards. Pass a --tag\n' +
-        'other than `latest` to publish it somewhere else.',
-    );
 }
+
+guard();
+const HEAD = captureGit(['rev-parse', 'HEAD']).trim();
 
 console.log(
   `\nTo publish${NPM_TAG ? ` under the "${NPM_TAG}" tag` : ''}, in dependency order: ${pending
@@ -374,17 +411,116 @@ if (DRY_RUN) {
 if (pending.length > 1)
   console.log(
     `\n${pending.length} packages will be published one after another, and npm asks for\n` +
-      'two-factor authentication each time. Each prompt waits for you; a prompt that\n' +
+      'two-factor authentication for each one it does not exempt. Each prompt waits for you; a prompt that\n' +
       'times out fails that package and stops the run, leaving the ones before it\n' +
       'published. Re-running resumes — they show as up to date.',
   );
 
-console.log('\nRunning npm run check once for the whole release.\n');
-try {
-  interactive('npm', ['run', 'check']);
-} catch {
-  fail('npm run check failed. Nothing was published.');
+/**
+ * The steps of the root `check` script, when it is a plain chain of
+ * `npm run <name>` joined by ` && `; otherwise the one step `check`. Read as
+ * text, never evaluated.
+ */
+function checkSteps() {
+  const script = readJson(path.join(ROOT, 'package.json')).scripts?.check;
+  if (typeof script !== 'string') return ['check'];
+  const steps = [];
+  for (const part of script.split(' && ')) {
+    const command = part.trim();
+    if (!command.startsWith('npm run ')) return ['check'];
+    const name = command.slice('npm run '.length);
+    if (name === '' || name.includes(' ')) return ['check'];
+    steps.push(name);
+  }
+  return steps;
 }
+
+/** The last `count` lines of `file` from byte `from` on. */
+function tail(file, from, count) {
+  const text = fs.readFileSync(file).subarray(from).toString('utf8');
+  const lines = text.split('\n');
+  if (lines[lines.length - 1] === '') lines.pop();
+  return lines.slice(-count).join('\n');
+}
+
+const LOG = path.join(
+  fs.mkdtempSync(path.join(os.tmpdir(), 'publish-check-')),
+  'check.log',
+);
+console.log(
+  `\nRunning npm run check once for the whole release; output: ${LOG}\n`,
+);
+for (const step of checkSteps()) {
+  const from = fs.existsSync(LOG) ? fs.statSync(LOG).size : 0;
+  fs.appendFileSync(LOG, `\n===== npm run ${step} =====\n`);
+  const started = Date.now();
+  const fd = fs.openSync(LOG, 'a');
+  let ok = true;
+  try {
+    execFileSync('npm', ['run', step], {
+      cwd: ROOT,
+      stdio: ['ignore', fd, fd],
+    });
+  } catch {
+    ok = false;
+  } finally {
+    fs.closeSync(fd);
+  }
+  const seconds = Math.round((Date.now() - started) / 1000);
+  console.log(`${ok ? '  ok  ' : 'FAIL  '}npm run ${step} (${seconds}s)`);
+  if (!ok) {
+    console.error(`\n${tail(LOG, from, 40)}`);
+    fail(
+      `npm run ${step} failed. Nothing was published.\n` +
+        `The whole output is in ${LOG}`,
+    );
+  }
+}
+
+/**
+ * One line from stdin, read synchronously; null at the end of input. Only
+ * whether it is empty matters, so the bytes are not decoded as a whole.
+ */
+function readLine() {
+  const byte = Buffer.alloc(1);
+  let line = '';
+  for (;;) {
+    let read;
+    try {
+      read = fs.readSync(0, byte, 0, 1, null);
+    } catch (error) {
+      if (error.code === 'EAGAIN') {
+        sleep(50);
+        continue;
+      }
+      if (error.code === 'EOF') return null;
+      throw error;
+    }
+    if (read === 0) return line === '' ? null : line;
+    const char = byte.toString('latin1');
+    if (char === '\n') return line;
+    if (char !== '\r') line += char;
+  }
+}
+
+console.log(
+  `\nThe check passed. Press Enter to publish ${pending.length} package(s); npm will\n` +
+    'ask you to log in. Anything else, or the end of input, publishes nothing.',
+);
+const answer = readLine();
+if (answer !== '')
+  fail(
+    `${answer === null ? 'No answer was given' : 'The answer was not Enter'}. Nothing was published.`,
+  );
+
+// Nothing that changed while the run waited is published: the same guards
+// again, and HEAD must be the commit the check ran on.
+guard();
+if (captureGit(['rev-parse', 'HEAD']).trim() !== HEAD)
+  fail(
+    'HEAD moved while the run waited, so the check did not run on what would be\n' +
+      'published. Nothing was published; run it again.',
+  );
 
 // --- publish --------------------------------------------------------------
 
