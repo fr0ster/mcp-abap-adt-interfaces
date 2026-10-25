@@ -30,6 +30,15 @@
 // package's prepublishOnly, which is the same full check five times over; the
 // publishes here pass --ignore-scripts because the check has already run.
 //
+// **The check writes to a log file, not to the terminal.** Its output is long
+// enough that a terminal's scrollback dropped the error of a failed build, and
+// the publish that followed asked for the browser login in the middle of it.
+// So each step of the check (`npm run a && npm run b ...`, run one by one) gets
+// one summary line on the terminal; a failed step prints the tail of its own
+// output and the log's path, and nothing is published. Then the run waits for
+// Enter, once, before the first `npm publish`: the operator comes back for the
+// login prompt instead of watching for it.
+//
 // What it guarantees: the tarball holds the tree the release tag names. A tag
 // that is merely an ancestor of HEAD does not give that — a commit after the tag
 // can change a package without bumping its version, and the tarball then carries
@@ -39,6 +48,7 @@
 //   npm run release:publish -- --dry-run
 //   npm run release:publish -- --tag=next     # for a prerelease version
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const semver = require('semver');
@@ -192,10 +202,18 @@ function captureGit(args) {
   const env = { ...process.env };
   for (const name of GIT_REDIRECTS) delete env[name];
   // Pinned explicitly: `-C` alone leaves a repository-local `core.worktree`
-  // free to point status and ls-files at another tree.
+  // free to point status and ls-files at another tree. `core.ignoreCase=true`
+  // matches .gitignore patterns without case, so `build/` hid an untracked
+  // `BUILD/` that npm would pack (measured); the guard matches as written.
   return capture(
     'git',
-    [`--git-dir=${path.join(ROOT, '.git')}`, `--work-tree=${ROOT}`, ...args],
+    [
+      `--git-dir=${path.join(ROOT, '.git')}`,
+      `--work-tree=${ROOT}`,
+      '-c',
+      'core.ignoreCase=false',
+      ...args,
+    ],
     { env },
   );
 }
@@ -269,12 +287,20 @@ if (pending.length === 0) {
 // repository's own .gitignore files applied. `--exclude-standard` is left out
 // on purpose: it reads core.excludesFile and .git/info/exclude, which are not in
 // the committed tree and can hide a source file that would be published.
+//
+// Tracked changes are asked of the whole tree: an edited build script or
+// configuration changes what the check proves. Untracked files are asked only
+// of the packages' directories, the only places a tarball is packed from; a
+// file of the operator's machine at the root (an editor's or an agent's local
+// settings) is no part of any release and blocked one.
 if (
   captureGit(['status', '--porcelain', '--untracked-files=no']).trim() !== '' ||
   captureGit([
     'ls-files',
     '--others',
     '--exclude-per-directory=.gitignore',
+    '--',
+    ...publishOrder,
   ]).trim() !== ''
 )
   fail(
@@ -374,17 +400,107 @@ if (DRY_RUN) {
 if (pending.length > 1)
   console.log(
     `\n${pending.length} packages will be published one after another, and npm asks for\n` +
-      'two-factor authentication each time. Each prompt waits for you; a prompt that\n' +
+      'two-factor authentication for each one it does not exempt. Each prompt waits for you; a prompt that\n' +
       'times out fails that package and stops the run, leaving the ones before it\n' +
       'published. Re-running resumes — they show as up to date.',
   );
 
-console.log('\nRunning npm run check once for the whole release.\n');
-try {
-  interactive('npm', ['run', 'check']);
-} catch {
-  fail('npm run check failed. Nothing was published.');
+/**
+ * The steps of the root `check` script, when it is a plain chain of
+ * `npm run <name>` joined by ` && `; otherwise the one step `check`. Read as
+ * text, never evaluated.
+ */
+function checkSteps() {
+  const script = readJson(path.join(ROOT, 'package.json')).scripts?.check;
+  if (typeof script !== 'string') return ['check'];
+  const steps = [];
+  for (const part of script.split(' && ')) {
+    const command = part.trim();
+    if (!command.startsWith('npm run ')) return ['check'];
+    const name = command.slice('npm run '.length);
+    if (name === '' || name.includes(' ')) return ['check'];
+    steps.push(name);
+  }
+  return steps;
 }
+
+/** The last `count` lines of `file` from byte `from` on. */
+function tail(file, from, count) {
+  const text = fs.readFileSync(file).subarray(from).toString('utf8');
+  const lines = text.split('\n');
+  if (lines[lines.length - 1] === '') lines.pop();
+  return lines.slice(-count).join('\n');
+}
+
+const LOG = path.join(
+  fs.mkdtempSync(path.join(os.tmpdir(), 'publish-check-')),
+  'check.log',
+);
+console.log(
+  `\nRunning npm run check once for the whole release; output: ${LOG}\n`,
+);
+for (const step of checkSteps()) {
+  const from = fs.existsSync(LOG) ? fs.statSync(LOG).size : 0;
+  fs.appendFileSync(LOG, `\n===== npm run ${step} =====\n`);
+  const started = Date.now();
+  const fd = fs.openSync(LOG, 'a');
+  let ok = true;
+  try {
+    execFileSync('npm', ['run', step], {
+      cwd: ROOT,
+      stdio: ['ignore', fd, fd],
+    });
+  } catch {
+    ok = false;
+  } finally {
+    fs.closeSync(fd);
+  }
+  const seconds = Math.round((Date.now() - started) / 1000);
+  console.log(`${ok ? '  ok  ' : 'FAIL  '}npm run ${step} (${seconds}s)`);
+  if (!ok) {
+    console.error(`\n${tail(LOG, from, 40)}`);
+    fail(
+      `npm run ${step} failed. Nothing was published.\n` +
+        `The whole output is in ${LOG}`,
+    );
+  }
+}
+
+/**
+ * One line from stdin, read synchronously; null at the end of input. Only
+ * whether it is empty matters, so the bytes are not decoded as a whole.
+ */
+function readLine() {
+  const byte = Buffer.alloc(1);
+  let line = '';
+  for (;;) {
+    let read;
+    try {
+      read = fs.readSync(0, byte, 0, 1, null);
+    } catch (error) {
+      if (error.code === 'EAGAIN') {
+        sleep(50);
+        continue;
+      }
+      if (error.code === 'EOF') return null;
+      throw error;
+    }
+    if (read === 0) return line === '' ? null : line;
+    const char = byte.toString('latin1');
+    if (char === '\n') return line;
+    if (char !== '\r') line += char;
+  }
+}
+
+console.log(
+  `\nThe check passed. Press Enter to publish ${pending.length} package(s); npm will\n` +
+    'ask you to log in. Anything else, or the end of input, publishes nothing.',
+);
+const answer = readLine();
+if (answer !== '')
+  fail(
+    `${answer === null ? 'No answer was given' : 'The answer was not Enter'}. Nothing was published.`,
+  );
 
 // --- publish --------------------------------------------------------------
 
