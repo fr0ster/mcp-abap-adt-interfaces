@@ -170,10 +170,34 @@ function tagFor(dir, version) {
   return `${dir}-v${version}`;
 }
 
+/**
+ * Variables that make git look at a repository, index or object store other
+ * than ROOT's. Inherited, they would send every guard to a clean clone with the
+ * same tags while npm publishes from ROOT.
+ */
+const GIT_REDIRECTS = [
+  'GIT_DIR',
+  'GIT_WORK_TREE',
+  'GIT_INDEX_FILE',
+  'GIT_OBJECT_DIRECTORY',
+  'GIT_ALTERNATE_OBJECT_DIRECTORIES',
+  'GIT_COMMON_DIR',
+  'GIT_NAMESPACE',
+  'GIT_CEILING_DIRECTORIES',
+  'GIT_DISCOVERY_ACROSS_FILESYSTEM',
+];
+
+/** Captured output of `git <args>` run in ROOT, with no redirection inherited. */
+function captureGit(args) {
+  const env = { ...process.env };
+  for (const name of GIT_REDIRECTS) delete env[name];
+  return capture('git', ['-C', ROOT, ...args], { env });
+}
+
 /** True when `git <args>` exits 0; for the questions git answers by status. */
 function gitSucceeds(args) {
   try {
-    capture('git', args);
+    captureGit(args);
     return true;
   } catch {
     return false;
@@ -240,9 +264,8 @@ if (pending.length === 0) {
 // on purpose: it reads core.excludesFile and .git/info/exclude, which are not in
 // the committed tree and can hide a source file that would be published.
 if (
-  capture('git', ['status', '--porcelain', '--untracked-files=no']).trim() !==
-    '' ||
-  capture('git', [
+  captureGit(['status', '--porcelain', '--untracked-files=no']).trim() !== '' ||
+  captureGit([
     'ls-files',
     '--others',
     '--exclude-per-directory=.gitignore',
@@ -275,7 +298,7 @@ for (const p of pending) {
   // package without bumping it, and the tarball would then carry content the
   // tagged version never had. The tree has to BE the tagged tree.
   if (!gitSucceeds(['diff', '--quiet', tag, 'HEAD'])) {
-    const changed = capture('git', ['diff', '--name-only', tag, 'HEAD'])
+    const changed = captureGit(['diff', '--name-only', tag, 'HEAD'])
       .trim()
       .split('\n')
       .slice(0, 10);

@@ -577,6 +577,39 @@ check('a modified tracked file stops the run', () => {
   assert.deepStrictEqual(publishes(readLog(logPath)), []);
 });
 
+// run() strips GIT_* for the cases above; here the script itself receives the
+// redirection variables, pointing at a clean clone that has the same tags.
+for (const [label, redirect] of [
+  [
+    'GIT_DIR and GIT_WORK_TREE',
+    (clone) => ({
+      GIT_DIR: path.join(clone, '.git'),
+      GIT_WORK_TREE: clone,
+    }),
+  ],
+  ['GIT_DIR alone', (clone) => ({ GIT_DIR: path.join(clone, '.git') })],
+])
+  check(
+    `the guards inspect the repository, not ${label} naming a clean clone`,
+    () => {
+      const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
+      const clone = `${dir}.clone`;
+      git(path.dirname(dir), ['clone', '-q', dir, clone]);
+      git(clone, ['fetch', '-q', '--tags']);
+      fs.mkdirSync(path.join(dir, 'packages/alpha/src'), { recursive: true });
+      fs.writeFileSync(
+        path.join(dir, 'packages/alpha/src/untracked.ts'),
+        'export const x = 1;\n',
+      );
+
+      const { bin, logPath } = installFakeNpm(dir, alphaManifests(dir));
+      const result = run(dir, bin, [], redirect(clone));
+      assert.strictEqual(result.status, 1, result.stdout + result.stderr);
+      assert.match(result.stderr, /the working tree is dirty/);
+      assert.deepStrictEqual(publishes(readLog(logPath)), []);
+    },
+  );
+
 check('publishes every pending package, in workspace order', () => {
   const dir = fixture([
     { dir: 'alpha', version: '1.1.0' },
