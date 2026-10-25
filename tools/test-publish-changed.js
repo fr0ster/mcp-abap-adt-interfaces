@@ -610,6 +610,27 @@ for (const [label, redirect] of [
     },
   );
 
+check(
+  'the guards ignore a repository-local core.worktree naming a clean copy',
+  () => {
+    const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
+    const copy = `${dir}.copy`;
+    git(path.dirname(dir), ['clone', '-q', dir, copy]);
+    fs.mkdirSync(path.join(dir, 'packages/alpha/src'), { recursive: true });
+    fs.writeFileSync(
+      path.join(dir, 'packages/alpha/src/untracked.ts'),
+      'export const x = 1;\n',
+    );
+    git(dir, ['config', 'core.worktree', copy]);
+    // The configuration stays in place: it is what the script must withstand.
+    const { bin, logPath } = installFakeNpm(dir, alphaManifests(dir));
+    const result = run(dir, bin);
+    assert.strictEqual(result.status, 1, result.stdout + result.stderr);
+    assert.match(result.stderr, /the working tree is dirty/);
+    assert.deepStrictEqual(publishes(readLog(logPath)), []);
+  },
+);
+
 check('publishes every pending package, in workspace order', () => {
   const dir = fixture([
     { dir: 'alpha', version: '1.1.0' },

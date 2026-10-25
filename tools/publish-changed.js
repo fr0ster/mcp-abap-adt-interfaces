@@ -191,7 +191,13 @@ const GIT_REDIRECTS = [
 function captureGit(args) {
   const env = { ...process.env };
   for (const name of GIT_REDIRECTS) delete env[name];
-  return capture('git', ['-C', ROOT, ...args], { env });
+  // Pinned explicitly: `-C` alone leaves a repository-local `core.worktree`
+  // free to point status and ls-files at another tree.
+  return capture(
+    'git',
+    [`--git-dir=${path.join(ROOT, '.git')}`, `--work-tree=${ROOT}`, ...args],
+    { env },
+  );
 }
 
 /** True when `git <args>` exits 0; for the questions git answers by status. */
