@@ -234,13 +234,19 @@ if (pending.length === 0) {
 // Each one refuses to publish something that cannot be traced back to this
 // repository's history, or that would move the `latest` dist-tag backwards.
 
-// `--untracked-files=all` is explicit because the default follows
-// `status.showUntrackedFiles`, which a repository, a global file or GIT_CONFIG_*
-// can set to `no`: an untracked source file would then be built and published
-// while no commit or tag describes it.
+// Two questions, because neither command alone is immune to configuration:
+// tracked changes (`--untracked-files=no`), and untracked files with only the
+// repository's own .gitignore files applied. `--exclude-standard` is left out
+// on purpose: it reads core.excludesFile and .git/info/exclude, which are not in
+// the committed tree and can hide a source file that would be published.
 if (
-  capture('git', ['status', '--porcelain', '--untracked-files=all']).trim() !==
-  ''
+  capture('git', ['status', '--porcelain', '--untracked-files=no']).trim() !==
+    '' ||
+  capture('git', [
+    'ls-files',
+    '--others',
+    '--exclude-per-directory=.gitignore',
+  ]).trim() !== ''
 )
   fail(
     'the working tree is dirty. Publish only what is committed, or the tarball\n' +

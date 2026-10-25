@@ -492,6 +492,91 @@ for (const [label, hide] of HIDING_UNTRACKED)
     assert.deepStrictEqual(publishes(readLog(logPath)), []);
   });
 
+// Exclusion that lives outside the committed tree hides an untracked file from
+// every git command that reads it, `--untracked-files=all` included.
+const HIDING_BY_EXCLUDE = [
+  [
+    'core.excludesFile set through the script environment',
+    (dir) => {
+      const file = `${dir}.excludes`;
+      fs.writeFileSync(file, 'untracked.ts\n');
+      return {
+        GIT_CONFIG_COUNT: '1',
+        GIT_CONFIG_KEY_0: 'core.excludesFile',
+        GIT_CONFIG_VALUE_0: file,
+      };
+    },
+  ],
+  [
+    '.git/info/exclude',
+    (dir) => {
+      fs.appendFileSync(path.join(dir, '.git/info/exclude'), 'untracked.ts\n');
+      return {};
+    },
+  ],
+];
+
+const alphaManifests = (dir) => ({
+  versions: { '@fixture/alpha': ['1.0.0'] },
+  manifests: {
+    '@fixture/alpha': path.join(dir, 'packages/alpha/package.json'),
+  },
+});
+
+for (const [label, hide] of HIDING_BY_EXCLUDE)
+  check(
+    `an untracked source file stops the run when hidden by ${label}`,
+    () => {
+      const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
+      fs.mkdirSync(path.join(dir, 'packages/alpha/src'), { recursive: true });
+      fs.writeFileSync(
+        path.join(dir, 'packages/alpha/src/untracked.ts'),
+        'export const x = 1;\n',
+      );
+      const env = hide(dir);
+      const seen = execFileSync(
+        'git',
+        ['status', '--porcelain', '--untracked-files=all'],
+        { cwd: dir, encoding: 'utf8', env: { ...gitEnv(), ...env } },
+      );
+      assert.strictEqual(seen.trim(), '', 'the exclusion hides nothing');
+
+      const { bin, logPath } = installFakeNpm(dir, alphaManifests(dir));
+      const result = run(dir, bin, [], env);
+      assert.strictEqual(result.status, 1, result.stdout + result.stderr);
+      assert.match(result.stderr, /the working tree is dirty/);
+      assert.deepStrictEqual(publishes(readLog(logPath)), []);
+    },
+  );
+
+check('a file ignored by a committed .gitignore does not stop the run', () => {
+  const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
+  fs.writeFileSync(path.join(dir, '.gitignore'), 'dist/\n');
+  git(dir, ['add', '.gitignore']);
+  git(dir, ['commit', '-qm', 'ignore dist']);
+  git(dir, ['tag', '-f', 'alpha-v1.1.0']); // the tag must name HEAD's tree
+  fs.mkdirSync(path.join(dir, 'packages/alpha/dist'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'packages/alpha/dist/x.js'), 'built\n');
+
+  const { bin, logPath } = installFakeNpm(dir, alphaManifests(dir));
+  const result = run(dir, bin);
+  assert.strictEqual(result.status, 0, result.stdout + result.stderr);
+  assert.deepStrictEqual(publishes(readLog(logPath)), [
+    'publish ./packages/alpha --ignore-scripts',
+  ]);
+});
+
+check('a modified tracked file stops the run', () => {
+  const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
+  fs.appendFileSync(path.join(dir, 'packages/alpha/package.json'), '\n');
+
+  const { bin, logPath } = installFakeNpm(dir, alphaManifests(dir));
+  const result = run(dir, bin);
+  assert.strictEqual(result.status, 1, result.stdout + result.stderr);
+  assert.match(result.stderr, /the working tree is dirty/);
+  assert.deepStrictEqual(publishes(readLog(logPath)), []);
+});
+
 check('publishes every pending package, in workspace order', () => {
   const dir = fixture([
     { dir: 'alpha', version: '1.1.0' },
