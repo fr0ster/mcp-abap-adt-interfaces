@@ -8,16 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [8.0.1] - 2026-10-25
 
 A patch, by the owner's decision: it corrects a design error of 8.0.0 — a
-problem the design missed. Measured on a macOS arm64 GitHub runner
-(GSS.framework / Heimdal) with no ticket cache, the SPNEGO mechanism answers
-"An unsupported mechanism was requested: unknown mech-code 0 for mech unknown":
-no usable mechanism to negotiate with.
+problem the design missed.
+Measured on a macOS arm64 GitHub runner, GSS.framework (Heimdal) answers "An
+unsupported mechanism was requested": the mechanism the source asked for is not
+supported where it ran.
 
 ### Added
-- The `spnego` problem `no-mechanism`, in `SPNEGO_PROBLEMS` and in
+- The `spnego` problem `mechanism-unsupported`, in `SPNEGO_PROBLEMS` and in
   `NEGOTIATE_SOURCE_PROBLEMS` (a token source may answer it; seven now, then the
   provider's own `ntlm-token` and `token-unreadable`). An exhaustive switch over
-  `SpnegoProblem` or `NegotiateSourceProblem` now needs the `no-mechanism` case.
+  `SpnegoProblem` or `NegotiateSourceProblem` now needs the `mechanism-unsupported` case.
 
 ## [8.0.0] - 2026-10-25
 

@@ -521,8 +521,9 @@ export type SncArch = (typeof SNC_ARCHS)[number];
 /**
  * What went wrong obtaining or presenting a Kerberos (SPNego) token. The first
  * seven are facts a token source answers; the last two the provider finds in a
- * token it was given. `no-mechanism`: the platform has no usable mechanism to
- * negotiate with (measured on macOS GSS.framework with no ticket cache).
+ * token it was given. `mechanism-unsupported`: the mechanism the source asked for is not
+ * supported where it ran (measured: GSS.framework on macOS answering "An
+ * unsupported mechanism was requested").
  */
 export const SPNEGO_PROBLEMS = Object.freeze([
   'no-credential',
@@ -531,7 +532,7 @@ export const SPNEGO_PROBLEMS = Object.freeze([
   'clock-skew',
   'binding-unavailable',
   'source-failed',
-  'no-mechanism',
+  'mechanism-unsupported',
   'ntlm-token',
   'token-unreadable',
 ] as const);
@@ -545,7 +546,7 @@ export const NEGOTIATE_SOURCE_PROBLEMS = Object.freeze([
   'clock-skew',
   'binding-unavailable',
   'source-failed',
-  'no-mechanism',
+  'mechanism-unsupported',
 ] as const);
 export type NegotiateSourceProblem = (typeof NEGOTIATE_SOURCE_PROBLEMS)[number];
 
