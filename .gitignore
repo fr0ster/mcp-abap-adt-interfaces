@@ -18,3 +18,6 @@ tsconfig.build.tsbuildinfo
 
 # Subagent-driven development scratch (ledger, briefs, review packages)
 .superpowers/
+
+# Claude Code's local settings: per machine, never committed
+.claude/settings.local.json
