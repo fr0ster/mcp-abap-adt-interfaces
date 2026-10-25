@@ -277,7 +277,7 @@ process.exit(1);
   return { bin, logPath };
 }
 
-function run(dir, bin, args = []) {
+function run(dir, bin, args = [], extraEnv = {}) {
   return spawnSync(
     process.execPath,
     [path.join(dir, 'tools', 'publish-changed.js'), ...args],
@@ -294,6 +294,7 @@ function run(dir, bin, args = []) {
         PATH: `${bin}${path.delimiter}${process.env.PATH}`,
         PUBLISH_POLL_ATTEMPTS: '3',
         PUBLISH_POLL_MS: '1',
+        ...extraEnv,
       },
     },
   );
@@ -437,6 +438,58 @@ for (const [label, blinding] of BLINDING_GIT_ENVS)
         if (value === undefined) delete process.env[name];
         else process.env[name] = value;
     }
+  });
+
+// The cases above run the script under gitEnv(), which strips the hostile
+// variables before the script sees them, so they prove the test runner's
+// isolation rather than the script's. These hand the script the triggering
+// configuration itself: the guard must pass what it needs to git explicitly.
+const HIDING_UNTRACKED = [
+  [
+    'status.showUntrackedFiles=no in the repository configuration',
+    (dir) => {
+      git(dir, ['config', 'status.showUntrackedFiles', 'no']);
+      return {};
+    },
+  ],
+  [
+    'status.showUntrackedFiles=no through GIT_CONFIG_COUNT in the script environment',
+    () => ({
+      GIT_CONFIG_COUNT: '1',
+      GIT_CONFIG_KEY_0: 'status.showUntrackedFiles',
+      GIT_CONFIG_VALUE_0: 'no',
+    }),
+  ],
+];
+
+for (const [label, hide] of HIDING_UNTRACKED)
+  check(`an untracked source file stops the run with ${label}`, () => {
+    const dir = fixture([{ dir: 'alpha', version: '1.1.0' }]);
+    fs.mkdirSync(path.join(dir, 'packages/alpha/src'), { recursive: true });
+    fs.writeFileSync(
+      path.join(dir, 'packages/alpha/src/untracked.ts'),
+      'export const x = 1;\n',
+    );
+    const env = hide(dir);
+    // The triggering configuration must really hide the file from the default
+    // command, or the case proves nothing.
+    const seen = execFileSync('git', ['status', '--porcelain'], {
+      cwd: dir,
+      encoding: 'utf8',
+      env: { ...gitEnv(), ...env },
+    });
+    assert.strictEqual(seen.trim(), '', 'the configuration hides nothing');
+
+    const { bin, logPath } = installFakeNpm(dir, {
+      versions: { '@fixture/alpha': ['1.0.0'] },
+      manifests: {
+        '@fixture/alpha': path.join(dir, 'packages/alpha/package.json'),
+      },
+    });
+    const result = run(dir, bin, [], env);
+    assert.strictEqual(result.status, 1, result.stdout + result.stderr);
+    assert.match(result.stderr, /the working tree is dirty/);
+    assert.deepStrictEqual(publishes(readLog(logPath)), []);
   });
 
 check('publishes every pending package, in workspace order', () => {

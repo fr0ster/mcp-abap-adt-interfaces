@@ -234,7 +234,14 @@ if (pending.length === 0) {
 // Each one refuses to publish something that cannot be traced back to this
 // repository's history, or that would move the `latest` dist-tag backwards.
 
-if (capture('git', ['status', '--porcelain']).trim() !== '')
+// `--untracked-files=all` is explicit because the default follows
+// `status.showUntrackedFiles`, which a repository, a global file or GIT_CONFIG_*
+// can set to `no`: an untracked source file would then be built and published
+// while no commit or tag describes it.
+if (
+  capture('git', ['status', '--porcelain', '--untracked-files=all']).trim() !==
+  ''
+)
   fail(
     'the working tree is dirty. Publish only what is committed, or the tarball\n' +
       'holds changes no commit and no tag describes.',
