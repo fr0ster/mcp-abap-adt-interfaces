@@ -11,6 +11,7 @@ ADT contracts: object operations, runtime analysis, execution, feeds and service
 - Since 14.0.0 `IDebuggerIdentity` is a union by `debuggingMode` (required), `attach` takes the identity, `condition` is for line breakpoints only, and `IAbapDebugger` gains `TSettings` and five members. The CHANGELOG has the migration note.
 - Since 15.0.0 `skipCount` is gone from breakpoints (the server ignores it) and `clientId` pairs an answer row with its request. The CHANGELOG has the migration note.
 - Since 15.1.0 the plain class and program run take `debuggee` (`IDebuggeeIds`): the terminal id and IDE id a terminal-mode listener catches the run by.
+- Since 21.1.0, additions only: intersecting helpers (`AdtCodeOf<V>`, `AdtCodeWith<V, Op>`, `AdtServingVariantsIn`, `AdtPerformingVariantsIn`; the default `AdtModernVariant` gets what both newer tables serve), utility code tables per variant (`ADT_UTILITY_CODES_*`: the group-only `VIEW/DV`, `DEVC/K` in a modern group activation and in 7.40's node structure), group references per operation with the typed atoms `IAdtTypedGroupLifecycle` and `IAdtTypedWhereUsed`, and `IAdtTypeStructure` with its `IUtilResults.typeStructure` slot. See "Intersections, group-only codes and group references".
 - Since 21.0.0 the object type codes are the library's own tables — `ADT_TYPES_ONPREM` (S/4HANA 2025), `ADT_TYPES_CLOUD` (ABAP cloud), `ADT_TYPES_BASIS_740` (SAP_BASIS 7.40 SP04), keyed by API — and every code in a contract is an `AdtTypeCode` drawn from them. `AdtObjectTypeLower`, `AdtObjectType`, `AdtSourceObjectTypeLower` and `AdtSourceObjectType` are removed, and with them the codes no release lists. An identifying atom takes the parent's field as its last type parameter (`TParent`, default `never`, which leaves the config `Partial<TConfig>` as before), and `IObjectReference<C>` requires `parentName` for a code with a parent. A code read from an answer is an `IAdtAnsweredObject`. See "The ADT type tables" and "Migrating to 21.0.0".
 - Since 20.2.0 every object's result-set contract (`IClassResults`, `IProgramResults`, … 30 in all, `IMessageClassMessageResults<TRead, TWritten, TDeleted>` among them) and `IServiceBindingPublicationConfig` are declared here, in the object's own `IAdtX.ts`: the slot map an implementation is constructed with, each slot an `IResultStrategy<unknown>`. A consumer composes its client contract from these and the atoms. Additions only.
 - Since 20.1.0 `IAdtObjectProperties` reads one repository object's properties from `/informationsystem/objectproperties/values?uri=`, any object uri (a transaction by its `vit` workbench uri); its own atom, not part of `IAdtInformationSystem`.
@@ -31,14 +32,14 @@ npm install @mcp-abap-adt/interfaces-adt
 
 | directory | files | what |
 |---|---|---|
-| `adt/` | 41 | the object contracts: capability atoms, the object types, the ADT type tables and their entry shape, `IAdtResponse`, `IAdtError`, the error codes, the transport request's object list |
+| `adt/` | 42 | the object contracts: capability atoms, the object types, the ADT type tables and their entry shape, `IAdtResponse`, `IAdtError`, the error codes, the transport request's object list |
 | `runtime/` | 14 | runtime analysis: the debuggers (`IAbapDebugger`, `IAmdpDebugger`) and `IMemorySnapshots`, `IProfiler`, the trace contracts (`ITraceListing`/`ITraceReading`, `ICrossTrace`, `ISt05Trace`), `IApplicationLog`, `IAtcLog` and the ATC run (`IAtcRunOptions`, `IAtcFindings`), `IDdicActivation`, `IGatewayErrorLog`, `IRuntimeDumps`, `ISystemMessages` |
 | `execution/` | 3 | class and program execution, with profiling |
 | `feeds/` | 2 | the ADT feed contracts |
 | `service/` | 1 | service definitions and bindings |
 | `shared/` | 1 | what more than one object type needs |
 
-Six directories, all ADT. `connection/` left for `interfaces-adt-connection` in 11.0.0. `sap/`, `auth/`, `token/`, `session/`, `serviceKey/`, `store/`, `validation/` and `Headers.ts` were here until 9.0.0 and are listed above under what left; `__typechecks__/` holds 29 files that compile shapes this contract must and must not accept, and ships in no tarball.
+Six directories, all ADT. `connection/` left for `interfaces-adt-connection` in 11.0.0. `sap/`, `auth/`, `token/`, `session/`, `serviceKey/`, `store/`, `validation/` and `Headers.ts` were here until 9.0.0 and are listed above under what left; `__typechecks__/` holds 30 files that compile shapes this contract must and must not accept, and ships in no tarball.
 
 The contract rules — what a member answers, how a strategy is supplied, how a contract is built — are in [`docs/architecture/ARCHITECTURE.md`](../../docs/architecture/ARCHITECTURE.md). Domain-by-domain documentation with examples used to sit in the facade's README; the facade is deleted, and each package documents its own contracts.
 
@@ -157,6 +158,46 @@ type ModuleRead = IAdtReadable<IFunctionModuleConfig, string, 'functionGroupName
 when `[C] extends [AdtParentedTypeCode]` — `IObjectReference<'FUGR/FF'>` —
 and leaves it optional otherwise, the default included, so a reference built
 from a code typed `AdtTypeCode` compiles and an interface can extend it.
+
+### Intersections, group-only codes and group references (21.1.0)
+
+**A union of variants.** `AdtTypeCodeOf<V>`, `AdtTypeCodeWith<V, Op>` and
+`AdtApiWith<V, Op>` read a union of variants as one union table: the APIs all
+of them serve, and for those the codes and operations any of them lists. The
+intersecting helpers ask every variant: `AdtCodeOf<V>` and `AdtCodeWith<V, Op>`
+are the codes every variant of `V` lists (with `Op`), and
+`AdtServingVariantsIn<IAdtTypeTables, A>` and
+`AdtPerformingVariantsIn<IAdtTypeTables, A, Op>` name the variants that serve
+an API or perform an operation on one of its codes — what a client's gates
+need. For `AdtModernVariant`, `'onprem' | 'cloud'`, that is what both tables
+serve. `AdtCodeOfIn` and `AdtCodeWithIn` take any set of tables.
+
+**Utility codes.** `ADT_UTILITY_CODES_ONPREM`, `_CLOUD` and `_BASIS_740` hold
+what `getUtils()` takes beyond the API tables, with its operations
+(`AdtUtilityOperation`), whether they were measured, and the evidence:
+
+| code | where | operations | measured |
+|---|---|---|---|
+| `VIEW/DV` | every release, `/sap/bc/adt/ddic/views` | group activation, group deletion, where-used | no |
+| `DEVC/K` | S/4HANA 2025, ABAP cloud | group activation | no |
+| `DEVC/K` | SAP_BASIS 7.40 SP04 | node structure | yes |
+
+`VIEW/DV` is a **group-only code** (`AdtGroupOnlyCode`): no API serves it, so
+it is no `AdtTypeCode`. `IObjectReference<'VIEW/DV'>` and
+`IGetWhereUsedParams<'VIEW/DV'>` name it; the defaults do not.
+
+**Group references.** `IAdtGroupActivationReference<V>`,
+`IAdtGroupDeletionCheckReference<V>`, `IAdtGroupDeletionReference<V>` and
+`IAdtWhereUsedParamsOf<V>` take only the codes their operation sends on `V`
+— no message class in an activation, no package in a 7.40 one, no function
+include in where-used — and require `parentName` for `FUGR/FF` and `FUGR/I`.
+`IAdtTypedGroupLifecycle` and `IAdtTypedWhereUsed` declare the members over
+them, beside `IAdtGroupLifecycle` and `IAdtWhereUsed`: a contract composed of
+both takes typed references and the 21.0.0 `IObjectReference[]` alike.
+
+**The type structure.** `IAdtTypeStructure.getTypeStructure({ headers })`
+posts to `/sap/bc/adt/repository/typestructure`; its reading is
+`IUtilResults.typeStructure`, optional so a 21.0.0 set is still one.
 
 ## Enhancements and their hosts
 

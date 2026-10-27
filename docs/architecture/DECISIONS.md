@@ -3197,6 +3197,14 @@ conformance check in `@mcp-abap-adt/adt-clients` holds the hand-written tables
 to the recorded answers instead. Keying by code: one code serves two APIs and
 one API several codes.
 
+**Codes beyond the APIs (21.1.0).** A code the utilities address but no API
+serves (`VIEW/DV`), or one a variant's API table does not list for what a
+utility sends (`DEVC/K` in 7.40's node structure, in a modern group
+activation), goes into a utility code table per variant, with its own
+operation words and whether it was measured — not into the API tables, where
+an entry opens a factory and a new operation word widens a vocabulary
+consumers map exhaustively.
+
 **What would change it.** A release whose answers the conformance check
 refuses, or an API the library starts to serve; either is an edit of a table.
 
