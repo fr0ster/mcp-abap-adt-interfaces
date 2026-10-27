@@ -16,16 +16,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `ADT_TYPES_BASIS_740` (SAP_BASIS 7.40 SP04), `as const`, keyed by API — the
   client's factory name. Each entry holds its `kind`, its `collection` and its
   `codes`; each code its `parent` API, `nameMaxLength`, `operations` and
-  `evidence`, the corpus case of the release's `typestructure` answer. The
+  `evidence`, the corpus case of the release's `typestructure` answer, and
+  where it lives elsewhere than its API its own `collection` (the enhancement
+  codes: `/sap/bc/adt/enhancements/enhoxhh`, `/enhoxhb`, `/enhsxsb`). The
   local class includes and the transport request are entries with
-  `codes: {}`, their `parent` and `operations` on the entry. An API the 7.40
+  `codes: {}`, their `parent`, `operations` and `evidence` on the entry. An API the 7.40
   client refuses whole is absent from its table, and an operation it refuses
   is absent from its code.
 - The entry shape every table `satisfies` (`AdtApiTable<R>`, `AdtApiEntry<R>`,
   `IAdtCodedApiEntry<R>`, `IAdtCodelessApiEntry`, `IAdtCodeFacts<R>`,
   `AdtApiName`, `AdtOperation`, `AdtOperations`, `AdtCollection`,
-  `AdtTypeEvidence<R>`): a misspelt field, an operation outside the vocabulary,
-  an API with no factory or another release's evidence does not compile.
+  `AdtTypeEvidence<R>`, `AdtCheckedTable<T>`): a misspelt field, an operation
+  outside the vocabulary, an API with no factory, another release's evidence,
+  a codeless entry without evidence or a coded entry without a code does not
+  compile.
 - The variants and the types derived from the tables: `AdtVariant`
   (`'onprem' | 'cloud' | 'basis740'`), `IAdtTypeTables`, `AdtApi<V>`,
   `AdtTypeCode`, `AdtTypeCodeOf<V>`, `AdtApiWith<V, Op>`,

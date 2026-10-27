@@ -149,6 +149,13 @@ export interface IAdtCodeFacts<R extends string> {
   readonly operations: AdtOperations;
   /** The corpus case that lists the code on this release. */
   readonly evidence: AdtTypeEvidence<R>;
+  /**
+   * The collection this code's resource lives in, where it is not its API's:
+   * `getEnhancement()` addresses `ENHO/XHH` under
+   * `/sap/bc/adt/enhancements/enhoxhh` and `ENHS/XSB` under `…/enhsxsb`.
+   * Absent, the code lives in the entry's `collection`.
+   */
+  readonly collection?: AdtCollection;
 }
 
 /** An ADT collection: the resource path an API's objects live under. */
@@ -167,9 +174,11 @@ export interface IAdtCodedApiEntry<R extends string> {
    * names the parent's collection.
    */
   readonly collection: AdtCollection;
+  /** At least one: {@link AdtCheckedTable} refuses an empty one. */
   readonly codes: { readonly [code: string]: IAdtCodeFacts<R> };
   readonly parent?: never;
   readonly operations?: never;
+  readonly evidence?: never;
 }
 
 /**
@@ -177,18 +186,31 @@ export interface IAdtCodedApiEntry<R extends string> {
  * no type code the library sends for it: the local class includes, the
  * transport request. Its facts stand on the entry, and `codes` is empty.
  */
-export interface IAdtCodelessApiEntry {
+export interface IAdtCodelessApiEntry<R extends string> {
   readonly kind: Lowercase<string>;
   readonly collection: AdtCollection;
   readonly codes: { readonly [code: string]: never };
   readonly parent: AdtApiName | null;
   readonly operations: AdtOperations;
+  /**
+   * The corpus case behind the entry: the one that lists its parent's code
+   * (a local include's `CLAS/OC`), or, for the transport request, the
+   * release's `typestructure` case.
+   */
+  readonly evidence: AdtTypeEvidence<R>;
 }
 
-/** One entry of a table. */
+/**
+ * One entry of a table.
+ *
+ * The order is for the diagnostics, not the meaning: with no discriminant
+ * field, TypeScript reports a wrong field against the last member that fits as
+ * well as any, and a coded entry is the common case — so a misspelt field of a
+ * code is reported at that field.
+ */
 export type AdtApiEntry<R extends string> =
-  | IAdtCodedApiEntry<R>
-  | IAdtCodelessApiEntry;
+  | IAdtCodelessApiEntry<R>
+  | IAdtCodedApiEntry<R>;
 
 /**
  * What a table `satisfies`: an entry per API the variant serves, and no other
@@ -197,3 +219,28 @@ export type AdtApiEntry<R extends string> =
 export type AdtApiTable<R extends string> = {
   readonly [A in AdtApiName]?: AdtApiEntry<R>;
 };
+
+/** The APIs of a table that state their facts per code but name no code. */
+type AdtEmptyCodedApis<T> = {
+  [A in keyof T]: T[A] extends { readonly operations: AdtOperations }
+    ? never
+    : T[A] extends { readonly codes: infer C }
+      ? [keyof C] extends [never]
+        ? A
+        : never
+      : never;
+}[keyof T];
+
+/**
+ * A table whose every coded entry names at least one code — what
+ * `IAdtTypeTables` takes each table as. `satisfies` cannot see that an index
+ * signature is empty, so this constraint does: a coded entry with
+ * `codes: {}` fails it at the table's name, asking for a code.
+ */
+export type AdtCheckedTable<
+  T extends AdtApiTable<string> & {
+    readonly [A in AdtEmptyCodedApis<T>]: {
+      readonly codes: { readonly 'at least one code': IAdtCodeFacts<string> };
+    };
+  },
+> = T;

@@ -25,6 +25,7 @@
   "AdtApiName": "interfaces-adt",
   "AdtApiTable": "interfaces-adt",
   "AdtApiWith": "interfaces-adt",
+  "AdtCheckedTable": "interfaces-adt",
   "AdtCollection": "interfaces-adt",
   "AdtFailureOrigin": "interfaces-adt",
   "AdtIdentity": "interfaces-adt",

@@ -245,6 +245,7 @@ export type {
   AdtApiEntry,
   AdtApiName,
   AdtApiTable,
+  AdtCheckedTable,
   AdtCollection,
   AdtOperation,
   AdtOperations,

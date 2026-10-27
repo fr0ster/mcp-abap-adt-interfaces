@@ -21,7 +21,7 @@ import type {
   AdtTypeCodeOf,
   AdtTypeCodeWith,
 } from '../adt/AdtTypeTables';
-import type { AdtApiTable } from '../adt/IAdtTypeTable';
+import type { AdtApiTable, AdtCheckedTable } from '../adt/IAdtTypeTable';
 
 type Assert<T extends true> = T;
 type Equal<A, B> =
@@ -181,6 +181,69 @@ const _notACollection = {
   },
 } as const satisfies AdtApiTable<'s4-2025'>;
 void _notACollection;
+
+// A code's own collection is an ADT path too.
+const _codeCollection = {
+  enhancement: {
+    kind: 'enhancement',
+    collection: '/sap/bc/adt/enhancements',
+    codes: {
+      'ENHO/XHH': {
+        parent: null,
+        nameMaxLength: 30,
+        operations: ['read'],
+        evidence: 'system-description-s4-2025--07-typestructure',
+        // @ts-expect-error a code's collection is an ADT path
+        collection: 'enhoxhh',
+      },
+    },
+  },
+} as const satisfies AdtApiTable<'s4-2025'>;
+void _codeCollection;
+
+// A codeless entry names its evidence: its parent's code's case, or the
+// release's typestructure case for the transport request.
+const _codelessWithoutEvidence = {
+  // @ts-expect-error a codeless entry carries `evidence`
+  localTestClass: {
+    kind: 'local_test_class',
+    collection: '/sap/bc/adt/oo/classes',
+    codes: {},
+    parent: 'class',
+    operations: ['read'],
+  },
+} as const satisfies AdtApiTable<'s4-2025'>;
+void _codelessWithoutEvidence;
+
+const _codelessWithEvidence = {
+  localTestClass: {
+    kind: 'local_test_class',
+    collection: '/sap/bc/adt/oo/classes',
+    codes: {},
+    parent: 'class',
+    operations: ['read'],
+    evidence: 'system-description-s4-2025--07-typestructure',
+  },
+} as const satisfies AdtApiTable<'s4-2025'>;
+void _codelessWithEvidence;
+
+// A coded entry names at least one code. `satisfies` cannot see an empty
+// index signature, so `AdtCheckedTable` — what `IAdtTypeTables` takes every
+// table as — refuses it.
+const _codedWithoutCodes = {
+  class: {
+    kind: 'class',
+    collection: '/sap/bc/adt/oo/classes',
+    codes: {},
+  },
+} as const satisfies AdtApiTable<'s4-2025'>;
+// @ts-expect-error a coded entry with no code
+export type CodedWithoutCodes = AdtCheckedTable<typeof _codedWithoutCodes>;
+
+export type CheckedTables = [
+  AdtCheckedTable<typeof _good>,
+  AdtCheckedTable<typeof _codelessWithEvidence>,
+];
 
 // ── Every parent is an API of its own table ─────────────────────────────────
 
@@ -502,6 +565,38 @@ export type NewerShapes = [
   Assert<Equal<AdtApiWith<'onprem', 'getServiceGroup'>, 'serviceBinding'>>,
   Assert<Equal<AdtApiWith<'onprem', 'activateTestClasses'>, 'class'>>,
   Assert<Equal<AdtApiWith<'onprem', 'checkCdsTestDoubles'>, 'ddl'>>,
+];
+
+// An enhancement code lives in its own collection, not its API's.
+type EnhancementCodes<T> = T extends {
+  readonly enhancement: { readonly codes: infer C };
+}
+  ? {
+      [K in keyof C]: C[K] extends { readonly collection: infer P } ? P : never;
+    }
+  : never;
+
+export type EnhancementCollections = [
+  Assert<
+    Equal<
+      EnhancementCodes<typeof ADT_TYPES_ONPREM>,
+      {
+        readonly 'ENHO/XHH': '/sap/bc/adt/enhancements/enhoxhh';
+        readonly 'ENHO/XHB': '/sap/bc/adt/enhancements/enhoxhb';
+        readonly 'ENHS/XSB': '/sap/bc/adt/enhancements/enhsxsb';
+      }
+    >
+  >,
+  Assert<
+    Equal<
+      EnhancementCodes<typeof ADT_TYPES_CLOUD>,
+      {
+        readonly 'ENHO/XHH': '/sap/bc/adt/enhancements/enhoxhh';
+        readonly 'ENHO/XHB': '/sap/bc/adt/enhancements/enhoxhb';
+        readonly 'ENHS/XSB': '/sap/bc/adt/enhancements/enhsxsb';
+      }
+    >
+  >,
 ];
 
 // The two newer releases differ in a name length, not in what is served.

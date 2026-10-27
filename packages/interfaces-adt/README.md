@@ -68,11 +68,16 @@ code serves two APIs (`CLAS/OC`: `class` and `behaviorImplementation`;
 - `codes` — for each code: `parent` (the parent API, or `null`),
   `nameMaxLength`, `operations` and `evidence`, the corpus case of the
   release's `typestructure` answer that lists the code
-  (`system-description-basis-740--07-typestructure`).
+  (`system-description-basis-740--07-typestructure`); and, where a code lives
+  elsewhere than its API, its own `collection` — the enhancement codes under
+  `/sap/bc/adt/enhancements/enhoxhh`, `/enhoxhb` and `/enhsxsb`.
 
 The local class includes and the transport request have no code the library
-sends: their entries have `codes: {}`, and their `parent` and `operations` on
-the entry.
+sends: their entries have `codes: {}`, and their `parent`, `operations` and
+`evidence` on the entry — the case that lists the parent's code, or for the
+request the release's `typestructure` case. A coded entry names at least one
+code: `IAdtTypeTables` takes each table as `AdtCheckedTable<T>`, which refuses
+an empty `codes` that `satisfies` cannot see.
 
 **Operations** come from one closed vocabulary, `AdtOperation`: `create`,
 `read`, `source`, `readMetadata`, `update`, `updateMetadata`, `lock`,

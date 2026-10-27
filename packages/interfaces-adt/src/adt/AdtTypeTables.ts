@@ -20,6 +20,7 @@
 
 import type {
   AdtApiTable,
+  AdtCheckedTable,
   AdtOperation,
   IAdtCodelessApiEntry,
 } from './IAdtTypeTable';
@@ -792,6 +793,7 @@ export const ADT_TYPES_ONPREM = {
           'transport',
         ],
         evidence: 'system-description-s4-2025--07-typestructure',
+        collection: '/sap/bc/adt/enhancements/enhoxhh',
       },
       'ENHO/XHB': {
         parent: null,
@@ -811,6 +813,7 @@ export const ADT_TYPES_ONPREM = {
           'transport',
         ],
         evidence: 'system-description-s4-2025--07-typestructure',
+        collection: '/sap/bc/adt/enhancements/enhoxhb',
       },
       'ENHS/XSB': {
         parent: null,
@@ -830,6 +833,7 @@ export const ADT_TYPES_ONPREM = {
           'transport',
         ],
         evidence: 'system-description-s4-2025--07-typestructure',
+        collection: '/sap/bc/adt/enhancements/enhsxsb',
       },
     },
   },
@@ -852,6 +856,7 @@ export const ADT_TYPES_ONPREM = {
       'delete',
       'transport',
     ],
+    evidence: 'system-description-s4-2025--07-typestructure',
   },
   localTypes: {
     kind: 'local_types',
@@ -872,6 +877,7 @@ export const ADT_TYPES_ONPREM = {
       'delete',
       'transport',
     ],
+    evidence: 'system-description-s4-2025--07-typestructure',
   },
   localDefinitions: {
     kind: 'local_definitions',
@@ -892,6 +898,7 @@ export const ADT_TYPES_ONPREM = {
       'delete',
       'transport',
     ],
+    evidence: 'system-description-s4-2025--07-typestructure',
   },
   localMacros: {
     kind: 'local_macros',
@@ -912,6 +919,7 @@ export const ADT_TYPES_ONPREM = {
       'delete',
       'transport',
     ],
+    evidence: 'system-description-s4-2025--07-typestructure',
   },
   request: {
     kind: 'transport',
@@ -935,6 +943,7 @@ export const ADT_TYPES_ONPREM = {
       'createTask',
       'changeTaskType',
     ],
+    evidence: 'system-description-s4-2025--07-typestructure',
   },
 } as const satisfies AdtApiTable<'s4-2025'>;
 
@@ -1704,6 +1713,7 @@ export const ADT_TYPES_CLOUD = {
           'transport',
         ],
         evidence: 'system-description-abap-cloud--07-typestructure',
+        collection: '/sap/bc/adt/enhancements/enhoxhh',
       },
       'ENHO/XHB': {
         parent: null,
@@ -1723,6 +1733,7 @@ export const ADT_TYPES_CLOUD = {
           'transport',
         ],
         evidence: 'system-description-abap-cloud--07-typestructure',
+        collection: '/sap/bc/adt/enhancements/enhoxhb',
       },
       'ENHS/XSB': {
         parent: null,
@@ -1742,6 +1753,7 @@ export const ADT_TYPES_CLOUD = {
           'transport',
         ],
         evidence: 'system-description-abap-cloud--07-typestructure',
+        collection: '/sap/bc/adt/enhancements/enhsxsb',
       },
     },
   },
@@ -1764,6 +1776,7 @@ export const ADT_TYPES_CLOUD = {
       'delete',
       'transport',
     ],
+    evidence: 'system-description-abap-cloud--07-typestructure',
   },
   localTypes: {
     kind: 'local_types',
@@ -1784,6 +1797,7 @@ export const ADT_TYPES_CLOUD = {
       'delete',
       'transport',
     ],
+    evidence: 'system-description-abap-cloud--07-typestructure',
   },
   localDefinitions: {
     kind: 'local_definitions',
@@ -1804,6 +1818,7 @@ export const ADT_TYPES_CLOUD = {
       'delete',
       'transport',
     ],
+    evidence: 'system-description-abap-cloud--07-typestructure',
   },
   localMacros: {
     kind: 'local_macros',
@@ -1824,6 +1839,7 @@ export const ADT_TYPES_CLOUD = {
       'delete',
       'transport',
     ],
+    evidence: 'system-description-abap-cloud--07-typestructure',
   },
   request: {
     kind: 'transport',
@@ -1847,6 +1863,7 @@ export const ADT_TYPES_CLOUD = {
       'createTask',
       'changeTaskType',
     ],
+    evidence: 'system-description-abap-cloud--07-typestructure',
   },
 } as const satisfies AdtApiTable<'abap-cloud'>;
 
@@ -2116,6 +2133,7 @@ export const ADT_TYPES_BASIS_740 = {
       'versions',
       'delete',
     ],
+    evidence: 'system-description-basis-740--07-typestructure',
   },
   localTypes: {
     kind: 'local_types',
@@ -2135,6 +2153,7 @@ export const ADT_TYPES_BASIS_740 = {
       'versions',
       'delete',
     ],
+    evidence: 'system-description-basis-740--07-typestructure',
   },
   localDefinitions: {
     kind: 'local_definitions',
@@ -2154,6 +2173,7 @@ export const ADT_TYPES_BASIS_740 = {
       'versions',
       'delete',
     ],
+    evidence: 'system-description-basis-740--07-typestructure',
   },
   localMacros: {
     kind: 'local_macros',
@@ -2173,6 +2193,7 @@ export const ADT_TYPES_BASIS_740 = {
       'versions',
       'delete',
     ],
+    evidence: 'system-description-basis-740--07-typestructure',
   },
   request: {
     kind: 'transport',
@@ -2180,6 +2201,7 @@ export const ADT_TYPES_BASIS_740 = {
     codes: {},
     parent: null,
     operations: ['readMetadata', 'list'],
+    evidence: 'system-description-basis-740--07-typestructure',
   },
 } as const satisfies AdtApiTable<'basis-740'>;
 
@@ -2191,9 +2213,9 @@ export type AdtVariant = 'onprem' | 'cloud' | 'basis740';
 
 /** The table of each variant, by its name. */
 export interface IAdtTypeTables {
-  readonly onprem: typeof ADT_TYPES_ONPREM;
-  readonly cloud: typeof ADT_TYPES_CLOUD;
-  readonly basis740: typeof ADT_TYPES_BASIS_740;
+  readonly onprem: AdtCheckedTable<typeof ADT_TYPES_ONPREM>;
+  readonly cloud: AdtCheckedTable<typeof ADT_TYPES_CLOUD>;
+  readonly basis740: AdtCheckedTable<typeof ADT_TYPES_BASIS_740>;
 }
 
 type TableOf<V extends AdtVariant> = IAdtTypeTables[V];
@@ -2208,11 +2230,12 @@ type CodesOf<E> = E extends { readonly codes: infer C }
   ? keyof C & string
   : never;
 
-type EntryOperations<E> = E extends IAdtCodelessApiEntry
-  ? OperationsOf<E>
-  : E extends { readonly codes: infer C }
-    ? { [K in keyof C]: OperationsOf<C[K]> }[keyof C]
-    : never;
+type EntryOperations<E> =
+  E extends IAdtCodelessApiEntry<string>
+    ? OperationsOf<E>
+    : E extends { readonly codes: infer C }
+      ? { [K in keyof C]: OperationsOf<C[K]> }[keyof C]
+      : never;
 
 type CodesWith<E, Op extends AdtOperation> = E extends {
   readonly codes: infer C;
