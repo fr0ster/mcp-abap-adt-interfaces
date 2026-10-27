@@ -106,6 +106,7 @@ const _unknownApi = {
     codes: {},
     parent: null,
     operations: ['read'],
+    evidence: 'system-description-s4-2025--07-typestructure',
   },
 } as const satisfies AdtApiTable<'s4-2025'>;
 void _unknownApi;
