@@ -7,6 +7,78 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **The ADT type tables**, one per release variant: `ADT_TYPES_ONPREM`
+  (S/4HANA 2025 on-premise), `ADT_TYPES_CLOUD` (ABAP cloud) and
+  `ADT_TYPES_BASIS_740` (SAP_BASIS 7.40 SP04), `as const`, keyed by API — the
+  client's factory name. Each entry holds its `kind`, its `collection` and its
+  `codes`; each code its `parent` API, `nameMaxLength`, `operations` and
+  `evidence`, the corpus case of the release's `typestructure` answer. The
+  local class includes and the transport request are entries with
+  `codes: {}`, their `parent` and `operations` on the entry. An API the 7.40
+  client refuses whole is absent from its table, and an operation it refuses
+  is absent from its code.
+- The entry shape every table `satisfies` (`AdtApiTable<R>`, `AdtApiEntry<R>`,
+  `IAdtCodedApiEntry<R>`, `IAdtCodelessApiEntry`, `IAdtCodeFacts<R>`,
+  `AdtApiName`, `AdtOperation`, `AdtOperations`, `AdtCollection`,
+  `AdtTypeEvidence<R>`): a misspelt field, an operation outside the vocabulary,
+  an API with no factory or another release's evidence does not compile.
+- The variants and the types derived from the tables: `AdtVariant`
+  (`'onprem' | 'cloud' | 'basis740'`), `IAdtTypeTables`, `AdtApi<V>`,
+  `AdtTypeCode`, `AdtTypeCodeOf<V>`, `AdtApiWith<V, Op>`,
+  `AdtTypeCodeWith<V, Op>`, `AdtObjectKind`, `AdtSourceTypeCode`,
+  `AdtParentedTypeCode`.
+- `IAdtAnsweredObject`: `{ type: AdtTypeCode }` or `{ unknownType: string }`,
+  exclusive — what a code read from an answer is, so an unknown one reaches the
+  consumer as the text ADT sent rather than being dropped.
+- `IAdtParentNamed<K>`, a type-only marker a config extends to name its parent
+  field, and `AdtIdentity<TConfig>`: the config with every field optional but
+  that one.
+
+### Changed (breaking)
+
+- The identifying atoms (`read`, `readMetadata`, `lock`, `unlock`, `delete`,
+  `checkDeletion`, `activate`, `check`, `validate`, `getVersions`,
+  `readTransport`, the enhancement hosts' reads) take `AdtIdentity<TConfig>`
+  instead of `Partial<TConfig>`. `IFunctionModuleConfig` and
+  `IFunctionIncludeConfig` mark `functionGroupName`, the four local class
+  include configs `className`, so these stay required; every other config is
+  taken exactly as before.
+- `IObjectReference` is one member per `AdtTypeCode`: `type` is a code of the
+  tables, and a reference to `FUGR/FF` or `FUGR/I` requires `parentName`.
+- `IAdtObjectAccess`: `readObjectSource` and `getObjectSourceUri` take an
+  `AdtSourceTypeCode`, `readObjectMetadata` and `supportsSourceCode` an
+  `AdtTypeCode`.
+
+### Removed (breaking)
+
+- `AdtObjectTypeLower`, `AdtObjectType`, `AdtSourceObjectTypeLower` and
+  `AdtSourceObjectType`. With them go the codes no release lists, which no
+  table holds: `INTF/IF`, `STRU/DT`, `STRU/DS`, `TTYP/DF`, `TTYP/TT`,
+  `TTYP/ST`, `DOMA/DM`, `BDEF/BD`, `BIMP/BIM`, `FUGR/FC`, `FUNC`, bare `SCGR`,
+  the bare `FUGR` and `DTEL`, the lower-case spellings and the friendly names.
+
+### Migration
+
+- Replace `AdtObjectType` with `AdtTypeCode` and `AdtSourceObjectType` with
+  `AdtSourceTypeCode` — or `AdtTypeCodeOf<V>` / `AdtTypeCodeWith<V, 'source'>`
+  where the variant is known — and pass upper-case codes: `'CLAS/OC'` for
+  `'class'`, `'FUGR/FF'` for `'functionmodule'`, `'DDLS/DF'` for `'view'`.
+- Replace each dropped code with the one the releases list: `INTF/IF` →
+  `INTF/OI`; `STRU/DT`, `STRU/DS` → `TABL/DS`; `TTYP/DF`, `TTYP/TT`,
+  `TTYP/ST` → `TTYP/DA`; `DOMA/DM` → `DOMA/DD`; `BDEF/BD` → `BDEF/BDO`;
+  `BIMP/BIM` → `CLAS/OC`; `FUNC` → `FUGR/FF` for a module, `FUGR/F` for a
+  group; `FUGR/FC` and `SCGR` have no replacement the library serves.
+- Name the parent: `functionGroupName` on a function module or function
+  include config passed to an identifying member, `className` on a local
+  class include config, `parentName` on an `IObjectReference` to `FUGR/FF` or
+  `FUGR/I`.
+- Type a result's code read from an answer as `IAdtAnsweredObject`, and handle
+  `unknownType`.
+- An implementation that declares `(config: Partial<TConfig>, …)` still
+  satisfies the atoms; nothing an implementation sends changes.
+
 ## [20.2.0] - 2026-10-24
 
 ### Added
