@@ -19,6 +19,7 @@
  */
 
 import type {
+  AdtApiName,
   AdtApiTable,
   AdtCheckedTable,
   AdtOperation,
@@ -2238,6 +2239,13 @@ export const ADT_TYPES_BASIS_740 = {
  */
 export type AdtVariant = 'onprem' | 'cloud' | 'basis740';
 
+/**
+ * A system of SAP_BASIS 7.50 or later, on premise or ABAP cloud — the variant
+ * a client serves when none is named. Read with the intersecting helpers
+ * below, it gets what **both** tables serve.
+ */
+export type AdtModernVariant = Exclude<AdtVariant, 'basis740'>;
+
 /** The table of each variant, by its name. */
 export interface IAdtTypeTables {
   readonly onprem: AdtCheckedTable<typeof ADT_TYPES_ONPREM>;
@@ -2281,10 +2289,21 @@ type ParentedCodesOf<E> = E extends { readonly codes: infer C }
       string
   : never;
 
-/** The APIs — the client's factories — variant `V` serves. */
+/**
+ * The APIs — the client's factories — variant `V` serves. For a union of
+ * variants this is already the intersection: `keyof` a union of tables names
+ * the APIs every one of them holds.
+ */
 export type AdtApi<V extends AdtVariant> = keyof TableOf<V>;
 
-/** The type codes variant `V` serves. */
+/**
+ * The type codes variant `V` serves.
+ *
+ * **Union semantics within the shared APIs.** For a union of variants it
+ * reads the tables as one union table: the APIs every one of them serves
+ * (`keyof` a union), and for those the codes *any* of them lists.
+ * {@link AdtCodeOf} is the intersection.
+ */
 export type AdtTypeCodeOf<V extends AdtVariant> = {
   [A in AdtApi<V>]: CodesOf<TableOf<V>[A]>;
 }[AdtApi<V>];
@@ -2294,6 +2313,9 @@ export type AdtTypeCode = { [V in AdtVariant]: AdtTypeCodeOf<V> }[AdtVariant];
 
 /**
  * The APIs of table `T` one code of which performs every operation of `Op` —
+ * for a union of tables, **union semantics within the shared APIs**: an API
+ * every table holds qualifies when one table's entry does (see
+ * {@link AdtPerformingVariantsIn} for the intersecting question) —
  * or, for a codeless API, whose entry does. Operations spread across two codes
  * do not count: no single object of the API could be asked for all of them.
  */
@@ -2301,18 +2323,30 @@ export type AdtApiWithIn<T, Op extends AdtOperation> = {
   [A in keyof T]: EntryHas<T[A], Op> extends true ? A : never;
 }[keyof T];
 
-/** {@link AdtApiWithIn} over variant `V`'s table. */
+/**
+ * {@link AdtApiWithIn} over variant `V`'s table — for a union of variants,
+ * **union semantics within the shared APIs**: an API all of them serve
+ * qualifies when one variant's table has it so.
+ */
 export type AdtApiWith<
   V extends AdtVariant,
   Op extends AdtOperation,
 > = AdtApiWithIn<TableOf<V>, Op>;
 
-/** The codes of variant `V` whose facts list every operation of `Op`. */
+/**
+ * The codes of variant `V` whose facts list every operation of `Op` — for a
+ * union of variants, **union semantics within the shared APIs**: a code of an
+ * API all of them serve, listed with `Op` by any of them. {@link AdtCodeWith}
+ * is the intersection.
+ */
 export type AdtTypeCodeWith<V extends AdtVariant, Op extends AdtOperation> = {
   [A in AdtApi<V>]: CodesWith<TableOf<V>[A], Op>;
 }[AdtApi<V>];
 
-/** Every kind of any table — the tools' one vocabulary for objects. */
+/**
+ * Every kind of any table — the tools' one vocabulary for objects. A union
+ * over all variants by design.
+ */
 export type AdtObjectKind = {
   [V in AdtVariant]: {
     [A in AdtApi<V>]: TableOf<V>[A] extends { readonly kind: infer K }
@@ -2321,7 +2355,11 @@ export type AdtObjectKind = {
   }[AdtApi<V>];
 }[AdtVariant];
 
-/** The codes, of any table, whose API reads a source there (`source`). */
+/**
+ * The codes, of any table, whose API reads a source there (`source`) — a union
+ * over all variants by design. A variant's own, intersected for a union of
+ * variants, is `AdtCodeWith<V, 'source'>`.
+ */
 export type AdtSourceTypeCode = {
   [V in AdtVariant]: AdtTypeCodeWith<V, 'source'>;
 }[AdtVariant];
@@ -2335,3 +2373,93 @@ export type AdtParentedTypeCode = {
     [A in AdtApi<V>]: ParentedCodesOf<TableOf<V>[A]>;
   }[AdtApi<V>];
 }[AdtVariant];
+
+// ── Intersecting helpers ────────────────────────────────────────────────────
+//
+// Each variant is read on its own table, and a code, an API or an operation
+// counts for a union of variants only when every one of them has it. The
+// default modern variant, `'onprem' | 'cloud'`, gets what both tables serve.
+
+type CodesOfTable<T> = { [A in keyof T]: CodesOf<T[A]> }[keyof T];
+
+type CodesWithInTable<T, Op extends AdtOperation> = {
+  [A in keyof T]: CodesWith<T[A], Op>;
+}[keyof T];
+
+/** The variants, among `Tables`' keys, whose table lists code `C`. */
+type VariantsListingIn<Tables, C> = {
+  [W in keyof Tables]: C extends CodesOfTable<Tables[W]> ? W : never;
+}[keyof Tables];
+
+/** The variants, among `Tables`' keys, whose table lists `Op` for code `C`. */
+type VariantsWhereCodeHasIn<Tables, C, Op extends AdtOperation> = {
+  [W in keyof Tables]: C extends CodesWithInTable<Tables[W], Op> ? W : never;
+}[keyof Tables];
+
+/**
+ * The variants, among `Tables`' keys, whose table serves API `A`. Each key is
+ * read on its own table, so nothing distributes over a union of tables.
+ */
+export type AdtServingVariantsIn<Tables, A extends AdtApiName> = {
+  [W in keyof Tables]: A extends keyof Tables[W] ? W : never;
+}[keyof Tables];
+
+/**
+ * The variants, among `Tables`' keys, one code of whose API `A` lists every
+ * operation of `Op` (or, for a codeless API, whose entry does).
+ */
+export type AdtPerformingVariantsIn<
+  Tables,
+  A extends AdtApiName,
+  Op extends AdtOperation,
+> = {
+  [W in keyof Tables]: [A] extends [AdtApiWithIn<Tables[W], Op>] ? W : never;
+}[keyof Tables];
+
+/** The codes any table of `V` lists — the candidates, each table read alone. */
+type CandidateCodes<Tables, V extends keyof Tables> = {
+  [W in V]: CodesOfTable<Tables[W]>;
+}[V];
+
+/** The codes any table of `V` lists `Op` for, each table read alone. */
+type CandidateCodesWith<
+  Tables,
+  V extends keyof Tables,
+  Op extends AdtOperation,
+> = { [W in V]: CodesWithInTable<Tables[W], Op> }[V];
+
+/** The codes every table of `V` among `Tables` lists: the intersection. */
+export type AdtCodeOfIn<Tables, V extends keyof Tables> = {
+  [C in CandidateCodes<Tables, V>]: [V] extends [VariantsListingIn<Tables, C>]
+    ? C
+    : never;
+}[CandidateCodes<Tables, V>];
+
+/** The codes for which every table of `V` among `Tables` lists `Op`. */
+export type AdtCodeWithIn<
+  Tables,
+  V extends keyof Tables,
+  Op extends AdtOperation,
+> = {
+  [C in CandidateCodesWith<Tables, V, Op>]: [V] extends [
+    VariantsWhereCodeHasIn<Tables, C, Op>,
+  ]
+    ? C
+    : never;
+}[CandidateCodesWith<Tables, V, Op>];
+
+/**
+ * The codes every variant of `V` lists — for the default modern variant, the
+ * codes both newer tables list. The intersecting counterpart of
+ * {@link AdtTypeCodeOf}.
+ */
+export type AdtCodeOf<V extends AdtVariant> = AdtCodeOfIn<IAdtTypeTables, V>;
+
+/**
+ * The codes for which every variant of `V` lists every operation of `Op` —
+ * the intersecting counterpart of {@link AdtTypeCodeWith}.
+ */
+export type AdtCodeWith<
+  V extends AdtVariant,
+  Op extends AdtOperation,
+> = AdtCodeWithIn<IAdtTypeTables, V, Op>;

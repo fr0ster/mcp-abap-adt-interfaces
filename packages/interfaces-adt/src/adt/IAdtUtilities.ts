@@ -99,11 +99,21 @@
  */
 
 import type { IReadOptions } from '../shared/IReadOptions';
-import type { AdtSourceTypeCode, AdtTypeCode } from './AdtTypeTables';
+import type {
+  AdtModernVariant,
+  AdtSourceTypeCode,
+  AdtTypeCode,
+  AdtVariant,
+} from './AdtTypeTables';
 import type { IAdtHeaders } from './IAdtContentTypes';
 import type { IAdtAnalyseOptions, IAnalyse } from './IAdtObject';
 import type { IAdtError, IAdtResponse, IResultStrategy } from './IAdtResponse';
 import type {
+  IAdtGroupActivationReference,
+  IAdtGroupDeletionCheckReference,
+  IAdtGroupDeletionReference,
+  IAdtWhereUsedParamsOf,
+  IAdtWhereUsedScopeParamsOf,
   IGetDiscoveryParams,
   IGetSqlQueryParams,
   IGetTableContentsParams,
@@ -658,6 +668,13 @@ export interface IUtilResults {
   readonly contents: IResultStrategy<unknown>;
   /** The discovery catalogue — `/discovery`. */
   readonly discovery: IResultStrategy<unknown>;
+  /**
+   * What `POST /repository/typestructure` answers — the system's object types
+   * ({@link IAdtTypeStructure}). Optional since it arrived in 21.1.0, so a
+   * set written for 21.0.0 still is one; an implementation offering the
+   * member that wants its reading injected requires it.
+   */
+  readonly typeStructure?: IResultStrategy<unknown>;
   /** An object's source — `<objectUri>/source/main`. */
   readonly source: IResultStrategy<unknown>;
   /** An object's metadata document, without its source. */
@@ -669,4 +686,120 @@ export interface IUtilResults {
    * uri — the `opr:objectProperties` document.
    */
   readonly objectProperties: IResultStrategy<unknown>;
+}
+
+/**
+ * `POST /sap/bc/adt/repository/typestructure` — every object type the system
+ * knows, with its code, label, category, `URI_TEMPLATE`, parent type, name
+ * length and capabilities. No body; the Accept and Content-Type are the
+ * caller's, as for every member whose request sets both. Recorded on S/4HANA
+ * 2025, ABAP cloud and SAP_BASIS 7.40 SP04, each answering `200`. It is what
+ * the conformance check of the ADT type tables reads.
+ *
+ * **Its own atom, not part of {@link IAdtInformationSystem}**, like
+ * {@link IAdtObjectProperties}: adding it to a composite would make every
+ * implementation of that composite stop compiling over a member it never
+ * claimed. Added in 21.1.0; its reading is `IUtilResults.typeStructure`.
+ */
+export interface IAdtTypeStructure<TTypeStructure> {
+  /** The system's object types. One request. */
+  getTypeStructure<E extends IAdtError>(
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
+  ): Promise<IAdtResponse<TTypeStructure, E>>;
+  getTypeStructure(
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<TTypeStructure>>;
+}
+
+/**
+ * {@link IAdtGroupLifecycle}'s three group members, typed per operation and
+ * variant: each takes only the references its request serves —
+ * {@link IAdtGroupActivationReference}, {@link IAdtGroupDeletionCheckReference},
+ * {@link IAdtGroupDeletionReference} — so a message class is no activation
+ * object, a function module names its group, and `VIEW/DV` is accepted.
+ *
+ * **Beside the 21.0.0 atom, not in place of it.** The members have the same
+ * names; an implementation declaring both offers both sets of signatures, and a
+ * caller passing `IObjectReference[]` keeps compiling against the old one.
+ * Adding these signatures to {@link IAdtGroupLifecycle} itself would make
+ * every 21.0.0 implementation of it stop compiling, so they are an atom of
+ * their own (21.1.0).
+ */
+export interface IAdtTypedGroupLifecycle<
+  TActivation,
+  TDeletionCheck,
+  TDeletion,
+  V extends AdtVariant = AdtModernVariant,
+> {
+  activateObjectsGroup<E extends IAdtError>(
+    objects: IAdtGroupActivationReference<V>[],
+    preauditRequested: boolean | undefined,
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
+  ): Promise<IAdtResponse<TActivation, E>>;
+  activateObjectsGroup(
+    objects: IAdtGroupActivationReference<V>[],
+    preauditRequested: boolean | undefined,
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<TActivation>>;
+
+  checkDeletionGroup<E extends IAdtError>(
+    objects: IAdtGroupDeletionCheckReference<V>[],
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
+  ): Promise<IAdtResponse<TDeletionCheck, E>>;
+  checkDeletionGroup(
+    objects: IAdtGroupDeletionCheckReference<V>[],
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<TDeletionCheck>>;
+
+  deleteObjectsGroup<E extends IAdtError>(
+    objects: IAdtGroupDeletionReference<V>[],
+    transportRequest: string | undefined,
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
+  ): Promise<IAdtResponse<TDeletion, E>>;
+  deleteObjectsGroup(
+    objects: IAdtGroupDeletionReference<V>[],
+    transportRequest: string | undefined,
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<TDeletion>>;
+}
+
+/**
+ * {@link IAdtWhereUsed}'s two requests, typed by the codes where-used is asked
+ * of on variant `V` (`VIEW/DV` among them). Beside the 21.0.0 atom, for the
+ * reason {@link IAdtTypedGroupLifecycle} gives (21.1.0).
+ */
+export interface IAdtTypedWhereUsed<
+  TWhereUsed,
+  TScope,
+  V extends AdtVariant = AdtModernVariant,
+> {
+  getWhereUsed<E extends IAdtError>(
+    params: IAdtWhereUsedParamsOf<V>,
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
+  ): Promise<IAdtResponse<TWhereUsed, E>>;
+  getWhereUsed(
+    params: IAdtWhereUsedParamsOf<V>,
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<TWhereUsed>>;
+
+  getWhereUsedScope<E extends IAdtError>(
+    params: IAdtWhereUsedScopeParamsOf<V>,
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
+  ): Promise<IAdtResponse<TScope, E>>;
+  getWhereUsedScope(
+    params: IAdtWhereUsedScopeParamsOf<V>,
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<TScope>>;
 }
