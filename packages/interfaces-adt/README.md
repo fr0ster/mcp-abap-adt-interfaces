@@ -145,7 +145,7 @@ configs `className`. `IObjectReference` requires `parentName` for `FUGR/FF` and
 (source code plugin, ENHO/XHH), and `enhsxsb` (BAdI enhancement spot, ENHS/XSB).
 The ABAP Cloud trial refuses the `enhoxhh` collection (403 on create and read;
 no content type in its discovery). Class enhancements (`enhoxh`) and plain
-spots (`enhsxs`) answered 500 on reads on E19 (2026-10-15) and on premise +
+spots (`enhsxs`) answered 500 on reads on S/4HANA on-premise (2026-10-15) and on premise +
 trial in mcp-abap-adt `5046d8a6` (2026-10-02), which also measured Eclipse
 opening them in SAP GUI. The trial discovery lists no content type for either.
 Callers migrating from 16.0 must remove those calls; the removed subtypes now
@@ -166,7 +166,7 @@ names used to create plugins.
 atom for an include's elements and options, with the same two members. Both
 reads take optional `context` naming the include's main program (`SAPLSVIM`
 for an include of function group SVIM). Without it, both reads answered 400
-ED/258 "No main program for include … found" (E19, 2026-10-15). Context stays
+ED/258 "No main program for include … found" (S/4HANA on-premise, 2026-10-15). Context stays
 optional because an include with a single main program is unmeasured.
 Both atoms accept per-call `analyse` and return `IAdtResponse`.
 
