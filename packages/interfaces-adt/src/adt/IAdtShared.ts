@@ -2,55 +2,22 @@
  * Shared types for cross-cutting ADT operations
  */
 
-export type AdtObjectTypeLower =
-  | 'class'
-  | 'clas/oc'
-  | 'program'
-  | 'prog/p'
-  | 'interface'
-  | 'intf/if'
-  | 'functionmodule'
-  | 'fugr/ff'
-  | 'view'
-  | 'ddls/df'
-  | 'structure'
-  | 'stru/dt'
-  | 'table'
-  | 'tabl/dt'
-  | 'tabletype'
-  | 'ttyp/df'
-  | 'domain'
-  | 'doma/dd'
-  | 'dataelement'
-  | 'dtel'
-  | 'functiongroup'
-  | 'fugr'
-  | 'package'
-  | 'devc/k';
+import type { AdtParentedTypeCode, AdtTypeCode } from './AdtTypeTables';
 
-export type AdtObjectType = AdtObjectTypeLower | Uppercase<AdtObjectTypeLower>;
-
-export type AdtSourceObjectTypeLower =
-  | 'class'
-  | 'clas/oc'
-  | 'program'
-  | 'prog/p'
-  | 'interface'
-  | 'intf/if'
-  | 'functionmodule'
-  | 'fugr/ff'
-  | 'view'
-  | 'ddls/df'
-  | 'structure'
-  | 'stru/dt'
-  | 'table'
-  | 'tabl/dt'
-  | 'tabletype'
-  | 'ttyp/df';
-
-export type AdtSourceObjectType =
-  | AdtSourceObjectTypeLower
-  | Uppercase<AdtSourceObjectTypeLower>;
+/**
+ * An object as an answer named it: its type code when the tables know it, the
+ * code as it came when they do not.
+ *
+ * A code read from ADT is looked up once, where it is read. A known one
+ * reaches the consumer as `type`, typed; one the tables do not hold — a type
+ * the library does not serve, a newer release's — is not dropped and not
+ * forced into the union, but carried as `unknownType`, the text as ADT sent
+ * it. The two are exclusive, so a consumer that switches on `type` has
+ * handled every code it can act on.
+ */
+export type IAdtAnsweredObject =
+  | { type: AdtTypeCode; unknownType?: never }
+  | { unknownType: string; type?: never };
 
 /**
  * What a group operation is given, per object.
@@ -60,24 +27,39 @@ export type AdtSourceObjectType =
  * `deleteObjectsGroup` take these, and a consumer cannot call them without the
  * type. It extended `IAdtObjectHit` — a result shape — until 31.0.0 and now
  * states its own fields, which are the ones the request carries.
+ *
+ * **Since 21.0.0 its `type` is an {@link AdtTypeCode}**, and it is generic in
+ * the code: `IObjectReference<'FUGR/FF'>` — any code with a parent API —
+ * requires `parentName`. The condition is not distributive, so the default,
+ * every code at once, leaves `parentName` optional: a reference built from a
+ * code known only as `AdtTypeCode` compiles, and an interface can extend it.
+ * A union of one member per code would do neither — it exceeds the 25
+ * combinations TypeScript checks an object literal against.
  */
-export interface IObjectReference {
+export type IObjectReference<C extends AdtTypeCode = AdtTypeCode> = {
   /** Object name, `adtcore:name`. */
   name: string;
-  /** ADT object type code, e.g. `'CLAS/OC'`. */
-  type: string;
+  /** ADT object type code, e.g. `'CLAS/OC'`: a code of the tables. */
+  type: C;
   /** ADT URI of the object, `adtcore:uri`, where the caller knows it. */
   uri?: string;
-  /** Owning object, where the reference is to a part of one. */
-  parentName?: string;
-}
+} & ([C] extends [AdtParentedTypeCode]
+  ? {
+      /** The parent object's name: the function group of `FUGR/FF`. */
+      parentName: string;
+    }
+  : {
+      /** Owning object, where the reference is to a part of one. */
+      parentName?: string;
+    });
 
 /**
  * Search objects parameters
  */
 export interface ISearchObjectsParams {
   query: string;
-  objectType?: string;
+  /** Restrict the search to one code of the tables. */
+  objectType?: AdtTypeCode;
   maxResults?: number;
 }
 
@@ -126,7 +108,7 @@ export interface IGetDiscoveryParams {
  */
 export interface IGetWhereUsedScopeParams {
   object_name: string;
-  object_type: string;
+  object_type: AdtTypeCode;
 }
 
 /**
@@ -134,7 +116,7 @@ export interface IGetWhereUsedScopeParams {
  */
 export interface IGetWhereUsedParams {
   object_name: string;
-  object_type: string;
+  object_type: AdtTypeCode;
   /**
    * Optional: scope XML from getWhereUsedScope() with user-modified selections.
    * When omitted, the search runs unscoped (SAP's default scope) — getWhereUsed()

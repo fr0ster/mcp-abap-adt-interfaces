@@ -5,12 +5,13 @@ ADT contracts: object operations, runtime analysis, execution, feeds and service
 ## TL;DR
 
 - **Only ADT.** The test is who imports this package: `@mcp-abap-adt/adt-clients` and whatever replaces its objects, and nobody else. Measured against every repository in development before 11.0.0 — the only others reaching in were `gcts-client` and `cloud-llm-hub`, for `IAbapConnection`, `IAbapRequestOptions` and `IAdtResponse`. Since 11.0.0 the first two come from `interfaces-adt-connection`; `IAdtResponse` is still here.
-- What it holds: ADT object operations for 31 object types, runtime analysis, execution, feeds, service bindings, `IAdtResponse` and the error codes. **The ABAP connection** — `IAbapConnection`, `IAdtWireResponse`, its capability atoms, `ITimeoutConfig` — is [`interfaces-adt-connection`](../interfaces-adt-connection) since 11.0.0, and is not re-exported here.
+- What it holds: ADT object operations for 31 object types, the ADT type tables per release variant, runtime analysis, execution, feeds, service bindings, `IAdtResponse` and the error codes. **The ABAP connection** — `IAbapConnection`, `IAdtWireResponse`, its capability atoms, `ITimeoutConfig` — is [`interfaces-adt-connection`](../interfaces-adt-connection) since 11.0.0, and is not re-exported here.
 - **What left, and where.** Every HTTP header name, the HTTP frame and `HttpError` → [`interfaces-network`](../interfaces-network). Cloud ALM → [`interfaces-calm`](../interfaces-calm). `XmlNode` → [`interfaces-utils`](../interfaces-utils). Authentication in general — credentials, OAuth grants, tokens, interactive login, SAML assertions, `AUTH_TYPE_JWT`/`BASIC` → [`interfaces-auth`](../interfaces-auth). Everything naming SAP or BTP — `ISapConfig`, `SapAuthType`, `SapConnectionType`, `IConfig`, `IConnectionConfig`, `IAuthorizationConfig`, `ICertificateMaterialLoader`, `IServiceKeyStore`, `ISessionStore`, `ITokenProviderResult`, the two validation results and `AUTH_TYPE_XSUAA` with its union → [`interfaces-auth-sap`](../interfaces-auth-sap). Of those, `IConfig`, `IConnectionConfig`, `IServiceKeyStore`, `ISessionStore` and `ITokenProviderResult` moved on to [`interfaces-auth-broker`](../interfaces-auth-broker) in `interfaces-auth-sap` 2.0.0. `ISessionState` and `ISessionStorage` are deleted, not moved.
 - `IAdtWireResponse` extends `IHttpWireResponse` from `-network` and keeps the headers ADT sends (`sap-adt-location`, both spellings of `content-location`). It lives in `interfaces-adt-connection` since 11.0.0, name and shape unchanged.
 - Since 14.0.0 `IDebuggerIdentity` is a union by `debuggingMode` (required), `attach` takes the identity, `condition` is for line breakpoints only, and `IAbapDebugger` gains `TSettings` and five members. The CHANGELOG has the migration note.
 - Since 15.0.0 `skipCount` is gone from breakpoints (the server ignores it) and `clientId` pairs an answer row with its request. The CHANGELOG has the migration note.
 - Since 15.1.0 the plain class and program run take `debuggee` (`IDebuggeeIds`): the terminal id and IDE id a terminal-mode listener catches the run by.
+- Since 21.0.0 the object type codes are the library's own tables — `ADT_TYPES_ONPREM` (S/4HANA 2025), `ADT_TYPES_CLOUD` (ABAP cloud), `ADT_TYPES_BASIS_740` (SAP_BASIS 7.40 SP04), keyed by API — and every code in a contract is an `AdtTypeCode` drawn from them. `AdtObjectTypeLower`, `AdtObjectType`, `AdtSourceObjectTypeLower` and `AdtSourceObjectType` are removed, and with them the codes no release lists. An identifying atom takes the parent's field as its last type parameter (`TParent`, default `never`, which leaves the config `Partial<TConfig>` as before), and `IObjectReference<C>` requires `parentName` for a code with a parent. A code read from an answer is an `IAdtAnsweredObject`. See "The ADT type tables" and "Migrating to 21.0.0".
 - Since 20.2.0 every object's result-set contract (`IClassResults`, `IProgramResults`, … 30 in all, `IMessageClassMessageResults<TRead, TWritten, TDeleted>` among them) and `IServiceBindingPublicationConfig` are declared here, in the object's own `IAdtX.ts`: the slot map an implementation is constructed with, each slot an `IResultStrategy<unknown>`. A consumer composes its client contract from these and the atoms. Additions only.
 - Since 20.1.0 `IAdtObjectProperties` reads one repository object's properties from `/informationsystem/objectproperties/values?uri=`, any object uri (a transaction by its `vit` workbench uri); its own atom, not part of `IAdtInformationSystem`.
 - Since 20.0.0 `IAdtClientOptions` has no `enableAcceptCorrection`: correcting a refused format is the consumer's own. See "Migrating to 20.0.0".
@@ -30,18 +31,132 @@ npm install @mcp-abap-adt/interfaces-adt
 
 | directory | files | what |
 |---|---|---|
-| `adt/` | 39 | the object contracts: capability atoms, the object types, `IAdtResponse`, `IAdtError`, the error codes, the transport request's object list |
+| `adt/` | 41 | the object contracts: capability atoms, the object types, the ADT type tables and their entry shape, `IAdtResponse`, `IAdtError`, the error codes, the transport request's object list |
 | `runtime/` | 14 | runtime analysis: the debuggers (`IAbapDebugger`, `IAmdpDebugger`) and `IMemorySnapshots`, `IProfiler`, the trace contracts (`ITraceListing`/`ITraceReading`, `ICrossTrace`, `ISt05Trace`), `IApplicationLog`, `IAtcLog` and the ATC run (`IAtcRunOptions`, `IAtcFindings`), `IDdicActivation`, `IGatewayErrorLog`, `IRuntimeDumps`, `ISystemMessages` |
 | `execution/` | 3 | class and program execution, with profiling |
 | `feeds/` | 2 | the ADT feed contracts |
 | `service/` | 1 | service definitions and bindings |
 | `shared/` | 1 | what more than one object type needs |
 
-Six directories, all ADT. `connection/` left for `interfaces-adt-connection` in 11.0.0. `sap/`, `auth/`, `token/`, `session/`, `serviceKey/`, `store/`, `validation/` and `Headers.ts` were here until 9.0.0 and are listed above under what left; `__typechecks__/` holds 24 files that compile shapes this contract must and must not accept, and ships in no tarball.
+Six directories, all ADT. `connection/` left for `interfaces-adt-connection` in 11.0.0. `sap/`, `auth/`, `token/`, `session/`, `serviceKey/`, `store/`, `validation/` and `Headers.ts` were here until 9.0.0 and are listed above under what left; `__typechecks__/` holds 29 files that compile shapes this contract must and must not accept, and ships in no tarball.
 
 The contract rules — what a member answers, how a strategy is supplied, how a contract is built — are in [`docs/architecture/ARCHITECTURE.md`](../../docs/architecture/ARCHITECTURE.md). Domain-by-domain documentation with examples used to sit in the facade's README; the facade is deleted, and each package documents its own contracts.
 
 **There is no facade to stay compatible with.** It was pinned to its 44.0.0 surface in both directions — nothing from that release could disappear from it and nothing could appear without being written down — and `tools/check-surface.js`, `surface-44.0.0.txt`, `baseline-44.0.0.json` and `surface-added.txt` existed to enforce exactly that. The facade is deleted in its 52.0.0 (decision 34), so the property is gone along with the files that proved it; git holds them. What `check-surface.js` still asks is the half that never depended on it: is each symbol declared in the package `tools/package-map.json` assigns it to.
+
+## The ADT type tables
+
+What the library serves, per release variant, is declared here as three `as
+const` tables — constants, written by hand:
+
+| table | variant | release |
+|---|---|---|
+| `ADT_TYPES_ONPREM` | `'onprem'` | S/4HANA 2025 on-premise |
+| `ADT_TYPES_CLOUD` | `'cloud'` | ABAP cloud |
+| `ADT_TYPES_BASIS_740` | `'basis740'` | SAP_BASIS 7.40 SP04 |
+
+**Keyed by API, not by code.** The key is the client's factory name (`class`
+for `getClass()`, `functionModule`, `request` for `getRequest()`), because one
+code serves two APIs (`CLAS/OC`: `class` and `behaviorImplementation`;
+`TABL/DS`: `structure` and `appendStructure`) and one API several codes
+(`enhancement`: `ENHO/XHH`, `ENHO/XHB`, `ENHS/XSB`). An entry holds:
+
+- `kind` — the object's kind in the tools' one vocabulary (`function_module`);
+  two APIs on one code share it;
+- `collection` — the ADT collection its resource lives in, the parent's for an
+  API addressed under a parent;
+- `codes` — for each code: `parent` (the parent API, or `null`),
+  `nameMaxLength`, `operations` and `evidence`, the corpus case of the
+  release's `typestructure` answer that lists the code
+  (`system-description-basis-740--07-typestructure`); and, where a code lives
+  elsewhere than its API, its own `collection` — the enhancement codes under
+  `/sap/bc/adt/enhancements/enhoxhh`, `/enhoxhb` and `/enhsxsb`.
+
+The local class includes and the transport request have no code the library
+sends: their entries have `codes: {}`, and their `parent`, `operations` and
+`evidence` on the entry — the case that lists the parent's code, or for the
+request the release's `typestructure` case. A coded entry names at least one
+code: `IAdtTypeTables` takes each table as `AdtCheckedTable<T>`, which refuses
+an empty `codes` that `satisfies` cannot see.
+
+**Operations** come from one closed vocabulary, `AdtOperation`: `create`,
+`read`, `source`, `readMetadata`, `update`, `updateMetadata`, `lock`,
+`unlock`, `activate`, `check`, `validate`, `versions`, `deletionCheck`,
+`delete`, `transport`; the families of one API (`readEnhancementElements`,
+`readEnhancementOptions`, `activateTestClasses`, `checkCdsTestDoubles`, the
+feature toggle's `switchOn`, `switchOff`, `getRuntimeState`, `checkState`, the
+service binding's `getServiceBindingTypes`, `getServiceGroup`, the transport
+request's `list` … `changeTaskType`); `run` and `profile` for the executors;
+and `unitTestRun`, `unitTestRunSync`, `unitTestStatus`, `unitTestResult` for
+the ABAP Unit runners' four members, which 7.40 serves apart. `source` says the object has a source the
+library reads; `AdtSourceTypeCode` is drawn from it.
+
+**What is not in a table is not served.** An API whose every member the 7.40
+client refuses is absent from `ADT_TYPES_BASIS_740`, and an operation it
+refuses is absent from its code — 7.40 has no `deletionCheck`, no `transport`,
+no `run`. The entry shape (`AdtApiTable<R>`) refuses a misspelt field, an
+operation outside the vocabulary, an API with no factory and another release's
+evidence at compile time.
+
+**Derived types**, all from the tables:
+
+| type | what |
+|---|---|
+| `AdtVariant` | `'onprem' \| 'cloud' \| 'basis740'` |
+| `AdtApi<V>` | the APIs of variant `V` |
+| `AdtTypeCode` | every code of any table |
+| `AdtTypeCodeOf<V>` | the codes of variant `V` |
+| `AdtApiWith<V, Op>` | the APIs of `V` one code of which performs every operation of `Op` (`AdtApiWithIn<T, Op>` over any table) |
+| `AdtTypeCodeWith<V, Op>` | the codes of `V` whose facts list `Op` |
+| `AdtObjectKind` | every kind |
+| `AdtSourceTypeCode` | the codes with `source` |
+| `AdtParentedTypeCode` | the codes with a parent API: `FUGR/FF`, `FUGR/I` |
+
+A map a consumer keeps over the codes is typed by them, and the compiler then
+asks for every code and refuses any other:
+
+```ts
+const label: { readonly [C in AdtTypeCode]: string } = { 'CLAS/OC': 'Class', /* … every code */ };
+```
+
+**Proved against the systems elsewhere.** This package holds no code, so it
+holds no test against the releases: the conformance check in
+`@mcp-abap-adt/adt-clients` reads each release's recorded `typestructure`,
+`discovery` and, on the newer releases, `urimapper` answers. It fails on a code
+not listed, a parent or a name length that disagrees, a collection not
+advertised, and an address built for a sample object that differs from the
+`urimapper` answer for it. It holds the capabilities too: `run` on a code that
+does not list `EXECUTE`, or `profile` without `PROFILE`, is a conflict; a
+`create` on a code without `CREATE` is listed apart, since ADT creates those
+through their own collection; and a code listing `CREATE` that no entry
+creates goes into the coverage. `src/__typechecks__/` holds the tables
+recorded cell for cell — per variant, API and code, the parent and the exact
+set of operations — as an exact equality, so a table edit is made twice, on
+purpose.
+
+**An answered code.** A code read from an ADT answer is an
+`IAdtAnsweredObject`: `{ type: AdtTypeCode }` when the tables know it,
+`{ unknownType: string }` with the text as sent when they do not. The two are
+exclusive.
+
+**Parents.** The atoms that identify an object take the parent's field as
+their last type parameter, `TParent extends keyof TConfig = never`, and their
+`config` is `AdtObjectIdentity<TConfig, TParent>`: with `never` that is
+`Partial<TConfig>` itself — the same type as before 21.0.0, so a contract
+written then, or code generic in `TConfig`, is unchanged — and otherwise every
+field optional but `TParent`, which is required. A contract whose API has a
+parent passes it: `functionGroupName` for a function module and a function
+include, `className` for a local class include and a message class message.
+
+```ts
+type ModuleRead = IAdtReadable<IFunctionModuleConfig, string, 'functionGroupName'>;
+// read({ functionModuleName }) does not compile; read({ functionGroupName, functionModuleName }) does
+```
+
+`IObjectReference<C extends AdtTypeCode = AdtTypeCode>` requires `parentName`
+when `[C] extends [AdtParentedTypeCode]` — `IObjectReference<'FUGR/FF'>` —
+and leaves it optional otherwise, the default included, so a reference built
+from a code typed `AdtTypeCode` compiles and an interface can extend it.
 
 ## Enhancements and their hosts
 
@@ -49,7 +164,7 @@ The contract rules — what a member answers, how a strategy is supplied, how a 
 (source code plugin, ENHO/XHH), and `enhsxsb` (BAdI enhancement spot, ENHS/XSB).
 The ABAP Cloud trial refuses the `enhoxhh` collection (403 on create and read;
 no content type in its discovery). Class enhancements (`enhoxh`) and plain
-spots (`enhsxs`) answered 500 on reads on E19 (2026-10-15) and on premise +
+spots (`enhsxs`) answered 500 on reads on S/4HANA on-premise (2026-10-15) and on premise +
 trial in mcp-abap-adt `5046d8a6` (2026-10-02), which also measured Eclipse
 opening them in SAP GUI. The trial discovery lists no content type for either.
 Callers migrating from 16.0 must remove those calls; the removed subtypes now
@@ -70,7 +185,7 @@ names used to create plugins.
 atom for an include's elements and options, with the same two members. Both
 reads take optional `context` naming the include's main program (`SAPLSVIM`
 for an include of function group SVIM). Without it, both reads answered 400
-ED/258 "No main program for include … found" (E19, 2026-10-15). Context stays
+ED/258 "No main program for include … found" (S/4HANA on-premise, 2026-10-15). Context stays
 optional because an include with a single main program is unmeasured.
 Both atoms accept per-call `analyse` and return `IAdtResponse`.
 
@@ -115,6 +230,51 @@ The members that take `headers`: `IAdtAbapGitClient`: `link`, `pull`, `checkExte
 The field is on each member's own options, not on `IAdtAnalyseOptions` or
 `IAdtOperationOptions`. `src/__typechecks__/headersOnEveryMember.ts` holds this
 for every member and every overload.
+
+## Migrating to 21.0.0
+
+Every break is a type error; nothing a correct call sends changes.
+
+- **The four unions are gone.** Replace `AdtObjectType` with `AdtTypeCode` and
+  `AdtSourceObjectType` with `AdtSourceTypeCode`, or with the variant's own
+  `AdtTypeCodeOf<V>` / `AdtTypeCodeWith<V, 'source'>` where the variant is
+  known. The lower-case spellings and the friendly names (`'class'`,
+  `'functionmodule'`, `'view'`, …) are no codes: pass the upper-case code
+  (`'CLAS/OC'`, `'FUGR/FF'`, `'DDLS/DF'`).
+- **The codes no release lists do not compile.** `INTF/IF` is `INTF/OI`;
+  `STRU/DT` and `STRU/DS` are `TABL/DS`; `DOMA/DM` is `DOMA/DD`; `BDEF/BD` is
+  `BDEF/BDO`; `BIMP/BIM`, `BIMP/` and `BIMPL/` are `CLAS/OC`; `DSFD/DSF` is
+  `DSFD/SCF`, `DSFI/DSF` is `DSFI/SFI`, `SUSO/O` is `AUTH`; a function module
+  is `FUGR/FF` and a function group `FUGR/F`, so `FUNC` and `FUGR/FC` go; bare
+  `SCGR` and the other bare codes (`FUGR`, `DTEL`) are none — `AUTH` is the
+  one bare code a table holds.
+- **A table type is `TTYP/DA` where any code is taken.** `TTYP/DF`, `TTYP/TT`
+  and `TTYP/ST` become `TTYP/DA` in `readObjectMetadata`, `supportsSourceCode`,
+  a reference, a where-used or a search parameter. A table type has no source,
+  so `TTYP/DA` is no `AdtSourceTypeCode`: a `readObjectSource` or
+  `getObjectSourceUri` of a table type has no replacement — read its document
+  with `readObjectMetadata`.
+- **Every code parameter takes these codes:** `IObjectReference.type`,
+  `readObjectSource`, `getObjectSourceUri` (`AdtSourceTypeCode`),
+  `readObjectMetadata`, `supportsSourceCode`, `fetchNodeStructure`'s
+  `parentType`, `getObjectStructure`'s `objectType`, the where-used
+  parameters' `object_type` and `ISearchObjectsParams.objectType`
+  (`AdtTypeCode`).
+- **A parent is named by the contract.** A contract composing the identifying
+  atoms for a function module or a function include passes
+  `'functionGroupName'` as their `TParent`, for a local class include or a
+  message class message `'className'`; a caller of that contract then names
+  the parent. A contract that passes nothing is unchanged. An
+  `IObjectReference<'FUGR/FF'>` or `IObjectReference<'FUGR/I'>` names
+  `parentName`.
+- **An implementation** declaring an identifying member as
+  `(config: Partial<TConfig>, …)` still satisfies the atom — it accepts more.
+- **A result** that carries a code read from an answer is typed
+  `IAdtAnsweredObject`: switch on `type`, and handle `unknownType` for a code
+  the tables do not hold.
+- **The tables are new.** `ADT_TYPES_ONPREM`, `ADT_TYPES_CLOUD`,
+  `ADT_TYPES_BASIS_740` and the types derived from them are additions; see "The
+  ADT type tables".
 
 ## Migrating to 20.0.0
 

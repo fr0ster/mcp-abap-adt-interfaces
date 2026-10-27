@@ -3160,6 +3160,46 @@ run caught.
 **What would change it.** A run endpoint that takes the ids as parameters, or a
 system that reads them from somewhere other than the passport.
 
+## 47. Type codes are the library's per-release tables
+
+**Decided 2026-10-27, in `interfaces-adt` 21.0.0.**
+
+**The problem.** Every layer kept its own list of ADT type codes, about a
+dozen hand-written maps with a vocabulary each. `AdtObjectType` here was one:
+upper and lower case, friendly names beside codes, and codes no release lists
+— `INTF/IF` where the releases list `INTF/OI`, `STRU/DT` for `TABL/DS`,
+`TTYP/DF` for `TTYP/DA`, `DOMA/DM` for `DOMA/DD`. `FUNC` meant a function group
+to one map and a function module to another. A code offered by one layer was
+refused by the next, and nothing said which list was right.
+
+**Measured (2026-10-27, read only).** `POST /sap/bc/adt/repository/typestructure`
+answers every workbench type a release knows: 721 on S/4HANA 2025, 708 on ABAP
+cloud, 464 on SAP_BASIS 7.40 SP04, each with its parent type, name length and
+capabilities. No code means two things across the three, and none of the codes
+above is listed. A listed type is a workbench type, not an ADT service: 7.40
+lists `DOMA/DD` and `TABL/DT`, and its ADT serves neither.
+
+**The decision.** What the library serves is declared here, by hand, as one
+`as const` table per release variant, keyed by the client's factory and
+holding per code the parent, the name length, the operations and the corpus
+case that lists the code. Every code type is derived from the tables, so a code
+in a contract is one the library serves on some release. A code read from an
+answer the tables do not hold is carried as text (`IAdtAnsweredObject`), not
+dropped and not forced into the union. An identifying atom takes the parent's
+field as a type parameter (`TParent`, default `never`), so a contract whose API
+has a parent keeps it required, and every other contract is unchanged.
+
+**Against what.** Reading the codes from the system at run time: the variant is
+the consumer's declaration, and a run-time check is what the compiler can do
+earlier. Generating the tables from `typestructure`: a listed type is not a
+served one, so the list says what exists, not what the library does — the
+conformance check in `@mcp-abap-adt/adt-clients` holds the hand-written tables
+to the recorded answers instead. Keying by code: one code serves two APIs and
+one API several codes.
+
+**What would change it.** A release whose answers the conformance check
+refuses, or an API the library starts to serve; either is an edit of a table.
+
 ## Open, and what would settle it
 
 Not decisions. These are questions this repository has met and deliberately left

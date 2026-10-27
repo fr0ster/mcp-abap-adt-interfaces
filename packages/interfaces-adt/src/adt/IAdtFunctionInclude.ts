@@ -4,6 +4,11 @@
 
 import type { IResultStrategy } from './IAdtResponse';
 
+/**
+ * A function include lives under its group (`FUGR/I`, parent `FUGR/F`): a
+ * contract passes `'functionGroupName'` as the atoms' `TParent`
+ * (`AdtObjectIdentity`).
+ */
 export interface IFunctionIncludeConfig {
   functionGroupName: string;
   includeName: string;

@@ -7,6 +7,132 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [21.0.0] - 2026-10-27
+
+### Added
+
+- **The ADT type tables**, one per release variant: `ADT_TYPES_ONPREM`
+  (S/4HANA 2025 on-premise), `ADT_TYPES_CLOUD` (ABAP cloud) and
+  `ADT_TYPES_BASIS_740` (SAP_BASIS 7.40 SP04), `as const`, keyed by API — the
+  client's factory name. Each entry holds its `kind`, its `collection` and its
+  `codes`; each code its `parent` API, `nameMaxLength`, `operations` and
+  `evidence`, the corpus case of the release's `typestructure` answer, and,
+  where it lives elsewhere than its API, its own `collection` (the enhancement
+  codes: `/sap/bc/adt/enhancements/enhoxhh`, `/enhoxhb`, `/enhsxsb`). The
+  local class includes and the transport request are entries with
+  `codes: {}`, their `parent`, `operations` and `evidence` on the entry. An
+  API the 7.40 client refuses whole is absent from its table, and an operation
+  it refuses is absent from its code.
+- The operations' closed vocabulary, `AdtOperation`. The ABAP Unit runners'
+  four members are four operations, `unitTestRun`, `unitTestRunSync`,
+  `unitTestStatus` and `unitTestResult`, because 7.40 serves them apart: there
+  `run` and `runSync` are served for a class, a program and a function group,
+  only `runSync` for a function module, and `getStatus` and `getResult` for
+  none (no run id to poll or fetch).
+- The entry shape every table `satisfies` (`AdtApiTable<R>`, `AdtApiEntry<R>`,
+  `IAdtCodedApiEntry<R>`, `IAdtCodelessApiEntry<R>`, `IAdtCodeFacts<R>`,
+  `AdtApiName`, `AdtOperations`, `AdtCollection`, `AdtTypeEvidence<R>`,
+  `AdtCheckedTable<T>`): a misspelt field, an operation outside the
+  vocabulary, an API with no factory, another release's evidence, a codeless
+  entry without evidence or a coded entry without a code does not compile.
+- The variants and the types derived from the tables: `AdtVariant`
+  (`'onprem' | 'cloud' | 'basis740'`), `IAdtTypeTables`, `AdtApi<V>`,
+  `AdtTypeCode`, `AdtTypeCodeOf<V>`, `AdtApiWith<V, Op>` and
+  `AdtApiWithIn<T, Op>` (the APIs one code of which performs every operation
+  of `Op` — operations spread across two codes do not count),
+  `AdtTypeCodeWith<V, Op>`, `AdtObjectKind`, `AdtSourceTypeCode`,
+  `AdtParentedTypeCode`.
+- `IAdtAnsweredObject`: `{ type: AdtTypeCode }` or `{ unknownType: string }`,
+  exclusive — what a code read from an answer is, so an unknown one reaches the
+  consumer as the text ADT sent rather than being dropped.
+- `AdtObjectIdentity<TConfig, TParent>`: what an identifying member takes —
+  `Partial<TConfig>` itself when `TParent` is `never`, otherwise every field
+  optional but `TParent`, which is required.
+
+### Changed (breaking)
+
+- **The identifying atoms take the parent's field as a last type parameter,**
+  `TParent extends keyof TConfig = never`: `IAdtReadable`,
+  `IAdtMetadataReadable`, `IAdtEnhancementHost`, `IAdtIncludeEnhancementHost`,
+  `IAdtDeletable` (after `TChecked`), `IAdtValidatable`, `IAdtCheckable`,
+  `IAdtActivatable`, `IAdtLockable`, `IAdtVersionable`, `IAdtTransportAware`.
+  Their `config` is `AdtObjectIdentity<TConfig, TParent>`. With the default it
+  is `Partial<TConfig>` — the same type as before, so an existing contract and
+  code generic in `TConfig` compile unchanged. A contract whose API has a
+  parent passes its field: `functionGroupName` for a function module and a
+  function include, `className` for the four local class includes and for a
+  message class message; its identifying members then require it.
+- **`IObjectReference` is generic in its code,**
+  `IObjectReference<C extends AdtTypeCode = AdtTypeCode>`: `type` is `C`, and
+  `parentName` is required when `[C] extends [AdtParentedTypeCode]` —
+  `IObjectReference<'FUGR/FF'>` needs it — and optional otherwise, the default
+  included. The condition is not distributive: a reference built from a code
+  typed `AdtTypeCode` compiles, and an interface can extend `IObjectReference`
+  (a union of one member per code exceeds TypeScript's 25 combinations and
+  cannot be extended). The group operations take `IObjectReference[]`, so a
+  caller that wants the parent enforced types its references by code.
+- **Every code parameter is a code of the tables:**
+  - `IAdtObjectAccess`: `readObjectSource` and `getObjectSourceUri` take an
+    `AdtSourceTypeCode` (the codes the library reads a source of);
+    `readObjectMetadata` and `supportsSourceCode` an `AdtTypeCode` (any
+    object has metadata, and asking whether a code has source is asked of any
+    code).
+  - `IAdtRepositoryStructure.fetchNodeStructure(parentType)` and
+    `getObjectStructure(objectType)` take an `AdtTypeCode`: the node and
+    object structures are asked of any object — a package's contents, a
+    class's includes, a program's parts — so no narrower set is stated.
+  - `IGetWhereUsedScopeParams.object_type` and `IGetWhereUsedParams.object_type`
+    are an `AdtTypeCode`: where-used is asked of any object.
+  - `ISearchObjectsParams.objectType` is an `AdtTypeCode`: the search filters
+    by any code.
+
+### Removed (breaking)
+
+- `AdtObjectTypeLower`, `AdtObjectType`, `AdtSourceObjectTypeLower` and
+  `AdtSourceObjectType`. With them go the codes no release lists, which no
+  table holds: `INTF/IF`, `STRU/DT`, `STRU/DS`, `TTYP/DF`, `TTYP/TT`,
+  `TTYP/ST`, `DOMA/DM`, `BDEF/BD`, `BIMP/BIM`, `BIMP/`, `BIMPL/`, `FUGR/FC`,
+  `FUNC`, bare `SCGR`, `DSFD/DSF`, `DSFI/DSF`, `SUSO/O`, the bare `FUGR` and
+  `DTEL`, the lower-case spellings and the friendly names.
+
+### Known library defects, entered as served
+
+The tables declare what the library sends, so two members that send a request
+known or inferred to fail are entered as served rather than hidden:
+
+- `transformation` `validate` posts to `/sap/bc/adt/xslt/validation`, which
+  answers `404` — a known-wrong address.
+- `enhancement` `versions` for `ENHO/XHB` and `ENHS/XSB` addresses
+  `…/source/main/versions`, which these source-less codes lack — an inferred
+  `404`, unmeasured.
+
+### Migration
+
+- Replace `AdtObjectType` with `AdtTypeCode` and `AdtSourceObjectType` with
+  `AdtSourceTypeCode` — or `AdtTypeCodeOf<V>` / `AdtTypeCodeWith<V, 'source'>`
+  where the variant is known — and pass upper-case codes: `'CLAS/OC'` for
+  `'class'`, `'FUGR/FF'` for `'functionmodule'`, `'DDLS/DF'` for `'view'`.
+- Replace each dropped code with the one the releases list: `INTF/IF` →
+  `INTF/OI`; `STRU/DT`, `STRU/DS` → `TABL/DS`; `DOMA/DM` → `DOMA/DD`;
+  `BDEF/BD` → `BDEF/BDO`; `BIMP/BIM`, `BIMP/`, `BIMPL/` → `CLAS/OC`;
+  `DSFD/DSF` → `DSFD/SCF`; `DSFI/DSF` → `DSFI/SFI`; `SUSO/O` → `AUTH`;
+  `FUNC` → `FUGR/FF` for a module, `FUGR/F` for a group; `FUGR/FC` and `SCGR`
+  have no replacement the library serves.
+- `TTYP/DF`, `TTYP/TT` and `TTYP/ST` become `TTYP/DA` **where any code is
+  taken** — `readObjectMetadata`, `supportsSourceCode`, a reference, a
+  where-used or search parameter. A table type has no source: `TTYP/DA` is no
+  `AdtSourceTypeCode`, so a `readObjectSource` or `getObjectSourceUri` call
+  on a table type has no replacement and goes — read its document with
+  `readObjectMetadata`.
+- A contract whose API has a parent passes its field to the identifying atoms
+  — `IAdtReadable<IFunctionModuleConfig, R, 'functionGroupName'>` — and a
+  caller then names it. An `IObjectReference<'FUGR/FF'>` or
+  `IObjectReference<'FUGR/I'>` names `parentName`.
+- Type a result's code read from an answer as `IAdtAnsweredObject`, and handle
+  `unknownType`.
+- An implementation that declares `(config: Partial<TConfig>, …)` still
+  satisfies every atom; nothing an implementation sends changes.
+
 ## [20.2.0] - 2026-10-24
 
 ### Added

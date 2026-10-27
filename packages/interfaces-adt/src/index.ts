@@ -15,6 +15,24 @@
  */
 
 export type {
+  AdtApi,
+  AdtApiWith,
+  AdtApiWithIn,
+  AdtObjectKind,
+  AdtParentedTypeCode,
+  AdtSourceTypeCode,
+  AdtTypeCode,
+  AdtTypeCodeOf,
+  AdtTypeCodeWith,
+  AdtVariant,
+  IAdtTypeTables,
+} from './adt/AdtTypeTables';
+export {
+  ADT_TYPES_BASIS_740,
+  ADT_TYPES_CLOUD,
+  ADT_TYPES_ONPREM,
+} from './adt/AdtTypeTables';
+export type {
   IAbapGitExternalRepoCredentials,
   IAbapGitLinkArgs,
   IAbapGitPullArgs,
@@ -41,6 +59,7 @@ export type {
 } from './adt/IAdtBehaviorDefinition';
 export type { IBehaviorImplementationConfig } from './adt/IAdtBehaviorImplementation';
 export type {
+  AdtObjectIdentity,
   IAdtActivatable,
   IAdtCheckable,
   IAdtCreatable,
@@ -173,10 +192,7 @@ export type {
   IServiceDefinitionResults,
 } from './adt/IAdtServiceDefinition';
 export type {
-  AdtObjectType,
-  AdtObjectTypeLower,
-  AdtSourceObjectType,
-  AdtSourceObjectTypeLower,
+  IAdtAnsweredObject,
   IGetDiscoveryParams,
   IGetSqlQueryParams,
   IGetTableContentsParams,
@@ -225,6 +241,19 @@ export {
   ADT_TASK_TYPE,
   TRANSPORT_SEARCH_CONFIGURATIONS_URL,
 } from './adt/IAdtTransport';
+export type {
+  AdtApiEntry,
+  AdtApiName,
+  AdtApiTable,
+  AdtCheckedTable,
+  AdtCollection,
+  AdtOperation,
+  AdtOperations,
+  AdtTypeEvidence,
+  IAdtCodedApiEntry,
+  IAdtCodeFacts,
+  IAdtCodelessApiEntry,
+} from './adt/IAdtTypeTable';
 export type {
   ICdsTestDoubleCheckable,
   ICdsUnitTestConfig,

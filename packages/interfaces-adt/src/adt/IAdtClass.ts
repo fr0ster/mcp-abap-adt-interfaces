@@ -31,6 +31,9 @@ export interface IClassConfig {
 // Class-includes config types — promoted verbatim from adt-clients
 // src/core/class/AdtLocal{TestClass,Types,Definitions,Macros}.ts
 // (publicly exported; the `TConfig` of the atoms a class handler declares).
+//
+// Each include is addressed under its class, its parent API in the tables: a
+// contract passes `'className'` as the atoms' `TParent` (`AdtObjectIdentity`).
 export interface ILocalTestClassConfig {
   className: string;
   /**

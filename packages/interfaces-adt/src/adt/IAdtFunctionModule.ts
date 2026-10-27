@@ -17,6 +17,9 @@ export interface ICreateFunctionModuleParams {
 // Note: packageName is required for create operations (validated in builder methods)
 // description is required for create/validate operations
 // source is required for create/update operations
+//
+// A module lives under its group (`FUGR/FF`, parent `FUGR/F`): a contract
+// passes `'functionGroupName'` as the atoms' `TParent` (`AdtObjectIdentity`).
 export interface IFunctionModuleConfig {
   functionGroupName: string; // Required
   functionModuleName: string; // Required
