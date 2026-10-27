@@ -11,7 +11,7 @@ ADT contracts: object operations, runtime analysis, execution, feeds and service
 - Since 14.0.0 `IDebuggerIdentity` is a union by `debuggingMode` (required), `attach` takes the identity, `condition` is for line breakpoints only, and `IAbapDebugger` gains `TSettings` and five members. The CHANGELOG has the migration note.
 - Since 15.0.0 `skipCount` is gone from breakpoints (the server ignores it) and `clientId` pairs an answer row with its request. The CHANGELOG has the migration note.
 - Since 15.1.0 the plain class and program run take `debuggee` (`IDebuggeeIds`): the terminal id and IDE id a terminal-mode listener catches the run by.
-- Since 21.0.0 the object type codes are the library's own tables — `ADT_TYPES_ONPREM` (S/4HANA 2025), `ADT_TYPES_CLOUD` (ABAP cloud), `ADT_TYPES_BASIS_740` (SAP_BASIS 7.40 SP04), keyed by API — and every code in a contract is an `AdtTypeCode` drawn from them. `AdtObjectTypeLower`, `AdtObjectType`, `AdtSourceObjectTypeLower` and `AdtSourceObjectType` are removed, and with them the codes no release lists. A function module, a function include and a local class include require their parent where a member takes their config partially (`AdtIdentity`). A code read from an answer is an `IAdtAnsweredObject`. See "The ADT type tables" and "Migrating to 21.0.0".
+- Since 21.0.0 the object type codes are the library's own tables — `ADT_TYPES_ONPREM` (S/4HANA 2025), `ADT_TYPES_CLOUD` (ABAP cloud), `ADT_TYPES_BASIS_740` (SAP_BASIS 7.40 SP04), keyed by API — and every code in a contract is an `AdtTypeCode` drawn from them. `AdtObjectTypeLower`, `AdtObjectType`, `AdtSourceObjectTypeLower` and `AdtSourceObjectType` are removed, and with them the codes no release lists. An identifying atom takes the parent's field as its last type parameter (`TParent`, default `never`, which leaves the config `Partial<TConfig>` as before), and `IObjectReference<C>` requires `parentName` for a code with a parent. A code read from an answer is an `IAdtAnsweredObject`. See "The ADT type tables" and "Migrating to 21.0.0".
 - Since 20.2.0 every object's result-set contract (`IClassResults`, `IProgramResults`, … 30 in all, `IMessageClassMessageResults<TRead, TWritten, TDeleted>` among them) and `IServiceBindingPublicationConfig` are declared here, in the object's own `IAdtX.ts`: the slot map an implementation is constructed with, each slot an `IResultStrategy<unknown>`. A consumer composes its client contract from these and the atoms. Additions only.
 - Since 20.1.0 `IAdtObjectProperties` reads one repository object's properties from `/informationsystem/objectproperties/values?uri=`, any object uri (a transaction by its `vit` workbench uri); its own atom, not part of `IAdtInformationSystem`.
 - Since 20.0.0 `IAdtClientOptions` has no `enableAcceptCorrection`: correcting a refused format is the consumer's own. See "Migrating to 20.0.0".
@@ -38,7 +38,7 @@ npm install @mcp-abap-adt/interfaces-adt
 | `service/` | 1 | service definitions and bindings |
 | `shared/` | 1 | what more than one object type needs |
 
-Six directories, all ADT. `connection/` left for `interfaces-adt-connection` in 11.0.0. `sap/`, `auth/`, `token/`, `session/`, `serviceKey/`, `store/`, `validation/` and `Headers.ts` were here until 9.0.0 and are listed above under what left; `__typechecks__/` holds 28 files that compile shapes this contract must and must not accept, and ships in no tarball.
+Six directories, all ADT. `connection/` left for `interfaces-adt-connection` in 11.0.0. `sap/`, `auth/`, `token/`, `session/`, `serviceKey/`, `store/`, `validation/` and `Headers.ts` were here until 9.0.0 and are listed above under what left; `__typechecks__/` holds 29 files that compile shapes this contract must and must not accept, and ships in no tarball.
 
 The contract rules — what a member answers, how a strategy is supplied, how a contract is built — are in [`docs/architecture/ARCHITECTURE.md`](../../docs/architecture/ARCHITECTURE.md). Domain-by-domain documentation with examples used to sit in the facade's README; the facade is deleted, and each package documents its own contracts.
 
@@ -86,8 +86,9 @@ an empty `codes` that `satisfies` cannot see.
 `readEnhancementOptions`, `activateTestClasses`, `checkCdsTestDoubles`, the
 feature toggle's `switchOn`, `switchOff`, `getRuntimeState`, `checkState`, the
 service binding's `getServiceBindingTypes`, `getServiceGroup`, the transport
-request's `list` … `changeTaskType`); and `run`, `profile`, `unitTest` for the
-executors and the ABAP Unit runners. `source` says the object has a source the
+request's `list` … `changeTaskType`); `run` and `profile` for the executors;
+and `unitTestRun`, `unitTestRunSync`, `unitTestStatus`, `unitTestResult` for
+the ABAP Unit runners' four members, which 7.40 serves apart. `source` says the object has a source the
 library reads; `AdtSourceTypeCode` is drawn from it.
 
 **What is not in a table is not served.** An API whose every member the 7.40
@@ -105,7 +106,7 @@ evidence at compile time.
 | `AdtApi<V>` | the APIs of variant `V` |
 | `AdtTypeCode` | every code of any table |
 | `AdtTypeCodeOf<V>` | the codes of variant `V` |
-| `AdtApiWith<V, Op>` | the APIs of `V` performing `Op` on one of their codes |
+| `AdtApiWith<V, Op>` | the APIs of `V` one code of which performs every operation of `Op` (`AdtApiWithIn<T, Op>` over any table) |
 | `AdtTypeCodeWith<V, Op>` | the codes of `V` whose facts list `Op` |
 | `AdtObjectKind` | every kind |
 | `AdtSourceTypeCode` | the codes with `source` |
@@ -120,24 +121,42 @@ const label: { readonly [C in AdtTypeCode]: string } = { 'CLAS/OC': 'Class', /* 
 
 **Proved against the systems elsewhere.** This package holds no code, so it
 holds no test against the releases: the conformance check in
-`@mcp-abap-adt/adt-clients` reads each release's recorded `typestructure` and
-`discovery` answers and fails on a code not listed, a parent or a name length
-that disagrees, or a collection not advertised. `src/__typechecks__/`
-holds the projections — what each variant serves, per API, code and operation —
-as compile-time assertions.
+`@mcp-abap-adt/adt-clients` reads each release's recorded `typestructure`,
+`discovery` and, on the newer releases, `urimapper` answers. It fails on a code
+not listed, a parent or a name length that disagrees, a collection not
+advertised, and an address built for a sample object that differs from the
+`urimapper` answer for it. It holds the capabilities too: `run` on a code that
+does not list `EXECUTE`, or `profile` without `PROFILE`, is a conflict; a
+`create` on a code without `CREATE` is listed apart, since ADT creates those
+through their own collection; and a code listing `CREATE` that no entry
+creates goes into the coverage. `src/__typechecks__/` holds the tables
+recorded cell for cell — per variant, API and code, the parent and the exact
+set of operations — as an exact equality, so a table edit is made twice, on
+purpose.
 
 **An answered code.** A code read from an ADT answer is an
 `IAdtAnsweredObject`: `{ type: AdtTypeCode }` when the tables know it,
 `{ unknownType: string }` with the text as sent when they do not. The two are
 exclusive.
 
-**Parents.** A config whose API lives under a parent extends
-`IAdtParentNamed<K>`, a type-only marker naming the parent's field, and the
-members that identify an object take `AdtIdentity<TConfig>`: the config with
-every field optional except that one. `IFunctionModuleConfig` and
-`IFunctionIncludeConfig` mark `functionGroupName`, the four local include
-configs `className`. `IObjectReference` requires `parentName` for `FUGR/FF` and
-`FUGR/I`.
+**Parents.** The atoms that identify an object take the parent's field as
+their last type parameter, `TParent extends keyof TConfig = never`, and their
+`config` is `AdtObjectIdentity<TConfig, TParent>`: with `never` that is
+`Partial<TConfig>` itself — the same type as before 21.0.0, so a contract
+written then, or code generic in `TConfig`, is unchanged — and otherwise every
+field optional but `TParent`, which is required. A contract whose API has a
+parent passes it: `functionGroupName` for a function module and a function
+include, `className` for a local class include and a message class message.
+
+```ts
+type ModuleRead = IAdtReadable<IFunctionModuleConfig, string, 'functionGroupName'>;
+// read({ functionModuleName }) does not compile; read({ functionGroupName, functionModuleName }) does
+```
+
+`IObjectReference<C extends AdtTypeCode = AdtTypeCode>` requires `parentName`
+when `[C] extends [AdtParentedTypeCode]` — `IObjectReference<'FUGR/FF'>` —
+and leaves it optional otherwise, the default included, so a reference built
+from a code typed `AdtTypeCode` compiles and an interface can extend it.
 
 ## Enhancements and their hosts
 
@@ -223,20 +242,33 @@ Every break is a type error; nothing a correct call sends changes.
   `'functionmodule'`, `'view'`, …) are no codes: pass the upper-case code
   (`'CLAS/OC'`, `'FUGR/FF'`, `'DDLS/DF'`).
 - **The codes no release lists do not compile.** `INTF/IF` is `INTF/OI`;
-  `STRU/DT` and `STRU/DS` are `TABL/DS`; `TTYP/DF`, `TTYP/TT` and `TTYP/ST`
-  are `TTYP/DA`; `DOMA/DM` is `DOMA/DD`; `BDEF/BD` is `BDEF/BDO`; `BIMP/BIM` is
-  `CLAS/OC`; a function module is `FUGR/FF` and a function group `FUGR/F`, so
-  `FUNC` and `FUGR/FC` go; bare `SCGR` and the other bare codes (`FUGR`,
-  `DTEL`) are none — `AUTH` is the one bare code a table holds. `IObjectReference.type`, `readObjectSource`, `readObjectMetadata`,
-  `supportsSourceCode` and `getObjectSourceUri` take these codes.
-- **A parent is required.** A function module or function include config
-  passed to `read`, `lock`, `delete` or any other identifying member names
-  `functionGroupName`; a local class include config names `className`. An
-  `IObjectReference` to `FUGR/FF` or `FUGR/I` names `parentName`. A call
-  without it could not be addressed and now does not compile.
+  `STRU/DT` and `STRU/DS` are `TABL/DS`; `DOMA/DM` is `DOMA/DD`; `BDEF/BD` is
+  `BDEF/BDO`; `BIMP/BIM`, `BIMP/` and `BIMPL/` are `CLAS/OC`; `DSFD/DSF` is
+  `DSFD/SCF`, `DSFI/DSF` is `DSFI/SFI`, `SUSO/O` is `AUTH`; a function module
+  is `FUGR/FF` and a function group `FUGR/F`, so `FUNC` and `FUGR/FC` go; bare
+  `SCGR` and the other bare codes (`FUGR`, `DTEL`) are none — `AUTH` is the
+  one bare code a table holds.
+- **A table type is `TTYP/DA` where any code is taken.** `TTYP/DF`, `TTYP/TT`
+  and `TTYP/ST` become `TTYP/DA` in `readObjectMetadata`, `supportsSourceCode`,
+  a reference, a where-used or a search parameter. A table type has no source,
+  so `TTYP/DA` is no `AdtSourceTypeCode`: a `readObjectSource` or
+  `getObjectSourceUri` of a table type has no replacement — read its document
+  with `readObjectMetadata`.
+- **Every code parameter takes these codes:** `IObjectReference.type`,
+  `readObjectSource`, `getObjectSourceUri` (`AdtSourceTypeCode`),
+  `readObjectMetadata`, `supportsSourceCode`, `fetchNodeStructure`'s
+  `parentType`, `getObjectStructure`'s `objectType`, the where-used
+  parameters' `object_type` and `ISearchObjectsParams.objectType`
+  (`AdtTypeCode`).
+- **A parent is named by the contract.** A contract composing the identifying
+  atoms for a function module or a function include passes
+  `'functionGroupName'` as their `TParent`, for a local class include or a
+  message class message `'className'`; a caller of that contract then names
+  the parent. A contract that passes nothing is unchanged. An
+  `IObjectReference<'FUGR/FF'>` or `IObjectReference<'FUGR/I'>` names
+  `parentName`.
 - **An implementation** declaring an identifying member as
-  `(config: Partial<TConfig>, …)` still satisfies the atom — it accepts more —
-  and a consumer calling through the atom is held to the parent.
+  `(config: Partial<TConfig>, …)` still satisfies the atom — it accepts more.
 - **A result** that carries a code read from an answer is typed
   `IAdtAnsweredObject`: switch on `type`, and handle `unknownType` for a code
   the tables do not hold.

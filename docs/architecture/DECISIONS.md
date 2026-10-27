@@ -3185,9 +3185,9 @@ holding per code the parent, the name length, the operations and the corpus
 case that lists the code. Every code type is derived from the tables, so a code
 in a contract is one the library serves on some release. A code read from an
 answer the tables do not hold is carried as text (`IAdtAnsweredObject`), not
-dropped and not forced into the union. A config whose API has a parent keeps
-the parent required where an identifying member takes it partially
-(`AdtIdentity`).
+dropped and not forced into the union. An identifying atom takes the parent's
+field as a type parameter (`TParent`, default `never`), so a contract whose API
+has a parent keeps it required, and every other contract is unchanged.
 
 **Against what.** Reading the codes from the system at run time: the variant is
 the consumer's declaration, and a run-time check is what the compiler can do
