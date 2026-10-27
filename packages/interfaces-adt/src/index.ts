@@ -17,6 +17,7 @@
 export type {
   AdtApi,
   AdtApiWith,
+  AdtApiWithIn,
   AdtObjectKind,
   AdtParentedTypeCode,
   AdtSourceTypeCode,
@@ -58,7 +59,7 @@ export type {
 } from './adt/IAdtBehaviorDefinition';
 export type { IBehaviorImplementationConfig } from './adt/IAdtBehaviorImplementation';
 export type {
-  AdtIdentity,
+  AdtObjectIdentity,
   IAdtActivatable,
   IAdtCheckable,
   IAdtCreatable,
@@ -68,7 +69,6 @@ export type {
   IAdtLockable,
   IAdtMetadataReadable,
   IAdtMetadataUpdatable,
-  IAdtParentNamed,
   IAdtReadable,
   IAdtTransportAware,
   IAdtUpdatable,

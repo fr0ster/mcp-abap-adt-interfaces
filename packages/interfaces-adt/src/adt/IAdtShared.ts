@@ -20,22 +20,6 @@ export type IAdtAnsweredObject =
   | { unknownType: string; type?: never };
 
 /**
- * The parent of a reference to a code that lives under one — `FUGR/FF` and
- * `FUGR/I` under their function group — is required; elsewhere it names an
- * owning object where there is one.
- */
-type IObjectReferenceParent<C extends AdtTypeCode> =
-  C extends AdtParentedTypeCode
-    ? {
-        /** The parent object's name: the function group of `FUGR/FF`. */
-        parentName: string;
-      }
-    : {
-        /** Owning object, where the reference is to a part of one. */
-        parentName?: string;
-      };
-
-/**
  * What a group operation is given, per object.
  *
  * A **request** parameter, which is why it survived 31.0.0 while the result
@@ -44,27 +28,38 @@ type IObjectReferenceParent<C extends AdtTypeCode> =
  * type. It extended `IAdtObjectHit` — a result shape — until 31.0.0 and now
  * states its own fields, which are the ones the request carries.
  *
- * **Since 21.0.0 its `type` is an {@link AdtTypeCode}**, and a reference to a
- * code with a parent API (`FUGR/FF`, `FUGR/I`) requires `parentName`: one
- * member per code, so the requirement follows the code the caller wrote.
+ * **Since 21.0.0 its `type` is an {@link AdtTypeCode}**, and it is generic in
+ * the code: `IObjectReference<'FUGR/FF'>` — any code with a parent API —
+ * requires `parentName`. The condition is not distributive, so the default,
+ * every code at once, leaves `parentName` optional: a reference built from a
+ * code known only as `AdtTypeCode` compiles, and an interface can extend it.
+ * A union of one member per code would do neither — it exceeds the 25
+ * combinations TypeScript checks an object literal against.
  */
-export type IObjectReference = {
-  [C in AdtTypeCode]: {
-    /** Object name, `adtcore:name`. */
-    name: string;
-    /** ADT object type code, e.g. `'CLAS/OC'`: a code of the tables. */
-    type: C;
-    /** ADT URI of the object, `adtcore:uri`, where the caller knows it. */
-    uri?: string;
-  } & IObjectReferenceParent<C>;
-}[AdtTypeCode];
+export type IObjectReference<C extends AdtTypeCode = AdtTypeCode> = {
+  /** Object name, `adtcore:name`. */
+  name: string;
+  /** ADT object type code, e.g. `'CLAS/OC'`: a code of the tables. */
+  type: C;
+  /** ADT URI of the object, `adtcore:uri`, where the caller knows it. */
+  uri?: string;
+} & ([C] extends [AdtParentedTypeCode]
+  ? {
+      /** The parent object's name: the function group of `FUGR/FF`. */
+      parentName: string;
+    }
+  : {
+      /** Owning object, where the reference is to a part of one. */
+      parentName?: string;
+    });
 
 /**
  * Search objects parameters
  */
 export interface ISearchObjectsParams {
   query: string;
-  objectType?: string;
+  /** Restrict the search to one code of the tables. */
+  objectType?: AdtTypeCode;
   maxResults?: number;
 }
 
@@ -113,7 +108,7 @@ export interface IGetDiscoveryParams {
  */
 export interface IGetWhereUsedScopeParams {
   object_name: string;
-  object_type: string;
+  object_type: AdtTypeCode;
 }
 
 /**
@@ -121,7 +116,7 @@ export interface IGetWhereUsedScopeParams {
  */
 export interface IGetWhereUsedParams {
   object_name: string;
-  object_type: string;
+  object_type: AdtTypeCode;
   /**
    * Optional: scope XML from getWhereUsedScope() with user-modified selections.
    * When omitted, the search runs unscoped (SAP's default scope) — getWhereUsed()

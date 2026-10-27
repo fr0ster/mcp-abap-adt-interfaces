@@ -2,7 +2,6 @@
  * Class ADT operation parameter interfaces (snake_case, low-level)
  */
 
-import type { IAdtParentNamed } from './IAdtCapabilities';
 import type { IResultStrategy } from './IAdtResponse';
 
 // AdtClass configuration (camelCase)
@@ -33,10 +32,9 @@ export interface IClassConfig {
 // src/core/class/AdtLocal{TestClass,Types,Definitions,Macros}.ts
 // (publicly exported; the `TConfig` of the atoms a class handler declares).
 //
-// Each include is addressed under its class, its parent API in the tables, so
-// `className` stays required where a member takes the config partially
-// (`AdtIdentity`).
-export interface ILocalTestClassConfig extends IAdtParentNamed<'className'> {
+// Each include is addressed under its class, its parent API in the tables: a
+// contract passes `'className'` as the atoms' `TParent` (`AdtObjectIdentity`).
+export interface ILocalTestClassConfig {
   className: string;
   /**
    * Source of the whole testclasses include. ADT addresses the include, not a
@@ -46,19 +44,19 @@ export interface ILocalTestClassConfig extends IAdtParentNamed<'className'> {
   transportRequest?: string;
 }
 
-export interface ILocalTypesConfig extends IAdtParentNamed<'className'> {
+export interface ILocalTypesConfig {
   className: string;
   source?: string;
   transportRequest?: string;
 }
 
-export interface ILocalDefinitionsConfig extends IAdtParentNamed<'className'> {
+export interface ILocalDefinitionsConfig {
   className: string;
   source?: string;
   transportRequest?: string;
 }
 
-export interface ILocalMacrosConfig extends IAdtParentNamed<'className'> {
+export interface ILocalMacrosConfig {
   className: string;
   source?: string;
   transportRequest?: string;

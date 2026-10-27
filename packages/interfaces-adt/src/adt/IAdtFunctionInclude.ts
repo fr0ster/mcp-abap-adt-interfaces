@@ -2,16 +2,14 @@
  * FunctionInclude (FUGR/I) ADT operation parameter interfaces (low-level)
  */
 
-import type { IAdtParentNamed } from './IAdtCapabilities';
 import type { IResultStrategy } from './IAdtResponse';
 
 /**
- * A function include lives under its group (`FUGR/I`, parent `FUGR/F`), so the
- * group stays required where a member takes the config partially
- * (`AdtIdentity`).
+ * A function include lives under its group (`FUGR/I`, parent `FUGR/F`): a
+ * contract passes `'functionGroupName'` as the atoms' `TParent`
+ * (`AdtObjectIdentity`).
  */
-export interface IFunctionIncludeConfig
-  extends IAdtParentNamed<'functionGroupName'> {
+export interface IFunctionIncludeConfig {
   functionGroupName: string;
   includeName: string;
   description?: string;

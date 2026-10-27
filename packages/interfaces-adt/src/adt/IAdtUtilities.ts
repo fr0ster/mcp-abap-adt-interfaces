@@ -334,13 +334,13 @@ export interface IAdtRepositoryStructure<TNode, TObjectStructure> {
    * because a member that walked could never be given a reading.
    */
   fetchNodeStructure<E extends IAdtError>(
-    parentType: string,
+    parentType: AdtTypeCode,
     parentName: string,
     options: { headers: IAdtHeaders } & IGetNodeContentsOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TNode, E>>;
   fetchNodeStructure(
-    parentType: string,
+    parentType: AdtTypeCode,
     parentName: string,
     options: { headers: IAdtHeaders } & IGetNodeContentsOptions &
       IAdtAnalyseOptions,
@@ -348,12 +348,12 @@ export interface IAdtRepositoryStructure<TNode, TObjectStructure> {
 
   /** The parts one object is made of. */
   getObjectStructure<E extends IAdtError>(
-    objectType: string,
+    objectType: AdtTypeCode,
     objectName: string,
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TObjectStructure, E>>;
   getObjectStructure(
-    objectType: string,
+    objectType: AdtTypeCode,
     objectName: string,
     options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TObjectStructure>>;
