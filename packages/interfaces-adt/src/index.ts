@@ -15,6 +15,23 @@
  */
 
 export type {
+  AdtApi,
+  AdtApiWith,
+  AdtObjectKind,
+  AdtParentedTypeCode,
+  AdtSourceTypeCode,
+  AdtTypeCode,
+  AdtTypeCodeOf,
+  AdtTypeCodeWith,
+  AdtVariant,
+  IAdtTypeTables,
+} from './adt/AdtTypeTables';
+export {
+  ADT_TYPES_BASIS_740,
+  ADT_TYPES_CLOUD,
+  ADT_TYPES_ONPREM,
+} from './adt/AdtTypeTables';
+export type {
   IAbapGitExternalRepoCredentials,
   IAbapGitLinkArgs,
   IAbapGitPullArgs,
@@ -225,6 +242,18 @@ export {
   ADT_TASK_TYPE,
   TRANSPORT_SEARCH_CONFIGURATIONS_URL,
 } from './adt/IAdtTransport';
+export type {
+  AdtApiEntry,
+  AdtApiName,
+  AdtApiTable,
+  AdtCollection,
+  AdtOperation,
+  AdtOperations,
+  AdtTypeEvidence,
+  IAdtCodedApiEntry,
+  IAdtCodeFacts,
+  IAdtCodelessApiEntry,
+} from './adt/IAdtTypeTable';
 export type {
   ICdsTestDoubleCheckable,
   ICdsUnitTestConfig,
