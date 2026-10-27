@@ -2,6 +2,7 @@
  * Function Module ADT operation parameter interfaces (snake_case, low-level)
  */
 
+import type { IAdtParentNamed } from './IAdtCapabilities';
 import type { IResultStrategy } from './IAdtResponse';
 
 export interface ICreateFunctionModuleParams {
@@ -17,7 +18,11 @@ export interface ICreateFunctionModuleParams {
 // Note: packageName is required for create operations (validated in builder methods)
 // description is required for create/validate operations
 // source is required for create/update operations
-export interface IFunctionModuleConfig {
+//
+// A module lives under its group (`FUGR/FF`, parent `FUGR/F`), so the group
+// stays required where a member takes the config partially (`AdtIdentity`).
+export interface IFunctionModuleConfig
+  extends IAdtParentNamed<'functionGroupName'> {
   functionGroupName: string; // Required
   functionModuleName: string; // Required
   transportRequest?: string; // Only optional parameter

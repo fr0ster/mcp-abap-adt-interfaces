@@ -99,12 +99,11 @@
  */
 
 import type { IReadOptions } from '../shared/IReadOptions';
+import type { AdtSourceTypeCode, AdtTypeCode } from './AdtTypeTables';
 import type { IAdtHeaders } from './IAdtContentTypes';
 import type { IAdtAnalyseOptions, IAnalyse } from './IAdtObject';
 import type { IAdtError, IAdtResponse, IResultStrategy } from './IAdtResponse';
 import type {
-  AdtObjectType,
-  AdtSourceObjectType,
   IGetDiscoveryParams,
   IGetSqlQueryParams,
   IGetTableContentsParams,
@@ -542,14 +541,14 @@ export interface IAdtDiscovery<TDiscovery> {
 export interface IAdtObjectAccess<TSource, TMetadata, TInclude> {
   /** Source of any object that has source. */
   readObjectSource<E extends IAdtError>(
-    objectType: AdtSourceObjectType,
+    objectType: AdtSourceTypeCode,
     objectName: string,
     functionGroup: string | undefined,
     version: 'active' | 'inactive' | undefined,
     options: IReadOptions & IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TSource, E>>;
   readObjectSource(
-    objectType: AdtSourceObjectType,
+    objectType: AdtSourceTypeCode,
     objectName: string,
     functionGroup?: string,
     version?: 'active' | 'inactive',
@@ -558,24 +557,24 @@ export interface IAdtObjectAccess<TSource, TMetadata, TInclude> {
 
   /** Metadata of any object. */
   readObjectMetadata<E extends IAdtError>(
-    objectType: AdtObjectType,
+    objectType: AdtTypeCode,
     objectName: string,
     functionGroup: string | undefined,
     options: IReadOptions & IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TMetadata, E>>;
   readObjectMetadata(
-    objectType: AdtObjectType,
+    objectType: AdtTypeCode,
     objectName: string,
     functionGroup?: string,
     options?: IReadOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TMetadata>>;
 
   /** Whether that type has source at all. Issues no request. */
-  supportsSourceCode(objectType: AdtObjectType): boolean;
+  supportsSourceCode(objectType: AdtTypeCode): boolean;
 
   /** The URI the source read would use. Issues no request. */
   getObjectSourceUri(
-    objectType: AdtSourceObjectType,
+    objectType: AdtSourceTypeCode,
     objectName: string,
     functionGroup?: string,
     version?: 'active' | 'inactive',

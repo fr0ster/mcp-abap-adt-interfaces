@@ -41,6 +41,39 @@ import type {
 } from './IAdtObject';
 import type { IAdtError, IAdtResponse } from './IAdtResponse';
 
+declare const adtParentField: unique symbol;
+
+/**
+ * Marks a config whose API lives under a parent — a function module or a
+ * function include under its group, a local class include under its class —
+ * and names the field that carries the parent: `K`.
+ *
+ * A type-only marker: the symbol is declared, never defined, so nothing
+ * exists at run time and no value ever carries the property. What it changes
+ * is {@link AdtIdentity}, which keeps field `K` required where every other
+ * field of the config becomes optional.
+ */
+export interface IAdtParentNamed<K extends string> {
+  readonly [adtParentField]?: K;
+}
+
+type AdtParentFieldOf<T> = typeof adtParentField extends keyof T
+  ? Extract<Exclude<T[typeof adtParentField], undefined>, keyof T>
+  : never;
+
+/**
+ * What a member that *identifies* an object takes: the config with every field
+ * optional, except the parent a config marked with {@link IAdtParentNamed}
+ * names. `read({ className })` has no business demanding a package, and
+ * `read({ functionModuleName })` cannot address a module without its group:
+ * ADT addresses it under `/functions/groups/{group}/fmodules/{module}`.
+ *
+ * For a config without the marker it is exactly `Partial<TConfig>`, which is
+ * what these members took until 21.0.0.
+ */
+export type AdtIdentity<TConfig> = Partial<TConfig> &
+  Pick<TConfig, AdtParentFieldOf<TConfig>>;
+
 /**
  * Bring an object into existence.
  *
@@ -119,14 +152,14 @@ export interface IAdtReadable<TConfig, TSource> {
    * @returns whatever this implementation's reading makes of the answer
    */
   read<E extends IAdtError>(
-    config: Partial<TConfig>,
+    config: AdtIdentity<TConfig>,
     version: 'active' | 'inactive' | undefined,
     options: { withLongPolling?: boolean } & IAdtOperationOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<TSource, E>>;
   read(
-    config: Partial<TConfig>,
+    config: AdtIdentity<TConfig>,
     version?: 'active' | 'inactive',
     options?: { withLongPolling?: boolean } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TSource>>;
@@ -150,14 +183,14 @@ export interface IAdtMetadataReadable<TConfig, TMetadata> {
    * @returns whatever this implementation's reading makes of the answer
    */
   readMetadata<E extends IAdtError>(
-    config: Partial<TConfig>,
+    config: AdtIdentity<TConfig>,
     options: {
       withLongPolling?: boolean;
       version?: 'active' | 'inactive';
     } & IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TMetadata, E>>;
   readMetadata(
-    config: Partial<TConfig>,
+    config: AdtIdentity<TConfig>,
     options?: {
       withLongPolling?: boolean;
       version?: 'active' | 'inactive';
@@ -172,11 +205,11 @@ export interface IAdtEnhancementHost<TConfig, TElements, TOptions> {
    * the object's source.
    */
   readEnhancementElements<E extends IAdtError>(
-    config: Partial<TConfig>,
+    config: AdtIdentity<TConfig>,
     options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TElements, E>>;
   readEnhancementElements(
-    config: Partial<TConfig>,
+    config: AdtIdentity<TConfig>,
     options?: IAdtOperationOptions,
   ): Promise<IAdtResponse<TElements>>;
 
@@ -184,11 +217,11 @@ export interface IAdtEnhancementHost<TConfig, TElements, TOptions> {
    * …/enhancements/options — the places in the object that can be enhanced.
    */
   readEnhancementOptions<E extends IAdtError>(
-    config: Partial<TConfig>,
+    config: AdtIdentity<TConfig>,
     options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TOptions, E>>;
   readEnhancementOptions(
-    config: Partial<TConfig>,
+    config: AdtIdentity<TConfig>,
     options?: IAdtOperationOptions,
   ): Promise<IAdtResponse<TOptions>>;
 }
@@ -211,13 +244,13 @@ export interface IAdtIncludeEnhancementHost<TConfig, TElements, TOptions> {
    * answered 400 ED/258 (E19, 2026-10-15).
    */
   readEnhancementElements<E extends IAdtError>(
-    config: Partial<TConfig>,
+    config: AdtIdentity<TConfig>,
     options: { context?: string } & IAdtOperationOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<TElements, E>>;
   readEnhancementElements(
-    config: Partial<TConfig>,
+    config: AdtIdentity<TConfig>,
     options?: { context?: string } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TElements>>;
 
@@ -226,13 +259,13 @@ export interface IAdtIncludeEnhancementHost<TConfig, TElements, TOptions> {
    * `context` as for {@link IAdtIncludeEnhancementHost.readEnhancementElements}.
    */
   readEnhancementOptions<E extends IAdtError>(
-    config: Partial<TConfig>,
+    config: AdtIdentity<TConfig>,
     options: { context?: string } & IAdtOperationOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<TOptions, E>>;
   readEnhancementOptions(
-    config: Partial<TConfig>,
+    config: AdtIdentity<TConfig>,
     options?: { context?: string } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TOptions>>;
 }
@@ -240,9 +273,9 @@ export interface IAdtIncludeEnhancementHost<TConfig, TElements, TOptions> {
 /**
  * The object's **source** can be written.
  *
- * **`TConfig` is taken as given, not wrapped in `Partial`.** The atoms that
- * *identify* an object — `read`, `delete`, `activate`, `lock` and the rest —
- * wrap it, and are right to: `read({ className })` has no business demanding a
+ * **`TConfig` is taken as given, not wrapped in {@link AdtIdentity}.** The
+ * atoms that *identify* an object — `read`, `delete`, `activate`, `lock` and
+ * the rest — wrap it, and are right to: `read({ className })` has no business demanding a
  * package. {@link IAdtCreatable} never did, because a create must say what to
  * make, and a write is no more an identifier than a create is. A service
  * binding's publication needs the protocol that selects its endpoint, and an
@@ -357,13 +390,13 @@ export interface IAdtDeletable<TConfig, TDeleted, TChecked = string> {
    * @returns whatever this implementation's reading makes of the answer
    */
   delete<E extends IAdtError>(
-    config: Partial<TConfig>,
+    config: AdtIdentity<TConfig>,
     options: { headers: IAdtHeaders } & IAdtOperationOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<TDeleted, E>>;
   delete(
-    config: Partial<TConfig>,
+    config: AdtIdentity<TConfig>,
     options: { headers: IAdtHeaders } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TDeleted>>;
 
@@ -390,13 +423,13 @@ export interface IAdtDeletable<TConfig, TDeleted, TChecked = string> {
    * @returns whatever this implementation's reading makes of the answer
    */
   checkDeletion<E extends IAdtError>(
-    config: Partial<TConfig>,
+    config: AdtIdentity<TConfig>,
     options: { headers: IAdtHeaders } & IAdtOperationOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<TChecked, E>>;
   checkDeletion(
-    config: Partial<TConfig>,
+    config: AdtIdentity<TConfig>,
     options: { headers: IAdtHeaders } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TChecked>>;
 }
@@ -408,11 +441,11 @@ export interface IAdtValidatable<TConfig, TValidated> {
    * @returns State with validation result
    */
   validate<E extends IAdtError>(
-    config: Partial<TConfig>,
+    config: AdtIdentity<TConfig>,
     options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TValidated, E>>;
   validate(
-    config: Partial<TConfig>,
+    config: AdtIdentity<TConfig>,
     options?: IAdtOperationOptions,
   ): Promise<IAdtResponse<TValidated>>;
 }
@@ -425,14 +458,14 @@ export interface IAdtCheckable<TConfig, TChecked> {
    * @returns State with check result
    */
   check<E extends IAdtError>(
-    config: Partial<TConfig>,
+    config: AdtIdentity<TConfig>,
     status: string | undefined,
     options: { headers: IAdtHeaders } & IAdtOperationOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<TChecked, E>>;
   check(
-    config: Partial<TConfig>,
+    config: AdtIdentity<TConfig>,
     status: string | undefined,
     options: { headers: IAdtHeaders } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TChecked>>;
@@ -445,13 +478,13 @@ export interface IAdtActivatable<TConfig, TActivated> {
    * @returns State with activation result
    */
   activate<E extends IAdtError>(
-    config: Partial<TConfig>,
+    config: AdtIdentity<TConfig>,
     options: { headers: IAdtHeaders } & IAdtOperationOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<TActivated, E>>;
   activate(
-    config: Partial<TConfig>,
+    config: AdtIdentity<TConfig>,
     options: { headers: IAdtHeaders } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TActivated>>;
 }
@@ -469,11 +502,11 @@ export interface IAdtLockable<TConfig> {
    * one operation seen from two ends.
    */
   lock<E extends IAdtError>(
-    config: Partial<TConfig>,
+    config: AdtIdentity<TConfig>,
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<string, E>>;
   lock(
-    config: Partial<TConfig>,
+    config: AdtIdentity<TConfig>,
     options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<string>>;
 
@@ -487,12 +520,12 @@ export interface IAdtLockable<TConfig> {
    * @returns nothing to read, and the answer says whether it happened
    */
   unlock<E extends IAdtError>(
-    config: Partial<TConfig>,
+    config: AdtIdentity<TConfig>,
     lockHandle: string,
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<void, E>>;
   unlock(
-    config: Partial<TConfig>,
+    config: AdtIdentity<TConfig>,
     lockHandle: string,
     options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<void>>;
@@ -511,11 +544,11 @@ export interface IAdtVersionable<TConfig, TVersions, TSource> {
    * in the return type.
    */
   getVersions<E extends IAdtError>(
-    config: Partial<TConfig>,
+    config: AdtIdentity<TConfig>,
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TVersions, E>>;
   getVersions(
-    config: Partial<TConfig>,
+    config: AdtIdentity<TConfig>,
     options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TVersions>>;
 
@@ -562,13 +595,13 @@ export interface IAdtTransportAware<TConfig, TTransport> {
    * @returns State with transport result
    */
   readTransport<E extends IAdtError>(
-    config: Partial<TConfig>,
+    config: AdtIdentity<TConfig>,
     options: { withLongPolling?: boolean } & IAdtOperationOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<TTransport, E>>;
   readTransport(
-    config: Partial<TConfig>,
+    config: AdtIdentity<TConfig>,
     options?: { withLongPolling?: boolean } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TTransport>>;
 }

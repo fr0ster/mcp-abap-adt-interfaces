@@ -58,6 +58,7 @@ export type {
 } from './adt/IAdtBehaviorDefinition';
 export type { IBehaviorImplementationConfig } from './adt/IAdtBehaviorImplementation';
 export type {
+  AdtIdentity,
   IAdtActivatable,
   IAdtCheckable,
   IAdtCreatable,
@@ -67,6 +68,7 @@ export type {
   IAdtLockable,
   IAdtMetadataReadable,
   IAdtMetadataUpdatable,
+  IAdtParentNamed,
   IAdtReadable,
   IAdtTransportAware,
   IAdtUpdatable,
@@ -190,10 +192,7 @@ export type {
   IServiceDefinitionResults,
 } from './adt/IAdtServiceDefinition';
 export type {
-  AdtObjectType,
-  AdtObjectTypeLower,
-  AdtSourceObjectType,
-  AdtSourceObjectTypeLower,
+  IAdtAnsweredObject,
   IGetDiscoveryParams,
   IGetSqlQueryParams,
   IGetTableContentsParams,
