@@ -83,7 +83,10 @@ export type AdtApiName =
  * | `list` … `changeTaskType` | a transport request's members of the same name |
  * | `run` | the executor's `run` |
  * | `profile` | the executor's `runWithProfiler` |
- * | `unitTest` | the object's ABAP Unit test runner |
+ * | `unitTestRun` | the ABAP Unit runner's `run` |
+ * | `unitTestRunSync` | the ABAP Unit runner's `runSync` |
+ * | `unitTestStatus` | the ABAP Unit runner's `getStatus` |
+ * | `unitTestResult` | the ABAP Unit runner's `getResult` |
  */
 export type AdtOperation =
   | 'create'
@@ -123,7 +126,10 @@ export type AdtOperation =
   | 'changeTaskType'
   | 'run'
   | 'profile'
-  | 'unitTest';
+  | 'unitTestRun'
+  | 'unitTestRunSync'
+  | 'unitTestStatus'
+  | 'unitTestResult';
 
 /**
  * The corpus case that shows a code on a release: the release's recorded

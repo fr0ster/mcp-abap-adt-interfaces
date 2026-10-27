@@ -60,7 +60,10 @@ export const ADT_TYPES_ONPREM = {
           'activateTestClasses',
           'run',
           'profile',
-          'unitTest',
+          'unitTestRun',
+          'unitTestRunSync',
+          'unitTestStatus',
+          'unitTestResult',
         ],
         evidence: 'system-description-s4-2025--07-typestructure',
       },
@@ -119,7 +122,10 @@ export const ADT_TYPES_ONPREM = {
           'readEnhancementOptions',
           'run',
           'profile',
-          'unitTest',
+          'unitTestRun',
+          'unitTestRunSync',
+          'unitTestStatus',
+          'unitTestResult',
         ],
         evidence: 'system-description-s4-2025--07-typestructure',
       },
@@ -172,7 +178,10 @@ export const ADT_TYPES_ONPREM = {
           'transport',
           'readEnhancementElements',
           'readEnhancementOptions',
-          'unitTest',
+          'unitTestRun',
+          'unitTestRunSync',
+          'unitTestStatus',
+          'unitTestResult',
         ],
         evidence: 'system-description-s4-2025--07-typestructure',
       },
@@ -200,7 +209,10 @@ export const ADT_TYPES_ONPREM = {
           'deletionCheck',
           'delete',
           'transport',
-          'unitTest',
+          'unitTestRun',
+          'unitTestRunSync',
+          'unitTestStatus',
+          'unitTestResult',
         ],
         evidence: 'system-description-s4-2025--07-typestructure',
       },
@@ -980,7 +992,10 @@ export const ADT_TYPES_CLOUD = {
           'activateTestClasses',
           'run',
           'profile',
-          'unitTest',
+          'unitTestRun',
+          'unitTestRunSync',
+          'unitTestStatus',
+          'unitTestResult',
         ],
         evidence: 'system-description-abap-cloud--07-typestructure',
       },
@@ -1039,7 +1054,10 @@ export const ADT_TYPES_CLOUD = {
           'readEnhancementOptions',
           'run',
           'profile',
-          'unitTest',
+          'unitTestRun',
+          'unitTestRunSync',
+          'unitTestStatus',
+          'unitTestResult',
         ],
         evidence: 'system-description-abap-cloud--07-typestructure',
       },
@@ -1092,7 +1110,10 @@ export const ADT_TYPES_CLOUD = {
           'transport',
           'readEnhancementElements',
           'readEnhancementOptions',
-          'unitTest',
+          'unitTestRun',
+          'unitTestRunSync',
+          'unitTestStatus',
+          'unitTestResult',
         ],
         evidence: 'system-description-abap-cloud--07-typestructure',
       },
@@ -1120,7 +1141,10 @@ export const ADT_TYPES_CLOUD = {
           'deletionCheck',
           'delete',
           'transport',
-          'unitTest',
+          'unitTestRun',
+          'unitTestRunSync',
+          'unitTestStatus',
+          'unitTestResult',
         ],
         evidence: 'system-description-abap-cloud--07-typestructure',
       },
@@ -1900,7 +1924,8 @@ export const ADT_TYPES_BASIS_740 = {
           'readEnhancementElements',
           'readEnhancementOptions',
           'activateTestClasses',
-          'unitTest',
+          'unitTestRun',
+          'unitTestRunSync',
         ],
         evidence: 'system-description-basis-740--07-typestructure',
       },
@@ -1953,7 +1978,8 @@ export const ADT_TYPES_BASIS_740 = {
           'delete',
           'readEnhancementElements',
           'readEnhancementOptions',
-          'unitTest',
+          'unitTestRun',
+          'unitTestRunSync',
         ],
         evidence: 'system-description-basis-740--07-typestructure',
       },
@@ -2003,7 +2029,8 @@ export const ADT_TYPES_BASIS_740 = {
           'delete',
           'readEnhancementElements',
           'readEnhancementOptions',
-          'unitTest',
+          'unitTestRun',
+          'unitTestRunSync',
         ],
         evidence: 'system-description-basis-740--07-typestructure',
       },
@@ -2029,7 +2056,7 @@ export const ADT_TYPES_BASIS_740 = {
           'validate',
           'versions',
           'delete',
-          'unitTest',
+          'unitTestRunSync',
         ],
         evidence: 'system-description-basis-740--07-typestructure',
       },
@@ -2230,19 +2257,22 @@ type CodesOf<E> = E extends { readonly codes: infer C }
   ? keyof C & string
   : never;
 
-type EntryOperations<E> =
-  E extends IAdtCodelessApiEntry<string>
-    ? OperationsOf<E>
-    : E extends { readonly codes: infer C }
-      ? { [K in keyof C]: OperationsOf<C[K]> }[keyof C]
-      : never;
-
 type CodesWith<E, Op extends AdtOperation> = E extends {
   readonly codes: infer C;
 }
   ? { [K in keyof C]: [Op] extends [OperationsOf<C[K]>] ? K : never }[keyof C] &
       string
   : never;
+
+/** Whether one code of the entry — or a codeless entry — lists all of `Op`. */
+type EntryHas<E, Op extends AdtOperation> =
+  E extends IAdtCodelessApiEntry<string>
+    ? [Op] extends [OperationsOf<E>]
+      ? true
+      : false
+    : [CodesWith<E, Op>] extends [never]
+      ? false
+      : true;
 
 type ParentedCodesOf<E> = E extends { readonly codes: infer C }
   ? {
@@ -2263,12 +2293,19 @@ export type AdtTypeCodeOf<V extends AdtVariant> = {
 export type AdtTypeCode = { [V in AdtVariant]: AdtTypeCodeOf<V> }[AdtVariant];
 
 /**
- * The APIs of variant `V` that perform every operation of `Op`, on at least one
- * of their codes (or, for a codeless API, on the entry).
+ * The APIs of table `T` one code of which performs every operation of `Op` —
+ * or, for a codeless API, whose entry does. Operations spread across two codes
+ * do not count: no single object of the API could be asked for all of them.
  */
-export type AdtApiWith<V extends AdtVariant, Op extends AdtOperation> = {
-  [A in AdtApi<V>]: [Op] extends [EntryOperations<TableOf<V>[A]>] ? A : never;
-}[AdtApi<V>];
+export type AdtApiWithIn<T, Op extends AdtOperation> = {
+  [A in keyof T]: EntryHas<T[A], Op> extends true ? A : never;
+}[keyof T];
+
+/** {@link AdtApiWithIn} over variant `V`'s table. */
+export type AdtApiWith<
+  V extends AdtVariant,
+  Op extends AdtOperation,
+> = AdtApiWithIn<TableOf<V>, Op>;
 
 /** The codes of variant `V` whose facts list every operation of `Op`. */
 export type AdtTypeCodeWith<V extends AdtVariant, Op extends AdtOperation> = {

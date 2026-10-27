@@ -130,6 +130,26 @@ void _func;
 const _scgr: AdtTypeCode = 'SCGR';
 void _scgr;
 
+// @ts-expect-error a behavior implementation is a class, CLAS/OC
+const _bimp: AdtTypeCode = 'BIMP/';
+void _bimp;
+
+// @ts-expect-error a behavior implementation is a class, CLAS/OC
+const _bimpl: AdtTypeCode = 'BIMPL/';
+void _bimpl;
+
+// @ts-expect-error the releases list DSFD/SCF
+const _dsfdDsf: AdtTypeCode = 'DSFD/DSF';
+void _dsfdDsf;
+
+// @ts-expect-error the releases list DSFI/SFI
+const _dsfiDsf: AdtTypeCode = 'DSFI/DSF';
+void _dsfiDsf;
+
+// @ts-expect-error the releases list AUTH for an authorization field
+const _susoO: AdtTypeCode = 'SUSO/O';
+void _susoO;
+
 // Nor is a code in lower case, or a friendly name.
 // @ts-expect-error a code is upper case
 const _lower: AdtTypeCode = 'clas/oc';

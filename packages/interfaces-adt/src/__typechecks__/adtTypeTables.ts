@@ -522,7 +522,7 @@ export type NewerShapes = [
   Assert<Equal<AdtTypeCodeWith<'onprem', 'profile'>, 'CLAS/OC' | 'PROG/P'>>,
   Assert<
     Equal<
-      AdtTypeCodeWith<'onprem', 'unitTest'>,
+      AdtTypeCodeWith<'onprem', 'unitTestStatus'>,
       'CLAS/OC' | 'PROG/P' | 'FUGR/F' | 'FUGR/FF'
     >
   >,
