@@ -278,10 +278,13 @@ for every member and every overload.
 - **ABAP cloud: no program or include of one's own.** `ADT_TYPES_CLOUD` no
   longer lists `create`, `update`, `lock`, `unlock`, `activate`, `validate`,
   `deletionCheck` or `delete` for `PROG/P` and `PROG/I`: the cloud refuses to
-  create either (`403`, S_DEVELOP). Code gated on the cloud variant — or on
-  `AdtModernVariant`, the intersection of both newer tables — that creates or
+  create either (`403`, S_DEVELOP). Code gated on the cloud variant, or on
+  the intersecting helpers over `AdtModernVariant` (`AdtCodeWith`,
+  `AdtPerformingVariantsIn` — what both newer tables serve), that creates or
   changes a program or an include stops compiling; on ABAP cloud the system
-  would have refused it. Reading, checking and versioning a delivered program
+  would have refused it. The union helpers (`AdtApiWith`, `AdtTypeCodeWith`)
+  over `AdtModernVariant` still name the program, since on-premise creates
+  one. Reading, checking and versioning a delivered program
   compile as before. A function include (`FUGR/I`) is unchanged.
 - Nothing else breaks: every other change is an addition (see the
   CHANGELOG).
