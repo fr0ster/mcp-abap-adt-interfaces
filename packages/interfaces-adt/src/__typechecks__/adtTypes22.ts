@@ -162,7 +162,10 @@ export type RealIntersection = [
   Assert<
     Equal<
       AdtCodeWith<AdtModernVariant, 'create'>,
-      Exclude<AdtTypeCodeWith<'onprem', 'create'>, 'PROG/P' | 'PROG/I'>
+      Exclude<
+        AdtTypeCodeWith<'onprem', 'create'>,
+        'PROG/P' | 'PROG/I' | 'FTG2/FT'
+      >
     >
   >,
   Assert<

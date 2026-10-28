@@ -974,6 +974,11 @@ export const ADT_TYPES_ONPREM = {
  * what a delivered one answers (measured): the reads, the check, the versions,
  * the deletion check, the enhancement reads and, for a program, the ABAP Unit
  * runs. Its transport is `404`, and running or profiling it is refused.
+ *
+ * `create` is listed where the release's `typestructure` gives the code, or
+ * its parent code, `CREATE` in `USER_AUTHORIZATIONS` — creatable given the
+ * authorization: so a feature toggle (`FTG2/FT`) is not created here, and a
+ * function include (`FUGR/I`) is, through its group (`FUGR/F`).
  */
 export const ADT_TYPES_CLOUD = {
   class: {
@@ -1665,7 +1670,6 @@ export const ADT_TYPES_CLOUD = {
         parent: null,
         nameMaxLength: 30,
         operations: [
-          'create',
           'read',
           'source',
           'readMetadata',

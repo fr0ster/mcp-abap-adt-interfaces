@@ -33,6 +33,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   an object (`create`, `update`, `updateMetadata`, `lock`, `unlock`,
   `activate`, `delete`) and `validate`, which only prepares a create, stay
   out. `AdtCodeWith<AdtModernVariant, Op>` follows.
+- **`ADT_TYPES_CLOUD`: a feature toggle (`FTG2/FT`) is not created.** A table
+  lists `create` where its release's `typestructure` gives the code, or its
+  parent code, `CREATE` in `USER_AUTHORIZATIONS` — creatable given the
+  authorization. ABAP cloud gives `FTG2/FT` none, and the create answers `403`
+  (measured on the BTP trial 2026-10-28). Its other operations stay. On
+  S/4HANA 2025 the code has `CREATE` and keeps `create`; a system may still
+  refuse it — E19 answers `403` "It is not allowed to create/update feature
+  toggles in this system" (`FTG2/035`), a setting of that system, which
+  reaches the caller as the system's answer.
 
 ## [22.0.0] - 2026-10-28
 
