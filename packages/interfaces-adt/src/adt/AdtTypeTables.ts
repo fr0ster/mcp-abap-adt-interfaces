@@ -31,7 +31,8 @@ import type {
  *
  * The library has no on-premise or cloud branch; the two tables differ where
  * the releases do — `SRVD/SRV` takes 40 characters here and 30 on ABAP
- * cloud, and a program or an include is created, changed and run only here.
+ * cloud, and a program or an include is created, changed and run, and a
+ * feature toggle created, changed and switched, only here.
  */
 export const ADT_TYPES_ONPREM = {
   class: {
@@ -968,8 +969,9 @@ export const ADT_TYPES_ONPREM = {
 /**
  * What the library serves on **ABAP cloud** (measured on the BTP trial), API by
  * API. The same operations as {@link ADT_TYPES_ONPREM}, and this release's
- * name lengths, but for a program (`PROG/P`) and an include (`PROG/I`). The
- * cloud has none of one's own — its discovery gives neither collection an
+ * name lengths, but for a program (`PROG/P`), an include (`PROG/I`) and a
+ * feature toggle (`FTG2/FT`), each only read here. The cloud has no program
+ * or include of one's own — its discovery gives neither collection an
  * `app:accept`, and the create is refused (`403`, S_DEVELOP) — so they list
  * what a delivered one answers (measured): the reads, the check, the versions,
  * the deletion check, the enhancement reads and, for a program, the ABAP Unit
