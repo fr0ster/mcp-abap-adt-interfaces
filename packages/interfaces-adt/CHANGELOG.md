@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [23.0.2] - 2026-10-28
+
+### Fixed
+
+- **The type tables list `updateMetadata` where it was measured for the
+  source objects.** `DCLS/DL`, `DDLX/EX`, `BDEF/BDO`, `SRVD/SRV`, `DSFD/SCF`,
+  `XSLT/VT`, `TABL/DT` and `TABL/DS` (the `structure` API) on S/4HANA 2025 and
+  ABAP cloud, and `PROG/I` on S/4HANA (ABAP cloud creates no include): the
+  object's whole metadata document, written back with the media type it was
+  read with, answers `200`, and after activation the active version carries
+  the change (measured 2026-10-28 on both releases, each type on objects of
+  its own). `appendStructure` shares `TABL/DS` but is not measured, and keeps
+  none.
+- **Their results contracts gain `metadataUpdated`** — `IAccessControlResults`,
+  `IMetadataExtensionResults`, `IBehaviorDefinitionResults`,
+  `IServiceDefinitionResults`, `IScalarFunctionResults`,
+  `ITransformationResults`, `ITableResults`, `IStructureResults` and
+  `IIncludeResults`. Required, as in 23.0.1: a results set built for these
+  contracts adds it ([Migrating to 23.0.2](README.md#migrating-to-2302)).
+
 ## [23.0.1] - 2026-10-28
 
 ### Fixed

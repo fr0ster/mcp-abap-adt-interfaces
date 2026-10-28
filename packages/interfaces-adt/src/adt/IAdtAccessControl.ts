@@ -24,6 +24,8 @@ export interface IAccessControlResults {
   readonly validation: IResultStrategy<unknown>;
   readonly deletion: IResultStrategy<unknown>;
   readonly updated: IResultStrategy<unknown>;
+  /** What writing the object's whole metadata document answers (`updateMetadata`). */
+  readonly metadataUpdated: IResultStrategy<unknown>;
   readonly transport: IResultStrategy<unknown>;
   /** What a deletion check answers: `del:checkResponse`. */
   readonly deletionCheck: IResultStrategy<unknown>;
