@@ -7,25 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [22.0.1] - 2026-10-28
+## [23.0.0] - 2026-10-28
 
-### Fixed
+### Changed (breaking)
 
-- **`ADT_TYPES_CLOUD`: a program and an include lose only `create`.** 22.0.0
-  removed `update`, `lock`, `unlock`, `activate`, `validate`, `deletionCheck`
-  and `delete` from `PROG/P` and `PROG/I` by inference from the create's
-  `403`; an operation's availability is read from the release's discovery
-  first and its `typestructure` second, and ABAP cloud's discovery lacks only
-  the create (neither collection has an `app:accept`) — the validation, the
-  deletion check and delete, the activation and the program run are all
-  there. Measured on the BTP trial 2026-10-28: the deletion check of a
-  delivered program and include answers its `del:checkResponse`, and the name
-  validation of a new program and include in `ZLOCAL` answers
-  `CHECK_RESULT X`. Both codes list every on-premise operation but `create`
-  again, `updateMetadata` of a program included; a change of a delivered
-  object is the system's to refuse (S_DEVELOP is an authorization, not an
-  absent service). `AdtCodeWith<AdtModernVariant, Op>` names `PROG/P` and
-  `PROG/I` again for every operation but `create`.
+- **`ADT_TYPES_CLOUD`: a program and an include list what a delivered one
+  answers, as measured.** ABAP cloud has no program or include of one's own:
+  its discovery gives neither collection an `app:accept`, and the create is
+  refused (`403`, S_DEVELOP). Measured on the BTP trial 2026-10-28 on a
+  delivered program and include:
+  - answered: `read`, `source`, `readMetadata`, `check` and `versions` (the
+    program's), `deletionCheck` (its `del:checkResponse`, not deletable), the
+    enhancement elements and options, and for a program the ABAP Unit run, its
+    status and result, and the synchronous run;
+  - refused: `transport` (`404`), `run` and `profile` (`200` with "You are not
+    authorized to execute this object" as the body).
+
+  So `PROG/P` lists `read`, `source`, `readMetadata`, `check`, `versions`,
+  `deletionCheck`, `readEnhancementElements`, `readEnhancementOptions`,
+  `unitTestRun`, `unitTestRunSync`, `unitTestStatus` and `unitTestResult`,
+  and `PROG/I` `read`, `source`, `readMetadata`, `deletionCheck` and the two
+  enhancement reads. Against 22.0.0 that removes `transport`, `run` and
+  `profile` from `PROG/P` — a narrowing, so a major — and adds
+  `deletionCheck` to both, which 22.0.0 had dropped by inference. A change of
+  an object (`create`, `update`, `updateMetadata`, `lock`, `unlock`,
+  `activate`, `delete`) and `validate`, which only prepares a create, stay
+  out. `AdtCodeWith<AdtModernVariant, Op>` follows.
 
 ## [22.0.0] - 2026-10-28
 

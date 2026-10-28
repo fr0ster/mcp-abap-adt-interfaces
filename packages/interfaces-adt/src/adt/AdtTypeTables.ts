@@ -31,7 +31,7 @@ import type {
  *
  * The library has no on-premise or cloud branch; the two tables differ where
  * the releases do — `SRVD/SRV` takes 40 characters here and 30 on ABAP
- * cloud, and a program or an include is created only here.
+ * cloud, and a program or an include is created, changed and run only here.
  */
 export const ADT_TYPES_ONPREM = {
   class: {
@@ -968,9 +968,12 @@ export const ADT_TYPES_ONPREM = {
 /**
  * What the library serves on **ABAP cloud** (measured on the BTP trial), API by
  * API. The same operations as {@link ADT_TYPES_ONPREM}, and this release's
- * name lengths, but for creating a program (`PROG/P`) or an include
- * (`PROG/I`): the release's discovery gives neither collection an
- * `app:accept`, and the create is refused (`403`, S_DEVELOP).
+ * name lengths, but for a program (`PROG/P`) and an include (`PROG/I`). The
+ * cloud has none of one's own — its discovery gives neither collection an
+ * `app:accept`, and the create is refused (`403`, S_DEVELOP) — so they list
+ * what a delivered one answers (measured): the reads, the check, the versions,
+ * the deletion check, the enhancement reads and, for a program, the ABAP Unit
+ * runs. Its transport is `404`, and running or profiling it is refused.
  */
 export const ADT_TYPES_CLOUD = {
   class: {
@@ -1049,21 +1052,11 @@ export const ADT_TYPES_CLOUD = {
           'read',
           'source',
           'readMetadata',
-          'update',
-          'updateMetadata',
-          'lock',
-          'unlock',
-          'activate',
           'check',
-          'validate',
           'versions',
           'deletionCheck',
-          'delete',
-          'transport',
           'readEnhancementElements',
           'readEnhancementOptions',
-          'run',
-          'profile',
           'unitTestRun',
           'unitTestRunSync',
           'unitTestStatus',
@@ -1084,13 +1077,7 @@ export const ADT_TYPES_CLOUD = {
           'read',
           'source',
           'readMetadata',
-          'update',
-          'lock',
-          'unlock',
-          'activate',
-          'validate',
           'deletionCheck',
-          'delete',
           'readEnhancementElements',
           'readEnhancementOptions',
         ],

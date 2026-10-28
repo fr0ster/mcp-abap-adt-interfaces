@@ -3205,17 +3205,18 @@ operation words and whether it was measured — not into the API tables, where
 an entry opens a factory and a new operation word widens a vocabulary
 consumers map exhaustively.
 
-**Discovery first, `typestructure` second (22.0.0, 22.0.1).** Whether a
-release offers an operation is read from its discovery first and its
-`typestructure` second; a live answer settles it, and an authorization
-refusal is the user's authorization, not an absent service. ABAP cloud's
-`typestructure` lists `CREATE` for `PROG/P` and `PROG/I`, but its discovery
-gives neither collection an `app:accept`, and the create is refused (`403`,
-S_DEVELOP, measured 2026-10-28): the cloud table lists every on-premise
-operation for them but `create`. 22.0.0 dropped the other change operations
-too, by inference from that refusal; discovery lists their services, and
-22.0.1 restored them. Removing an operation narrows a published type, so it
-is a major; restoring one is a patch.
+**Discovery first, `typestructure` second, then a measurement (22.0.0,
+23.0.0).** Whether a release offers an operation is read from its discovery
+first and its `typestructure` second, and a live answer settles it. ABAP
+cloud's `typestructure` lists `CREATE` for `PROG/P` and `PROG/I`, but its
+discovery gives neither collection an `app:accept`, and the create is refused
+(`403`, S_DEVELOP, measured 2026-10-28): the cloud has no program or include
+of one's own, only SAP's. So the cloud table lists for them what a delivered
+one answers, each operation measured — the reads, the checks, the deletion
+check, the enhancement reads and a program's ABAP Unit runs — and nothing
+that changes, transports (`404`) or runs (refused) one. 22.0.0 removed the
+deletion check by inference; 23.0.0 restored it from the measurement.
+Removing an operation narrows a published type, so it is a major.
 
 **What would change it.** A release whose answers the conformance check
 refuses, or an API the library starts to serve; either is an edit of a table.
