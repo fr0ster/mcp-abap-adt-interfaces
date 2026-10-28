@@ -160,7 +160,10 @@ type RecordedOnPremise = {
       parent: null;
       operations:
         | 'create'
+        | 'read'
+        | 'source'
         | 'readMetadata'
+        | 'update'
         | 'updateMetadata'
         | 'lock'
         | 'unlock'

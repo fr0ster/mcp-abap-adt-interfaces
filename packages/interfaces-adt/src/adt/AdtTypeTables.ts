@@ -172,7 +172,10 @@ export const ADT_TYPES_ONPREM = {
         nameMaxLength: 26,
         operations: [
           'create',
+          'read',
+          'source',
           'readMetadata',
+          'update',
           'updateMetadata',
           'lock',
           'unlock',
@@ -1116,7 +1119,10 @@ export const ADT_TYPES_CLOUD = {
         nameMaxLength: 26,
         operations: [
           'create',
+          'read',
+          'source',
           'readMetadata',
+          'update',
           'updateMetadata',
           'lock',
           'unlock',

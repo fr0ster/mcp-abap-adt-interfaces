@@ -406,6 +406,7 @@ export type Projections = [
       | 'INTF/OI'
       | 'PROG/P'
       | 'PROG/I'
+      | 'FUGR/F'
       | 'FUGR/FF'
       | 'FUGR/I'
       | 'DDLS/DF'
@@ -533,7 +534,6 @@ export type NewerShapes = [
       AdtTypeCodeWith<'onprem', 'read'>,
       Exclude<
         NewerCodes,
-        | 'FUGR/F'
         | 'DEVC/K'
         | 'TTYP/DA'
         | 'DOMA/DD'
