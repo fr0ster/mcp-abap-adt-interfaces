@@ -44,7 +44,7 @@ export type IAdtAnsweredObject =
  * A union of one member per code would do neither — it exceeds the 25
  * combinations TypeScript checks an object literal against.
  *
- * **Since 21.1.0 `C` may be a group-only code** (`IObjectReference<'VIEW/DV'>`):
+ * **Since 22.0.0 `C` may be a group-only code** (`IObjectReference<'VIEW/DV'>`):
  * the constraint is wider, the default is not, so `IObjectReference` alone is
  * what it was in 21.0.0.
  */
@@ -163,7 +163,7 @@ export interface IGetVirtualFoldersContentsParams {
   ignoreShortDescriptions?: boolean;
 }
 
-// ── What each group operation is given (21.1.0) ─────────────────────────────
+// ── What each group operation is given (22.0.0) ─────────────────────────────
 //
 // `IObjectReference[]` admits any code: a message class to an activation, a
 // function module without its group. These are the codes each operation

@@ -7,12 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [21.1.0] - 2026-10-28
+## [22.0.0] - 2026-10-28
 
-Additions only: every 21.0.0 type keeps its meaning, and a type parameter
+A major for one change: the ABAP cloud table loses the program and include
+operations the cloud refuses (see "Changed (breaking)"). Everything else is
+added beside 21.0.0's types: each keeps its meaning, and a type parameter
 added to an existing type has the 21.0.0 type as its default.
 
+### Changed (breaking)
+
+- **`ADT_TYPES_CLOUD`: a program and an include change nothing.** ABAP cloud
+  refuses to create either (`403`, S_DEVELOP, measured on the BTP trial
+  2026-10-28), so `PROG/P` and `PROG/I` no longer list `create`, `update`,
+  `lock`, `unlock`, `activate`, `validate`, `deletionCheck` or `delete`.
+  What a delivered one answers stays: `read`, `source` and `readMetadata`
+  (measured on both), `check` and `versions` for a program (measured),
+  and the operations not measured — the enhancement reads, `transport`,
+  `run`, `profile` and the unit-test runs — as the release's `typestructure`
+  lists them. Leaving out the change operations beyond `create` is an
+  inference from the refusal: S_DEVELOP is the change authorization, and an
+  object nobody can create has nothing of one's own to change. A function
+  include (`FUGR/I`) is unchanged: the cloud creates one (`200`, measured).
+  `AdtTypeCodeWith<'cloud', Op>` and `AdtCodeWith<AdtModernVariant, Op>` no
+  longer name `PROG/P` or `PROG/I` for those operations, and the cloud table
+  is no longer the on-premise one in operations.
+
 ### Added
+
+- **`updateMetadata`** on `CLAS/OC`, `INTF/OI`, `FUGR/FF` and `DDLS/DF` in
+  `ADT_TYPES_ONPREM` and `ADT_TYPES_CLOUD`, and on `PROG/P` in
+  `ADT_TYPES_ONPREM`: the object's whole metadata document, written back with
+  the media type it was read with, answers `200` on S/4HANA 2025 and on ABAP
+  cloud (measured 2026-10-27). 7.40 is not measured yet and keeps none.
 
 - **Intersecting helpers.** `AdtCodeOf<V>` and `AdtCodeWith<V, Op>`: the codes
   every variant of `V` lists (with `Op`) — the default modern variant,

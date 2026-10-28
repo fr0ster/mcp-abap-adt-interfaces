@@ -3197,13 +3197,20 @@ conformance check in `@mcp-abap-adt/adt-clients` holds the hand-written tables
 to the recorded answers instead. Keying by code: one code serves two APIs and
 one API several codes.
 
-**Codes beyond the APIs (21.1.0).** A code the utilities address but no API
+**Codes beyond the APIs (22.0.0).** A code the utilities address but no API
 serves (`VIEW/DV`), or one a variant's API table does not list for what a
 utility sends (`DEVC/K` in 7.40's node structure, in a modern group
 activation), goes into a utility code table per variant, with its own
 operation words and whether it was measured — not into the API tables, where
 an entry opens a factory and a new operation word widens a vocabulary
 consumers map exhaustively.
+
+**A refusal narrows a table (22.0.0).** A listed capability is not a
+served operation either way: ABAP cloud's `typestructure` lists `CREATE` for
+`PROG/P` and `PROG/I`, and the cloud refuses both creates (`403`, S_DEVELOP,
+measured 2026-10-28). The cloud table therefore lists for them only what a
+delivered object answers, so the compiler refuses a call the system would.
+Removing an operation narrows a published type, so it is a major.
 
 **What would change it.** A release whose answers the conformance check
 refuses, or an API the library starts to serve; either is an edit of a table.

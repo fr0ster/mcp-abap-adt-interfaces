@@ -1,6 +1,6 @@
 // Compile-only assertions. If these stop compiling, the types regressed.
 //
-// 21.1.0's additions: the intersecting helpers, the group-only codes and the
+// 22.0.0's additions beside 21.0.0's types: the intersecting helpers, the group-only codes and the
 // utility code tables, the group references per operation and the typed group
 // and where-used atoms, the type-structure atom. And, for each, that 21.0.0's
 // types are what they were.
@@ -131,10 +131,24 @@ export type RealIntersection = [
     >
   >,
   Assert<Equal<AdtCodeWith<AdtVariant, 'deletionCheck'>, never>>,
+  // ABAP cloud creates and deletes no program or include of one's own: the
+  // intersection of the two modern variants leaves them out.
   Assert<
     Equal<
       AdtCodeWith<AdtModernVariant, 'deletionCheck'>,
-      AdtTypeCodeWith<'onprem', 'deletionCheck'>
+      Exclude<AdtTypeCodeWith<'onprem', 'deletionCheck'>, 'PROG/P' | 'PROG/I'>
+    >
+  >,
+  Assert<
+    Equal<
+      AdtCodeWith<AdtModernVariant, 'create'>,
+      Exclude<AdtTypeCodeWith<'onprem', 'create'>, 'PROG/P' | 'PROG/I'>
+    >
+  >,
+  Assert<
+    Equal<
+      Extract<AdtTypeCodeWith<'cloud', 'read'>, 'PROG/P' | 'PROG/I'>,
+      'PROG/P' | 'PROG/I'
     >
   >,
   Assert<

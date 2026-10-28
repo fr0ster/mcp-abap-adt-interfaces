@@ -29,9 +29,9 @@ import type {
 /**
  * What the library serves on **S/4HANA 2025 on-premise**, API by API.
  *
- * Identical in operations to {@link ADT_TYPES_CLOUD}: the library has no
- * on-premise or cloud branch. The two differ where the releases do —
- * `SRVD/SRV` takes 40 characters here and 30 on ABAP cloud.
+ * The library has no on-premise or cloud branch; the two tables differ where
+ * the releases do — `SRVD/SRV` takes 40 characters here and 30 on ABAP
+ * cloud, and a program or an include is created and changed only here.
  */
 export const ADT_TYPES_ONPREM = {
   class: {
@@ -47,6 +47,7 @@ export const ADT_TYPES_ONPREM = {
           'source',
           'readMetadata',
           'update',
+          'updateMetadata',
           'lock',
           'unlock',
           'activate',
@@ -83,6 +84,7 @@ export const ADT_TYPES_ONPREM = {
           'source',
           'readMetadata',
           'update',
+          'updateMetadata',
           'lock',
           'unlock',
           'activate',
@@ -110,6 +112,7 @@ export const ADT_TYPES_ONPREM = {
           'source',
           'readMetadata',
           'update',
+          'updateMetadata',
           'lock',
           'unlock',
           'activate',
@@ -201,6 +204,7 @@ export const ADT_TYPES_ONPREM = {
           'source',
           'readMetadata',
           'update',
+          'updateMetadata',
           'lock',
           'unlock',
           'activate',
@@ -282,6 +286,7 @@ export const ADT_TYPES_ONPREM = {
           'source',
           'readMetadata',
           'update',
+          'updateMetadata',
           'lock',
           'unlock',
           'activate',
@@ -963,7 +968,9 @@ export const ADT_TYPES_ONPREM = {
 /**
  * What the library serves on **ABAP cloud** (measured on the BTP trial), API by
  * API. The same operations as {@link ADT_TYPES_ONPREM}, and this release's
- * name lengths.
+ * name lengths, but for a program (`PROG/P`) and an include (`PROG/I`): the
+ * cloud refuses to create either (`403`, S_DEVELOP), so they list only what a
+ * delivered one answers — nothing that changes an object.
  */
 export const ADT_TYPES_CLOUD = {
   class: {
@@ -979,6 +986,7 @@ export const ADT_TYPES_CLOUD = {
           'source',
           'readMetadata',
           'update',
+          'updateMetadata',
           'lock',
           'unlock',
           'activate',
@@ -1015,6 +1023,7 @@ export const ADT_TYPES_CLOUD = {
           'source',
           'readMetadata',
           'update',
+          'updateMetadata',
           'lock',
           'unlock',
           'activate',
@@ -1037,19 +1046,11 @@ export const ADT_TYPES_CLOUD = {
         parent: null,
         nameMaxLength: 40,
         operations: [
-          'create',
           'read',
           'source',
           'readMetadata',
-          'update',
-          'lock',
-          'unlock',
-          'activate',
           'check',
-          'validate',
           'versions',
-          'deletionCheck',
-          'delete',
           'transport',
           'readEnhancementElements',
           'readEnhancementOptions',
@@ -1072,17 +1073,9 @@ export const ADT_TYPES_CLOUD = {
         parent: null,
         nameMaxLength: 40,
         operations: [
-          'create',
           'read',
           'source',
           'readMetadata',
-          'update',
-          'lock',
-          'unlock',
-          'activate',
-          'validate',
-          'deletionCheck',
-          'delete',
           'readEnhancementElements',
           'readEnhancementOptions',
         ],
@@ -1133,6 +1126,7 @@ export const ADT_TYPES_CLOUD = {
           'source',
           'readMetadata',
           'update',
+          'updateMetadata',
           'lock',
           'unlock',
           'activate',
@@ -1214,6 +1208,7 @@ export const ADT_TYPES_CLOUD = {
           'source',
           'readMetadata',
           'update',
+          'updateMetadata',
           'lock',
           'unlock',
           'activate',

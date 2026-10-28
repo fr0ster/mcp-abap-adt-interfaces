@@ -670,8 +670,8 @@ export interface IUtilResults {
   readonly discovery: IResultStrategy<unknown>;
   /**
    * What `POST /repository/typestructure` answers — the system's object types
-   * ({@link IAdtTypeStructure}). Optional since it arrived in 21.1.0, so a
-   * set written for 21.0.0 still is one; an implementation offering the
+   * ({@link IAdtTypeStructure}). Optional, so a set written for 21.0.0
+   * still is one; an implementation offering the
    * member that wants its reading injected requires it.
    */
   readonly typeStructure?: IResultStrategy<unknown>;
@@ -699,7 +699,7 @@ export interface IUtilResults {
  * **Its own atom, not part of {@link IAdtInformationSystem}**, like
  * {@link IAdtObjectProperties}: adding it to a composite would make every
  * implementation of that composite stop compiling over a member it never
- * claimed. Added in 21.1.0; its reading is `IUtilResults.typeStructure`.
+ * claimed. Added in 22.0.0; its reading is `IUtilResults.typeStructure`.
  */
 export interface IAdtTypeStructure<TTypeStructure> {
   /** The system's object types. One request. */
@@ -725,7 +725,7 @@ export interface IAdtTypeStructure<TTypeStructure> {
  * caller passing `IObjectReference[]` keeps compiling against the old one.
  * Adding these signatures to {@link IAdtGroupLifecycle} itself would make
  * every 21.0.0 implementation of it stop compiling, so they are an atom of
- * their own (21.1.0).
+ * their own (22.0.0).
  */
 export interface IAdtTypedGroupLifecycle<
   TActivation,
@@ -774,7 +774,7 @@ export interface IAdtTypedGroupLifecycle<
 /**
  * {@link IAdtWhereUsed}'s two requests, typed by the codes where-used is asked
  * of on variant `V` (`VIEW/DV` among them). Beside the 21.0.0 atom, for the
- * reason {@link IAdtTypedGroupLifecycle} gives (21.1.0).
+ * reason {@link IAdtTypedGroupLifecycle} gives (22.0.0).
  */
 export interface IAdtTypedWhereUsed<
   TWhereUsed,
