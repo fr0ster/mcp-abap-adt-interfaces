@@ -282,6 +282,16 @@ The field is on each member's own options, not on `IAdtAnalyseOptions` or
 `IAdtOperationOptions`. `src/__typechecks__/headersOnEveryMember.ts` holds this
 for every member and every overload.
 
+## Migrating to 23.0.1
+
+- **A results set for a class, an interface, a program, a function module or
+  a DDL source adds `metadataUpdated`.** `IClassResults`, `IInterfaceResults`,
+  `IProgramResults`, `IFunctionModuleResults` and `IDdlResults` now require
+  it — the strategy for what `updateMetadata` answers, as
+  `IFunctionGroupResults` already did. A set built for 23.0.0 stops compiling
+  until it names one, e.g. the same strategy its `updated` uses, or one of its
+  own for the metadata document. Nothing else changes.
+
 ## Migrating to 23.0.0
 
 - **ABAP cloud: a delivered program is not transported, run or profiled.**
