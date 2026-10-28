@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [23.0.1] - 2026-10-28
+
+### Fixed
+
+- **`IClassResults`, `IInterfaceResults`, `IProgramResults`,
+  `IFunctionModuleResults` and `IDdlResults` gain `metadataUpdated`** — the
+  strategy for what writing the object's whole metadata document answers
+  (`updateMetadata`, `IAdtMetadataUpdatable`). The type tables list
+  `updateMetadata` for these codes since 22.0.0, measured on S/4HANA 2025 and
+  ABAP cloud (the program on S/4HANA only), but their results contracts had
+  no slot for its answer — only `updated`, the source write's. Like the
+  function group's, the slot is required: a results set built for these
+  contracts adds it.
+
 ## [23.0.0] - 2026-10-28
 
 ### Changed (breaking)
