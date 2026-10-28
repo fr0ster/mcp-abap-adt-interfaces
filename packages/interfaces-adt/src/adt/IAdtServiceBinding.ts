@@ -145,6 +145,8 @@ export interface IServiceResults {
   readonly source: IResultStrategy<unknown>;
   /** The same document, read as metadata — a binding has no second resource. */
   readonly metadata: IResultStrategy<unknown>;
+  /** What writing the binding's whole document answers (`updateMetadata`). */
+  readonly metadataUpdated: IResultStrategy<unknown>;
   /** What a check run answers: `chkl:messages`, whose `E` entries are the verdict. */
   readonly check: IResultStrategy<unknown>;
   /** What activation answers. */
