@@ -91,6 +91,8 @@ export interface IClassResults {
   readonly validation: IResultStrategy<unknown>;
   readonly deletion: IResultStrategy<unknown>;
   readonly updated: IResultStrategy<unknown>;
+  /** What writing the object's whole metadata document answers (`updateMetadata`). */
+  readonly metadataUpdated: IResultStrategy<unknown>;
   /** What a deletion check answers: `del:checkResponse`. */
   readonly deletionCheck: IResultStrategy<unknown>;
   /** The transport request document of the class. */

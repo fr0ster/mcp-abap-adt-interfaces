@@ -43,6 +43,7 @@ const classResults: IClassResults = {
   validation: rawDocument,
   deletion: rawDocument,
   updated: rawDocument,
+  metadataUpdated: rawDocument,
   deletionCheck: rawDocument,
   transport: rawDocument,
   versions: rawDocument,
