@@ -31,8 +31,8 @@ import type {
  *
  * The library has no on-premise or cloud branch; the two tables differ where
  * the releases do — `SRVD/SRV` takes 40 characters here and 30 on ABAP
- * cloud, and a program or an include is created, changed and run, and a
- * feature toggle created, changed and switched, only here.
+ * cloud, and a program or an include is created and changed, a program run,
+ * and a feature toggle created, changed and switched, only here.
  */
 export const ADT_TYPES_ONPREM = {
   class: {
