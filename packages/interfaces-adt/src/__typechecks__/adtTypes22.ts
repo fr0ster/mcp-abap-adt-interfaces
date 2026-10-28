@@ -144,7 +144,10 @@ export type RealIntersection = [
   Assert<
     Equal<
       AdtCodeWith<AdtModernVariant, 'delete'>,
-      Exclude<AdtTypeCodeWith<'onprem', 'delete'>, 'PROG/P' | 'PROG/I'>
+      Exclude<
+        AdtTypeCodeWith<'onprem', 'delete'>,
+        'PROG/P' | 'PROG/I' | 'FTG2/FT'
+      >
     >
   >,
   Assert<
@@ -179,6 +182,10 @@ export type RealIntersection = [
   Assert<
     Equal<Extract<AdtApiWith<AdtModernVariant, 'create'>, 'program'>, 'program'>
   >,
+  // A feature toggle is changed only on-premise: the modern pair switches none,
+  // and the cloud table updates none.
+  Assert<Equal<AdtCodeWith<AdtModernVariant, 'switchOn'>, never>>,
+  Assert<Equal<Extract<AdtTypeCodeWith<'cloud', 'update'>, 'FTG2/FT'>, never>>,
   Assert<Equal<Extract<AdtApiWith<'cloud', 'create'>, 'program'>, never>>,
   Assert<
     Equal<

@@ -3218,16 +3218,23 @@ that changes, transports (`404`) or runs (refused) one. 22.0.0 removed the
 deletion check by inference; 23.0.0 restored it from the measurement.
 Removing an operation narrows a published type, so it is a major.
 
-**`create` from `USER_AUTHORIZATIONS` (23.0.0).** A table lists `create` for a
-code where its release's `typestructure` gives the code, or its parent code,
-`CREATE` in `USER_AUTHORIZATIONS`: creatable given the authorization. Its
-absence is a refusal, as measured on ABAP cloud — `PROG/P`, `PROG/I` and
-`FTG2/FT` have none and their creates answer `403`, while `FUGR/I` has none of
-its own, its group `FUGR/F` has it, and the create answers `200`. Its
-presence is not a promise: E19 lists `CREATE` for `FTG2/FT` and refuses the
-create by a setting of that system ("It is not allowed to create/update
-feature toggles in this system", `FTG2/035`) — the system's answer at run
-time, not a table's.
+**Reads from discovery, changes from `USER_AUTHORIZATIONS` (23.0.0).** A table
+lists a read where its release's discovery has the endpoint: reading is
+always possible where the endpoint is. It lists an operation that changes an
+object (`create`, `update`, `updateMetadata`, `lock`, `unlock`, `activate`,
+`delete`, a feature toggle's switch, and the `validate` that prepares a
+create) only where its release's `typestructure` gives the code, or its
+parent code, `CREATE` in `USER_AUTHORIZATIONS`: possible given the
+authorization. `typestructure` says nothing of reads — its `CAPABILITIES`
+are `CREATE`, `EXECUTE`, `PROFILE`, `INDEX_UPD` and `KTD_DOCU`, its
+`USER_AUTHORIZATIONS` only `CREATE`. Its absence is a refusal, as measured on
+ABAP cloud: `PROG/P`, `PROG/I` and `FTG2/FT` have none, their creates answer
+`403`, and the table lists them for reading only; `FUGR/I` has none of its
+own, its group `FUGR/F` has it, and the create answers `200`. Its presence
+is not a promise: E19 lists `CREATE` for `FTG2/FT` and refuses the create by
+a setting of that system ("It is not allowed to create/update feature
+toggles in this system", `FTG2/035`) — the system's answer at run time, not a
+table's.
 
 **What would change it.** A release whose answers the conformance check
 refuses, or an API the library starts to serve; either is an edit of a table.

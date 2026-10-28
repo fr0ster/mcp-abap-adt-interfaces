@@ -11,7 +11,7 @@ ADT contracts: object operations, runtime analysis, execution, feeds and service
 - Since 14.0.0 `IDebuggerIdentity` is a union by `debuggingMode` (required), `attach` takes the identity, `condition` is for line breakpoints only, and `IAbapDebugger` gains `TSettings` and five members. The CHANGELOG has the migration note.
 - Since 15.0.0 `skipCount` is gone from breakpoints (the server ignores it) and `clientId` pairs an answer row with its request. The CHANGELOG has the migration note.
 - Since 15.1.0 the plain class and program run take `debuggee` (`IDebuggeeIds`): the terminal id and IDE id a terminal-mode listener catches the run by.
-- Since 23.0.0, a program and an include on ABAP cloud list only what a delivered one answers (no create, change, transport, run or profile), and a feature toggle is not created there (see "Migrating to 23.0.0"); since 22.0.0, and `updateMetadata` is listed where it was measured. Beside that, additions only: intersecting helpers (`AdtCodeOf<V>`, `AdtCodeWith<V, Op>`, `AdtServingVariantsIn`, `AdtPerformingVariantsIn`; the default `AdtModernVariant` gets what both newer tables serve), utility code tables per variant (`ADT_UTILITY_CODES_*`: the group-only `VIEW/DV`, `DEVC/K` in a modern group activation and in 7.40's node structure), group references per operation with the typed atoms `IAdtTypedGroupLifecycle` and `IAdtTypedWhereUsed`, and `IAdtTypeStructure` with its `IUtilResults.typeStructure` slot. See "Intersections, group-only codes and group references".
+- Since 23.0.0, a program and an include on ABAP cloud list only what a delivered one answers (no create, change, transport, run or profile), and a feature toggle is only read there (see "Migrating to 23.0.0"); since 22.0.0, and `updateMetadata` is listed where it was measured. Beside that, additions only: intersecting helpers (`AdtCodeOf<V>`, `AdtCodeWith<V, Op>`, `AdtServingVariantsIn`, `AdtPerformingVariantsIn`; the default `AdtModernVariant` gets what both newer tables serve), utility code tables per variant (`ADT_UTILITY_CODES_*`: the group-only `VIEW/DV`, `DEVC/K` in a modern group activation and in 7.40's node structure), group references per operation with the typed atoms `IAdtTypedGroupLifecycle` and `IAdtTypedWhereUsed`, and `IAdtTypeStructure` with its `IUtilResults.typeStructure` slot. See "Intersections, group-only codes and group references".
 - Since 21.0.0 the object type codes are the library's own tables — `ADT_TYPES_ONPREM` (S/4HANA 2025), `ADT_TYPES_CLOUD` (ABAP cloud), `ADT_TYPES_BASIS_740` (SAP_BASIS 7.40 SP04), keyed by API — and every code in a contract is an `AdtTypeCode` drawn from them. `AdtObjectTypeLower`, `AdtObjectType`, `AdtSourceObjectTypeLower` and `AdtSourceObjectType` are removed, and with them the codes no release lists. An identifying atom takes the parent's field as its last type parameter (`TParent`, default `never`, which leaves the config `Partial<TConfig>` as before), and `IObjectReference<C>` requires `parentName` for a code with a parent. A code read from an answer is an `IAdtAnsweredObject`. See "The ADT type tables" and "Migrating to 21.0.0".
 - Since 20.2.0 every object's result-set contract (`IClassResults`, `IProgramResults`, … 30 in all, `IMessageClassMessageResults<TRead, TWritten, TDeleted>` among them) and `IServiceBindingPublicationConfig` are declared here, in the object's own `IAdtX.ts`: the slot map an implementation is constructed with, each slot an `IResultStrategy<unknown>`. A consumer composes its client contract from these and the atoms. Additions only.
 - Since 20.1.0 `IAdtObjectProperties` reads one repository object's properties from `/informationsystem/objectproperties/values?uri=`, any object uri (a transaction by its `vit` workbench uri); its own atom, not part of `IAdtInformationSystem`.
@@ -97,10 +97,12 @@ client refuses is absent from `ADT_TYPES_BASIS_740`, and an operation it
 refuses is absent from its code — 7.40 has no `deletionCheck`, no `transport`,
 no `run`. On ABAP cloud a program and an include are only SAP's own: they
 list what a delivered one answers — reads, checks, the deletion check, the
-enhancement reads and a program's ABAP Unit runs. `create` is listed where
-the release's `typestructure` gives the code, or its parent code, `CREATE` in
-`USER_AUTHORIZATIONS` — creatable given the authorization; a system's own
-refusal (an authorization, a setting) is its answer at run time. The entry shape (`AdtApiTable<R>`) refuses a misspelt field, an
+enhancement reads and a program's ABAP Unit runs. A read is listed where the
+release's discovery has its endpoint; an operation that changes an object only
+where the release's `typestructure` gives the code, or its parent code,
+`CREATE` in `USER_AUTHORIZATIONS` — possible given the authorization. A
+system's own refusal (an authorization, a setting) is its answer at run time.
+The entry shape (`AdtApiTable<R>`) refuses a misspelt field, an
 operation outside the vocabulary, an API with no factory and another release's
 evidence at compile time.
 
@@ -286,10 +288,13 @@ for every member and every overload.
   measured 2026-10-28). Code gated on the cloud variant, or on the
   intersecting helpers over `AdtModernVariant`, that reads a program's
   transport or runs or profiles a program stops compiling.
-- **ABAP cloud: no feature toggle is created.** `ADT_TYPES_CLOUD` no longer
-  lists `create` for `FTG2/FT`: the cloud's `typestructure` gives it no
-  `CREATE` in `USER_AUTHORIZATIONS`, and the create answers `403`. Its other
-  operations compile as before.
+- **ABAP cloud: a feature toggle is only read.** `ADT_TYPES_CLOUD` lists for
+  `FTG2/FT` `read`, `source`, `readMetadata`, `check`, `deletionCheck`,
+  `getRuntimeState` and `checkState`: the cloud's `typestructure` gives it no
+  `CREATE` in `USER_AUTHORIZATIONS`, and the create answers `403`. Code gated
+  on the cloud variant, or on the intersecting helpers over
+  `AdtModernVariant`, that creates, changes, locks, activates, deletes or
+  switches a feature toggle stops compiling.
 - `deletionCheck` is listed again for `PROG/P` and `PROG/I` on ABAP cloud;
   nothing that compiled stops compiling for it.
 

@@ -5,7 +5,7 @@
 // what the library serves. The equality is exact, so adding or removing one
 // operation, or changing one parent, in a table fails here: the edit has to
 // be made twice, on purpose. Cloud is asserted equal to on-premise except for
-// one name length (`SRVD/SRV`), the program, the include and creating a
+// one name length (`SRVD/SRV`), the program, the include and the
 // feature toggle. Name lengths and collections are not recorded
 // here: the conformance check in `@mcp-abap-adt/adt-clients` holds them to the
 // releases' recorded answers.
@@ -753,8 +753,9 @@ type RecordedOnPremise = {
 // ABAP cloud has no program or include of one's own (no `app:accept` in its
 // discovery, the create refused `403` S_DEVELOP): both list what a delivered
 // one answers, as measured — no change, no transport (`404`), no run or
-// profile (refused). A feature toggle is not created: the cloud's
-// typestructure gives `FTG2/FT` no `CREATE` in `USER_AUTHORIZATIONS`.
+// profile (refused). A feature toggle is only read: the cloud's
+// typestructure gives `FTG2/FT` no `CREATE` in `USER_AUTHORIZATIONS`, so
+// nothing that changes one is listed.
 type Flat<T> = { [K in keyof T]: T[K] };
 type RecordedCloud = Flat<
   Omit<RecordedOnPremise, 'program' | 'include' | 'featureToggle'> & {
@@ -763,7 +764,16 @@ type RecordedCloud = Flat<
         parent: null;
         operations: Exclude<
           RecordedOnPremise['featureToggle']['FTG2/FT']['operations'],
-          'create'
+          | 'create'
+          | 'update'
+          | 'updateMetadata'
+          | 'lock'
+          | 'unlock'
+          | 'activate'
+          | 'validate'
+          | 'delete'
+          | 'switchOn'
+          | 'switchOff'
         >;
       };
     };

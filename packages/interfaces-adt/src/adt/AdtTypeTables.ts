@@ -975,10 +975,13 @@ export const ADT_TYPES_ONPREM = {
  * the deletion check, the enhancement reads and, for a program, the ABAP Unit
  * runs. Its transport is `404`, and running or profiling it is refused.
  *
- * `create` is listed where the release's `typestructure` gives the code, or
- * its parent code, `CREATE` in `USER_AUTHORIZATIONS` — creatable given the
- * authorization: so a feature toggle (`FTG2/FT`) is not created here, and a
- * function include (`FUGR/I`) is, through its group (`FUGR/F`).
+ * A read is listed where the release's discovery has its endpoint. An
+ * operation that changes an object (`create`, `update`, `updateMetadata`,
+ * `lock`, `unlock`, `activate`, `delete`, a feature toggle's switch, and the
+ * `validate` that prepares a create) is listed only where the release's
+ * `typestructure` gives the code, or its parent code, `CREATE` in
+ * `USER_AUTHORIZATIONS`: so a feature toggle (`FTG2/FT`) is only read here,
+ * and a function include (`FUGR/I`) is changed through its group (`FUGR/F`).
  */
 export const ADT_TYPES_CLOUD = {
   class: {
@@ -1673,17 +1676,8 @@ export const ADT_TYPES_CLOUD = {
           'read',
           'source',
           'readMetadata',
-          'update',
-          'updateMetadata',
-          'lock',
-          'unlock',
-          'activate',
           'check',
-          'validate',
           'deletionCheck',
-          'delete',
-          'switchOn',
-          'switchOff',
           'getRuntimeState',
           'checkState',
         ],
