@@ -5,7 +5,7 @@
 // what the library serves. The equality is exact, so adding or removing one
 // operation, or changing one parent, in a table fails here: the edit has to
 // be made twice, on purpose. Cloud is asserted equal to on-premise except for
-// one name length (`SRVD/SRV`). Name lengths and collections are not recorded
+// one name length (`SRVD/SRV`), the program and the include. Name lengths and collections are not recorded
 // here: the conformance check in `@mcp-abap-adt/adt-clients` holds them to the
 // releases' recorded answers.
 
@@ -53,7 +53,7 @@ type Without<T, F extends PropertyKey> = T extends readonly unknown[]
     ? { -readonly [K in keyof T as K extends F ? never : K]: Without<T[K], F> }
     : T;
 
-type RecordedNewer = {
+type RecordedOnPremise = {
   class: {
     'CLAS/OC': {
       parent: null;
@@ -63,6 +63,7 @@ type RecordedNewer = {
         | 'source'
         | 'readMetadata'
         | 'update'
+        | 'updateMetadata'
         | 'lock'
         | 'unlock'
         | 'activate'
@@ -92,6 +93,7 @@ type RecordedNewer = {
         | 'source'
         | 'readMetadata'
         | 'update'
+        | 'updateMetadata'
         | 'lock'
         | 'unlock'
         | 'activate'
@@ -112,6 +114,7 @@ type RecordedNewer = {
         | 'source'
         | 'readMetadata'
         | 'update'
+        | 'updateMetadata'
         | 'lock'
         | 'unlock'
         | 'activate'
@@ -182,6 +185,7 @@ type RecordedNewer = {
         | 'source'
         | 'readMetadata'
         | 'update'
+        | 'updateMetadata'
         | 'lock'
         | 'unlock'
         | 'activate'
@@ -242,6 +246,7 @@ type RecordedNewer = {
         | 'source'
         | 'readMetadata'
         | 'update'
+        | 'updateMetadata'
         | 'lock'
         | 'unlock'
         | 'activate'
@@ -744,6 +749,46 @@ type RecordedNewer = {
   };
 };
 
+// ABAP cloud refuses a program or an include of one's own (`403`, S_DEVELOP,
+// on create); a delivered one is read, checked and versioned. So both keep
+// only what does not change the object.
+type Flat<T> = { [K in keyof T]: T[K] };
+type RecordedCloud = Flat<
+  Omit<RecordedOnPremise, 'program' | 'include'> & {
+    program: {
+      'PROG/P': {
+        parent: null;
+        operations:
+          | 'read'
+          | 'source'
+          | 'readMetadata'
+          | 'check'
+          | 'versions'
+          | 'transport'
+          | 'readEnhancementElements'
+          | 'readEnhancementOptions'
+          | 'run'
+          | 'profile'
+          | 'unitTestRun'
+          | 'unitTestRunSync'
+          | 'unitTestStatus'
+          | 'unitTestResult';
+      };
+    };
+    include: {
+      'PROG/I': {
+        parent: null;
+        operations:
+          | 'read'
+          | 'source'
+          | 'readMetadata'
+          | 'readEnhancementElements'
+          | 'readEnhancementOptions';
+      };
+    };
+  }
+>;
+
 type RecordedBasis740 = {
   class: {
     'CLAS/OC': {
@@ -984,23 +1029,31 @@ type RecordedBasis740 = {
 };
 
 export type RecordedTables = [
-  Assert<Equal<Recorded<typeof ADT_TYPES_ONPREM>, RecordedNewer>>,
-  Assert<Equal<Recorded<typeof ADT_TYPES_CLOUD>, RecordedNewer>>,
+  Assert<Equal<Recorded<typeof ADT_TYPES_ONPREM>, RecordedOnPremise>>,
+  Assert<Equal<Recorded<typeof ADT_TYPES_CLOUD>, RecordedCloud>>,
   Assert<Equal<Recorded<typeof ADT_TYPES_BASIS_740>, RecordedBasis740>>,
 ];
 
-// Cloud is on-premise but for the evidence it cites and one name length.
+// Cloud is on-premise but for the evidence it cites, one name length, and
+// the program and the include.
+type Shared<T> = Omit<T, 'program' | 'include'>;
 export type CloudIsOnPremise = [
   Assert<
     Equal<
-      Without<typeof ADT_TYPES_CLOUD, 'evidence' | 'nameMaxLength'>,
-      Without<typeof ADT_TYPES_ONPREM, 'evidence' | 'nameMaxLength'>
+      Shared<Without<typeof ADT_TYPES_CLOUD, 'evidence' | 'nameMaxLength'>>,
+      Shared<Without<typeof ADT_TYPES_ONPREM, 'evidence' | 'nameMaxLength'>>
     >
   >,
   Assert<
     Equal<
-      Omit<Without<typeof ADT_TYPES_CLOUD, 'evidence'>, 'serviceDefinition'>,
-      Omit<Without<typeof ADT_TYPES_ONPREM, 'evidence'>, 'serviceDefinition'>
+      Omit<
+        Shared<Without<typeof ADT_TYPES_CLOUD, 'evidence'>>,
+        'serviceDefinition'
+      >,
+      Omit<
+        Shared<Without<typeof ADT_TYPES_ONPREM, 'evidence'>>,
+        'serviceDefinition'
+      >
     >
   >,
 ];

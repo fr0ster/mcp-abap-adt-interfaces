@@ -7,6 +7,89 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [22.0.0] - 2026-10-28
+
+A major for one change: the ABAP cloud table loses the program and include
+operations the cloud refuses (see "Changed (breaking)"). Everything else is
+added beside 21.0.0's types: each keeps its meaning, and a type parameter
+added to an existing type has the 21.0.0 type as its default.
+
+### Changed (breaking)
+
+- **`ADT_TYPES_CLOUD`: a program and an include change nothing.** ABAP cloud
+  refuses to create either (`403`, S_DEVELOP, measured on the BTP trial
+  2026-10-28), so `PROG/P` and `PROG/I` no longer list `create`, `update`,
+  `lock`, `unlock`, `activate`, `validate`, `deletionCheck` or `delete`.
+  What a delivered one answers stays: `read`, `source` and `readMetadata`
+  (measured on both), `check` and `versions` for a program (measured),
+  and the operations not measured — the enhancement reads, `transport`,
+  `run`, `profile` and the unit-test runs — as the release's `typestructure`
+  lists them. Leaving out the change operations beyond `create` is an
+  inference from the refusal: S_DEVELOP is the change authorization, and an
+  object nobody can create has nothing of one's own to change. A function
+  include (`FUGR/I`) is unchanged: the cloud creates one (`200`, measured).
+  `AdtTypeCodeWith<'cloud', Op>` and `AdtCodeWith<AdtModernVariant, Op>` no
+  longer name `PROG/P` or `PROG/I` for those operations, and the cloud table
+  is no longer the on-premise one in operations.
+
+### Added
+
+- **`updateMetadata`** on `CLAS/OC`, `INTF/OI`, `FUGR/FF` and `DDLS/DF` in
+  `ADT_TYPES_ONPREM` and `ADT_TYPES_CLOUD`, and on `PROG/P` in
+  `ADT_TYPES_ONPREM`: the object's whole metadata document, written back with
+  the media type it was read with, answers `200` on S/4HANA 2025 and on ABAP
+  cloud (measured 2026-10-27). 7.40 is not measured yet and keeps none.
+
+- **Intersecting helpers.** `AdtCodeOf<V>` and `AdtCodeWith<V, Op>`: the codes
+  every variant of `V` lists (with `Op`) — the default modern variant,
+  `AdtModernVariant` (`'onprem' | 'cloud'`), gets what both newer tables
+  serve. `AdtCodeOfIn<Tables, V>` and `AdtCodeWithIn<Tables, V, Op>` are the
+  same over any set of tables; `AdtServingVariantsIn<Tables, A>` and
+  `AdtPerformingVariantsIn<Tables, A, Op>` name the variants whose table
+  serves an API, or one of its codes an operation. `AdtTypeCodeOf`,
+  `AdtTypeCodeWith`, `AdtApiWith` and `AdtApiWithIn` are unchanged; their docs
+  now state what they answer for a union of variants — the APIs all of them
+  serve, and for those the codes and operations any of them lists.
+- **Utility code tables**, `ADT_UTILITY_CODES_ONPREM`, `_CLOUD`,
+  `_BASIS_740` (`IAdtUtilityCodeTables`, `AdtUtilityCodeTable<R>`,
+  `IAdtUtilityCodeFacts<R>`, `AdtUtilityOperation`, `AdtUtilityCodeWith<V,
+  Op>`, `AdtUtilityCode`): the codes `getUtils()` takes beyond the API tables,
+  each with its operations, whether they were measured, and its evidence.
+  - `VIEW/DV`, a DDIC database view, on every release: group activation,
+    group deletion and where-used, under `/sap/bc/adt/ddic/views`. No API
+    serves it — a **group-only code**, `AdtGroupOnlyCode`,
+    `AdtGroupOnlyCodeOf<V>`. Sent, unmeasured.
+  - `DEVC/K` in a group activation on the newer releases — sent, unmeasured.
+  - `DEVC/K` in `fetchNodeStructure` on 7.40 — measured (the legacy
+    `UtilsReaders` cycle). A table of its own rather than a package entry on
+    7.40, because an entry would gate `getPackage()` open where every package
+    member is refused, and a new `AdtOperation` word would break a 21.0.0
+    consumer's exhaustive map over the vocabulary.
+- `IObjectReference<C>`, `IGetWhereUsedParams<C>` and
+  `IGetWhereUsedScopeParams<C>` take a group-only code as their type
+  argument (`IObjectReference<'VIEW/DV'>`). Their defaults are 21.0.0's: a
+  bare `IObjectReference` still admits `AdtTypeCode` alone.
+- **What each group operation is given:** `AdtGroupActivationCode<V>`,
+  `AdtGroupDeletionCheckCode<V>`, `AdtGroupDeletionCode<V>` (no `MSAG/NN`,
+  which has no address of its own), `AdtWhereUsedCode<V>` (no `FUGR/I` or
+  `MSAG/NN`), and the references over them, `IAdtGroupActivationReference<V>`,
+  `IAdtGroupDeletionCheckReference<V>`, `IAdtGroupDeletionReference<V>`,
+  `IAdtWhereUsedParamsOf<V>`, `IAdtWhereUsedScopeParamsOf<V>`, built by
+  `IAdtCodedReference<C>`: `parentName` required for each parented code, and
+  a reference from a code known only by its set compiles when it names its
+  parent — inside TypeScript's 25-combination limit.
+- `IAdtTypedGroupLifecycle<TActivation, TDeletionCheck, TDeletion, V>` and
+  `IAdtTypedWhereUsed<TWhereUsed, TScope, V>`: the group and where-used members
+  over those references. New atoms beside `IAdtGroupLifecycle` and
+  `IAdtWhereUsed`, with the same member names: an implementation declaring
+  both offers both signatures, and a caller passing `IObjectReference[]` is
+  unaffected. Adding the signatures to the 21.0.0 atoms instead would have
+  made every implementation of them stop compiling.
+- `IAdtTypeStructure<TTypeStructure>`: `getTypeStructure({ headers })`,
+  `POST /sap/bc/adt/repository/typestructure`, an atom of its own like
+  `IAdtObjectProperties`, and `IUtilResults.typeStructure`, its reading —
+  optional, so a 21.0.0 result set is still one.
+
 ## [21.0.0] - 2026-10-27
 
 ### Added
