@@ -3205,12 +3205,17 @@ operation words and whether it was measured — not into the API tables, where
 an entry opens a factory and a new operation word widens a vocabulary
 consumers map exhaustively.
 
-**A refusal narrows a table (22.0.0).** A listed capability is not a
-served operation either way: ABAP cloud's `typestructure` lists `CREATE` for
-`PROG/P` and `PROG/I`, and the cloud refuses both creates (`403`, S_DEVELOP,
-measured 2026-10-28). The cloud table therefore lists for them only what a
-delivered object answers, so the compiler refuses a call the system would.
-Removing an operation narrows a published type, so it is a major.
+**Discovery first, `typestructure` second (22.0.0, 22.0.1).** Whether a
+release offers an operation is read from its discovery first and its
+`typestructure` second; a live answer settles it, and an authorization
+refusal is the user's authorization, not an absent service. ABAP cloud's
+`typestructure` lists `CREATE` for `PROG/P` and `PROG/I`, but its discovery
+gives neither collection an `app:accept`, and the create is refused (`403`,
+S_DEVELOP, measured 2026-10-28): the cloud table lists every on-premise
+operation for them but `create`. 22.0.0 dropped the other change operations
+too, by inference from that refusal; discovery lists their services, and
+22.0.1 restored them. Removing an operation narrows a published type, so it
+is a major; restoring one is a patch.
 
 **What would change it.** A release whose answers the conformance check
 refuses, or an API the library starts to serve; either is an edit of a table.

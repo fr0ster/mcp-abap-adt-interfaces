@@ -5,7 +5,7 @@
 // what the library serves. The equality is exact, so adding or removing one
 // operation, or changing one parent, in a table fails here: the edit has to
 // be made twice, on purpose. Cloud is asserted equal to on-premise except for
-// one name length (`SRVD/SRV`), the program and the include. Name lengths and collections are not recorded
+// one name length (`SRVD/SRV`) and creating a program or an include. Name lengths and collections are not recorded
 // here: the conformance check in `@mcp-abap-adt/adt-clients` holds them to the
 // releases' recorded answers.
 
@@ -749,47 +749,19 @@ type RecordedOnPremise = {
   };
 };
 
-// ABAP cloud refuses a program or an include of one's own (`403`, S_DEVELOP,
-// on create); a delivered one is read, checked, validated, deletion-checked
-// and versioned. So both keep only what does not change the object.
+// ABAP cloud creates no program or include: its discovery gives neither
+// collection an `app:accept`, and the create is refused (`403`, S_DEVELOP).
+// Every other operation is on-premise's.
 type Flat<T> = { [K in keyof T]: T[K] };
+type WithoutCreate<E> = {
+  [K in keyof E]: E[K] extends { parent: infer P; operations: infer O }
+    ? { parent: P; operations: Exclude<O, 'create'> }
+    : never;
+};
 type RecordedCloud = Flat<
   Omit<RecordedOnPremise, 'program' | 'include'> & {
-    program: {
-      'PROG/P': {
-        parent: null;
-        operations:
-          | 'read'
-          | 'source'
-          | 'readMetadata'
-          | 'check'
-          | 'validate'
-          | 'versions'
-          | 'deletionCheck'
-          | 'transport'
-          | 'readEnhancementElements'
-          | 'readEnhancementOptions'
-          | 'run'
-          | 'profile'
-          | 'unitTestRun'
-          | 'unitTestRunSync'
-          | 'unitTestStatus'
-          | 'unitTestResult';
-      };
-    };
-    include: {
-      'PROG/I': {
-        parent: null;
-        operations:
-          | 'read'
-          | 'source'
-          | 'readMetadata'
-          | 'validate'
-          | 'deletionCheck'
-          | 'readEnhancementElements'
-          | 'readEnhancementOptions';
-      };
-    };
+    program: WithoutCreate<RecordedOnPremise['program']>;
+    include: WithoutCreate<RecordedOnPremise['include']>;
   }
 >;
 
@@ -1039,7 +1011,7 @@ export type RecordedTables = [
 ];
 
 // Cloud is on-premise but for the evidence it cites, one name length, and
-// the program and the include.
+// creating a program or an include.
 type Shared<T> = Omit<T, 'program' | 'include'>;
 export type CloudIsOnPremise = [
   Assert<

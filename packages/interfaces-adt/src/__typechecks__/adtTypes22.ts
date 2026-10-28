@@ -132,9 +132,9 @@ export type RealIntersection = [
     >
   >,
   Assert<Equal<AdtCodeWith<AdtVariant, 'deletionCheck'>, never>>,
-  // ABAP cloud creates and deletes no program or include of one's own, but
-  // answers the deletion check of a delivered one: the intersection of the two
-  // modern variants keeps them for the check and leaves them out of create.
+  // ABAP cloud creates no program or include; every other operation is
+  // on-premise's: the intersection of the two modern variants leaves them out
+  // of create alone.
   Assert<
     Equal<
       AdtCodeWith<AdtModernVariant, 'deletionCheck'>,
@@ -144,7 +144,7 @@ export type RealIntersection = [
   Assert<
     Equal<
       AdtCodeWith<AdtModernVariant, 'delete'>,
-      Exclude<AdtTypeCodeWith<'onprem', 'delete'>, 'PROG/P' | 'PROG/I'>
+      AdtTypeCodeWith<'onprem', 'delete'>
     >
   >,
   Assert<
