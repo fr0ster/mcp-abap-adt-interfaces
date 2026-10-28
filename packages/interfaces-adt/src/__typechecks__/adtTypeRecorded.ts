@@ -487,6 +487,7 @@ type RecordedOnPremise = {
         | 'read'
         | 'readMetadata'
         | 'update'
+        | 'updateMetadata'
         | 'lock'
         | 'unlock'
         | 'activate'

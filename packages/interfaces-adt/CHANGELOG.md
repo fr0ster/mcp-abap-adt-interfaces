@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [23.0.3] - 2026-10-28
+
+### Fixed
+
+- **The type tables list `updateMetadata` for `SRVB/SVB`** on S/4HANA 2025
+  and ABAP cloud. A binding has one document. Written back whole, with only
+  the description changed, as `application/vnd.sap.adt.businessservices.servicebinding.v2+xml`,
+  it answers `200` with the document, and the active version carries the change
+  (measured 2026-10-28 on both releases, on bindings of their own). The read of
+  `v1` answers `406`. The binding's `update` is still its publication.
+- **`IServiceResults` gains `metadataUpdated`.** Required, as in 23.0.1 and
+  23.0.2: a results set built for it adds it
+  ([Migrating to 23.0.3](README.md#migrating-to-2303)).
+
 ## [23.0.2] - 2026-10-28
 
 ### Fixed
