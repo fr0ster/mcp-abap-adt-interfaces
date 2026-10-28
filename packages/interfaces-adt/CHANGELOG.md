@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ABAP cloud (the program on S/4HANA only), but their results contracts had
   no slot for its answer — only `updated`, the source write's. Like the
   function group's, the slot is required: a results set built for these
-  contracts adds it (README, "Migrating to 23.0.1").
+  contracts adds it ([Migrating to 23.0.1](README.md#migrating-to-2301)).
 
 ## [23.0.0] - 2026-10-28
 
