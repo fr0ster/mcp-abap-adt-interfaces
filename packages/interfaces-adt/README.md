@@ -276,9 +276,10 @@ for every member and every overload.
 ## Migrating to 22.0.0
 
 - **ABAP cloud: no program or include of one's own.** `ADT_TYPES_CLOUD` no
-  longer lists `create`, `update`, `lock`, `unlock`, `activate`, `validate`,
-  `deletionCheck` or `delete` for `PROG/P` and `PROG/I`: the cloud refuses to
-  create either (`403`, S_DEVELOP). Code gated on the cloud variant, or on
+  longer lists `create`, `update`, `lock`, `unlock`, `activate` or `delete`
+  for `PROG/P` and `PROG/I`: the cloud refuses to create either (`403`,
+  S_DEVELOP). (22.0.0 also dropped `validate` and `deletionCheck`; both answer
+  on ABAP cloud, and 22.0.1 lists them again.) Code gated on the cloud variant, or on
   the intersecting helpers over `AdtModernVariant` (`AdtCodeWith`,
   `AdtPerformingVariantsIn` — what both newer tables serve), that creates or
   changes a program or an include stops compiling; on ABAP cloud the system

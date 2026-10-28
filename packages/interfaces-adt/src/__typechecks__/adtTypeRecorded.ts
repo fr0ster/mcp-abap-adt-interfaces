@@ -750,8 +750,8 @@ type RecordedOnPremise = {
 };
 
 // ABAP cloud refuses a program or an include of one's own (`403`, S_DEVELOP,
-// on create); a delivered one is read, checked and versioned. So both keep
-// only what does not change the object.
+// on create); a delivered one is read, checked, validated, deletion-checked
+// and versioned. So both keep only what does not change the object.
 type Flat<T> = { [K in keyof T]: T[K] };
 type RecordedCloud = Flat<
   Omit<RecordedOnPremise, 'program' | 'include'> & {
@@ -763,7 +763,9 @@ type RecordedCloud = Flat<
           | 'source'
           | 'readMetadata'
           | 'check'
+          | 'validate'
           | 'versions'
+          | 'deletionCheck'
           | 'transport'
           | 'readEnhancementElements'
           | 'readEnhancementOptions'
@@ -782,6 +784,8 @@ type RecordedCloud = Flat<
           | 'read'
           | 'source'
           | 'readMetadata'
+          | 'validate'
+          | 'deletionCheck'
           | 'readEnhancementElements'
           | 'readEnhancementOptions';
       };

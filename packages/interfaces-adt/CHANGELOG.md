@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [22.0.1] - 2026-10-28
+
+### Fixed
+
+- **`ADT_TYPES_CLOUD`: a program and an include are validated and
+  deletion-checked again.** 22.0.0 removed `validate` and `deletionCheck` from
+  `PROG/P` and `PROG/I` by inference, not by measurement; both answer `200`
+  on ABAP cloud (measured on the BTP trial 2026-10-28): the deletion check of
+  a delivered program and include answers its `del:checkResponse`, and the
+  name validation of a new program and include in `ZLOCAL` answers
+  `CHECK_RESULT X`. Creating either is still refused (`403`, S_DEVELOP), and
+  the change operations stay out. `AdtCodeWith<AdtModernVariant,
+  'deletionCheck'>` and `…'validate'>` name `PROG/P` and `PROG/I` again.
+
 ## [22.0.0] - 2026-10-28
 
 A major for one change: the ABAP cloud table loses the program and include
