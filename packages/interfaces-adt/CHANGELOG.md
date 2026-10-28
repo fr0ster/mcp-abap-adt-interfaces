@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [23.0.4] - 2026-10-29
+
+### Fixed
+
+- **The type tables list `read`, `source` and `update` for `FUGR/F`** on
+  S/4HANA 2025 and ABAP cloud. A function group's own document links
+  `source/main` typed `text/plain`: the function pool's main program. A read
+  answers `200 text/plain`, and a write under the group's lock answers `200`;
+  after activation the active version carries the change (measured 2026-10-29
+  on both releases, on a group of their own, deleted after). SAP_BASIS 7.40 is
+  not measured and keeps none.
+- **`IFunctionGroupResults` gains `updated`** — what writing that source
+  answers. Required, as the 23.0.x slots before it: a results set built for it
+  adds it ([Migrating to 23.0.4](README.md#migrating-to-2304)).
+
 ## [23.0.3] - 2026-10-28
 
 ### Fixed

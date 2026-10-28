@@ -41,6 +41,8 @@ export interface IFunctionGroupResults {
   readonly validation: IResultStrategy<unknown>;
   readonly deletion: IResultStrategy<unknown>;
   readonly metadataUpdated: IResultStrategy<unknown>;
+  /** What writing the function pool's main source answers (`update`). */
+  readonly updated: IResultStrategy<unknown>;
   readonly transport: IResultStrategy<unknown>;
   /** What a deletion check answers: `del:checkResponse`. */
   readonly deletionCheck: IResultStrategy<unknown>;
