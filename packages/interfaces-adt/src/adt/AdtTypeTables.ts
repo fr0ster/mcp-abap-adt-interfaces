@@ -980,10 +980,12 @@ export const ADT_TYPES_ONPREM = {
  * A read is listed where the release's discovery has its endpoint. An
  * operation that changes an object (`create`, `update`, `updateMetadata`,
  * `lock`, `unlock`, `activate`, `delete`, a feature toggle's switch, and the
- * `validate` that prepares a create) is listed only where the release's
- * `typestructure` gives the code, or its parent code, `CREATE` in
- * `USER_AUTHORIZATIONS`: so a feature toggle (`FTG2/FT`) is only read here,
- * and a function include (`FUGR/I`) is changed through its group (`FUGR/F`).
+ * `validate` that prepares a create) is listed where the release offers it —
+ * its discovery, and a measurement — and left out where a measurement on the
+ * release refused it: a feature toggle (`FTG2/FT`) is only read here, while a
+ * function include (`FUGR/I`) is created in its group. `typestructure`'s
+ * `USER_AUTHORIZATIONS` says why a measuring user was refused, for that user
+ * on that system; it explains the table, it does not fill it.
  */
 export const ADT_TYPES_CLOUD = {
   class: {

@@ -3218,23 +3218,28 @@ that changes, transports (`404`) or runs (refused) one. 22.0.0 removed the
 deletion check by inference; 23.0.0 restored it from the measurement.
 Removing an operation narrows a published type, so it is a major.
 
-**Reads from discovery, changes from `USER_AUTHORIZATIONS` (23.0.0).** A table
-lists a read where its release's discovery has the endpoint: reading is
+**Reads from discovery; changes from discovery and measurement (23.0.0).** A
+table lists a read where its release's discovery has the endpoint: reading is
 always possible where the endpoint is. It lists an operation that changes an
 object (`create`, `update`, `updateMetadata`, `lock`, `unlock`, `activate`,
 `delete`, a feature toggle's switch, and the `validate` that prepares a
-create) only where its release's `typestructure` gives the code, or its
-parent code, `CREATE` in `USER_AUTHORIZATIONS`: possible given the
-authorization. `typestructure` says nothing of reads — its `CAPABILITIES`
-are `CREATE`, `EXECUTE`, `PROFILE`, `INDEX_UPD` and `KTD_DOCU`, its
-`USER_AUTHORIZATIONS` only `CREATE`. Its absence is a refusal, as measured on
-ABAP cloud: `PROG/P`, `PROG/I` and `FTG2/FT` have none, their creates answer
-`403`, and the table lists them for reading only; `FUGR/I` has none of its
-own, its group `FUGR/F` has it, and the create answers `200`. Its presence
-is not a promise: E19 lists `CREATE` for `FTG2/FT` and refuses the create by
-a setting of that system ("It is not allowed to create/update feature
-toggles in this system", `FTG2/035`) — the system's answer at run time, not a
-table's.
+create) where the release offers it — its discovery, and a measurement — and
+not where a measurement on the release refused it: on ABAP cloud the create
+of a program, an include and a feature toggle answers `403`, and with no
+object of one's own to change those three are listed for reading only.
+
+`typestructure` explains such a refusal; it does not fill a table. Read from
+its handler's code (adt-clients' `docs/research/typestructure.md`), its
+`CAPABILITIES` are mostly hard-coded per type (`EXECUTE`, `PROFILE`,
+`CREATE`, `INDEX_UPD`, `KTD_DOCU` — no read, lock, update or delete), and
+`USER_AUTHORIZATIONS` holds `CREATE` when the type is accessible on that
+system (a BAdI) and the user passes `S_DEVELOP` create for it: one user's, on
+one system. Its absence matched every cloud refusal measured — `FUGR/I`, a
+made-up entry that copies `PROG/I`'s, shows none and is created in its
+group — and its presence is not a promise: an S/4HANA 2025 system lists
+`CREATE` for `FTG2/FT` and refuses the create by a setting of that system
+("It is not allowed to create/update feature toggles in this system",
+`FTG2/035`) — the system's answer at run time, not a table's.
 
 **What would change it.** A release whose answers the conformance check
 refuses, or an API the library starts to serve; either is an edit of a table.

@@ -98,10 +98,12 @@ refuses is absent from its code — 7.40 has no `deletionCheck`, no `transport`,
 no `run`. On ABAP cloud a program and an include are only SAP's own: they
 list what a delivered one answers — reads, checks, the deletion check, the
 enhancement reads and a program's ABAP Unit runs. A read is listed where the
-release's discovery has its endpoint; an operation that changes an object only
-where the release's `typestructure` gives the code, or its parent code,
-`CREATE` in `USER_AUTHORIZATIONS` — possible given the authorization. A
-system's own refusal (an authorization, a setting) is its answer at run time.
+release's discovery has its endpoint; an operation that changes an object where
+the release offers it (its discovery, and a measurement), and not where a
+measurement on the release refused it. `typestructure`'s `USER_AUTHORIZATIONS`
+is one user's on one system — the type accessible there and the user allowed
+to create it — so it explains a refusal, it does not fill a table. A system's
+own refusal (an authorization, a setting) is its answer at run time.
 The entry shape (`AdtApiTable<R>`) refuses a misspelt field, an
 operation outside the vocabulary, an API with no factory and another release's
 evidence at compile time.
@@ -290,8 +292,8 @@ for every member and every overload.
   transport or runs or profiles a program stops compiling.
 - **ABAP cloud: a feature toggle is only read.** `ADT_TYPES_CLOUD` lists for
   `FTG2/FT` `read`, `source`, `readMetadata`, `check`, `deletionCheck`,
-  `getRuntimeState` and `checkState`: the cloud's `typestructure` gives it no
-  `CREATE` in `USER_AUTHORIZATIONS`, and the create answers `403`. Code gated
+  `getRuntimeState` and `checkState`: the create answers `403` (the cloud's
+  `typestructure` gives the measuring user no `CREATE` for it). Code gated
   on the cloud variant, or on the intersecting helpers over
   `AdtModernVariant`, that creates, changes, locks, activates, deletes or
   switches a feature toggle stops compiling.

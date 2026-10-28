@@ -37,15 +37,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   lists a read where its release's discovery has the endpoint, and an
   operation that changes an object (`create`, `update`, `updateMetadata`,
   `lock`, `unlock`, `activate`, `delete`, a feature toggle's `switchOn` and
-  `switchOff`, and the `validate` that prepares a create) only where its
-  release's `typestructure` gives the code, or its parent code, `CREATE` in
-  `USER_AUTHORIZATIONS`. ABAP cloud gives `FTG2/FT` none, and the create
-  answers `403` (measured on the BTP trial 2026-10-28): it keeps `read`,
-  `source`, `readMetadata`, `check`, `deletionCheck`, `getRuntimeState` and
-  `checkState`. On S/4HANA 2025 the code has `CREATE` and keeps every
-  operation; a system may still refuse one — E19 answers `403` "It is not
-  allowed to create/update feature toggles in this system" (`FTG2/035`), a
-  setting of that system, which reaches the caller as the system's answer.
+  `switchOff`, and the `validate` that prepares a create) where the release
+  offers it — its discovery, and a measurement — and not where a measurement
+  on the release refused it. On ABAP cloud the create answers `403` (measured
+  on the BTP trial 2026-10-28; its `typestructure` gives the measuring user no
+  `CREATE` for the type): `FTG2/FT` keeps `read`, `source`, `readMetadata`,
+  `check`, `deletionCheck`, `getRuntimeState` and `checkState`. On S/4HANA
+  2025 it keeps every operation; a system may still refuse one — an S/4HANA
+  2025 system answers `403` "It is not allowed to create/update feature
+  toggles in this system" (`FTG2/035`), a setting of that system, which
+  reaches the caller as the system's answer.
 
 ## [22.0.0] - 2026-10-28
 

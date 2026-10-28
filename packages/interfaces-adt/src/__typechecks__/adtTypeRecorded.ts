@@ -753,9 +753,8 @@ type RecordedOnPremise = {
 // ABAP cloud has no program or include of one's own (no `app:accept` in its
 // discovery, the create refused `403` S_DEVELOP): both list what a delivered
 // one answers, as measured — no change, no transport (`404`), no run or
-// profile (refused). A feature toggle is only read: the cloud's
-// typestructure gives `FTG2/FT` no `CREATE` in `USER_AUTHORIZATIONS`, so
-// nothing that changes one is listed.
+// profile (refused). A feature toggle is only read: its create is refused
+// (`403`), so nothing that changes one is listed.
 type Flat<T> = { [K in keyof T]: T[K] };
 type RecordedCloud = Flat<
   Omit<RecordedOnPremise, 'program' | 'include' | 'featureToggle'> & {
