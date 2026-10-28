@@ -3205,12 +3205,41 @@ operation words and whether it was measured — not into the API tables, where
 an entry opens a factory and a new operation word widens a vocabulary
 consumers map exhaustively.
 
-**A refusal narrows a table (22.0.0).** A listed capability is not a
-served operation either way: ABAP cloud's `typestructure` lists `CREATE` for
-`PROG/P` and `PROG/I`, and the cloud refuses both creates (`403`, S_DEVELOP,
-measured 2026-10-28). The cloud table therefore lists for them only what a
-delivered object answers, so the compiler refuses a call the system would.
+**Discovery first, `typestructure` second, then a measurement (22.0.0,
+23.0.0).** Whether a release offers an operation is read from its discovery
+first and its `typestructure` second, and a live answer settles it. ABAP
+cloud's `typestructure` lists `CREATE` for `PROG/P` and `PROG/I`, but its
+discovery gives neither collection an `app:accept`, and the create is refused
+(`403`, S_DEVELOP, measured 2026-10-28): the cloud has no program or include
+of one's own, only SAP's. So the cloud table lists for them what a delivered
+one answers, each operation measured — the reads, the checks, the deletion
+check, the enhancement reads and a program's ABAP Unit runs — and nothing
+that changes, transports (`404`) or runs (refused) one. 22.0.0 removed the
+deletion check by inference; 23.0.0 restored it from the measurement.
 Removing an operation narrows a published type, so it is a major.
+
+**Reads from discovery; changes from discovery and measurement (23.0.0).** A
+table lists a read where its release's discovery has the endpoint: reading is
+always possible where the endpoint is. It lists an operation that changes an
+object (`create`, `update`, `updateMetadata`, `lock`, `unlock`, `activate`,
+`delete`, a feature toggle's switch, and the `validate` that prepares a
+create) where the release offers it — its discovery, and a measurement — and
+not where a measurement on the release refused it: on ABAP cloud the create
+of a program, an include and a feature toggle answers `403`, and with no
+object of one's own to change those three are listed for reading only.
+
+`typestructure` explains such a refusal; it does not fill a table. Read from
+its handler's code (adt-clients' `docs/research/typestructure.md`), its
+`CAPABILITIES` are mostly hard-coded per type (`EXECUTE`, `PROFILE`,
+`CREATE`, `INDEX_UPD`, `KTD_DOCU` — no read, lock, update or delete), and
+`USER_AUTHORIZATIONS` holds `CREATE` when the type is accessible on that
+system (a BAdI) and the user passes `S_DEVELOP` create for it: one user's, on
+one system. Its absence matched every cloud refusal measured — `FUGR/I`, a
+made-up entry that copies `PROG/I`'s, shows none and is created in its
+group — and its presence is not a promise: an S/4HANA 2025 system lists
+`CREATE` for `FTG2/FT` and refuses the create by a setting of that system
+("It is not allowed to create/update feature toggles in this system",
+`FTG2/035`) — the system's answer at run time, not a table's.
 
 **What would change it.** A release whose answers the conformance check
 refuses, or an API the library starts to serve; either is an edit of a table.

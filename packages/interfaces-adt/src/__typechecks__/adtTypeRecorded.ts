@@ -5,7 +5,8 @@
 // what the library serves. The equality is exact, so adding or removing one
 // operation, or changing one parent, in a table fails here: the edit has to
 // be made twice, on purpose. Cloud is asserted equal to on-premise except for
-// one name length (`SRVD/SRV`), the program and the include. Name lengths and collections are not recorded
+// one name length (`SRVD/SRV`), the program, the include and the
+// feature toggle. Name lengths and collections are not recorded
 // here: the conformance check in `@mcp-abap-adt/adt-clients` holds them to the
 // releases' recorded answers.
 
@@ -749,12 +750,32 @@ type RecordedOnPremise = {
   };
 };
 
-// ABAP cloud refuses a program or an include of one's own (`403`, S_DEVELOP,
-// on create); a delivered one is read, checked and versioned. So both keep
-// only what does not change the object.
+// ABAP cloud has no program or include of one's own (no `app:accept` in its
+// discovery, the create refused `403` S_DEVELOP): both list what a delivered
+// one answers, as measured — no change, no transport (`404`), no run or
+// profile (refused). A feature toggle is only read: its create is refused
+// (`403`), so nothing that changes one is listed.
 type Flat<T> = { [K in keyof T]: T[K] };
 type RecordedCloud = Flat<
-  Omit<RecordedOnPremise, 'program' | 'include'> & {
+  Omit<RecordedOnPremise, 'program' | 'include' | 'featureToggle'> & {
+    featureToggle: {
+      'FTG2/FT': {
+        parent: null;
+        operations: Exclude<
+          RecordedOnPremise['featureToggle']['FTG2/FT']['operations'],
+          | 'create'
+          | 'update'
+          | 'updateMetadata'
+          | 'lock'
+          | 'unlock'
+          | 'activate'
+          | 'validate'
+          | 'delete'
+          | 'switchOn'
+          | 'switchOff'
+        >;
+      };
+    };
     program: {
       'PROG/P': {
         parent: null;
@@ -764,11 +785,9 @@ type RecordedCloud = Flat<
           | 'readMetadata'
           | 'check'
           | 'versions'
-          | 'transport'
+          | 'deletionCheck'
           | 'readEnhancementElements'
           | 'readEnhancementOptions'
-          | 'run'
-          | 'profile'
           | 'unitTestRun'
           | 'unitTestRunSync'
           | 'unitTestStatus'
@@ -782,6 +801,7 @@ type RecordedCloud = Flat<
           | 'read'
           | 'source'
           | 'readMetadata'
+          | 'deletionCheck'
           | 'readEnhancementElements'
           | 'readEnhancementOptions';
       };
@@ -1034,9 +1054,9 @@ export type RecordedTables = [
   Assert<Equal<Recorded<typeof ADT_TYPES_BASIS_740>, RecordedBasis740>>,
 ];
 
-// Cloud is on-premise but for the evidence it cites, one name length, and
-// the program and the include.
-type Shared<T> = Omit<T, 'program' | 'include'>;
+// Cloud is on-premise but for the evidence it cites, one name length, the
+// program, the include and the feature toggle.
+type Shared<T> = Omit<T, 'program' | 'include' | 'featureToggle'>;
 export type CloudIsOnPremise = [
   Assert<
     Equal<

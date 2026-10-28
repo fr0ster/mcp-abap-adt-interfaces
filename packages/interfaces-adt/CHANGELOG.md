@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [23.0.0] - 2026-10-28
+
+### Changed (breaking)
+
+- **`ADT_TYPES_CLOUD`: a program and an include list what a delivered one
+  answers, as measured.** ABAP cloud has no program or include of one's own:
+  its discovery gives neither collection an `app:accept`, and the create is
+  refused (`403`, S_DEVELOP). Measured on the BTP trial 2026-10-28 on a
+  delivered program and include:
+  - answered: `read`, `source`, `readMetadata`, `check` and `versions` (the
+    program's), `deletionCheck` (its `del:checkResponse`, not deletable), the
+    enhancement elements and options, and for a program the ABAP Unit run, its
+    status and result, and the synchronous run;
+  - refused: `transport` (`404`), `run` and `profile` (`200` with "You are not
+    authorized to execute this object" as the body).
+
+  So `PROG/P` lists `read`, `source`, `readMetadata`, `check`, `versions`,
+  `deletionCheck`, `readEnhancementElements`, `readEnhancementOptions`,
+  `unitTestRun`, `unitTestRunSync`, `unitTestStatus` and `unitTestResult`,
+  and `PROG/I` `read`, `source`, `readMetadata`, `deletionCheck` and the two
+  enhancement reads. Against 22.0.0 that removes `transport`, `run` and
+  `profile` from `PROG/P` — a narrowing, so a major — and adds
+  `deletionCheck` to both, which 22.0.0 had dropped by inference. A change of
+  an object (`create`, `update`, `updateMetadata`, `lock`, `unlock`,
+  `activate`, `delete`) and `validate`, which only prepares a create, stay
+  out. `AdtCodeWith<AdtModernVariant, Op>` follows.
+- **`ADT_TYPES_CLOUD`: a feature toggle (`FTG2/FT`) is only read.** A table
+  lists a read where its release's discovery has the endpoint, and an
+  operation that changes an object (`create`, `update`, `updateMetadata`,
+  `lock`, `unlock`, `activate`, `delete`, a feature toggle's `switchOn` and
+  `switchOff`, and the `validate` that prepares a create) where the release
+  offers it — its discovery, and a measurement — and not where a measurement
+  on the release refused it. On ABAP cloud the create answers `403` (measured
+  on the BTP trial 2026-10-28; its `typestructure` gives the measuring user no
+  `CREATE` for the type): `FTG2/FT` keeps `read`, `source`, `readMetadata`,
+  `check`, `deletionCheck`, `getRuntimeState` and `checkState`. On S/4HANA
+  2025 it keeps every operation; a system may still refuse one — an S/4HANA
+  2025 system answers `403` "It is not allowed to create/update feature
+  toggles in this system" (`FTG2/035`), a setting of that system, which
+  reaches the caller as the system's answer.
+
 ## [22.0.0] - 2026-10-28
 
 A major for one change: the ABAP cloud table loses the program and include

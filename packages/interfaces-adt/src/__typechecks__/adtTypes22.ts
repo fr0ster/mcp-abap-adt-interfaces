@@ -132,18 +132,43 @@ export type RealIntersection = [
     >
   >,
   Assert<Equal<AdtCodeWith<AdtVariant, 'deletionCheck'>, never>>,
-  // ABAP cloud creates and deletes no program or include of one's own: the
-  // intersection of the two modern variants leaves them out.
+  // ABAP cloud has no program or include of one's own: the intersection of
+  // the two modern variants keeps them for what a delivered one answers (the
+  // deletion check) and leaves them out of what changes, transports or runs one.
   Assert<
     Equal<
       AdtCodeWith<AdtModernVariant, 'deletionCheck'>,
-      Exclude<AdtTypeCodeWith<'onprem', 'deletionCheck'>, 'PROG/P' | 'PROG/I'>
+      AdtTypeCodeWith<'onprem', 'deletionCheck'>
+    >
+  >,
+  Assert<
+    Equal<
+      AdtCodeWith<AdtModernVariant, 'delete'>,
+      Exclude<
+        AdtTypeCodeWith<'onprem', 'delete'>,
+        'PROG/P' | 'PROG/I' | 'FTG2/FT'
+      >
+    >
+  >,
+  Assert<
+    Equal<
+      AdtCodeWith<AdtModernVariant, 'run'>,
+      Exclude<AdtTypeCodeWith<'onprem', 'run'>, 'PROG/P'>
+    >
+  >,
+  Assert<
+    Equal<
+      AdtCodeWith<AdtModernVariant, 'transport'>,
+      Exclude<AdtTypeCodeWith<'onprem', 'transport'>, 'PROG/P'>
     >
   >,
   Assert<
     Equal<
       AdtCodeWith<AdtModernVariant, 'create'>,
-      Exclude<AdtTypeCodeWith<'onprem', 'create'>, 'PROG/P' | 'PROG/I'>
+      Exclude<
+        AdtTypeCodeWith<'onprem', 'create'>,
+        'PROG/P' | 'PROG/I' | 'FTG2/FT'
+      >
     >
   >,
   Assert<
@@ -157,6 +182,10 @@ export type RealIntersection = [
   Assert<
     Equal<Extract<AdtApiWith<AdtModernVariant, 'create'>, 'program'>, 'program'>
   >,
+  // A feature toggle is changed only on-premise: the modern pair switches none,
+  // and the cloud table updates none.
+  Assert<Equal<AdtCodeWith<AdtModernVariant, 'switchOn'>, never>>,
+  Assert<Equal<Extract<AdtTypeCodeWith<'cloud', 'update'>, 'FTG2/FT'>, never>>,
   Assert<Equal<Extract<AdtApiWith<'cloud', 'create'>, 'program'>, never>>,
   Assert<
     Equal<
