@@ -6,6 +6,7 @@
 // types are what they were.
 
 import type {
+  AdtApiWith,
   AdtCodeOf,
   AdtCodeOfIn,
   AdtCodeWith,
@@ -149,6 +150,18 @@ export type RealIntersection = [
     Equal<
       Extract<AdtTypeCodeWith<'cloud', 'read'>, 'PROG/P' | 'PROG/I'>,
       'PROG/P' | 'PROG/I'
+    >
+  >,
+  // The union helpers read the modern pair as one union table: on-premise
+  // creates a program, so the pair's union names it; cloud alone does not.
+  Assert<
+    Equal<Extract<AdtApiWith<AdtModernVariant, 'create'>, 'program'>, 'program'>
+  >,
+  Assert<Equal<Extract<AdtApiWith<'cloud', 'create'>, 'program'>, never>>,
+  Assert<
+    Equal<
+      Extract<AdtTypeCodeWith<AdtModernVariant, 'create'>, 'PROG/P'>,
+      'PROG/P'
     >
   >,
   Assert<
