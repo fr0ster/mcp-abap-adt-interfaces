@@ -11,6 +11,7 @@ ADT contracts: object operations, runtime analysis, execution, feeds and service
 - Since 14.0.0 `IDebuggerIdentity` is a union by `debuggingMode` (required), `attach` takes the identity, `condition` is for line breakpoints only, and `IAbapDebugger` gains `TSettings` and five members. The CHANGELOG has the migration note.
 - Since 15.0.0 `skipCount` is gone from breakpoints (the server ignores it) and `clientId` pairs an answer row with its request. The CHANGELOG has the migration note.
 - Since 15.1.0 the plain class and program run take `debuggee` (`IDebuggeeIds`): the terminal id and IDE id a terminal-mode listener catches the run by.
+- Since 23.0.2 the tables list `updateMetadata` for `DCLS/DL`, `DDLX/EX`, `BDEF/BDO`, `SRVD/SRV`, `DSFD/SCF`, `XSLT/VT`, `TABL/DT` and `TABL/DS` (and `PROG/I` on S/4HANA), and their results contracts have a required `metadataUpdated` slot.
 - Since 23.0.1 `IClassResults`, `IInterfaceResults`, `IProgramResults`, `IFunctionModuleResults` and `IDdlResults` have a required `metadataUpdated` slot — the answer of `updateMetadata`, which the tables list for these codes; a results set built for them adds it.
 - Since 23.0.0, a program and an include on ABAP cloud list only what a delivered one answers (no create, change, transport, run or profile), and a feature toggle is only read there (see "Migrating to 23.0.0"); since 22.0.0, and `updateMetadata` is listed where it was measured. Beside that, additions only: intersecting helpers (`AdtCodeOf<V>`, `AdtCodeWith<V, Op>`, `AdtServingVariantsIn`, `AdtPerformingVariantsIn`; the default `AdtModernVariant` gets what both newer tables serve), utility code tables per variant (`ADT_UTILITY_CODES_*`: the group-only `VIEW/DV`, `DEVC/K` in a modern group activation and in 7.40's node structure), group references per operation with the typed atoms `IAdtTypedGroupLifecycle` and `IAdtTypedWhereUsed`, and `IAdtTypeStructure` with its `IUtilResults.typeStructure` slot. See "Intersections, group-only codes and group references".
 - Since 21.0.0 the object type codes are the library's own tables — `ADT_TYPES_ONPREM` (S/4HANA 2025), `ADT_TYPES_CLOUD` (ABAP cloud), `ADT_TYPES_BASIS_740` (SAP_BASIS 7.40 SP04), keyed by API — and every code in a contract is an `AdtTypeCode` drawn from them. `AdtObjectTypeLower`, `AdtObjectType`, `AdtSourceObjectTypeLower` and `AdtSourceObjectType` are removed, and with them the codes no release lists. An identifying atom takes the parent's field as its last type parameter (`TParent`, default `never`, which leaves the config `Partial<TConfig>` as before), and `IObjectReference<C>` requires `parentName` for a code with a parent. A code read from an answer is an `IAdtAnsweredObject`. See "The ADT type tables" and "Migrating to 21.0.0".
@@ -281,6 +282,16 @@ The members that take `headers`: `IAdtAbapGitClient`: `link`, `pull`, `checkExte
 The field is on each member's own options, not on `IAdtAnalyseOptions` or
 `IAdtOperationOptions`. `src/__typechecks__/headersOnEveryMember.ts` holds this
 for every member and every overload.
+
+## Migrating to 23.0.2
+
+- **A results set for an access control, a metadata extension, a behaviour
+  definition, a service definition, a scalar function, a transformation, a
+  table, a structure or an include adds `metadataUpdated`.** Their results
+  contracts now require it, as 23.0.1 did for the class and its siblings. A
+  set built for 23.0.1 stops compiling until it names one. The type tables
+  only gain `updateMetadata` for these codes; nothing that compiled stops
+  compiling for that.
 
 ## Migrating to 23.0.1
 
