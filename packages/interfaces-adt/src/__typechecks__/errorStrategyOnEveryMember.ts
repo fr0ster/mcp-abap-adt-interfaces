@@ -12,6 +12,7 @@
 
 import type {
   IAbapDebugger,
+  IAbapUnitRunner,
   IAdtAbapGitClient,
   IAdtActivatable,
   IAdtCheckable,
@@ -172,6 +173,9 @@ export type _IAdtTransportObjectActions = Assert<
   EveryMemberTakesAnalyse<
     IAdtTransportObjectActions<Probe, Probe, Probe, Probe, Probe, Probe>
   >
+>;
+export type _IAbapUnitRunner = Assert<
+  EveryMemberTakesAnalyse<IAbapUnitRunner<Probe, Probe, Probe>>
 >;
 export type _ITestRunInformation = Assert<
   EveryMemberTakesAnalyse<ITestRunInformation<Probe, Probe>>

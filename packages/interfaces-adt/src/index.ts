@@ -15,6 +15,16 @@
  */
 
 export type {
+  AbapUnitRunEvidence,
+  AbapUnitRunKind,
+  AbapUnitRunObjectType,
+  AbapUnitRunTarget,
+  AbapUnitRunTypeTable,
+  IAbapUnitRunTypeFacts,
+  IAbapUnitRunTypes,
+} from './adt/AbapUnitRunTypes';
+export { ABAP_UNIT_RUN_TYPES } from './adt/AbapUnitRunTypes';
+export type {
   AdtApi,
   AdtApiWith,
   AdtApiWithIn,
@@ -287,6 +297,7 @@ export type {
   IAdtCodelessApiEntry,
 } from './adt/IAdtTypeTable';
 export type {
+  IAbapUnitRunner,
   ICdsTestDoubleCheckable,
   ICdsUnitTestConfig,
   IClassUnitTestDefinition,

@@ -26,6 +26,7 @@
 import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type {
   IAbapDebugger,
+  IAbapUnitRunner,
   IAdtAbapGitClient,
   IAdtActivatable,
   IAdtCheckable,
@@ -279,6 +280,13 @@ export type _HeadersIAdtTransportObjectActions = Assert<
     IAdtTransportObjectActions<Probe, Probe, Probe, Probe, Probe, Probe>,
     never,
     'removeObject' | 'addObject' | 'createTask' | 'changeTaskType'
+  >
+>;
+export type _HeadersIAbapUnitRunner = Assert<
+  EveryMemberTakesHeaders<
+    IAbapUnitRunner<Probe, Probe, Probe>,
+    never,
+    'runSync'
   >
 >;
 export type _HeadersITestRunInformation = Assert<
