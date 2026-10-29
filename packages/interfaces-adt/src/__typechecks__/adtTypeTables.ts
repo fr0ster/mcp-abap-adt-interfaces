@@ -37,6 +37,7 @@ const _good = {
     collection: '/sap/bc/adt/oo/classes',
     codes: {
       'CLAS/OC': {
+        main: 'CLAS',
         parent: null,
         nameMaxLength: 30,
         operations: ['read'],
@@ -53,6 +54,7 @@ const _misspeltField = {
     collection: '/sap/bc/adt/oo/classes',
     codes: {
       'CLAS/OC': {
+        main: 'CLAS',
         parent: null,
         // @ts-expect-error the field is `nameMaxLength`
         nameMaxLen: 30,
@@ -70,6 +72,7 @@ const _unknownOperation = {
     collection: '/sap/bc/adt/oo/classes',
     codes: {
       'CLAS/OC': {
+        main: 'CLAS',
         parent: null,
         nameMaxLength: 30,
         // @ts-expect-error `reed` is not an operation of the vocabulary
@@ -87,6 +90,7 @@ const _noOperation = {
     collection: '/sap/bc/adt/oo/classes',
     codes: {
       'CLAS/OC': {
+        main: 'CLAS',
         parent: null,
         nameMaxLength: 30,
         // @ts-expect-error a code the library serves has at least one operation
@@ -117,6 +121,7 @@ const _otherRelease = {
     collection: '/sap/bc/adt/oo/classes',
     codes: {
       'CLAS/OC': {
+        main: 'CLAS',
         parent: null,
         nameMaxLength: 30,
         operations: ['read'],
@@ -134,6 +139,7 @@ const _unknownParent = {
     collection: '/sap/bc/adt/functions/groups',
     codes: {
       'FUGR/FF': {
+        main: 'FUGR',
         // @ts-expect-error a parent is an API, by its factory name
         parent: 'FUGR/F',
         nameMaxLength: 30,
@@ -154,6 +160,7 @@ const _codedWithEntryOperations = {
       // entry too, it reads as a codeless one, whose codes are none.
       // @ts-expect-error a codeless entry has no codes
       'CLAS/OC': {
+        main: 'CLAS',
         parent: null,
         nameMaxLength: 30,
         operations: ['read'],
@@ -173,6 +180,7 @@ const _notACollection = {
     collection: 'oo/classes',
     codes: {
       'CLAS/OC': {
+        main: 'CLAS',
         parent: null,
         nameMaxLength: 30,
         operations: ['read'],
@@ -190,6 +198,7 @@ const _codeCollection = {
     collection: '/sap/bc/adt/enhancements',
     codes: {
       'ENHO/XHH': {
+        main: 'ENHO',
         parent: null,
         nameMaxLength: 30,
         operations: ['read'],

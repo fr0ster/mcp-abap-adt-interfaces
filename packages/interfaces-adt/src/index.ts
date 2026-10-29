@@ -32,6 +32,8 @@ export type {
   AdtCodeOfIn,
   AdtCodeWith,
   AdtCodeWithIn,
+  AdtMainType,
+  AdtMainTypeOfVariant,
   AdtModernVariant,
   AdtObjectKind,
   AdtParentedTypeCode,
@@ -42,6 +44,7 @@ export type {
   AdtTypeCodeOf,
   AdtTypeCodeWith,
   AdtVariant,
+  CodesOfMain,
   IAdtTypeTables,
 } from './adt/AdtTypeTables';
 export {
@@ -289,6 +292,7 @@ export type {
   AdtApiTable,
   AdtCheckedTable,
   AdtCollection,
+  AdtMainTypeOf,
   AdtOperation,
   AdtOperations,
   AdtTypeEvidence,

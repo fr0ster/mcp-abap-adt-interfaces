@@ -5,6 +5,7 @@
 import type {
   AdtCodeOf,
   AdtCodeWith,
+  AdtMainType,
   AdtModernVariant,
   AdtParentedTypeCode,
   AdtTypeCode,
@@ -72,8 +73,15 @@ export type IObjectReference<
  */
 export interface ISearchObjectsParams {
   query: string;
-  /** Restrict the search to one code of the tables. */
-  objectType?: AdtTypeCode;
+  /**
+   * Restrict the search to one object type: a code of the tables or a main
+   * type (`'DEVC'`, `'ENHO'`) — the one parameter that takes a main type.
+   * The endpoint selects by the main type only (measured): `DEVC`, `DEVC/K`
+   * and `DEVC/XX` answer the same objects, and a subtype is no filter on the
+   * system's side. With `maxResults`, a main type and a code of it answer
+   * different first hits, so send the one meant. See {@link AdtMainType}.
+   */
+  objectType?: AdtTypeCode | AdtMainType;
   maxResults?: number;
 }
 
