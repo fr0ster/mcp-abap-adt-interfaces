@@ -71,7 +71,8 @@ code serves two APIs (`CLAS/OC`: `class` and `behaviorImplementation`;
   two APIs on one code share it;
 - `collection` — the ADT collection its resource lives in, the parent's for an
   API addressed under a parent;
-- `codes` — for each code: `parent` (the parent API, or `null`),
+- `codes` — for each code: `main` (its main type, below), `parent` (the
+  parent API, or `null`),
   `nameMaxLength`, `operations` and `evidence`, the corpus case of the
   release's `typestructure` answer that lists the code
   (`system-description-basis-740--07-typestructure`); and, where a code lives
@@ -126,6 +127,9 @@ evidence at compile time.
 | `AdtObjectKind` | every kind |
 | `AdtSourceTypeCode` | the codes with `source` |
 | `AdtParentedTypeCode` | the codes with a parent API: `FUGR/FF`, `FUGR/I` |
+| `AdtMainTypeOf<C>` | the main type of code `C`: `'ENHO'` of `'ENHO/XHH'` |
+| `AdtMainType` | every main type of any table (`AdtMainTypeOfVariant<V>` per variant) |
+| `CodesOfMain<M>` | the codes of main type `M` |
 
 A map a consumer keeps over the codes is typed by them, and the compiler then
 asks for every code and refuses any other:
@@ -172,6 +176,28 @@ type ModuleRead = IAdtReadable<IFunctionModuleConfig, string, 'functionGroupName
 when `[C] extends [AdtParentedTypeCode]` — `IObjectReference<'FUGR/FF'>` —
 and leaves it optional otherwise, the default included, so a reference built
 from a code typed `AdtTypeCode` compiles and an interface can extend it.
+
+### Main types (23.2.0)
+
+A code's **main type** is its TADIR object type, the `R3TR <type>` before the
+`/`: `ENHO` of `ENHO/XHH`, `DEVC` of `DEVC/K`, `TABL` of `TABL/DS`. Every code
+entry states its own as `main`; the table's `satisfies` refuses an entry
+without one, and `AdtCheckedTable<T>` one whose `main` is not its own key's
+(per key: the main type of a neighbouring code is refused too).
+`AdtMainTypeOf<C>` is the main type of a code, `CodesOfMain<M>` the codes of a
+main type (`CodesOfMain<'ENHO'>` is `'ENHO/XHB' | 'ENHO/XHH'`),
+`AdtMainType` every main type of any table and `AdtMainTypeOfVariant<V>` a
+variant's.
+
+**A main type is not an address.** `TABL` is `TABL/DT` or `TABL/DS`: every
+parameter that builds an address — read, write, metadata, a URI, where-used,
+the group operations — takes a code. Only the search filter,
+`ISearchObjectsParams.objectType`, takes `AdtTypeCode | AdtMainType`: the
+quick search was measured to select by the main type only (`DEVC`, `DEVC/K`
+and `DEVC/XX` answer the same `DEVC/K` objects, on S/4HANA 2025 and ABAP cloud
+alike), while with `maxResults` a main type and a code of it answer different
+first hits — so a caller sends the one it means, read from an entry
+(`ADT_TYPES_ONPREM.package.codes['DEVC/K'].main`), not written by hand.
 
 ### Intersections, group-only codes and group references (22.0.0)
 

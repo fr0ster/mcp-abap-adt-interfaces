@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [23.2.0] - 2026-10-29
+
+### Added
+
+- **Main types.** Every code entry of `ADT_TYPES_ONPREM`, `ADT_TYPES_CLOUD`
+  and `ADT_TYPES_BASIS_740` states its main type, the TADIR object type of
+  `R3TR <type>`: `'ENHO/XHH': { main: 'ENHO', … }`. The entry shape requires
+  `main` on every code (`IAdtCodeFacts.main`), and `AdtCheckedTable<T>`
+  requires it to be its own key's main type — per key, so a missing or a wrong
+  one does not compile.
+- **`AdtMainTypeOf<C>`** (the main type of a code), **`AdtMainType`** (every
+  main type of any table), **`AdtMainTypeOfVariant<V>`** (a variant's) and
+  **`CodesOfMain<M>`** (the codes of a main type; a code with no `/`, `AUTH`,
+  is its own).
+- **The search filter takes a main type.** `ISearchObjectsParams.objectType`
+  is `AdtTypeCode | AdtMainType`: the quick search selects by the main type
+  only (measured on S/4HANA 2025 and ABAP cloud, 2026-10-29: `DEVC`, `DEVC/K`
+  and `DEVC/XX` answer the same objects), and with a cap on the hits a main
+  type and a code of it answer different first hits. Every parameter that
+  builds an address keeps taking a code: a main type is not an address
+  (`TABL` is `TABL/DT` or `TABL/DS`).
+
+Nothing is removed, and the search filter only widens: `main` is new data in
+this package's own tables. A table of a consumer's own checked against
+`AdtApiTable<R>` names `main` on each code from now on.
+
 ## [23.1.1] - 2026-10-29
 
 ### Fixed
