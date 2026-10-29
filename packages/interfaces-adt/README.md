@@ -11,6 +11,7 @@ ADT contracts: object operations, runtime analysis, execution, feeds and service
 - Since 14.0.0 `IDebuggerIdentity` is a union by `debuggingMode` (required), `attach` takes the identity, `condition` is for line breakpoints only, and `IAbapDebugger` gains `TSettings` and five members. The CHANGELOG has the migration note.
 - Since 15.0.0 `skipCount` is gone from breakpoints (the server ignores it) and `clientId` pairs an answer row with its request. The CHANGELOG has the migration note.
 - Since 15.1.0 the plain class and program run take `debuggee` (`IDebuggeeIds`): the terminal id and IDE id a terminal-mode listener catches the run by.
+- Since 23.1.0 the ABAP Unit run registry: `ABAP_UNIT_RUN_TYPES`, every `osl:object type` value a run may name, what a run of it runs and on what evidence; `AbapUnitRunObjectType` (its keys), `AbapUnitRunTarget` (an object or a package) and the generic runner contract `IAbapUnitRunner`. Additions only. See "The ABAP Unit run registry".
 - Since 23.0.4 the tables list `read`, `source` and `update` for `FUGR/F` (S/4HANA and ABAP cloud), and `IFunctionGroupResults` has a required `updated` slot.
 - Since 23.0.3 the tables list `updateMetadata` for `SRVB/SVB`, and `IServiceResults` has a required `metadataUpdated` slot.
 - Since 23.0.2 the tables list `updateMetadata` for `DCLS/DL`, `DDLX/EX`, `BDEF/BDO`, `SRVD/SRV`, `DSFD/SCF`, `XSLT/VT`, `TABL/DT` and `TABL/DS` (and `PROG/I` on S/4HANA), and their results contracts have a required `metadataUpdated` slot.
@@ -36,14 +37,14 @@ npm install @mcp-abap-adt/interfaces-adt
 
 | directory | files | what |
 |---|---|---|
-| `adt/` | 42 | the object contracts: capability atoms, the object types, the ADT type tables and their entry shape, `IAdtResponse`, `IAdtError`, the error codes, the transport request's object list |
+| `adt/` | 43 | the object contracts: capability atoms, the object types, the ADT type tables and their entry shape, `IAdtResponse`, `IAdtError`, the error codes, the transport request's object list |
 | `runtime/` | 14 | runtime analysis: the debuggers (`IAbapDebugger`, `IAmdpDebugger`) and `IMemorySnapshots`, `IProfiler`, the trace contracts (`ITraceListing`/`ITraceReading`, `ICrossTrace`, `ISt05Trace`), `IApplicationLog`, `IAtcLog` and the ATC run (`IAtcRunOptions`, `IAtcFindings`), `IDdicActivation`, `IGatewayErrorLog`, `IRuntimeDumps`, `ISystemMessages` |
 | `execution/` | 3 | class and program execution, with profiling |
 | `feeds/` | 2 | the ADT feed contracts |
 | `service/` | 1 | service definitions and bindings |
 | `shared/` | 1 | what more than one object type needs |
 
-Six directories, all ADT. `connection/` left for `interfaces-adt-connection` in 11.0.0. `sap/`, `auth/`, `token/`, `session/`, `serviceKey/`, `store/`, `validation/` and `Headers.ts` were here until 9.0.0 and are listed above under what left; `__typechecks__/` holds 30 files that compile shapes this contract must and must not accept, and ships in no tarball.
+Six directories, all ADT. `connection/` left for `interfaces-adt-connection` in 11.0.0. `sap/`, `auth/`, `token/`, `session/`, `serviceKey/`, `store/`, `validation/` and `Headers.ts` were here until 9.0.0 and are listed above under what left; `__typechecks__/` holds 31 files that compile shapes this contract must and must not accept, and ships in no tarball.
 
 The contract rules — what a member answers, how a strategy is supplied, how a contract is built — are in [`docs/architecture/ARCHITECTURE.md`](../../docs/architecture/ARCHITECTURE.md). Domain-by-domain documentation with examples used to sit in the facade's README; the facade is deleted, and each package documents its own contracts.
 
@@ -212,6 +213,58 @@ both takes typed references and the 21.0.0 `IObjectReference[]` alike.
 posts to `/sap/bc/adt/repository/typestructure`; its reading is
 `IUtilResults.typeStructure`, optional so a 21.0.0 set is still one.
 
+## The ABAP Unit run registry
+
+`ABAP_UNIT_RUN_TYPES` (`adt/AbapUnitRunTypes.ts`, since 23.1.0) holds every
+`osl:object type` value an ABAP Unit run (`POST /sap/bc/adt/abapunit/runs`)
+may name: the 23 codes `GET /sap/bc/adt/abapunit/metadata` lists, and the
+short types `CLAS`, `PROG`, `FUGR`, `FUNC` and `DDLS` a run was measured to
+take. The type a run takes, `AbapUnitRunObjectType`, is the union of its
+keys. A type the endpoint does not run is not refused — the start answers
+`201` and the result is an empty `<aunit:runResult/>` — so only the compiler
+can catch a wrong one.
+
+Each entry says what a run of it runs (`runs`) and why it is there
+(`evidence`):
+
+| `runs` | meaning |
+|---|---|
+| `'ownTests'` | the test classes the object holds |
+| `'assignedTests'` | test classes assigned to it elsewhere (a CDS view's `"! @testing <view>"` classes); they run only when the run's scope sets `foreignTests: true` |
+
+| `evidence` | meaning | codes |
+|---|---|---|
+| `'recorded'` | a run was measured to run its tests (S/4HANA 2025 and ABAP cloud, 2026-10-29) | `CLAS`, `CLAS/OC`, `CLAS/OCL`, `PROG`, `PROG/P`, `FUGR`, `FUGR/F`, `FUNC`; `DDLS`, `DDLS/DF` with assigned tests |
+| `'metadata'` | the metadata answer lists it; no run of it was measured | the other codes of the 23 |
+| `'metadataRunEmpty'` | the metadata lists it, and a run naming an object by it answered empty | `FUGR/FF` (a function module), `DEVC/K` (a package runs only as a package target) |
+
+For a code on the metadata's evidence, `runs` follows its flags:
+`ownTests="true"` is own tests, otherwise assigned tests. The flags
+themselves, `coverage` among them, are the recorded metadata answer's, not
+copied here.
+
+**The two targets.** `AbapUnitRunTarget` is a discriminated union on `kind`:
+
+- `{ kind: 'object', name, type }` — one object, sent as an
+  `osl:flatObjectSet` with one `osl:object`;
+- `{ kind: 'package', name, includeSubpackages }` — one package, sent as an
+  `osl:packageSet` with `<osl:package name includeSubpackages>`, the one form
+  measured to run a package's tests. It carries no `type`.
+
+**The runner.** `IAbapUnitRunner<TRun, TStatus, TResult>` (`adt/IAdtUnitTest.ts`)
+is `IAdtRunnable<AbapUnitRunTarget, TRun, IClassUnitTestRunOptions>` — `run`
+starts a run of a target and answers the started run — with
+`ITestRunInformation`'s `getStatus` and `getResult`, and `runSync(uris, options)`:
+the objects named by ADT URIs (at least one) run on
+`/sap/bc/adt/abapunit/testruns`, the synchronous runner and the only one
+SAP_BASIS 7.40 has, answering the finished result. `runSync`'s request sets
+both `Accept` and `Content-Type`, so it takes the required `options.headers`
+(see "A request's own headers"). The scope, risk levels and durations are the
+caller's options, as for the per-object runners.
+
+`src/__typechecks__/abapUnitRuns.ts` records the registry entry for entry and
+holds the run type to its keys and the two targets apart.
+
 ## Enhancements and their hosts
 
 `EnhancementType` accepts `enhoxhb` (BAdI implementation, ENHO/XHB), `enhoxhh`
@@ -279,7 +332,7 @@ Which request sets what was read from `@mcp-abap-adt/adt-clients`. For a chain,
 the main write counts (the message class message's create and update: the
 PUT). Where a member's implementations disagree, the majority decides.
 
-The members that take `headers`: `IAdtAbapGitClient`: `link`, `pull`, `checkExternalRepo`; `IAdtCreatable`: `create`; `IAdtUpdatable`: `update`; `IAdtMetadataUpdatable`: `updateMetadata`; `IAdtDeletable`: `delete`, `checkDeletion`; `IAdtCheckable`: `check`; `IAdtActivatable`: `activate`; `IFeatureToggleObject`: `checkState`; `IAdtTransportObjectActions`: `removeObject`, `addObject`, `createTask`, `changeTaskType`; `IAdtTransportMoveObjects`: `moveObjects`; `IAdtWhereUsed`: `getWhereUsed`, `getWhereUsedScope`; `IAdtVirtualFolders`: `getVirtualFoldersContents`; `IAdtRepositoryStructure`: `fetchNodeStructure`; `IAdtGroupLifecycle`: `activateObjectsGroup`, `checkDeletionGroup`, `deleteObjectsGroup`; `IAdtDataPreview`: `getSqlQuery`, `getTableContents`; `ITraceScheduling`: `scheduleTrace`; `IAbapDebugger`: `setBreakpoints`, `getChildVariables`, `getVariables`, `syncBreakpoints`, `setDebuggerSettings`; `IAmdpDebugger`: `getDataPreview`.
+The members that take `headers`: `IAdtAbapGitClient`: `link`, `pull`, `checkExternalRepo`; `IAdtCreatable`: `create`; `IAdtUpdatable`: `update`; `IAdtMetadataUpdatable`: `updateMetadata`; `IAdtDeletable`: `delete`, `checkDeletion`; `IAdtCheckable`: `check`; `IAdtActivatable`: `activate`; `IFeatureToggleObject`: `checkState`; `IAdtTransportObjectActions`: `removeObject`, `addObject`, `createTask`, `changeTaskType`; `IAdtTransportMoveObjects`: `moveObjects`; `IAbapUnitRunner`: `runSync`; `IAdtWhereUsed`: `getWhereUsed`, `getWhereUsedScope`; `IAdtVirtualFolders`: `getVirtualFoldersContents`; `IAdtRepositoryStructure`: `fetchNodeStructure`; `IAdtGroupLifecycle`: `activateObjectsGroup`, `checkDeletionGroup`, `deleteObjectsGroup`; `IAdtDataPreview`: `getSqlQuery`, `getTableContents`; `ITraceScheduling`: `scheduleTrace`; `IAbapDebugger`: `setBreakpoints`, `getChildVariables`, `getVariables`, `syncBreakpoints`, `setDebuggerSettings`; `IAmdpDebugger`: `getDataPreview`.
 
 The field is on each member's own options, not on `IAdtAnalyseOptions` or
 `IAdtOperationOptions`. `src/__typechecks__/headersOnEveryMember.ts` holds this

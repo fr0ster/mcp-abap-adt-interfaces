@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [23.1.0] - 2026-10-29
+
+### Added
+
+- **The ABAP Unit run registry.** `ABAP_UNIT_RUN_TYPES` holds every
+  `osl:object type` value an ABAP Unit run may name — the 23 codes of
+  `GET /sap/bc/adt/abapunit/metadata` and the short types `CLAS`, `PROG`,
+  `FUGR`, `FUNC` and `DDLS` — each with what a run of it runs (`'ownTests'`,
+  or `'assignedTests'`, which need the scope's `foreignTests: true`) and its
+  evidence: `'recorded'` (a run measured on S/4HANA 2025 and ABAP cloud,
+  2026-10-29), `'metadata'` (listed by the metadata only) or
+  `'metadataRunEmpty'` (listed, and a run answered empty: `FUGR/FF`,
+  `DEVC/K`). A type the endpoint does not run is not refused — it answers an
+  empty result — so the type is the compiler's to check.
+- **`AbapUnitRunObjectType`**, the registry's keys, and **`AbapUnitRunTarget`**,
+  a run's target: `{ kind: 'object', name, type }` or
+  `{ kind: 'package', name, includeSubpackages }`.
+- **`IAbapUnitRunner<TRun, TStatus, TResult>`**, the generic runner: `run` by
+  target, `runSync` by ADT URIs (`/abapunit/testruns`, `options.headers`
+  required), and `getStatus` / `getResult`, with the existing scope, risk
+  level and duration options.
+
+Nothing is removed or changed; no migration is needed.
+
 ## [23.0.4] - 2026-10-29
 
 ### Fixed

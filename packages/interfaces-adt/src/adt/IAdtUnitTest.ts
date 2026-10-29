@@ -2,6 +2,9 @@
  * Unit Test ADT operation parameter interfaces (snake_case, low-level)
  */
 
+import type { IAdtRunnable } from '../execution/IAdtRunnable';
+import type { AbapUnitRunTarget } from './AbapUnitRunTypes';
+import type { IAdtHeaders } from './IAdtContentTypes';
 import type { IAdtAnalyseOptions, IAnalyse } from './IAdtObject';
 import type { IAdtError, IAdtResponse } from './IAdtResponse';
 
@@ -140,6 +143,49 @@ export interface ITestRunInformation<TStatus, TResult> {
   getResult(
     runId: string,
     options?: IUnitTestResultOptions & IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<TResult>>;
+}
+
+/**
+ * The generic ABAP Unit runner: a run of anything ABAP Unit runs, named by
+ * the registry rather than fixed by the runner.
+ *
+ * - `run` starts a run of one {@link AbapUnitRunTarget} — an object by its
+ *   `osl:object type` (`AbapUnitRunObjectType`), or a package — with
+ *   `POST /sap/bc/adt/abapunit/runs`, and answers the started run (`TRun`):
+ *   the run id `getStatus` and `getResult` take. It sets only its request's
+ *   `Content-Type`, so it takes no `headers`, as the per-object runners' `run`.
+ * - `runSync` runs the objects named by their ADT URIs with
+ *   `POST /sap/bc/adt/abapunit/testruns`, the synchronous runner and the only
+ *   one SAP_BASIS 7.40 has, and answers the finished result (`TResult`, the
+ *   document `getResult` answers). Its request sets both `Accept` and
+ *   `Content-Type`, so it takes them as the required pair `options.headers`.
+ *   At least one URI: a run of nothing is not a run.
+ * - `getStatus` and `getResult` are {@link ITestRunInformation}'s.
+ *
+ * The scope, risk levels and durations are the caller's
+ * (`IClassUnitTestRunOptions`); an object whose registry entry runs
+ * `'assignedTests'` runs nothing unless the scope sets `foreignTests: true`.
+ * `title` and `context` have no place in the `testruns` format.
+ */
+export interface IAbapUnitRunner<TRun, TStatus, TResult>
+  extends IAdtRunnable<AbapUnitRunTarget, TRun, IClassUnitTestRunOptions>,
+    ITestRunInformation<TStatus, TResult> {
+  /**
+   * Run the objects the URIs name and answer the finished result.
+   * @param uris the objects' ADT URIs, at least one
+   * @param options the run's scope, risk levels and durations, the request's
+   *                `headers`, and `analyse` for the verdict
+   */
+  runSync<E extends IAdtError>(
+    uris: readonly [string, ...string[]],
+    options: { headers: IAdtHeaders } & IClassUnitTestRunOptions &
+      IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TResult, E>>;
+  runSync(
+    uris: readonly [string, ...string[]],
+    options: { headers: IAdtHeaders } & IClassUnitTestRunOptions &
+      IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TResult>>;
 }
 
