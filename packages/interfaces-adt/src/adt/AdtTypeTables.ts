@@ -40,6 +40,7 @@ export const ADT_TYPES_ONPREM = {
     collection: '/sap/bc/adt/oo/classes',
     codes: {
       'CLAS/OC': {
+        main: 'CLAS',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -77,6 +78,7 @@ export const ADT_TYPES_ONPREM = {
     collection: '/sap/bc/adt/oo/interfaces',
     codes: {
       'INTF/OI': {
+        main: 'INTF',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -105,6 +107,7 @@ export const ADT_TYPES_ONPREM = {
     collection: '/sap/bc/adt/programs/programs',
     codes: {
       'PROG/P': {
+        main: 'PROG',
         parent: null,
         nameMaxLength: 40,
         operations: [
@@ -141,6 +144,7 @@ export const ADT_TYPES_ONPREM = {
     collection: '/sap/bc/adt/programs/includes',
     codes: {
       'PROG/I': {
+        main: 'PROG',
         parent: null,
         nameMaxLength: 40,
         operations: [
@@ -168,6 +172,7 @@ export const ADT_TYPES_ONPREM = {
     collection: '/sap/bc/adt/functions/groups',
     codes: {
       'FUGR/F': {
+        main: 'FUGR',
         parent: null,
         nameMaxLength: 26,
         operations: [
@@ -201,6 +206,7 @@ export const ADT_TYPES_ONPREM = {
     collection: '/sap/bc/adt/functions/groups',
     codes: {
       'FUGR/FF': {
+        main: 'FUGR',
         parent: 'functionGroup',
         nameMaxLength: 30,
         operations: [
@@ -233,6 +239,7 @@ export const ADT_TYPES_ONPREM = {
     collection: '/sap/bc/adt/functions/groups',
     codes: {
       'FUGR/I': {
+        main: 'FUGR',
         parent: 'functionGroup',
         nameMaxLength: 30,
         operations: [
@@ -260,6 +267,7 @@ export const ADT_TYPES_ONPREM = {
     collection: '/sap/bc/adt/packages',
     codes: {
       'DEVC/K': {
+        main: 'DEVC',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -283,6 +291,7 @@ export const ADT_TYPES_ONPREM = {
     collection: '/sap/bc/adt/ddic/ddl/sources',
     codes: {
       'DDLS/DF': {
+        main: 'DDLS',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -312,6 +321,7 @@ export const ADT_TYPES_ONPREM = {
     collection: '/sap/bc/adt/ddic/tables',
     codes: {
       'TABL/DT': {
+        main: 'TABL',
         parent: null,
         nameMaxLength: 16,
         operations: [
@@ -340,6 +350,7 @@ export const ADT_TYPES_ONPREM = {
     collection: '/sap/bc/adt/ddic/structures',
     codes: {
       'TABL/DS': {
+        main: 'TABL',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -368,6 +379,7 @@ export const ADT_TYPES_ONPREM = {
     collection: '/sap/bc/adt/ddic/structures',
     codes: {
       'TABL/DS': {
+        main: 'TABL',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -395,6 +407,7 @@ export const ADT_TYPES_ONPREM = {
     collection: '/sap/bc/adt/ddic/tabletypes',
     codes: {
       'TTYP/DA': {
+        main: 'TTYP',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -420,6 +433,7 @@ export const ADT_TYPES_ONPREM = {
     collection: '/sap/bc/adt/ddic/domains',
     codes: {
       'DOMA/DD': {
+        main: 'DOMA',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -444,6 +458,7 @@ export const ADT_TYPES_ONPREM = {
     collection: '/sap/bc/adt/ddic/dataelements',
     codes: {
       'DTEL/DE': {
+        main: 'DTEL',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -468,6 +483,7 @@ export const ADT_TYPES_ONPREM = {
     collection: '/sap/bc/adt/acm/dcl/sources',
     codes: {
       'DCLS/DL': {
+        main: 'DCLS',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -496,6 +512,7 @@ export const ADT_TYPES_ONPREM = {
     collection: '/sap/bc/adt/bo/behaviordefinitions',
     codes: {
       'BDEF/BDO': {
+        main: 'BDEF',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -524,6 +541,7 @@ export const ADT_TYPES_ONPREM = {
     collection: '/sap/bc/adt/oo/classes',
     codes: {
       'CLAS/OC': {
+        main: 'CLAS',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -551,6 +569,7 @@ export const ADT_TYPES_ONPREM = {
     collection: '/sap/bc/adt/ddic/ddlx/sources',
     codes: {
       'DDLX/EX': {
+        main: 'DDLX',
         parent: null,
         nameMaxLength: 40,
         operations: [
@@ -579,6 +598,7 @@ export const ADT_TYPES_ONPREM = {
     collection: '/sap/bc/adt/ddic/srvd/sources',
     codes: {
       'SRVD/SRV': {
+        main: 'SRVD',
         parent: null,
         nameMaxLength: 40,
         operations: [
@@ -607,6 +627,7 @@ export const ADT_TYPES_ONPREM = {
     collection: '/sap/bc/adt/businessservices/bindings',
     codes: {
       'SRVB/SVB': {
+        main: 'SRVB',
         parent: null,
         nameMaxLength: 40,
         operations: [
@@ -635,6 +656,7 @@ export const ADT_TYPES_ONPREM = {
     collection: '/sap/bc/adt/ddic/dsfd/sources',
     codes: {
       'DSFD/SCF': {
+        main: 'DSFD',
         parent: null,
         nameMaxLength: 26,
         operations: [
@@ -663,6 +685,7 @@ export const ADT_TYPES_ONPREM = {
     collection: '/sap/bc/adt/ddic/dsfi',
     codes: {
       'DSFI/SFI': {
+        main: 'DSFI',
         parent: null,
         nameMaxLength: 40,
         operations: [
@@ -691,6 +714,7 @@ export const ADT_TYPES_ONPREM = {
     collection: '/sap/bc/adt/xslt/transformations',
     codes: {
       'XSLT/VT': {
+        main: 'XSLT',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -719,6 +743,7 @@ export const ADT_TYPES_ONPREM = {
     collection: '/sap/bc/adt/messageclass',
     codes: {
       'MSAG/N': {
+        main: 'MSAG',
         parent: null,
         nameMaxLength: 20,
         operations: [
@@ -740,6 +765,7 @@ export const ADT_TYPES_ONPREM = {
     collection: '/sap/bc/adt/messageclass',
     codes: {
       'MSAG/NN': {
+        main: 'MSAG',
         parent: null,
         nameMaxLength: 3,
         operations: ['create', 'read', 'readMetadata', 'update', 'delete'],
@@ -752,6 +778,7 @@ export const ADT_TYPES_ONPREM = {
     collection: '/sap/bc/adt/sfw/featuretoggles',
     codes: {
       'FTG2/FT': {
+        main: 'FTG2',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -782,6 +809,7 @@ export const ADT_TYPES_ONPREM = {
     collection: '/sap/bc/adt/aps/iam/auth',
     codes: {
       AUTH: {
+        main: 'AUTH',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -805,6 +833,7 @@ export const ADT_TYPES_ONPREM = {
     collection: '/sap/bc/adt/enhancements',
     codes: {
       'ENHO/XHH': {
+        main: 'ENHO',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -828,6 +857,7 @@ export const ADT_TYPES_ONPREM = {
         collection: '/sap/bc/adt/enhancements/enhoxhh',
       },
       'ENHO/XHB': {
+        main: 'ENHO',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -848,6 +878,7 @@ export const ADT_TYPES_ONPREM = {
         collection: '/sap/bc/adt/enhancements/enhoxhb',
       },
       'ENHS/XSB': {
+        main: 'ENHS',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -1006,6 +1037,7 @@ export const ADT_TYPES_CLOUD = {
     collection: '/sap/bc/adt/oo/classes',
     codes: {
       'CLAS/OC': {
+        main: 'CLAS',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -1043,6 +1075,7 @@ export const ADT_TYPES_CLOUD = {
     collection: '/sap/bc/adt/oo/interfaces',
     codes: {
       'INTF/OI': {
+        main: 'INTF',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -1071,6 +1104,7 @@ export const ADT_TYPES_CLOUD = {
     collection: '/sap/bc/adt/programs/programs',
     codes: {
       'PROG/P': {
+        main: 'PROG',
         parent: null,
         nameMaxLength: 40,
         operations: [
@@ -1096,6 +1130,7 @@ export const ADT_TYPES_CLOUD = {
     collection: '/sap/bc/adt/programs/includes',
     codes: {
       'PROG/I': {
+        main: 'PROG',
         parent: null,
         nameMaxLength: 40,
         operations: [
@@ -1115,6 +1150,7 @@ export const ADT_TYPES_CLOUD = {
     collection: '/sap/bc/adt/functions/groups',
     codes: {
       'FUGR/F': {
+        main: 'FUGR',
         parent: null,
         nameMaxLength: 26,
         operations: [
@@ -1148,6 +1184,7 @@ export const ADT_TYPES_CLOUD = {
     collection: '/sap/bc/adt/functions/groups',
     codes: {
       'FUGR/FF': {
+        main: 'FUGR',
         parent: 'functionGroup',
         nameMaxLength: 30,
         operations: [
@@ -1180,6 +1217,7 @@ export const ADT_TYPES_CLOUD = {
     collection: '/sap/bc/adt/functions/groups',
     codes: {
       'FUGR/I': {
+        main: 'FUGR',
         parent: 'functionGroup',
         nameMaxLength: 30,
         operations: [
@@ -1207,6 +1245,7 @@ export const ADT_TYPES_CLOUD = {
     collection: '/sap/bc/adt/packages',
     codes: {
       'DEVC/K': {
+        main: 'DEVC',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -1230,6 +1269,7 @@ export const ADT_TYPES_CLOUD = {
     collection: '/sap/bc/adt/ddic/ddl/sources',
     codes: {
       'DDLS/DF': {
+        main: 'DDLS',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -1259,6 +1299,7 @@ export const ADT_TYPES_CLOUD = {
     collection: '/sap/bc/adt/ddic/tables',
     codes: {
       'TABL/DT': {
+        main: 'TABL',
         parent: null,
         nameMaxLength: 16,
         operations: [
@@ -1287,6 +1328,7 @@ export const ADT_TYPES_CLOUD = {
     collection: '/sap/bc/adt/ddic/structures',
     codes: {
       'TABL/DS': {
+        main: 'TABL',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -1315,6 +1357,7 @@ export const ADT_TYPES_CLOUD = {
     collection: '/sap/bc/adt/ddic/structures',
     codes: {
       'TABL/DS': {
+        main: 'TABL',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -1342,6 +1385,7 @@ export const ADT_TYPES_CLOUD = {
     collection: '/sap/bc/adt/ddic/tabletypes',
     codes: {
       'TTYP/DA': {
+        main: 'TTYP',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -1367,6 +1411,7 @@ export const ADT_TYPES_CLOUD = {
     collection: '/sap/bc/adt/ddic/domains',
     codes: {
       'DOMA/DD': {
+        main: 'DOMA',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -1391,6 +1436,7 @@ export const ADT_TYPES_CLOUD = {
     collection: '/sap/bc/adt/ddic/dataelements',
     codes: {
       'DTEL/DE': {
+        main: 'DTEL',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -1415,6 +1461,7 @@ export const ADT_TYPES_CLOUD = {
     collection: '/sap/bc/adt/acm/dcl/sources',
     codes: {
       'DCLS/DL': {
+        main: 'DCLS',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -1443,6 +1490,7 @@ export const ADT_TYPES_CLOUD = {
     collection: '/sap/bc/adt/bo/behaviordefinitions',
     codes: {
       'BDEF/BDO': {
+        main: 'BDEF',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -1471,6 +1519,7 @@ export const ADT_TYPES_CLOUD = {
     collection: '/sap/bc/adt/oo/classes',
     codes: {
       'CLAS/OC': {
+        main: 'CLAS',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -1498,6 +1547,7 @@ export const ADT_TYPES_CLOUD = {
     collection: '/sap/bc/adt/ddic/ddlx/sources',
     codes: {
       'DDLX/EX': {
+        main: 'DDLX',
         parent: null,
         nameMaxLength: 40,
         operations: [
@@ -1526,6 +1576,7 @@ export const ADT_TYPES_CLOUD = {
     collection: '/sap/bc/adt/ddic/srvd/sources',
     codes: {
       'SRVD/SRV': {
+        main: 'SRVD',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -1554,6 +1605,7 @@ export const ADT_TYPES_CLOUD = {
     collection: '/sap/bc/adt/businessservices/bindings',
     codes: {
       'SRVB/SVB': {
+        main: 'SRVB',
         parent: null,
         nameMaxLength: 40,
         operations: [
@@ -1582,6 +1634,7 @@ export const ADT_TYPES_CLOUD = {
     collection: '/sap/bc/adt/ddic/dsfd/sources',
     codes: {
       'DSFD/SCF': {
+        main: 'DSFD',
         parent: null,
         nameMaxLength: 26,
         operations: [
@@ -1610,6 +1663,7 @@ export const ADT_TYPES_CLOUD = {
     collection: '/sap/bc/adt/ddic/dsfi',
     codes: {
       'DSFI/SFI': {
+        main: 'DSFI',
         parent: null,
         nameMaxLength: 40,
         operations: [
@@ -1638,6 +1692,7 @@ export const ADT_TYPES_CLOUD = {
     collection: '/sap/bc/adt/xslt/transformations',
     codes: {
       'XSLT/VT': {
+        main: 'XSLT',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -1666,6 +1721,7 @@ export const ADT_TYPES_CLOUD = {
     collection: '/sap/bc/adt/messageclass',
     codes: {
       'MSAG/N': {
+        main: 'MSAG',
         parent: null,
         nameMaxLength: 20,
         operations: [
@@ -1687,6 +1743,7 @@ export const ADT_TYPES_CLOUD = {
     collection: '/sap/bc/adt/messageclass',
     codes: {
       'MSAG/NN': {
+        main: 'MSAG',
         parent: null,
         nameMaxLength: 3,
         operations: ['create', 'read', 'readMetadata', 'update', 'delete'],
@@ -1699,6 +1756,7 @@ export const ADT_TYPES_CLOUD = {
     collection: '/sap/bc/adt/sfw/featuretoggles',
     codes: {
       'FTG2/FT': {
+        main: 'FTG2',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -1719,6 +1777,7 @@ export const ADT_TYPES_CLOUD = {
     collection: '/sap/bc/adt/aps/iam/auth',
     codes: {
       AUTH: {
+        main: 'AUTH',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -1742,6 +1801,7 @@ export const ADT_TYPES_CLOUD = {
     collection: '/sap/bc/adt/enhancements',
     codes: {
       'ENHO/XHH': {
+        main: 'ENHO',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -1765,6 +1825,7 @@ export const ADT_TYPES_CLOUD = {
         collection: '/sap/bc/adt/enhancements/enhoxhh',
       },
       'ENHO/XHB': {
+        main: 'ENHO',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -1785,6 +1846,7 @@ export const ADT_TYPES_CLOUD = {
         collection: '/sap/bc/adt/enhancements/enhoxhb',
       },
       'ENHS/XSB': {
+        main: 'ENHS',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -1931,6 +1993,7 @@ export const ADT_TYPES_BASIS_740 = {
     collection: '/sap/bc/adt/oo/classes',
     codes: {
       'CLAS/OC': {
+        main: 'CLAS',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -1961,6 +2024,7 @@ export const ADT_TYPES_BASIS_740 = {
     collection: '/sap/bc/adt/oo/interfaces',
     codes: {
       'INTF/OI': {
+        main: 'INTF',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -1986,6 +2050,7 @@ export const ADT_TYPES_BASIS_740 = {
     collection: '/sap/bc/adt/programs/programs',
     codes: {
       'PROG/P': {
+        main: 'PROG',
         parent: null,
         nameMaxLength: 40,
         operations: [
@@ -2015,6 +2080,7 @@ export const ADT_TYPES_BASIS_740 = {
     collection: '/sap/bc/adt/programs/includes',
     codes: {
       'PROG/I': {
+        main: 'PROG',
         parent: null,
         nameMaxLength: 40,
         operations: [
@@ -2040,6 +2106,7 @@ export const ADT_TYPES_BASIS_740 = {
     collection: '/sap/bc/adt/functions/groups',
     codes: {
       'FUGR/F': {
+        main: 'FUGR',
         parent: null,
         nameMaxLength: 26,
         operations: [
@@ -2069,6 +2136,7 @@ export const ADT_TYPES_BASIS_740 = {
     collection: '/sap/bc/adt/functions/groups',
     codes: {
       'FUGR/FF': {
+        main: 'FUGR',
         parent: 'functionGroup',
         nameMaxLength: 30,
         operations: [
@@ -2095,6 +2163,7 @@ export const ADT_TYPES_BASIS_740 = {
     collection: '/sap/bc/adt/functions/groups',
     codes: {
       'FUGR/I': {
+        main: 'FUGR',
         parent: 'functionGroup',
         nameMaxLength: 30,
         operations: [
@@ -2120,6 +2189,7 @@ export const ADT_TYPES_BASIS_740 = {
     collection: '/sap/bc/adt/ddic/ddl/sources',
     codes: {
       'DDLS/DF': {
+        main: 'DDLS',
         parent: null,
         nameMaxLength: 30,
         operations: [
@@ -2144,6 +2214,7 @@ export const ADT_TYPES_BASIS_740 = {
     collection: '/sap/bc/adt/messageclass',
     codes: {
       'MSAG/N': {
+        main: 'MSAG',
         parent: null,
         nameMaxLength: 20,
         operations: [
@@ -2163,6 +2234,7 @@ export const ADT_TYPES_BASIS_740 = {
     collection: '/sap/bc/adt/messageclass',
     codes: {
       'MSAG/NN': {
+        main: 'MSAG',
         parent: null,
         nameMaxLength: 3,
         operations: ['create', 'read', 'readMetadata', 'update', 'delete'],
@@ -2400,6 +2472,51 @@ export type AdtParentedTypeCode = {
     [A in AdtApi<V>]: ParentedCodesOf<TableOf<V>[A]>;
   }[AdtApi<V>];
 }[AdtVariant];
+
+/** The main types an entry's codes state, read from their `main`. */
+type MainsOf<E> = E extends { readonly codes: infer C }
+  ? {
+      [K in keyof C]: C[K] extends { readonly main: infer M } ? M : never;
+    }[keyof C]
+  : never;
+
+/**
+ * The main types of variant `V`'s codes, as the entries state them (`main`):
+ * `'CLAS'`, `'DEVC'`, `'ENHO'`, `'TABL'`, …. For a union of variants it has
+ * the union semantics of {@link AdtTypeCodeOf}: the APIs every one of them
+ * serves, and for those the main types of the codes any of them lists.
+ *
+ * (`AdtMainTypeOf<C>` is the main type of one code — so the per-variant name
+ * carries `Variant`.)
+ */
+export type AdtMainTypeOfVariant<V extends AdtVariant> = {
+  [A in AdtApi<V>]: MainsOf<TableOf<V>[A]>;
+}[AdtApi<V>];
+
+/**
+ * Every main type of any table: the TADIR object type of a code's
+ * `R3TR <type>` (`'ENHO'` of `'ENHO/XHH'`), as each code entry states it.
+ *
+ * **Not an address.** `TABL` is `TABL/DT` or `TABL/DS`: every parameter that
+ * builds an address takes an {@link AdtTypeCode}. Every main type of a
+ * variant's table is a name of that variant's search types
+ * (`AdtSearchTypeOf<V>`, recorded), so a search for the objects of a code
+ * sends its entry's `main` (`….codes['DEVC/K'].main`), never a literal.
+ */
+export type AdtMainType = {
+  [V in AdtVariant]: AdtMainTypeOfVariant<V>;
+}[AdtVariant];
+
+/**
+ * The codes, of any table, whose main type is `M` — the other direction of
+ * {@link AdtMainTypeOf}: `CodesOfMain<'ENHO'>` is `'ENHO/XHB' | 'ENHO/XHH'`,
+ * not `'ENHS/XSB'`. A code with no `/` is its own main type, so
+ * `CodesOfMain<'AUTH'>` is `'AUTH'`.
+ */
+export type CodesOfMain<M extends AdtMainType> = Extract<
+  AdtTypeCode,
+  M | `${M}/${string}`
+>;
 
 // ── Intersecting helpers ────────────────────────────────────────────────────
 //

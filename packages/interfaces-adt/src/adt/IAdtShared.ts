@@ -2,6 +2,7 @@
  * Shared types for cross-cutting ADT operations
  */
 
+import type { AdtSearchType, AdtSearchTypeOf } from './AdtSearchTypes';
 import type {
   AdtCodeOf,
   AdtCodeWith,
@@ -72,9 +73,26 @@ export type IObjectReference<
  */
 export interface ISearchObjectsParams {
   query: string;
-  /** Restrict the search to one code of the tables. */
-  objectType?: AdtTypeCode;
+  /**
+   * Restrict the search to one name of the release's object types list
+   * (`AdtSearchType`, any release's): a main type (`'DEVC'`, `'TABL'`), an
+   * alias of one code (`'STRU'`: `TABL/DS` only) or a group
+   * (`'ABAP_TEST_COCKPIT'`). Not a code: one that is no item's `type` widens
+   * or empties the search silently (see `ADT_SEARCH_TYPES_ONPREM`). A
+   * variant's own names are {@link IAdtSearchObjectsParamsOf}.
+   */
+  objectType?: AdtSearchType;
   maxResults?: number;
+}
+
+/**
+ * The search parameters of variant `V`: the filter takes only the names every
+ * variant of `V` takes ({@link AdtSearchTypeOf}) — on 7.40 the eleven measured
+ * there, so `STRU`, which answers nothing on 7.40, does not compile.
+ */
+export interface IAdtSearchObjectsParamsOf<V extends AdtVariant>
+  extends ISearchObjectsParams {
+  objectType?: AdtSearchTypeOf<V>;
 }
 
 /**

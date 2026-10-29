@@ -71,7 +71,8 @@ code serves two APIs (`CLAS/OC`: `class` and `behaviorImplementation`;
   two APIs on one code share it;
 - `collection` — the ADT collection its resource lives in, the parent's for an
   API addressed under a parent;
-- `codes` — for each code: `parent` (the parent API, or `null`),
+- `codes` — for each code: `main` (its main type, below), `parent` (the
+  parent API, or `null`),
   `nameMaxLength`, `operations` and `evidence`, the corpus case of the
   release's `typestructure` answer that lists the code
   (`system-description-basis-740--07-typestructure`); and, where a code lives
@@ -126,6 +127,10 @@ evidence at compile time.
 | `AdtObjectKind` | every kind |
 | `AdtSourceTypeCode` | the codes with `source` |
 | `AdtParentedTypeCode` | the codes with a parent API: `FUGR/FF`, `FUGR/I` |
+| `AdtMainTypeOf<C>` | the main type of code `C`: `'ENHO'` of `'ENHO/XHH'` |
+| `AdtMainType` | every main type of any table (`AdtMainTypeOfVariant<V>` per variant) |
+| `CodesOfMain<M>` | the codes of main type `M` |
+| `AdtSearchType` | every search name of any release's list (`AdtSearchTypeOf<V>` the names every variant of `V` takes) |
 
 A map a consumer keeps over the codes is typed by them, and the compiler then
 asks for every code and refuses any other:
@@ -172,6 +177,48 @@ type ModuleRead = IAdtReadable<IFunctionModuleConfig, string, 'functionGroupName
 when `[C] extends [AdtParentedTypeCode]` — `IObjectReference<'FUGR/FF'>` —
 and leaves it optional otherwise, the default included, so a reference built
 from a code typed `AdtTypeCode` compiles and an interface can extend it.
+
+### Main types and search names (24.0.0)
+
+A code's **main type** is its TADIR object type, the `R3TR <type>` before the
+`/`: `ENHO` of `ENHO/XHH`, `DEVC` of `DEVC/K`, `TABL` of `TABL/DS`. Every code
+entry states its own as `main`; the table's `satisfies` refuses an entry
+without one, and `AdtCheckedTable<T>` one whose `main` is not its own key's
+(per key: the main type of a neighbouring code is refused too).
+`AdtMainTypeOf<C>` is the main type of a code, `CodesOfMain<M>` the codes of a
+main type (`CodesOfMain<'ENHO'>` is `'ENHO/XHB' | 'ENHO/XHH'`),
+`AdtMainType` every main type of any table and `AdtMainTypeOfVariant<V>` a
+variant's. **A main type is not an address:** `TABL` is `TABL/DT` or
+`TABL/DS`, and every parameter that builds an address — read, write,
+metadata, a URI, where-used, the group operations — takes a code.
+
+**The search filter takes the release's search names.**
+`ISearchObjectsParams.objectType` is an `AdtSearchType`: a name of the quick
+search's object types list
+(`/sap/bc/adt/repository/informationsystem/objecttypes`), held per variant in
+`ADT_SEARCH_TYPES_ONPREM`, `ADT_SEARCH_TYPES_CLOUD` (written from the recorded
+lists: each name with the code it selects, `type`, or `group: true`) and
+`ADT_SEARCH_TYPES_BASIS_740`; `IAdtSearchObjectsParamsOf<V>` takes only the
+names every variant of `V` takes (`AdtSearchTypeOf<V>`). Measured
+2026-10-29, read only:
+
+- on S/4HANA 2025 and ABAP cloud, identically, a name selects what the list
+  says — `STRU` only `TABL/DS`, `DTAB` only `TABL/DT`, `TABL` both, a group
+  (`ABAP_TEST_COCKPIT`) its members — and an unknown name is refused `400`;
+- a code is no filter value: one equal to an item's `type` selects as that
+  item, any other as the text before its `/` (`ENHO/XHH` answers as `ENHO`,
+  with other first hits under `maxResults`), and an unknown code answers
+  nothing, silently;
+- SAP_BASIS 7.40 has no list (`404`); `DEVC`, `CLAS`, `INTF`, `PROG`, `FUGR`,
+  `FUNC`, `DDLS`, `MSAG`, `TABL`, `ENHO` and `ENHS` select there, and the
+  aliases (`STRU`, `DTAB`, `REPO`, `INCL`, `BADI`) and an unknown name answer
+  no hits, silently.
+
+Every main type of a variant's table is a search name of that variant
+(`src/__typechecks__/mainTypes.ts`), so a search for a code's objects sends
+its entry's `main` (`ADT_TYPES_ONPREM.package.codes['DEVC/K'].main`), and a
+subtype with an alias its alias (`STRU`). A subtype without one (`ENHO/XHH`)
+cannot be searched alone: the caller filters the hits.
 
 ### Intersections, group-only codes and group references (22.0.0)
 
@@ -337,6 +384,18 @@ The members that take `headers`: `IAdtAbapGitClient`: `link`, `pull`, `checkExte
 The field is on each member's own options, not on `IAdtAnalyseOptions` or
 `IAdtOperationOptions`. `src/__typechecks__/headersOnEveryMember.ts` holds this
 for every member and every overload.
+
+## Migrating to 24.0.0
+
+- **The search filter takes a search name, not a code.**
+  `ISearchObjectsParams.objectType` was `AdtTypeCode`; it is `AdtSearchType`.
+  Where a code was passed, pass the search name: the main type from the table
+  entry's `main` (`ADT_TYPES_ONPREM.package.codes['DEVC/K'].main`, `'DEVC'`),
+  or the alias of a subtype (`'STRU'` for `TABL/DS`, `'DTAB'` for `TABL/DT`).
+  A code passed before selected as its main type, unless it was an item's own
+  `type`, so the main type keeps what such a search answered.
+- **A table built against `AdtApiTable` carries `main` on every code**, equal
+  to `AdtMainTypeOf` of the code (`'ENHO'` for `'ENHO/XHH'`).
 
 ## Migrating to 23.0.4
 

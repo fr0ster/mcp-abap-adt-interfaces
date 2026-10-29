@@ -142,8 +142,34 @@ export type AdtTypeEvidence<R extends string> =
 /** The operations of one code or one codeless entry: at least one. */
 export type AdtOperations = readonly [AdtOperation, ...AdtOperation[]];
 
+/**
+ * The main type of code `C`: the TADIR object type of `R3TR <type>`, the part
+ * of the code before its `/` — `'ENHO/XHH'` is `'ENHO'`, `'DEVC/K'` is
+ * `'DEVC'`, `'TABL/DS'` is `'TABL'`; a code with no `/` (`'AUTH'`) is its own.
+ *
+ * **A main type is not an address.** `TABL` is `TABL/DT` or `TABL/DS`, `PROG`
+ * is `PROG/P` or `PROG/I`: a parameter that builds an address — read, write,
+ * metadata, a URI, where-used, a group operation — takes a code. A main type
+ * is a name of the quick search's type filter, on every release
+ * (`ISearchObjectsParams.objectType`, which takes the names of the release's
+ * object types list, `AdtSearchType`).
+ *
+ * Every code entry of a table states its own as `main`, and
+ * {@link AdtCheckedTable} holds the entry to this: the value is read from the
+ * entry, and nothing splits a code at runtime.
+ */
+export type AdtMainTypeOf<C extends string> = C extends `${infer M}/${string}`
+  ? M
+  : C;
+
 /** What a table says about one code of an API. */
 export interface IAdtCodeFacts<R extends string> {
+  /**
+   * The code's main type, {@link AdtMainTypeOf} its key: `'ENHO'` for
+   * `'ENHO/XHH'`. Required on every code; {@link AdtCheckedTable} refuses one
+   * that is not the key's.
+   */
+  readonly main: string;
   /**
    * The API the object lives under, as the release's `PARENT_OBJECT_TYPE`
    * names its code; `null` where that element is empty.
@@ -238,15 +264,36 @@ type AdtEmptyCodedApis<T> = {
 }[keyof T];
 
 /**
- * A table whose every coded entry names at least one code — what
- * `IAdtTypeTables` takes each table as. `satisfies` cannot see that an index
- * signature is empty, so this constraint does: a coded entry with
- * `codes: {}` fails it at the table's name, asking for a code.
+ * Each code of each entry of table `T`, with the main type its key requires:
+ * a mapped type over the entry's own codes, so `'ENHO/XHH'` asks for
+ * `main: 'ENHO'` and `'DEVC/K'` for `main: 'DEVC'` — not merely some main
+ * type.
+ */
+type AdtMainTypedCodes<T> = {
+  readonly [A in keyof T]: T[A] extends { readonly codes: infer C }
+    ? {
+        readonly codes: {
+          readonly [K in keyof C]: {
+            readonly main: AdtMainTypeOf<K & string>;
+          };
+        };
+      }
+    : unknown;
+};
+
+/**
+ * A table whose every coded entry names at least one code, and whose every
+ * code names its own main type — what `IAdtTypeTables` takes each table as.
+ * `satisfies` cannot see that an index signature is empty, nor relate a key to
+ * its value, so this constraint does: a coded entry with `codes: {}` fails it
+ * at the table's name, asking for a code, and a code whose `main` is not
+ * {@link AdtMainTypeOf} its key fails it at that code's `main`. A code with no
+ * `main` at all is refused earlier, by the table's `satisfies`.
  */
 export type AdtCheckedTable<
   T extends AdtApiTable<string> & {
     readonly [A in AdtEmptyCodedApis<T>]: {
       readonly codes: { readonly 'at least one code': IAdtCodeFacts<string> };
     };
-  },
+  } & AdtMainTypedCodes<T>,
 > = T;
