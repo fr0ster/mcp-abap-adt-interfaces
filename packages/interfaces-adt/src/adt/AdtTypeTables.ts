@@ -2044,7 +2044,10 @@ export const ADT_TYPES_BASIS_740 = {
         nameMaxLength: 26,
         operations: [
           'create',
+          'read',
+          'source',
           'readMetadata',
+          'update',
           'updateMetadata',
           'lock',
           'unlock',

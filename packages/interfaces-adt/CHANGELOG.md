@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [23.1.1] - 2026-10-29
+
+### Fixed
+
+- **The SAP_BASIS 7.40 table lists `read`, `source` and `update` for
+  `FUGR/F`.** On 7.40 SP04, as on the newer releases, the group's document
+  links `source/main` (untyped): the function pool's main program. A read
+  answers `200 text/plain`; a write under the group's lock answers `200`; the
+  activation of the group activates the group and its main program, and the
+  active version carries the change (measured 2026-10-29 over RFC, on a group
+  of its own in a local package, deleted after). Nothing else changes.
+
 ## [23.1.0] - 2026-10-29
 
 ### Added
