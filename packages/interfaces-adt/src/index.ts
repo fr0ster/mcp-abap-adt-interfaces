@@ -25,6 +25,20 @@ export type {
 } from './adt/AbapUnitRunTypes';
 export { ABAP_UNIT_RUN_TYPES } from './adt/AbapUnitRunTypes';
 export type {
+  AdtListedSearchType,
+  AdtSearchType,
+  AdtSearchTypeEvidence,
+  AdtSearchTypeOf,
+  AdtSearchTypeTable,
+  IAdtMeasuredSearchType,
+  IAdtSearchTypeTables,
+} from './adt/AdtSearchTypes';
+export {
+  ADT_SEARCH_TYPES_BASIS_740,
+  ADT_SEARCH_TYPES_CLOUD,
+  ADT_SEARCH_TYPES_ONPREM,
+} from './adt/AdtSearchTypes';
+export type {
   AdtApi,
   AdtApiWith,
   AdtApiWithIn,
@@ -236,6 +250,7 @@ export type {
   IAdtGroupActivationReference,
   IAdtGroupDeletionCheckReference,
   IAdtGroupDeletionReference,
+  IAdtSearchObjectsParamsOf,
   IAdtWhereUsedParamsOf,
   IAdtWhereUsedScopeParamsOf,
   IGetDiscoveryParams,

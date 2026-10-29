@@ -149,9 +149,10 @@ export type AdtOperations = readonly [AdtOperation, ...AdtOperation[]];
  *
  * **A main type is not an address.** `TABL` is `TABL/DT` or `TABL/DS`, `PROG`
  * is `PROG/P` or `PROG/I`: a parameter that builds an address — read, write,
- * metadata, a URI, where-used, a group operation — takes a code. Only a
- * parameter an endpoint is measured to read as a main type takes one; today
- * that is the search filter, `ISearchObjectsParams.objectType`.
+ * metadata, a URI, where-used, a group operation — takes a code. A main type
+ * is a name of the quick search's type filter, on every release
+ * (`ISearchObjectsParams.objectType`, which takes the names of the release's
+ * object types list, `AdtSearchType`).
  *
  * Every code entry of a table states its own as `main`, and
  * {@link AdtCheckedTable} holds the entry to this: the value is read from the

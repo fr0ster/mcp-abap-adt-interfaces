@@ -2498,16 +2498,10 @@ export type AdtMainTypeOfVariant<V extends AdtVariant> = {
  * `R3TR <type>` (`'ENHO'` of `'ENHO/XHH'`), as each code entry states it.
  *
  * **Not an address.** `TABL` is `TABL/DT` or `TABL/DS`: every parameter that
- * builds an address takes an {@link AdtTypeCode}. Only the search filter,
- * `ISearchObjectsParams.objectType`, takes a main type, because the endpoint
- * was measured to select by the main type only, on S/4HANA 2025 on-premise
- * and ABAP cloud alike: a quick search for `DEVC`, `DEVC/K` or `DEVC/XX`
- * answers only `DEVC/K` objects, `ENHO/XHH` answers `ENHO/XHB`, `ENHO/XHH`
- * and `ENHO/XH`, and a nonexistent subtype (`ENHO/XX`) answers what a real
- * code of it does. Yet with a cap on the hits (`maxResults`) a main type and
- * a code of it answer different first hits, so sending a code where a main
- * type was meant changes what a capped search returns. A subtype is no filter
- * on the system's side: a caller wanting one filters the hits.
+ * builds an address takes an {@link AdtTypeCode}. Every main type of a
+ * variant's table is a name of that variant's search types
+ * (`AdtSearchTypeOf<V>`, recorded), so a search for the objects of a code
+ * sends its entry's `main` (`….codes['DEVC/K'].main`), never a literal.
  */
 export type AdtMainType = {
   [V in AdtVariant]: AdtMainTypeOfVariant<V>;

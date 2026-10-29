@@ -4,16 +4,28 @@
 // Every code entry states its own, and the table's type holds it to the key:
 // a missing `main` fails the table's `satisfies`, a wrong one fails
 // `AdtCheckedTable` — per key, so a main type of another code of the same
-// table is refused too. Only the search filter takes a main type; a parameter
-// that builds an address does not.
+// table is refused too. A parameter that builds an address takes a code, never
+// a main type. The search filter takes neither a code nor a bare main type of
+// its own: it takes a name of the release's object types list, and every main
+// type of a variant's table is one of that variant's names.
 
+import type {
+  ADT_SEARCH_TYPES_ONPREM,
+  AdtListedSearchType,
+  AdtSearchType,
+  AdtSearchTypeOf,
+  AdtSearchTypeTable,
+} from '../adt/AdtSearchTypes';
 import type {
   AdtMainType,
   AdtMainTypeOfVariant,
   AdtTypeCode,
   CodesOfMain,
 } from '../adt/AdtTypeTables';
-import type { ISearchObjectsParams } from '../adt/IAdtShared';
+import type {
+  IAdtSearchObjectsParamsOf,
+  ISearchObjectsParams,
+} from '../adt/IAdtShared';
 import type {
   AdtApiTable,
   AdtCheckedTable,
@@ -91,24 +103,117 @@ export type RecordedMains = [
   Assert<Equal<AdtMainTypeOf<AdtTypeCode>, AdtMainType>>,
 ];
 
-// ── The search filter takes a main type; an address does not ───────────────
+// ── The search filter takes the list's names; an address takes a code ────
 
 const _searchByMain: ISearchObjectsParams = {
   query: 'Z*',
   objectType: 'DEVC',
 };
+const _searchByAlias: ISearchObjectsParams = {
+  query: 'Z*',
+  objectType: 'STRU',
+};
+const _searchByGroup: ISearchObjectsParams = {
+  query: 'Z*',
+  objectType: 'ABAP_TEST_COCKPIT',
+};
 const _searchByCode: ISearchObjectsParams = {
   query: 'Z*',
-  objectType: 'DEVC/K',
+  // @ts-expect-error a code is no filter value: `STRU` is `TABL/DS`'s name
+  objectType: 'TABL/DS',
 };
 const _searchByNothing: ISearchObjectsParams = {
   query: 'Z*',
-  // @ts-expect-error neither a code nor a main type of the tables
+  // @ts-expect-error no list holds the name
   objectType: 'NOPE',
 };
 void _searchByMain;
+void _searchByAlias;
+void _searchByGroup;
 void _searchByCode;
 void _searchByNothing;
+
+// Per variant: S/4HANA 2025 and ABAP cloud take the alias and the group; 7.40
+// answers them with nothing, so its filter refuses them.
+const _modernAlias: IAdtSearchObjectsParamsOf<'onprem' | 'cloud'> = {
+  query: 'Z*',
+  objectType: 'STRU',
+};
+const _modernGroup: IAdtSearchObjectsParamsOf<'onprem' | 'cloud'> = {
+  query: 'Z*',
+  objectType: 'ABAP_TEST_COCKPIT',
+};
+const _basisMain: IAdtSearchObjectsParamsOf<'basis740'> = {
+  query: 'Z*',
+  objectType: 'TABL',
+};
+const _basisAlias: IAdtSearchObjectsParamsOf<'basis740'> = {
+  query: 'Z*',
+  // @ts-expect-error `STRU` answers no hits on 7.40
+  objectType: 'STRU',
+};
+void _modernAlias;
+void _modernGroup;
+void _basisMain;
+void _basisAlias;
+
+// Every main type of a variant's table is a search name of that variant.
+export type MainsAreSearchNames = [
+  Assert<
+    [AdtMainTypeOfVariant<'onprem'>] extends [AdtSearchTypeOf<'onprem'>]
+      ? true
+      : false
+  >,
+  Assert<
+    [AdtMainTypeOfVariant<'cloud'>] extends [AdtSearchTypeOf<'cloud'>]
+      ? true
+      : false
+  >,
+  Assert<
+    [AdtMainTypeOfVariant<'basis740'>] extends [AdtSearchTypeOf<'basis740'>]
+      ? true
+      : false
+  >,
+];
+
+export type SearchNamesRecorded = [
+  Assert<
+    Equal<
+      AdtSearchTypeOf<'basis740'>,
+      | 'DEVC'
+      | 'CLAS'
+      | 'INTF'
+      | 'PROG'
+      | 'FUGR'
+      | 'FUNC'
+      | 'DDLS'
+      | 'MSAG'
+      | 'TABL'
+      | 'ENHO'
+      | 'ENHS'
+    >
+  >,
+  Assert<Equal<(typeof ADT_SEARCH_TYPES_ONPREM)['STRU']['type'], 'TABL/DS'>>,
+  Assert<Equal<(typeof ADT_SEARCH_TYPES_ONPREM)['TABL']['type'], 'TABL'>>,
+  Assert<Equal<(typeof ADT_SEARCH_TYPES_ONPREM)['HOTA']['group'], true>>,
+  Assert<'STRU' extends AdtSearchType ? true : false>,
+];
+
+// The entry shape: a listed name has a code or is a group, and cites its own
+// release's list.
+const _listedNeither = {
+  // @ts-expect-error a listed name selects a code or is a group
+  ZZZZ: { evidence: 'search-types-s4-2025--objecttypes' },
+} as const satisfies AdtSearchTypeTable<AdtListedSearchType<'s4-2025'>>;
+void _listedNeither;
+const _listedElsewhere = {
+  ZZZZ: {
+    type: 'ZZZZ',
+    // @ts-expect-error another release's list
+    evidence: 'search-types-abap-cloud--objecttypes',
+  },
+} as const satisfies AdtSearchTypeTable<AdtListedSearchType<'s4-2025'>>;
+void _listedElsewhere;
 
 type StructureObjectType = Parameters<
   IAdtRepositoryStructure<unknown, unknown>['getObjectStructure']
