@@ -7,31 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [23.2.0] - 2026-10-29
+## [24.0.0] - 2026-10-29
+
+### Breaking
+
+- **The search filter takes the release's search names, not a code.**
+  `ISearchObjectsParams.objectType` was `AdtTypeCode`; it is `AdtSearchType`,
+  the names of the quick search's object types list. A code no longer
+  compiles as a filter: on S/4HANA 2025 and ABAP cloud a code that is no
+  list item's `type` selects as the text before its `/` (`ENHO/XHH` answers
+  as `ENHO`, with other first hits under `maxResults`) and an unknown one
+  answers nothing, silently (measured 2026-10-29).
+- **`IAdtCodeFacts.main` is required.** Every code of a table checked against
+  `AdtApiTable<R>` states its main type, and `AdtCheckedTable<T>` requires it
+  to be its own key's (`AdtMainTypeOf`).
 
 ### Added
 
 - **Main types.** Every code entry of `ADT_TYPES_ONPREM`, `ADT_TYPES_CLOUD`
   and `ADT_TYPES_BASIS_740` states its main type, the TADIR object type of
-  `R3TR <type>`: `'ENHO/XHH': { main: 'ENHO', … }`. The entry shape requires
-  `main` on every code (`IAdtCodeFacts.main`), and `AdtCheckedTable<T>`
-  requires it to be its own key's main type — per key, so a missing or a wrong
-  one does not compile.
-- **`AdtMainTypeOf<C>`** (the main type of a code), **`AdtMainType`** (every
-  main type of any table), **`AdtMainTypeOfVariant<V>`** (a variant's) and
-  **`CodesOfMain<M>`** (the codes of a main type; a code with no `/`, `AUTH`,
-  is its own).
-- **The search filter takes a main type.** `ISearchObjectsParams.objectType`
-  is `AdtTypeCode | AdtMainType`: the quick search selects by the main type
-  only (measured on S/4HANA 2025 and ABAP cloud, 2026-10-29: `DEVC`, `DEVC/K`
-  and `DEVC/XX` answer the same objects), and with a cap on the hits a main
-  type and a code of it answer different first hits. Every parameter that
-  builds an address keeps taking a code: a main type is not an address
-  (`TABL` is `TABL/DT` or `TABL/DS`).
+  `R3TR <type>`: `'ENHO/XHH': { main: 'ENHO', … }` — a missing or a wrong one
+  does not compile, per key. **`AdtMainTypeOf<C>`**, **`AdtMainType`**,
+  **`AdtMainTypeOfVariant<V>`** and **`CodesOfMain<M>`** (a code with no `/`,
+  `AUTH`, is its own). A main type is not an address: every parameter that
+  builds one keeps taking a code.
+- **Search names.** `ADT_SEARCH_TYPES_ONPREM` (385 names) and
+  `ADT_SEARCH_TYPES_CLOUD` (372), written from the recorded
+  `/sap/bc/adt/repository/informationsystem/objecttypes` lists — each name
+  with the code it selects (`type`: `STRU` → `TABL/DS`) or `group: true`
+  (`ABAP_TEST_COCKPIT`); `ADT_SEARCH_TYPES_BASIS_740`, the eleven names
+  measured to select on 7.40, which has no list (`404`) and answers its
+  aliases (`STRU`, `DTAB`, `REPO`, `INCL`, `BADI`) and unknown names with no
+  hits, silently. **`AdtSearchType`**, **`AdtSearchTypeOf<V>`**
+  (intersecting), **`IAdtSearchObjectsParamsOf<V>`**, and the shapes
+  `AdtSearchTypeTable`, `AdtListedSearchType`, `IAdtMeasuredSearchType`,
+  `AdtSearchTypeEvidence`, `IAdtSearchTypeTables`. Every main type of a
+  variant's table is a search name of that variant (recorded).
 
-Nothing is removed, and the search filter only widens: `main` is new data in
-this package's own tables. A table of a consumer's own checked against
-`AdtApiTable<R>` names `main` on each code from now on.
+### Migration
+
+- Where a code was passed as the search filter, pass the search name: the
+  main type from the table entry's `main`
+  (`ADT_TYPES_ONPREM.package.codes['DEVC/K'].main`), or the alias of a
+  subtype (`STRU` for `TABL/DS`).
+- A table built against `AdtApiTable` carries `main` on every code.
 
 ## [23.1.1] - 2026-10-29
 
