@@ -59,6 +59,12 @@ export type AdtListedSearchType<R extends string> = (
 export interface IAdtMeasuredSearchType {
   readonly type?: never;
   readonly group?: never;
+  /**
+   * The codes of the hits its recorded quick search answered (`query=*`,
+   * `maxResults=200`), as the answer writes them: what the name selects
+   * there, read from the hits since the release has no list to say it.
+   */
+  readonly answered: readonly [string, ...string[]];
   /** The release's recorded quick searches. */
   readonly evidence: 'search-types-basis-740--quick-search';
 }
@@ -1015,19 +1021,56 @@ export const ADT_SEARCH_TYPES_CLOUD = {
  * (`TABL/DS` answers both table kinds). The aliases `STRU`, `DTAB`, `REPO`,
  * `INCL` and `BADI`, and an unknown name, answer `200` and no hits —
  * silently, so a name not in this table is a search that finds nothing.
+ * Each entry's `answered` is the codes its recorded search's hits carry
+ * (`query=*`, `maxResults=200`, 2026-10-30): `FUNC` answers function modules
+ * (`FUGR/FF`), `TABL` both table kinds, `ENHO` enhancement implementations
+ * of two kinds (`ENHO/XH`, `FUGR/XH`).
  */
 export const ADT_SEARCH_TYPES_BASIS_740 = {
-  DEVC: { evidence: 'search-types-basis-740--quick-search' },
-  CLAS: { evidence: 'search-types-basis-740--quick-search' },
-  INTF: { evidence: 'search-types-basis-740--quick-search' },
-  PROG: { evidence: 'search-types-basis-740--quick-search' },
-  FUGR: { evidence: 'search-types-basis-740--quick-search' },
-  FUNC: { evidence: 'search-types-basis-740--quick-search' },
-  DDLS: { evidence: 'search-types-basis-740--quick-search' },
-  MSAG: { evidence: 'search-types-basis-740--quick-search' },
-  TABL: { evidence: 'search-types-basis-740--quick-search' },
-  ENHO: { evidence: 'search-types-basis-740--quick-search' },
-  ENHS: { evidence: 'search-types-basis-740--quick-search' },
+  DEVC: {
+    answered: ['DEVC/K'],
+    evidence: 'search-types-basis-740--quick-search',
+  },
+  CLAS: {
+    answered: ['CLAS/OC'],
+    evidence: 'search-types-basis-740--quick-search',
+  },
+  INTF: {
+    answered: ['INTF/OI'],
+    evidence: 'search-types-basis-740--quick-search',
+  },
+  PROG: {
+    answered: ['PROG/P'],
+    evidence: 'search-types-basis-740--quick-search',
+  },
+  FUGR: {
+    answered: ['FUGR/F'],
+    evidence: 'search-types-basis-740--quick-search',
+  },
+  FUNC: {
+    answered: ['FUGR/FF'],
+    evidence: 'search-types-basis-740--quick-search',
+  },
+  DDLS: {
+    answered: ['DDLS/DF'],
+    evidence: 'search-types-basis-740--quick-search',
+  },
+  MSAG: {
+    answered: ['MSAG/N'],
+    evidence: 'search-types-basis-740--quick-search',
+  },
+  TABL: {
+    answered: ['TABL/DS', 'TABL/DT'],
+    evidence: 'search-types-basis-740--quick-search',
+  },
+  ENHO: {
+    answered: ['ENHO/XH', 'FUGR/XH'],
+    evidence: 'search-types-basis-740--quick-search',
+  },
+  ENHS: {
+    answered: ['ENHS/XS'],
+    evidence: 'search-types-basis-740--quick-search',
+  },
 } as const satisfies AdtSearchTypeTable<IAdtMeasuredSearchType>;
 
 /** The search type table of each variant, by its name. */
