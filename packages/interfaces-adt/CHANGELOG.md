@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [24.0.1] - 2026-10-30
+
+### Fixed
+
+- **A 7.40 search name says what it selects.** `IAdtMeasuredSearchType`
+  requires `answered`: the codes of the hits the name's recorded quick search
+  answered (`query=*`, `maxResults=200`, recorded 2026-10-30), as the newer
+  releases' entries carry the `type` their list says. Every entry of
+  `ADT_SEARCH_TYPES_BASIS_740` states it: `DEVC/K`, `CLAS/OC`, `INTF/OI`,
+  `PROG/P`, `FUGR/F`, `FUGR/FF` (`FUNC`), `DDLS/DF`, `MSAG/N`, `TABL/DS` and
+  `TABL/DT` (`TABL`), `ENHO/XH` and `FUGR/XH` (`ENHO`), `ENHS/XS`. A
+  consumer's conformance check can now hold a recorded search against what
+  its name selects, not only count its hits.
+
 ## [24.0.0] - 2026-10-29
 
 ### Breaking

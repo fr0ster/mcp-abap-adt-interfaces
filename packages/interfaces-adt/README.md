@@ -198,7 +198,8 @@ search's object types list
 (`/sap/bc/adt/repository/informationsystem/objecttypes`), held per variant in
 `ADT_SEARCH_TYPES_ONPREM`, `ADT_SEARCH_TYPES_CLOUD` (written from the recorded
 lists: each name with the code it selects, `type`, or `group: true`) and
-`ADT_SEARCH_TYPES_BASIS_740`; `IAdtSearchObjectsParamsOf<V>` takes only the
+`ADT_SEARCH_TYPES_BASIS_740` (7.40 has no list: each name with the codes its
+recorded search's hits carry, `answered`); `IAdtSearchObjectsParamsOf<V>` takes only the
 names every variant of `V` takes (`AdtSearchTypeOf<V>`). Measured
 2026-10-29, read only:
 
