@@ -14,6 +14,9 @@
  *   with `CLAS`, `CLAS/OC`, `CLAS/OCL`, `PROG`, `PROG/P`, `FUGR`, `FUGR/F` and
  *   `FUNC`. `FUGR/FF`, which the metadata lists, answered an empty result for
  *   a function module.
+ * - `PROG/I`, naming a report's include, ran the report's local test class
+ *   held there, its failing test carrying its alert (measured 2026-10-31 on
+ *   S/4HANA 2025; ABAP cloud cannot hold a report's include).
  * - A CDS view's assigned tests — local test classes marked
  *   `"! @testing <view>"` — ran with `DDLS/DF` and with `DDLS`, only when the
  *   run's scope sets `foreignTests="true"`; with own tests only the result was

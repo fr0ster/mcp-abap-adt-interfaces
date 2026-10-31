@@ -2,8 +2,9 @@
 //
 // The ABAP Unit run registry, recorded entry for entry: every
 // `osl:object type` value, what a run of it runs and its evidence, as the
-// 2026-10-29 measurements on S/4HANA 2025 and ABAP cloud and the metadata
-// answer give them. The equality is exact, so adding, removing or changing
+// 2026-10-29 measurements on S/4HANA 2025 and ABAP cloud, the 2026-10-31
+// `PROG/I` measurement on S/4HANA 2025 (ABAP cloud cannot hold a report's
+// include) and the metadata answer give them. The equality is exact, so adding, removing or changing
 // one entry fails here: the edit has to be made twice, on purpose. Beside it:
 // the run object type is exactly the keys, a value outside them does not
 // compile, and the two run targets cannot be mixed.
