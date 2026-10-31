@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [24.0.2] - 2026-10-31
+
+### Fixed
+
+- **`ABAP_UNIT_RUN_TYPES['PROG/I']` is `'recorded'`.** A run naming a report's include by `PROG/I` ran the report's local test class held there, its failing test carrying its alert, as `PROG/P` does (measured on S/4HANA 2025, 2026-10-31). ABAP cloud cannot hold a report's include, so `'recorded'` now reads: measured on every release where such an object can be made, and the entry's comment says where one cannot. `AbapUnitRunObjectType` and every other entry are unchanged.
+
 ## [24.0.1] - 2026-10-30
 
 ### Fixed

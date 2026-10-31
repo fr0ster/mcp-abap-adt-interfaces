@@ -42,7 +42,7 @@ type RecordedRegistry = {
   'CLAS/OLD': Own<'metadata'>;
   PROG: Own<'recorded'>;
   'PROG/P': Own<'recorded'>;
-  'PROG/I': Own<'metadata'>;
+  'PROG/I': Own<'recorded'>;
   'PROG/PL': Own<'metadata'>;
   'PROG/PLM': Own<'metadata'>;
   FUGR: Own<'recorded'>;
