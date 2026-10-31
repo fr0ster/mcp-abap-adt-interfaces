@@ -14,6 +14,9 @@
  *   with `CLAS`, `CLAS/OC`, `CLAS/OCL`, `PROG`, `PROG/P`, `FUGR`, `FUGR/F` and
  *   `FUNC`. `FUGR/FF`, which the metadata lists, answered an empty result for
  *   a function module.
+ * - `PROG/I`, naming a report's include, ran the report's local test class
+ *   held there, its failing test carrying its alert (measured 2026-10-31 on
+ *   S/4HANA 2025; ABAP cloud cannot hold a report's include).
  * - A CDS view's assigned tests — local test classes marked
  *   `"! @testing <view>"` — ran with `DDLS/DF` and with `DDLS`, only when the
  *   run's scope sets `foreignTests="true"`; with own tests only the result was
@@ -55,7 +58,9 @@ export type AbapUnitRunKind = 'ownTests' | 'assignedTests';
  * Why a type is in the registry.
  *
  * - `'recorded'`: a run of an object of this type was measured to run its
- *   tests, on S/4HANA 2025 and ABAP cloud.
+ *   tests on every release where such an object can be made: S/4HANA 2025
+ *   and ABAP cloud, or S/4HANA 2025 alone where ABAP cloud cannot hold one
+ *   (the entry's comment says so).
  * - `'metadata'`: `GET /sap/bc/adt/abapunit/metadata` lists it, and no run of
  *   it has been measured.
  * - `'metadataRunEmpty'`: the metadata lists it, and a run naming an object
@@ -91,10 +96,12 @@ export const ABAP_UNIT_RUN_TYPES = {
   'CLAS/OCP': { runs: 'ownTests', evidence: 'metadata' },
   'CLAS/OLD': { runs: 'ownTests', evidence: 'metadata' },
 
-  // Programs. `PROG` and `PROG/P` ran the report's tests.
+  // Programs. `PROG` and `PROG/P` ran the report's tests. `PROG/I`, naming a
+  // report's include, ran the report's local test class held there
+  // (S/4HANA 2025, 2026-10-31; ABAP cloud cannot hold a report's include).
   PROG: { runs: 'ownTests', evidence: 'recorded' },
   'PROG/P': { runs: 'ownTests', evidence: 'recorded' },
-  'PROG/I': { runs: 'ownTests', evidence: 'metadata' },
+  'PROG/I': { runs: 'ownTests', evidence: 'recorded' },
   'PROG/PL': { runs: 'ownTests', evidence: 'metadata' },
   'PROG/PLM': { runs: 'ownTests', evidence: 'metadata' },
 

@@ -282,7 +282,7 @@ Each entry says what a run of it runs (`runs`) and why it is there
 
 | `evidence` | meaning | codes |
 |---|---|---|
-| `'recorded'` | a run was measured to run its tests (S/4HANA 2025 and ABAP cloud, 2026-10-29) | `CLAS`, `CLAS/OC`, `CLAS/OCL`, `PROG`, `PROG/P`, `FUGR`, `FUGR/F`, `FUNC`; `DDLS`, `DDLS/DF` with assigned tests |
+| `'recorded'` | a run was measured to run its tests on every release where such an object can be made (S/4HANA 2025 and ABAP cloud, 2026-10-29; `PROG/I` on S/4HANA 2025, 2026-10-31, as ABAP cloud cannot hold a report's include) | `CLAS`, `CLAS/OC`, `CLAS/OCL`, `PROG`, `PROG/P`, `PROG/I`, `FUGR`, `FUGR/F`, `FUNC`; `DDLS`, `DDLS/DF` with assigned tests |
 | `'metadata'` | the metadata answer lists it; no run of it was measured | the other codes of the 23 |
 | `'metadataRunEmpty'` | the metadata lists it, and a run naming an object by it answered empty | `FUGR/FF` (a function module), `DEVC/K` (a package runs only as a package target) |
 
