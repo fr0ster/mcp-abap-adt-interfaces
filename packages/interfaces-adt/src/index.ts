@@ -452,4 +452,4 @@ export type {
   ICreateAndGenerateServiceBindingParams,
   ICreateAndGenerateServiceBindingParamsLegacy,
 } from './service/IAdtService';
-export type { IReadOptions } from './shared/IReadOptions';
+export type { AdtReadVersion, IReadOptions } from './shared/IReadOptions';
