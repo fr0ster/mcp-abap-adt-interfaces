@@ -1,10 +1,11 @@
 import type { IAdtAnalyseOptions, IAnalyse } from '../adt/IAdtObject';
 import type { IAdtError, IAdtResponse } from '../adt/IAdtResponse';
+import type { AdtReadVersion } from '../shared/IReadOptions';
 
 export interface IGetApplicationLogObjectOptions {
   corrNr?: string;
   lockHandle?: string;
-  version?: string;
+  version?: AdtReadVersion;
   accessMode?: string;
   action?: string;
 }
@@ -12,7 +13,7 @@ export interface IGetApplicationLogObjectOptions {
 export interface IGetApplicationLogSourceOptions {
   corrNr?: string;
   lockHandle?: string;
-  version?: string;
+  version?: AdtReadVersion;
 }
 
 export interface IApplicationLog<TObject, TSource, TValidation> {

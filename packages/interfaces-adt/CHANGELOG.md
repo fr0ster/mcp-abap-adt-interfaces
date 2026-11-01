@@ -22,6 +22,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   its version parameter `AdtReadVersion` and passes `workingArea` to ADT's
   `?version=` as it passes the other two (TS2416 otherwise, shown by
   `__typechecks__/downstreamStillCompiles.ts`).
+- **The application log's reads take the three versions only.**
+  `IGetApplicationLogObjectOptions.version` and
+  `IGetApplicationLogSourceOptions.version` were `string`; they are
+  `AdtReadVersion`. Measured on S/4HANA 2025 (2026-11-01): the object and its
+  `source/main` answer `200` to `active`, `inactive` and `workingArea`, and
+  `400` to any other value. **Migrating:** pass one of the three; any other
+  string no longer compiles (ADT refused it anyway).
 
 ## [24.1.0] - 2026-11-01
 
