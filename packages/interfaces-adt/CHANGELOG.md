@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [24.1.0] - 2026-11-01
+
+### Added
+
+- **A read can ask for the working area.** `IReadOptions.version` is
+  `AdtReadVersion` (exported): `'active' | 'inactive' | 'workingArea'`, the
+  three values ADT's `?version=` takes (measured on S/4HANA 2025 for a table
+  type's metadata, 2026-11-01: each answered `200`, any other value `400`). A
+  consumer that passed `'active'` or `'inactive'` compiles as before.
+
 ## [24.0.2] - 2026-10-31
 
 ### Fixed
