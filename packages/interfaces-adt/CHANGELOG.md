@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [25.0.0] - 2026-11-01
+
+### Breaking
+
+- **Every read contract takes the working area.** 24.1.0 widened
+  `IReadOptions.version` only; the contracts a client implements still typed
+  their version `'active' | 'inactive'`. Now `AdtReadVersion`
+  (`'active' | 'inactive' | 'workingArea'`) everywhere a read names a version:
+  `IAdtReadable.read`, `IAdtMetadataReadable.readMetadata`,
+  `IAdtObjectAccess.readObjectSource` and `getObjectSourceUri`, and the
+  feature toggle's source read. A caller passing `'active'` or `'inactive'`
+  compiles as before. **Migrating:** an implementation of these contracts types
+  its version parameter `AdtReadVersion` and passes `workingArea` to ADT's
+  `?version=` as it passes the other two (TS2416 otherwise, shown by
+  `__typechecks__/downstreamStillCompiles.ts`).
+- **The application log's reads take the three versions only.**
+  `IGetApplicationLogObjectOptions.version` and
+  `IGetApplicationLogSourceOptions.version` were `string`; they are
+  `AdtReadVersion`. Measured on S/4HANA 2025 (2026-11-01): the object and its
+  `source/main` answer `200` to `active`, `inactive` and `workingArea`, and
+  `400` to any other value. **Migrating:** pass one of the three; any other
+  string no longer compiles (ADT refused it anyway).
+
 ## [24.1.0] - 2026-11-01
 
 ### Added

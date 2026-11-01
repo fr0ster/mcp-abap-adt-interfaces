@@ -2,6 +2,7 @@
  * Feature Toggle (FTG2/FT) ADT operation parameter interfaces (low-level)
  */
 
+import type { AdtReadVersion } from '../shared/IReadOptions';
 import type { IAdtHeaders } from './IAdtContentTypes';
 import type { IAdtAnalyseOptions, IAnalyse } from './IAdtObject';
 import type { IAdtError, IAdtResponse, IResultStrategy } from './IAdtResponse';
@@ -143,12 +144,12 @@ export interface IFeatureToggleObject<R extends IFeatureToggleObjectResults> {
 
   readSource<E extends IAdtError>(
     config: Partial<IFeatureToggleConfig>,
-    version: 'active' | 'inactive' | undefined,
+    version: AdtReadVersion | undefined,
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<R['source'], E>>;
   readSource(
     config: Partial<IFeatureToggleConfig>,
-    version?: 'active' | 'inactive',
+    version?: AdtReadVersion,
     options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<R['source']>>;
 }
