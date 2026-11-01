@@ -18,8 +18,15 @@
 // `WrittenBefore` gained the member below, and the compile error that forced it
 // is the whole reason this file exists: "additive" is a claim about somebody
 // else's code, and this one was not additive.
+//
+// 25.0.0 added a second: every read names the version ADT takes, the working
+// area included (`AdtReadVersion`). Widening a contract's parameter is not
+// additive for the class that implements it — its `readMetadata` typed the
+// version `'active' | 'inactive'` and stopped compiling (TS2416) — so the
+// class below now takes `AdtReadVersion` where it reads.
 
 import type {
+  AdtReadVersion,
   IAdtActivatable,
   IAdtCreatable,
   IAdtDeletable,
@@ -59,7 +66,7 @@ class WrittenBefore
 
   async read(
     config: Partial<Config>,
-    version?: 'active' | 'inactive',
+    version?: AdtReadVersion,
     options?: { withLongPolling?: boolean } & IAdtOperationOptions,
   ): Promise<IAdtResponse<string>> {
     void config;
@@ -72,7 +79,7 @@ class WrittenBefore
     config: Partial<Config>,
     options?: {
       withLongPolling?: boolean;
-      version?: 'active' | 'inactive';
+      version?: AdtReadVersion;
     } & IAdtOperationOptions,
   ): Promise<IAdtResponse<string>> {
     void config;

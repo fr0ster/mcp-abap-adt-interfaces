@@ -1,5 +1,10 @@
 // Compile-only assertions. If these stop compiling, the types regressed.
 
+import type {
+  IAdtMetadataReadable,
+  IAdtReadable,
+} from '../adt/IAdtCapabilities';
+import type { IAdtObjectAccess } from '../adt/IAdtUtilities';
 import type { AdtReadVersion, IReadOptions } from '../shared/IReadOptions';
 
 // A read names any of the three versions ADT takes.
@@ -16,3 +21,14 @@ void _versions;
 // @ts-expect-error ADT refuses it with 400
 const _bogus: IReadOptions = { version: 'bogus' };
 void _bogus;
+
+// Every read contract takes the working area too.
+declare const source: IAdtReadable<{ name: string }, string>;
+declare const metadata: IAdtMetadataReadable<{ name: string }, string>;
+declare const access: IAdtObjectAccess<string, string, string>;
+void source.read({ name: 'X' }, 'workingArea');
+void metadata.readMetadata({ name: 'X' }, { version: 'workingArea' });
+void access.readObjectSource('PROG/P', 'X', undefined, 'workingArea');
+void access.getObjectSourceUri('PROG/P', 'X', undefined, 'workingArea');
+// @ts-expect-error ADT refuses it with 400
+void metadata.readMetadata({ name: 'X' }, { version: 'bogus' });

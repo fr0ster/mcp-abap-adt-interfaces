@@ -98,7 +98,7 @@
  * shape of the thing rather than a finished one.
  */
 
-import type { IReadOptions } from '../shared/IReadOptions';
+import type { AdtReadVersion, IReadOptions } from '../shared/IReadOptions';
 import type {
   AdtModernVariant,
   AdtSourceTypeCode,
@@ -554,14 +554,14 @@ export interface IAdtObjectAccess<TSource, TMetadata, TInclude> {
     objectType: AdtSourceTypeCode,
     objectName: string,
     functionGroup: string | undefined,
-    version: 'active' | 'inactive' | undefined,
+    version: AdtReadVersion | undefined,
     options: IReadOptions & IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TSource, E>>;
   readObjectSource(
     objectType: AdtSourceTypeCode,
     objectName: string,
     functionGroup?: string,
-    version?: 'active' | 'inactive',
+    version?: AdtReadVersion,
     options?: IReadOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TSource>>;
 
@@ -587,7 +587,7 @@ export interface IAdtObjectAccess<TSource, TMetadata, TInclude> {
     objectType: AdtSourceTypeCode,
     objectName: string,
     functionGroup?: string,
-    version?: 'active' | 'inactive',
+    version?: AdtReadVersion,
   ): string;
 
   /** A standalone include. */

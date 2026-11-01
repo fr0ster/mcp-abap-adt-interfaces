@@ -32,6 +32,7 @@
  * to the compiler, so a consumer never learns from the type that a failure path
  * exists.
  */
+import type { AdtReadVersion } from '../shared/IReadOptions';
 import type { IAdtHeaders } from './IAdtContentTypes';
 import type {
   IAdtAnalyseOptions,
@@ -137,7 +138,7 @@ export interface IAdtReadable<
    * Read the object's source.
    *
    * @param config - Object identification (name, etc.)
-   * @param version - 'active' or 'inactive'
+   * @param version - 'active', 'inactive' or 'workingArea'
    * @param options - `withLongPolling` waits for the object to become
    *                  available, which is what a read straight after a create or
    *                  an activation needs; `analyse` for the verdict
@@ -145,14 +146,14 @@ export interface IAdtReadable<
    */
   read<E extends IAdtError>(
     config: AdtObjectIdentity<TConfig, TParent>,
-    version: 'active' | 'inactive' | undefined,
+    version: AdtReadVersion | undefined,
     options: { withLongPolling?: boolean } & IAdtOperationOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<TSource, E>>;
   read(
     config: AdtObjectIdentity<TConfig, TParent>,
-    version?: 'active' | 'inactive',
+    version?: AdtReadVersion,
     options?: { withLongPolling?: boolean } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TSource>>;
 }
@@ -182,14 +183,14 @@ export interface IAdtMetadataReadable<
     config: AdtObjectIdentity<TConfig, TParent>,
     options: {
       withLongPolling?: boolean;
-      version?: 'active' | 'inactive';
+      version?: AdtReadVersion;
     } & IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TMetadata, E>>;
   readMetadata(
     config: AdtObjectIdentity<TConfig, TParent>,
     options?: {
       withLongPolling?: boolean;
-      version?: 'active' | 'inactive';
+      version?: AdtReadVersion;
     } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TMetadata>>;
 }
