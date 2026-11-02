@@ -12,6 +12,7 @@ ADT contracts: object operations, runtime analysis, execution, feeds and service
 - Since 15.0.0 `skipCount` is gone from breakpoints (the server ignores it) and `clientId` pairs an answer row with its request. The CHANGELOG has the migration note.
 - Since 15.1.0 the plain class and program run take `debuggee` (`IDebuggeeIds`): the terminal id and IDE id a terminal-mode listener catches the run by.
 - Since 23.1.0 the ABAP Unit run registry: `ABAP_UNIT_RUN_TYPES`, every `osl:object type` value a run may name, what a run of it runs and on what evidence; `AbapUnitRunObjectType` (its keys), `AbapUnitRunTarget` (an object or a package) and the generic runner contract `IAbapUnitRunner`. Additions only. See "The ABAP Unit run registry".
+- Since 25.0.2 the on-premise table lists `mainPrograms` for `PROG/I` (25.0.1), and `IIncludeResults` has a required `mainPrograms` slot.
 - Since 23.0.4 the tables list `read`, `source` and `update` for `FUGR/F` (S/4HANA and ABAP cloud), and `IFunctionGroupResults` has a required `updated` slot.
 - Since 23.0.3 the tables list `updateMetadata` for `SRVB/SVB`, and `IServiceResults` has a required `metadataUpdated` slot.
 - Since 23.0.2 the tables list `updateMetadata` for `DCLS/DL`, `DDLX/EX`, `BDEF/BDO`, `SRVD/SRV`, `DSFD/SCF`, `XSLT/VT`, `TABL/DT` and `TABL/DS` (and `PROG/I` on S/4HANA), and their results contracts have a required `metadataUpdated` slot.
