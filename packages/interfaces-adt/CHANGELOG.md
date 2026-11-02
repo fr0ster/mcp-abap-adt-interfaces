@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [25.0.3] - 2026-11-02
+
+### Fixed
+
+- **`IAdtMainProgramsReadable`'s documentation.** 25.0.1 said every main
+  program is a program (`PROG/P`) and is what the include's enhancement reads
+  take as `context`. Measured on premise (2026-11-02): for an include of a
+  function group the read answers the group (`FUGR/F`: `LSVIMTOP` answered
+  `SVIM`), while the enhancement reads take the program name (`SAPLSVIM`). The
+  comment now says so. No type changes.
+
 ## [25.0.2] - 2026-11-02
 
 ### Fixed
