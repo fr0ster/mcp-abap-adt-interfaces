@@ -169,3 +169,48 @@ export interface IAtcFindings<TFindings> {
     options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TFindings>>;
 }
+
+/** Which ATC results `listResults` answers. */
+export interface IAtcResultListOptions {
+  /**
+   * Whose results: a user name, or `*` for every user's.
+   *
+   * Required: every user's results are a large answer on a busy system, so
+   * the caller asks for them by name.
+   */
+  createdBy: string;
+  /** Central results only (`centralResult=true`); absent, every kind. */
+  centralOnly?: boolean;
+  /** The youngest results to answer, by age in days. */
+  ageMin?: number;
+  /** The oldest results to answer, by age in days. */
+  ageMax?: number;
+}
+
+/**
+ * The ATC results the system holds, each named by its Display ID: from a run
+ * of this client, of another session, of a person in ADT, or a central run.
+ */
+export interface IAtcResultsReadable<TResultList, TResult> {
+  /**
+   * The results for the filters given, each with its Display ID, title, check
+   * variant, run series, creation time and its count of findings per priority.
+   * Without `ageMin` / `ageMax` the system answers a window of its own.
+   */
+  listResults<E extends IAdtError>(
+    options: IAtcResultListOptions &
+      IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TResultList, E>>;
+  listResults(
+    options: IAtcResultListOptions & IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<TResultList>>;
+  /** The result named by its Display ID: its objects, and each one's findings. */
+  getResult<E extends IAdtError>(
+    displayId: string,
+    options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TResult, E>>;
+  getResult(
+    displayId: string,
+    options?: IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<TResult>>;
+}
