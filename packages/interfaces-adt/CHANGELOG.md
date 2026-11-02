@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [25.0.1] - 2026-11-02
+
+### Added
+
+- **An include's main programs.** `IAdtMainProgramsReadable` (`readMainPrograms`)
+  and the operation `mainPrograms` on the on-premise table's `PROG/I` row:
+  `…/programs/includes/{name}/mainprograms` answers the programs that include
+  the include — `adtcore:objectReferences`, one reference (uri, type `PROG/P`,
+  name) per program, none for an include no program includes directly
+  (measured on premise, 2026-11-02). Such a program is what the include's
+  enhancement reads take as `context`. Not on the ABAP cloud table: unmeasured
+  there. A `switch` exhaustive over `AdtOperation` handles `mainPrograms`.
+
 ## [25.0.0] - 2026-11-01
 
 ### Breaking

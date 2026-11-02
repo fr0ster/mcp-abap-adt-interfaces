@@ -76,6 +76,7 @@ export type AdtApiName =
  * | `delete` | `delete` |
  * | `transport` | `readTransport` |
  * | `readEnhancementElements`, `readEnhancementOptions` | the enhancement host's two reads |
+ * | `mainPrograms` | an include's `readMainPrograms` |
  * | `activateTestClasses` | a class's `activateTestClasses` |
  * | `checkCdsTestDoubles` | a DDL's `checkCdsTestDoubles` |
  * | `switchOn`, `switchOff`, `getRuntimeState`, `checkState` | a feature toggle's runtime |
@@ -106,6 +107,7 @@ export type AdtOperation =
   | 'transport'
   | 'readEnhancementElements'
   | 'readEnhancementOptions'
+  | 'mainPrograms'
   | 'activateTestClasses'
   | 'checkCdsTestDoubles'
   | 'switchOn'

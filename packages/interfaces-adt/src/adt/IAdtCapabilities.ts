@@ -278,6 +278,30 @@ export interface IAdtIncludeEnhancementHost<
 }
 
 /**
+ * An include's main programs: the programs that include it.
+ * `…/programs/includes/{name}/mainprograms` answers them as
+ * `adtcore:objectReferences`, one `adtcore:objectReference` (uri, type, name)
+ * per program — a program (`PROG/P`), no entity of its own — and none for an
+ * include no program includes directly (E19, 2026-11-02). Such a program is
+ * what the include's enhancement reads take as `context`
+ * ({@link IAdtIncludeEnhancementHost}).
+ */
+export interface IAdtMainProgramsReadable<
+  TConfig,
+  TPrograms,
+  TParent extends keyof TConfig = never,
+> {
+  readMainPrograms<E extends IAdtError>(
+    config: AdtObjectIdentity<TConfig, TParent>,
+    options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TPrograms, E>>;
+  readMainPrograms(
+    config: AdtObjectIdentity<TConfig, TParent>,
+    options?: IAdtOperationOptions,
+  ): Promise<IAdtResponse<TPrograms>>;
+}
+
+/**
  * The object's **source** can be written.
  *
  * **`TConfig` is taken as given, not wrapped in {@link AdtObjectIdentity}.** The

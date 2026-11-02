@@ -116,6 +116,7 @@ export type {
   IAdtEnhancementHost,
   IAdtIncludeEnhancementHost,
   IAdtLockable,
+  IAdtMainProgramsReadable,
   IAdtMetadataReadable,
   IAdtMetadataUpdatable,
   IAdtReadable,

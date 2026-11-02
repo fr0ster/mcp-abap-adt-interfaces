@@ -152,7 +152,8 @@ type RecordedOnPremise = {
         | 'deletionCheck'
         | 'delete'
         | 'readEnhancementElements'
-        | 'readEnhancementOptions';
+        | 'readEnhancementOptions'
+        | 'mainPrograms';
     };
   };
   functionGroup: {
