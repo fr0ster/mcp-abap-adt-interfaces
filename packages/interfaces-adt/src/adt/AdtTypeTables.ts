@@ -162,6 +162,7 @@ export const ADT_TYPES_ONPREM = {
           'delete',
           'readEnhancementElements',
           'readEnhancementOptions',
+          'mainPrograms',
         ],
         evidence: 'system-description-s4-2025--07-typestructure',
       },
