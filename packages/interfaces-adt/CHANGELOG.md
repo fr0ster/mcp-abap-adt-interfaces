@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [25.0.2] - 2026-11-02
+
+### Fixed
+
+- **`IIncludeResults` has a required `mainPrograms` slot**, the result
+  strategy of the include's `readMainPrograms`, which 25.0.1 added to the
+  on-premise table without the slot an implementation types its answer with —
+  as 23.0.1–23.0.4 paired each operation they listed with its slot. A results
+  set built for `IIncludeResults` adds it.
+
 ## [25.0.1] - 2026-11-02
 
 ### Added

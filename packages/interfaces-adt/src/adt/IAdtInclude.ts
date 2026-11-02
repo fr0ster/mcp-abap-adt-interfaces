@@ -45,6 +45,11 @@ export interface IIncludeResults {
   readonly enhancementElements: IResultStrategy<unknown>;
   /** Places in the host that can be enhanced. */
   readonly enhancementOptions: IResultStrategy<unknown>;
+  /**
+   * The programs that include this one (`readMainPrograms`):
+   * `adtcore:objectReferences`.
+   */
+  readonly mainPrograms: IResultStrategy<unknown>;
   readonly activation: IResultStrategy<unknown>;
   readonly validation: IResultStrategy<unknown>;
   readonly deletion: IResultStrategy<unknown>;
