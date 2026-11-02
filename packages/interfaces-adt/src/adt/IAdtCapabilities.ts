@@ -278,13 +278,14 @@ export interface IAdtIncludeEnhancementHost<
 }
 
 /**
- * An include's main programs: the programs that include it.
+ * An include's main programs.
  * `…/programs/includes/{name}/mainprograms` answers them as
  * `adtcore:objectReferences`, one `adtcore:objectReference` (uri, type, name)
- * per program — a program (`PROG/P`), no entity of its own — and none for an
- * include no program includes directly (E19, 2026-11-02). Such a program is
- * what the include's enhancement reads take as `context`
- * ({@link IAdtIncludeEnhancementHost}).
+ * each — a program (`PROG/P`), or for an include of a function group the group
+ * (`FUGR/F`: `LSVIMTOP` answered `SVIM`) — and none for an include no program
+ * includes directly (E19, 2026-11-02). The include's enhancement reads take a
+ * program name as `context` ({@link IAdtIncludeEnhancementHost}: `SAPLSVIM`
+ * for `LSVIMTOP`), not the group this read answers.
  */
 export interface IAdtMainProgramsReadable<
   TConfig,
