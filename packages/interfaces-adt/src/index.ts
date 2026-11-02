@@ -400,6 +400,8 @@ export type {
   AtcObjectType,
   IAtcFindings,
   IAtcObjectRef,
+  IAtcResultListOptions,
+  IAtcResultsReadable,
   IAtcRunOptions,
   IAtcRunStatusReadable,
   IAtcRunTarget,

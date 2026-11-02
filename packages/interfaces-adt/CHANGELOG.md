@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [25.1.0] - 2026-11-03
+
+### Added
+
+- **`IAtcResultsReadable`**: the ATC results the system holds, each named by
+  its Display ID, whoever ran them. `listResults(options)` answers the results
+  for `IAtcResultListOptions`: `createdBy` (required, a user name or `*` for
+  every user), `centralOnly`, `ageMin` and `ageMax` (days).
+  `getResult(displayId)` answers one result with its objects and findings.
+  Each has the `analyse` overload pair of `IAtcFindings`. SAP's URI templates
+  also declare `activeResult`, `contactPerson`, `sysId` and
+  `includeExemptedFindings`. None of them is offered: measured on premise and
+  cloud (2026-11-02), `activeResult` answered only empty lists and changed
+  nothing on one result, `includeExemptedFindings` changed nothing on a result
+  without exemptions, and the other two were not measured. Additions only.
+
 ## [25.0.3] - 2026-11-02
 
 ### Fixed
