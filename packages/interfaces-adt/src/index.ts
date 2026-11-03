@@ -196,6 +196,7 @@ export type {
   IAdtAnalyseOptions,
   IAdtCreateOptions,
   IAdtOperationOptions,
+  IAdtUpdateOptions,
   IAnalyse,
 } from './adt/IAdtObject';
 export { AdtObjectErrorCodes } from './adt/IAdtObject';

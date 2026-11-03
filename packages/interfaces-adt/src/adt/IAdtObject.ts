@@ -281,3 +281,26 @@ export type IAdtCreateOptions<E extends IAdtError = IAdtError> = Omit<
   IAdtOperationOptions<E>,
   'source'
 > & { source?: never };
+
+/**
+ * Options of a write that replaces a document: an update of its source or of its
+ * metadata.
+ *
+ * Everything {@link IAdtOperationOptions} carries, and the ETag that guards the
+ * write.
+ */
+export interface IAdtUpdateOptions<E extends IAdtError = IAdtError>
+  extends IAdtOperationOptions<E> {
+  /**
+   * The ETag a read answered for the document this write replaces, sent as
+   * `If-Match`. The system refuses the write (`412`, `ExceptionPreconditionFailed`)
+   * when the document changed since that read. It compares with the newest
+   * version: the inactive one when it exists, else the active one. Its ETag has a
+   * resolution of one second, so a change within the same second as the read is
+   * not detected. Absent: the write is sent without `If-Match`, as before.
+   *
+   * Measured on premise and on the cloud (2026-11-03), on a program's and a
+   * class's source and on a domain's metadata.
+   */
+  ifMatch?: string;
+}

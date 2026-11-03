@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [25.2.0] - 2026-11-03
+
+### Added
+
+- **`IAdtUpdateOptions`**: the options of `update` and `updateMetadata`, which
+  were `IAdtOperationOptions`. They add `ifMatch`, the ETag a read answered
+  for the document the write replaces, sent as `If-Match`. The system refuses
+  the write with `412` `ExceptionPreconditionFailed` when the document changed
+  since that read, comparing with its newest version, the inactive one when it
+  exists. Its ETag has a resolution of one second. Measured on premise and on
+  the cloud (2026-11-03), on a program's and a class's source and on a
+  domain's metadata. A create and a read take no ETag; they keep their
+  options. Additions only.
+
 ## [25.1.0] - 2026-11-03
 
 ### Added

@@ -38,6 +38,7 @@ import type {
   IAdtAnalyseOptions,
   IAdtCreateOptions,
   IAdtOperationOptions,
+  IAdtUpdateOptions,
   IAnalyse,
 } from './IAdtObject';
 import type { IAdtError, IAdtResponse } from './IAdtResponse';
@@ -354,13 +355,13 @@ export interface IAdtUpdatable<TConfig, TUpdated> {
    */
   update<E extends IAdtError>(
     config: TConfig,
-    options: { headers: IAdtHeaders } & IAdtOperationOptions<E> & {
+    options: { headers: IAdtHeaders } & IAdtUpdateOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<TUpdated, E>>;
   update(
     config: TConfig,
-    options: { headers: IAdtHeaders } & IAdtOperationOptions,
+    options: { headers: IAdtHeaders } & IAdtUpdateOptions,
   ): Promise<IAdtResponse<TUpdated>>;
 }
 
@@ -393,13 +394,13 @@ export interface IAdtMetadataUpdatable<TConfig, TMetadataUpdated> {
    */
   updateMetadata<E extends IAdtError>(
     config: TConfig,
-    options: { headers: IAdtHeaders } & IAdtOperationOptions<E> & {
+    options: { headers: IAdtHeaders } & IAdtUpdateOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<TMetadataUpdated, E>>;
   updateMetadata(
     config: TConfig,
-    options: { headers: IAdtHeaders } & IAdtOperationOptions,
+    options: { headers: IAdtHeaders } & IAdtUpdateOptions,
   ): Promise<IAdtResponse<TMetadataUpdated>>;
 }
 
