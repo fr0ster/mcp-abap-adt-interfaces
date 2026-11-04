@@ -11,7 +11,7 @@ import type { IAdtContentTypes } from './IAdtContentTypes';
 export interface IAdtSystemContext {
   masterSystem?: string;
   responsible?: string;
-  /** Master/original language for newly created objects (adtcore:masterLanguage). Sourced from SAP_LANGUAGE; defaults to EN when unset. */
+  /** Master/original language for newly created objects (adtcore:masterLanguage). Sourced from SAP_LANGUAGE; when unset, none is sent and SAP takes its logon language. */
   masterLanguage?: string;
 }
 

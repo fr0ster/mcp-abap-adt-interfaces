@@ -12,7 +12,7 @@ export interface IMessageClassConfig {
   packageName?: string;
   /** Transport request — sent as corrNr (create/update) or <del:transportNumber> (delete) for transportable packages */
   transportRequest?: string;
-  /** Master language of the message class — defaults to 'EN' on create */
+  /** Master language of the message class on create; with none given, SAP takes its logon language */
   masterLanguage?: string;
 }
 

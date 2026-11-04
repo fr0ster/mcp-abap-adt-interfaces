@@ -9,7 +9,7 @@ import type { IResultStrategy } from './IAdtResponse';
 // description is required for create/validate operations
 export interface ITableConfig {
   tableName: string;
-  masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE), then EN
+  masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE); with neither, none is sent and SAP takes its logon language
   packageName?: string; // Required for create operations, optional for others
   transportRequest?: string; // Only optional parameter
   source?: string;

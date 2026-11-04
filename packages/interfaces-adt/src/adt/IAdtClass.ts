@@ -9,7 +9,7 @@ import type { IResultStrategy } from './IAdtResponse';
 // description is required for create/validate operations
 export interface IClassConfig {
   className: string;
-  masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE), then EN
+  masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE); with neither, none is sent and SAP takes its logon language
   description?: string; // Required for create/validate operations, optional for others
   packageName?: string; // Required for create operations, optional for others
   transportRequest?: string; // Only optional parameter
@@ -21,7 +21,6 @@ export interface IClassConfig {
   macrosCode?: string; // Macro definitions (legacy ABAP)
   superclass?: string;
   final?: boolean;
-  abstract?: boolean;
   createProtected?: boolean;
   masterSystem?: string;
   responsible?: string;

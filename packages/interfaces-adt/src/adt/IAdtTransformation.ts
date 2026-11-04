@@ -9,7 +9,7 @@ export type TransformationType = 'SimpleTransformation' | 'XSLTProgram';
 // Builder configuration (camelCase)
 export interface ITransformationConfig {
   transformationName: string;
-  masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE), then EN
+  masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE); with neither, none is sent and SAP takes its logon language
   transformationType: TransformationType;
   packageName?: string;
   transportRequest?: string;
