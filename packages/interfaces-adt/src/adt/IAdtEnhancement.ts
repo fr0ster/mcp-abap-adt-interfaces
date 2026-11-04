@@ -23,7 +23,7 @@ export type EnhancementType = 'enhoxhb' | 'enhoxhh' | 'enhsxsb';
  */
 export interface IEnhancementConfig {
   enhancementName: string;
-  masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE), then EN
+  masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE); with neither, none is sent and SAP takes its logon language
   enhancementType: EnhancementType;
   description?: string;
   packageName?: string;

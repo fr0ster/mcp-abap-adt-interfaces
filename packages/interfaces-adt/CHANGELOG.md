@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [26.0.0] - 2026-11-04
+
+### Removed
+
+- **`IClassConfig.abstract`** and **`IProgramConfig.programType`**. SAP ignores
+  `class:abstract` and `program:programType` on create (measured on premise,
+  2026-11-04: an abstract create gives a non-abstract class; every program type
+  gives an executable program), so the contract no longer offers them. Set them
+  afterwards. adt-clients 43.0.0 stopped sending both.
+
+### Changed
+
+- **`masterLanguage`** (every create config, `IAdtClientOptions`): the doc
+  comments no longer promise an `EN` fallback. SAP takes a new object's original
+  language from the request's logon language and ignores the body's attributes
+  (measured on the cloud, 2026-11-04); with no language given, none is sent and
+  SAP takes its logon language. adt-clients 43.0.0 sends the given language as
+  `sap-language` with the attributes (fr0ster/mcp-abap-adt#348).
+
 ## [25.2.0] - 2026-11-03
 
 ### Added
