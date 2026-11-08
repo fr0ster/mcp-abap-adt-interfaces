@@ -10,7 +10,7 @@ npm install @mcp-abap-adt/interfaces-auth-broker
 
 | symbol | what it is |
 |---|---|
-| `IConnectionConfig` | a destination's connection settings, as a store hands them to the broker: `serviceUrl`, `sapClient`, `language`, the credential (`authorizationToken`, `username`/`password`, `sessionCookies`), `authType`, `grantType`, `expiresAt`, what a stored secret is bound to (`issuedFor`, `issuedBy`), and the settings a grant needs — SNC (`snc*`), OIDC (`oidc*`) and the SAML IdP's trust (`saml*`) |
+| `IConnectionConfig` | a destination's connection settings, as a store hands them to the broker: `serviceUrl`, `sapClient`, `language`, the credential (`authorizationToken`, `username`/`password`, `sessionCookies`), `authType`, `grantType`, `expiresAt`, what a stored secret is bound to (`issuedFor`, `issuedBy`), the settings a grant needs — SNC (`snc*`), OIDC (`oidc*`) and the SAML IdP's trust (`saml*`) — and, since 1.4.0, the RFC address: `ashost`, `sysnr`, `mshost`, `msserv`, `sysid`, `group`, `saprouter` (each optional, `?: string \| undefined`; a store holds what the destination states, and the consumer decides what an RFC destination must state: `ashost` + `sysnr`, or `mshost` + `group` with `msserv`, `sysid` or both) |
 | `DestinationGrant` | how a destination obtains a new credential: the UAA, OIDC and SAML grants, or `'none'` — handed over, not renewed |
 | `IConfig` | `Partial<IAuthorizationConfig> & Partial<IConnectionConfig>` — what a session store loads and saves |
 | `ISessionStore` | loads, saves and updates a destination's session |
@@ -61,7 +61,7 @@ only the package changed. Before that, `@mcp-abap-adt/interfaces-adt` until its
 
 ## Dependencies
 
-Depends on `@mcp-abap-adt/interfaces-auth-sap` (`^2.0.0 || ^3.0.0` — the one type it uses, `IAuthorizationConfig`, is the same in both), for
+Depends on `@mcp-abap-adt/interfaces-auth-sap` (`^2.0.0 || ^3.0.0 || ^4.0.0` since 1.4.0 — the one type it uses, `IAuthorizationConfig`, is the same in all three; 4.0.0's union `ISapConfig` is not used here), for
 `IAuthorizationConfig` — the UAA client a store returns beside the connection
 settings — and on nothing else. `interfaces-auth` and `interfaces-utils` reach
 it through that package.

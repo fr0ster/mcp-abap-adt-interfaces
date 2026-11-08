@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-11-08
+
+### Added
+
+- **The RFC address in `IConnectionConfig`**: `ashost`, `sysnr`, `mshost`,
+  `msserv`, `sysid`, `group`, `saprouter` — the SAP NW RFC SDK's connection
+  parameters, each optional and `?: string | undefined`. A store holds what a
+  destination states, so a URL-free RFC destination passes through the stores
+  and the broker; the consumer decides what an RFC destination must state (one
+  application server, `ashost` + `sysnr`, or one message server, `mshost` +
+  `group` with `msserv`, `sysid` or both). `sapClient` and `language` were
+  there already. `__typechecks__/rfcAddressTypes.ts` holds the seven.
+
+### Changed
+
+- **`@mcp-abap-adt/interfaces-auth-sap` accepted as `^2.0.0 || ^3.0.0 || ^4.0.0`.**
+  4.0.0 makes `ISapConfig` a union by connection type. This package takes one
+  type from it, `IAuthorizationConfig`, which 4.0.0 does not change, so every
+  type it exports type-checks the same under each major — a minor.
+  `__typechecks__/authSapMajorCompatibility.ts` still holds
+  `IAuthorizationConfig` to its 2.x shape, both ways.
+
+### Migrating to 1.4.0
+
+Nothing to do. A store that wants to carry an RFC destination's address fills
+the seven fields; one that does not leaves them absent.
+
 ## [1.3.0] - 2026-10-05
 
 ### Changed

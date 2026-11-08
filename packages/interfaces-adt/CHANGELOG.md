@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [26.1.0] - 2026-11-08
+
+### Changed
+
+- **`@mcp-abap-adt/interfaces-adt-connection` accepted as `^3.0.0 || ^4.0.0`.**
+  4.0.0 lets `IAbapConnection.getBaseUrl()` answer `undefined` (an RFC
+  connection has no HTTP origin). This package names `IAbapConnection` only in
+  a comment, so none of its exported types reaches `getBaseUrl`, and every one
+  type-checks the same under either major — a minor.
+
+### Migrating to 26.1.0
+
+Nothing to do.
+
 ## [26.0.0] - 2026-11-04
 
 ### Removed
