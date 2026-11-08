@@ -4,7 +4,7 @@ The SAP and BTP half of authentication: SAP system configuration, the UAA client
 
 ## TL;DR
 
-- **The SAP system** — `ISapConfig`, `SapAuthType`, `SapConnectionType`.
+- **The SAP system** — `ISapConfig`, a union by connection type since 4.0.0: `ISapHttpConfig` (a `url`, no RFC key) or `ISapRfcConfig` (`connectionType: 'rfc'`, `client`, `language`, no `url`, and one address: `ISapRfcApplicationServer` with `ashost` + `sysnr`, or `ISapRfcMessageServer` with `mshost` + `group` and `msserv`, `sysid` or both). Beside them `ISapConfigBase` (the authentication fields both shapes share), `ISapRfcLogon` (what every RFC shape states besides its address), `SapAuthType`, `SapConnectionType`. See [Migrating to 4.0.0](#migrating-to-400).
 - **The UAA client** — `IAuthorizationConfig`: the URL, client ID and secret a token is obtained and refreshed with.
 - **BTP** — `AUTH_TYPE_XSUAA` and the `AuthType`/`AUTH_TYPES` union over all three: XSUAA is a BTP service, so a set that includes it describes what a *BTP* connection accepts.
 - **Client certificates** — `ICertificateMaterialLoader`.
@@ -28,6 +28,37 @@ import { AUTH_TYPE_BASIC } from '@mcp-abap-adt/interfaces-auth';
 ```
 
 Two packages in one file is the point: the union's SAP member and its generic members are declared where each is true.
+
+A configuration is built as the shape of its wire; `connectionType` narrows the union:
+
+```typescript
+import type { ISapConfig, ISapRfcConfig } from '@mcp-abap-adt/interfaces-auth-sap';
+
+const http: ISapConfig = { url: 'https://sap.example.com', authType: 'basic', client: '100' };
+
+const rfc: ISapRfcConfig = {
+  connectionType: 'rfc',
+  authType: 'snc',
+  client: '100',
+  language: 'EN',
+  ashost: 'sap.example.com',
+  sysnr: '00',
+};
+
+function origin(config: ISapConfig): string | undefined {
+  return config.connectionType === 'rfc' ? undefined : config.url;
+}
+```
+
+## Migrating to 4.0.0
+
+`ISapConfig` is a union by connection type (see the CHANGELOG for the whole entry).
+
+- **Narrow on `connectionType` before reading `url`**: `url` exists only on `ISapHttpConfig`; `connectionType` `'http'` or absent is HTTP, so an HTTP literal compiles unchanged unless it states an RFC key.
+- **An RFC config states `client`, `language` and exactly one address**, and no `url`: `ashost` + `sysnr`, or `mshost` + `group` with `msserv`, `sysid` or both. One that gave its host and system number through `url` (`http://host:80NN`) states `ashost: 'host'`, `sysnr: 'NN'`. Nothing is defaulted: no client `000`, no language `EN`, no group `PUBLIC`.
+- **`saprouter` and `language` are RFC only**; an HTTP config removes `saprouter`.
+- **`ashost`, `sysnr` and `language` are new.**
+- **Build each config inside the branch that knows its wire, and omit a key that does not belong** instead of setting it to `undefined`: without `exactOptionalPropertyTypes`, `?: never` accepts `undefined`.
 
 ## Migrating to 3.3.0
 
