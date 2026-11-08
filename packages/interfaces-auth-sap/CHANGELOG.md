@@ -43,8 +43,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Migrating to 4.0.0
 
-- **Narrow on `connectionType` before reading `url`.** `config.url` compiles only
-  on an `ISapHttpConfig`; `if (config.connectionType === 'rfc') { … } else { config.url }`.
+- **Narrow on `connectionType` before using `url` as a string.** On the
+  unnarrowed `ISapConfig`, `config.url` compiles but reads `string | undefined`
+  (RFC declares it `url?: never`); only on an `ISapHttpConfig` is it a definite
+  `string`: `if (config.connectionType === 'rfc') { … } else { config.url }`.
+- **`ISapConfig` is a union type alias, not an interface**, so
+  `interface X extends ISapConfig {}` no longer compiles. Extend the branch you
+  mean — `ISapHttpConfig` or `ISapRfcApplicationServer` — or intersect in a type
+  alias: `type X = ISapConfig & { … }` (also the way for
+  `ISapRfcMessageServer`, itself an intersection).
 - **An RFC config states `client`, `language` and one address**, and no `url`:
   `{ connectionType: 'rfc', client: '100', language: 'EN', ashost: 'sap.example.com', sysnr: '00', … }`
   or `{ connectionType: 'rfc', client, language, mshost, msserv /* and/or sysid */, group, … }`.

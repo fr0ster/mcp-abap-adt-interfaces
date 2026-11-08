@@ -480,3 +480,62 @@ const _httpIntoRfc: ISapRfcConfig = {
   sysnr: '00',
 };
 void _httpIntoRfc;
+
+// Reading `url` on the unnarrowed union compiles — both shapes declare it,
+// RFC as `url?: never` — and reads `string | undefined`; only a narrowed
+// HTTP config reads it as a definite `string`.
+declare const unnarrowed: ISapConfig;
+const _unnarrowedUrl: string | undefined = unnarrowed.url;
+void _unnarrowedUrl;
+// @ts-expect-error unnarrowed, the url may be absent
+const _definiteUrl: string = unnarrowed.url;
+void _definiteUrl;
+
+// 4.0.0: `ISapConfig` is a union type alias, so an interface cannot extend it.
+// @ts-expect-error an interface cannot extend a union
+interface _ExtendsUnion extends ISapConfig {
+  extra: string;
+}
+// Extend the branch meant (the interfaces), or intersect in a type alias
+// (the union, and the message server, which is itself an intersection).
+interface _ExtendsHttp extends ISapHttpConfig {
+  extra: string;
+}
+interface _ExtendsApplicationServer extends ISapRfcApplicationServer {
+  extra: string;
+}
+type _WithExtra = ISapConfig & { extra: string };
+type _MessageServerWithExtra = ISapRfcMessageServer & { extra: string };
+const _extendedHttp: _ExtendsHttp = {
+  url: 'https://h',
+  authType: 'basic',
+  extra: 'x',
+};
+const _extendedAs: _ExtendsApplicationServer = {
+  connectionType: 'rfc',
+  authType: 'basic',
+  client: '100',
+  language: 'EN',
+  ashost: 'h',
+  sysnr: '00',
+  extra: 'x',
+};
+const _withExtra: _WithExtra = {
+  url: 'https://h',
+  authType: 'basic',
+  extra: 'x',
+};
+const _msWithExtra: _MessageServerWithExtra = {
+  connectionType: 'rfc',
+  authType: 'basic',
+  client: '100',
+  language: 'EN',
+  mshost: 'ms',
+  sysid: 'SID',
+  group: 'PUBLIC',
+  extra: 'x',
+};
+void _extendedHttp;
+void _extendedAs;
+void _withExtra;
+void _msWithExtra;

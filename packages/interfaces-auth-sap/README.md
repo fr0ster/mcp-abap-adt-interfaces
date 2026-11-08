@@ -54,7 +54,8 @@ function origin(config: ISapConfig): string | undefined {
 
 `ISapConfig` is a union by connection type (see the CHANGELOG for the whole entry).
 
-- **Narrow on `connectionType` before reading `url`**: `url` exists only on `ISapHttpConfig`; `connectionType` `'http'` or absent is HTTP, so an HTTP literal compiles unchanged unless it states an RFC key.
+- **Narrow on `connectionType` before using `url` as a string**: on the unnarrowed `ISapConfig`, `config.url` compiles but reads `string | undefined` (RFC declares it `url?: never`); only on `ISapHttpConfig` is it a definite `string`. `connectionType` `'http'` or absent is HTTP, so an HTTP literal compiles unchanged unless it states an RFC key.
+- **`ISapConfig` is a union type alias, not an interface**: `interface X extends ISapConfig {}` no longer compiles. Extend the branch you mean (`ISapHttpConfig`, `ISapRfcApplicationServer`), or intersect in a type alias: `type X = ISapConfig & { … }`, which is also the way for `ISapRfcMessageServer`.
 - **An RFC config states `client`, `language` and exactly one address**, and no `url`: `ashost` + `sysnr`, or `mshost` + `group` with `msserv`, `sysid` or both. One that gave its host and system number through `url` (`http://host:80NN`) states `ashost: 'host'`, `sysnr: 'NN'`. Nothing is defaulted: no client `000`, no language `EN`, no group `PUBLIC`.
 - **`saprouter` and `language` are RFC only**; an HTTP config removes `saprouter`.
 - **`ashost`, `sysnr` and `language` are new.**
