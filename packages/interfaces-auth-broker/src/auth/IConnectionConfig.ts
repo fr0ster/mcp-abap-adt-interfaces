@@ -48,6 +48,24 @@ export interface IConnectionConfig {
   sapClient?: string;
   /** Language (optional, for ABAP/BTP) */
   language?: string;
+  // The RFC address — how to reach the system over RFC, not a secret. The
+  // names are the SAP NW RFC SDK's connection parameters. A store holds what
+  // the destination states; its consumer decides what an RFC destination must
+  // state (one application server, or one message server with its group).
+  /** Application server host */
+  ashost?: string | undefined;
+  /** System number of the application server, e.g. "00" */
+  sysnr?: string | undefined;
+  /** Message server host */
+  mshost?: string | undefined;
+  /** Message server service or port, e.g. "3600" or "sapmsSID" */
+  msserv?: string | undefined;
+  /** System ID, naming the message server's service */
+  sysid?: string | undefined;
+  /** Logon group of the message server, e.g. "PUBLIC" */
+  group?: string | undefined;
+  /** SAProuter string, e.g. "/H/router.example.com/S/3299/H/"; for either address */
+  saprouter?: string | undefined;
   /** Session cookies for SAML authentication (raw Cookie header value) */
   sessionCookies?: string;
   // SNC settings for a destination whose `authType` is `'snc'` — how to reach

@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.0] - 2026-11-08
+
+### Changed (breaking)
+
+- **`IAbapConnection.getBaseUrl(): Promise<string | undefined>`** — was
+  `Promise<string>`. It answers the system's HTTP origin, or `undefined` for a
+  connection that has none: an RFC connection, whose destination states an RFC
+  address and no URL (`@mcp-abap-adt/interfaces-auth-sap` 4.0.0). The absence is
+  in the type, so a caller cannot read a URL that is not there.
+
+### Migrating to 4.0.0
+
+- **A caller narrows the answer** before using it as a string:
+  `const url = await connection.getBaseUrl(); if (url !== undefined) { … }`.
+  Code that builds an absolute URL on it decides what to do without one — over
+  RFC a request carries a path, and no origin is invented.
+- **An implementer** that answers a string still conforms; nothing to do. One
+  that has no URL answers `undefined` instead of `''` or a made-up origin.
+
 ## [3.0.0] - 2026-10-12
 
 ### Removed (breaking)

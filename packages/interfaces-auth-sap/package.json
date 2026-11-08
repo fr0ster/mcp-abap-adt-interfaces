@@ -1,6 +1,6 @@
 {
   "name": "@mcp-abap-adt/interfaces-auth-sap",
-  "version": "3.5.0",
+  "version": "4.0.0",
   "description": "SAP and BTP authorization contracts: SAP system configuration, the UAA client, XSUAA, certificate loading",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -29,7 +29,7 @@
   "scripts": {
     "clean": "rm -rf dist tsconfig.tsbuildinfo tsconfig.build.tsbuildinfo",
     "build": "tsc -b tsconfig.build.json",
-    "test:check": "tsc -p tsconfig.json --noEmit",
+    "test:check": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.typecheck-loose.json --noEmit",
     "prepublishOnly": "npm run --prefix ../.. check"
   },
   "engines": {

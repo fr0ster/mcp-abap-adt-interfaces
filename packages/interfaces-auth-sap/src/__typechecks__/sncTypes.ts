@@ -7,9 +7,12 @@ const _authType: SapAuthType = 'snc';
 void _authType;
 
 const _sap: ISapConfig = {
-  url: 'http://h:8000',
   authType: 'snc',
   connectionType: 'rfc',
+  client: '100',
+  language: 'EN',
+  ashost: 'h',
+  sysnr: '00',
   sncPartnerName: 'p:CN=SID',
   sncQop: '9',
   sncLib: '/lib/sapcrypto.so',

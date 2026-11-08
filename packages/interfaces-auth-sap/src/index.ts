@@ -29,7 +29,15 @@ export type { AuthType } from './auth/AuthType';
 export { AUTH_TYPE_XSUAA, AUTH_TYPES } from './auth/AuthType';
 export type { IAuthorizationConfig } from './auth/IAuthorizationConfig';
 export type { ICertificateMaterialLoader } from './auth/ICertificateMaterialLoader';
-export type { ISapConfig } from './sap/ISapConfig';
+export type {
+  ISapConfig,
+  ISapConfigBase,
+  ISapHttpConfig,
+  ISapRfcApplicationServer,
+  ISapRfcConfig,
+  ISapRfcLogon,
+  ISapRfcMessageServer,
+} from './sap/ISapConfig';
 export type { SapAuthType, SapConnectionType } from './sap/SapAuthType';
 export type { IHeaderValidationResult } from './validation/IHeaderValidationResult';
 export type { IValidatedAuthConfig } from './validation/IValidatedAuthConfig';

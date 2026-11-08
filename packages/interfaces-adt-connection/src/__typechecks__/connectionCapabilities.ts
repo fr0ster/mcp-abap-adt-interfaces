@@ -174,3 +174,30 @@ const _noSignal: IAbapRequestOptions = {
   signal: new AbortController().signal,
 };
 void _noSignal;
+
+// **The system's URL may be absent** (4.0.0): a connection without an HTTP
+// origin — RFC — answers `undefined`, and says so in the type. One that has a
+// URL still conforms by answering a string; a caller narrows before reading.
+const _withoutUrl: IAbapConnection = {
+  ..._sessionless,
+  getBaseUrl: async () => undefined,
+};
+void _withoutUrl;
+
+const _withUrl: IAbapConnection = {
+  ..._sessionless,
+  getBaseUrl: async (): Promise<string> => 'https://h',
+};
+void _withUrl;
+
+void (async () => {
+  // @ts-expect-error the URL may be undefined: a caller narrows first
+  const _assumed: string = await _plain.getBaseUrl();
+  void _assumed;
+
+  const answered = await _plain.getBaseUrl();
+  if (answered !== undefined) {
+    const _narrowedUrl: string = answered;
+    void _narrowedUrl;
+  }
+});

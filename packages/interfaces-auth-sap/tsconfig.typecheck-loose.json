@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "exactOptionalPropertyTypes": false,
+    "composite": false,
+    "incremental": false
+  },
+  "include": ["src/**/*"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src/__typechecks__/certificateLoaderCompatibility.ts",
+    "src/__typechecks__/rfcAddressStrictTypes.ts"
+  ]
+}

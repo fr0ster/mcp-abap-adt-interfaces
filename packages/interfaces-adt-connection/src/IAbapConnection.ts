@@ -45,9 +45,10 @@ export interface IAbapConnection {
   connect(): Promise<void>;
 
   /**
-   * Get base URL of SAP system
+   * The SAP system's HTTP origin, or `undefined` for a connection that has
+   * none (RFC). A caller narrows before reading it.
    */
-  getBaseUrl(): Promise<string>;
+  getBaseUrl(): Promise<string | undefined>;
 
   /**
    * Get current session ID (for stateful connections)

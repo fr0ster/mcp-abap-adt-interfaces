@@ -7,6 +7,63 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.0] - 2026-11-08
+
+### Changed (breaking)
+
+- **`ISapConfig` is a union by connection type**: `ISapHttpConfig | ISapRfcConfig`.
+  - **HTTP** (`ISapHttpConfig`): `connectionType` is `'http'` or absent, `url` is
+    required, `client` optional, and no RFC key (`ashost`, `sysnr`, `mshost`,
+    `msserv`, `sysid`, `group`, `saprouter`, `language`) may be stated. An HTTP
+    literal written for 3.x compiles unchanged unless it states `saprouter` or a
+    message-server key.
+  - **RFC** (`ISapRfcConfig`): `connectionType: 'rfc'`, `client` and `language`
+    required, `saprouter` optional, no `url` — and exactly one complete address:
+    an application server (`ISapRfcApplicationServer`: `ashost` + `sysnr`) or a
+    message server (`ISapRfcMessageServer`: `mshost` + `group`, its service named
+    by `msserv`, `sysid` or both). Nothing of an RFC address is derived from a
+    URL any more.
+  - `connectionType === 'rfc'` narrows to `ISapRfcConfig`; anything else to
+    `ISapHttpConfig`.
+  - The authentication fields (`authType`, the credential, certificate,
+    Kerberos, SNC and UAA fields) are common to both shapes, in `ISapConfigBase`.
+    `ICertificateMaterialLoader.load` keeps taking `ISapConfig`.
+
+### Added
+
+- **`ashost`, `sysnr`, `language`** — new, RFC only. The names are the SAP NW RFC
+  SDK's, except `language` (the SDK's `lang`), the name `IConnectionConfig` and
+  `SAP_LANGUAGE` use.
+- **Exported beside `ISapConfig`:** `ISapConfigBase`, `ISapHttpConfig`,
+  `ISapRfcLogon`, `ISapRfcApplicationServer`, `ISapRfcMessageServer`,
+  `ISapRfcConfig`.
+- `__typechecks__/rfcAddressTypes.ts` holds every shape and refusal, checked with
+  `exactOptionalPropertyTypes` on (`tsconfig.json`) and off
+  (`tsconfig.typecheck-loose.json`).
+
+### Migrating to 4.0.0
+
+- **Narrow on `connectionType` before using `url` as a string.** On the
+  unnarrowed `ISapConfig`, `config.url` compiles but reads `string | undefined`
+  (RFC declares it `url?: never`); only on an `ISapHttpConfig` is it a definite
+  `string`: `if (config.connectionType === 'rfc') { … } else { config.url }`.
+- **`ISapConfig` is a union type alias, not an interface**, so
+  `interface X extends ISapConfig {}` no longer compiles. Extend the branch you
+  mean — `ISapHttpConfig` or `ISapRfcApplicationServer` — or intersect in a type
+  alias: `type X = ISapConfig & { … }` (also the way for
+  `ISapRfcMessageServer`, itself an intersection).
+- **An RFC config states `client`, `language` and one address**, and no `url`:
+  `{ connectionType: 'rfc', client: '100', language: 'EN', ashost: 'sap.example.com', sysnr: '00', … }`
+  or `{ connectionType: 'rfc', client, language, mshost, msserv /* and/or sysid */, group, … }`.
+  A 3.x RFC config that gave its host and system number through `url`
+  (`http://host:80NN`) states `ashost: 'host'` and `sysnr: 'NN'` instead.
+- **`saprouter` and `language` are RFC only**: an HTTP config that stated
+  `saprouter` (no HTTP wire read it) removes it.
+- **Build a config inside the branch that knows its wire**, as a literal of that
+  shape. Omit a key that does not belong rather than setting it to `undefined`:
+  without `exactOptionalPropertyTypes`, `?: never` accepts `undefined`, so only
+  absence holds in both modes.
+
 ## [3.5.0] - 2026-10-25
 
 ### Changed
