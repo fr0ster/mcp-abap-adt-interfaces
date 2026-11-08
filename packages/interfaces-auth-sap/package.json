@@ -29,7 +29,7 @@
   "scripts": {
     "clean": "rm -rf dist tsconfig.tsbuildinfo tsconfig.build.tsbuildinfo",
     "build": "tsc -b tsconfig.build.json",
-    "test:check": "tsc -p tsconfig.json --noEmit",
+    "test:check": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.typecheck-loose.json --noEmit",
     "prepublishOnly": "npm run --prefix ../.. check"
   },
   "engines": {
