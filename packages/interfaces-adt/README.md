@@ -12,6 +12,7 @@ ADT contracts: object operations, runtime analysis, execution, feeds and service
 - Since 15.0.0 `skipCount` is gone from breakpoints (the server ignores it) and `clientId` pairs an answer row with its request. The CHANGELOG has the migration note.
 - Since 15.1.0 the plain class and program run take `debuggee` (`IDebuggeeIds`): the terminal id and IDE id a terminal-mode listener catches the run by.
 - Since 23.1.0 the ABAP Unit run registry: `ABAP_UNIT_RUN_TYPES`, every `osl:object type` value a run may name, what a run of it runs and on what evidence; `AbapUnitRunObjectType` (its keys), `AbapUnitRunTarget` (an object or a package) and the generic runner contract `IAbapUnitRunner`. Additions only. See "The ABAP Unit run registry".
+- Since 27.0.0 `IUtilResults` requires `objectActivation`, the reading of the new atom `IAdtObjectActivation` (`activateObjects`, the synchronous `POST /activation` for several objects); `activate` takes `IAdtActivationOptions` (`preauditRequested`); and `IAnalyse` takes an optional third parameter, `IAdtAnalyseContext`. See "Activation" and "Migrating to 27.0.0".
 - Since 25.2.0 `update` and `updateMetadata` take `IAdtUpdateOptions`: `IAdtOperationOptions` with `ifMatch`, the ETag a read answered, sent as `If-Match` so the system refuses a write over a changed document (`412`). Additions only.
 - Since 25.1.0 `IAtcResultsReadable` reads the ATC results the system holds: `listResults` (`IAtcResultListOptions`, `createdBy` required) and `getResult` by Display ID. Additions only.
 - Since 25.0.2 the on-premise table lists `mainPrograms` for `PROG/I` (25.0.1), and `IIncludeResults` has a required `mainPrograms` slot.
@@ -40,14 +41,14 @@ npm install @mcp-abap-adt/interfaces-adt
 
 | directory | files | what |
 |---|---|---|
-| `adt/` | 43 | the object contracts: capability atoms, the object types, the ADT type tables and their entry shape, `IAdtResponse`, `IAdtError`, the error codes, the transport request's object list |
+| `adt/` | 44 | the object contracts: capability atoms, the object types, the ADT type tables and their entry shape, `IAdtResponse`, `IAdtError`, the error codes, the transport request's object list |
 | `runtime/` | 14 | runtime analysis: the debuggers (`IAbapDebugger`, `IAmdpDebugger`) and `IMemorySnapshots`, `IProfiler`, the trace contracts (`ITraceListing`/`ITraceReading`, `ICrossTrace`, `ISt05Trace`), `IApplicationLog`, `IAtcLog` and the ATC run (`IAtcRunOptions`, `IAtcFindings`) and its results (`IAtcResultsReadable`), `IDdicActivation`, `IGatewayErrorLog`, `IRuntimeDumps`, `ISystemMessages` |
 | `execution/` | 3 | class and program execution, with profiling |
 | `feeds/` | 2 | the ADT feed contracts |
 | `service/` | 1 | service definitions and bindings |
 | `shared/` | 1 | what more than one object type needs |
 
-Six directories, all ADT. `connection/` left for `interfaces-adt-connection` in 11.0.0. `sap/`, `auth/`, `token/`, `session/`, `serviceKey/`, `store/`, `validation/` and `Headers.ts` were here until 9.0.0 and are listed above under what left; `__typechecks__/` holds 31 files that compile shapes this contract must and must not accept, and ships in no tarball.
+Six directories, all ADT. `connection/` left for `interfaces-adt-connection` in 11.0.0. `sap/`, `auth/`, `token/`, `session/`, `serviceKey/`, `store/`, `validation/` and `Headers.ts` were here until 9.0.0 and are listed above under what left; `__typechecks__/` holds 39 files that compile shapes this contract must and must not accept, and ships in no tarball.
 
 The contract rules — what a member answers, how a strategy is supplied, how a contract is built — are in [`docs/architecture/ARCHITECTURE.md`](../../docs/architecture/ARCHITECTURE.md). Domain-by-domain documentation with examples used to sit in the facade's README; the facade is deleted, and each package documents its own contracts.
 
@@ -364,6 +365,42 @@ So `createTask` requires `targetUser` and `removeObject` requires `position`, an
 
 `addObject` still takes an entry without a position — one that does not exist yet has none.
 
+## Activation
+
+Three members activate, one endpoint each:
+
+| member | request | answer |
+|---|---|---|
+| `IAdtActivatable.activate` | `POST /activation`, one object | in the body |
+| `IAdtObjectActivation.activateObjects` | `POST /activation`, several objects | in the body; read through `IUtilResults.objectActivation` |
+| `activateObjectsGroup` (`IAdtGroupLifecycle`, `IAdtTypedGroupLifecycle`) | `POST /activation/runs`, several objects | `202` and the run in `Location`; read through `IUtilResults.activation` |
+
+The two group members take the same references (`IAdtGroupActivationReference<V>`
+for the typed atoms). Which endpoint a system offers is in its discovery; the
+caller reads it and picks the member. Each member sends one request, with one
+exception: when `activate` or `activateObjects` is answered `chkl:messages`
+with `activationExecuted="false"` and no message, it reads
+`GET /activation/inactiveobjects` once more and hands that answer to the
+reading (`IAdtAnalyseContext`, below). `activateObjectsGroup` reads nothing
+more: on the runs path that read, after `getActivationResults`, is the
+caller's, which holds the references the run was started with.
+
+**The preaudit.** `activate` takes `IAdtActivationOptions`
+(`src/adt/IAdtObject.ts`): `IAdtOperationOptions` with `preauditRequested`,
+sent as the request's `preauditRequested`; absent, the member's default. The
+group members take it as their positional `preauditRequested`. An answer
+listing the objects still inactive (`ioc:inactiveObjects`) activated nothing;
+sending the activation again with `preauditRequested: false` is the caller's
+next call.
+
+**The facts beside the answer.** `IAnalyse` takes an optional third parameter,
+`IAdtAnalyseContext`. Its `activation` carries the uris the activation request
+named and the answer to one `GET /activation/inactiveobjects`, for an answer
+that does not tell by itself whether the objects were activated. Only an
+activating member fills it, and only when it read that list. A reading of two
+parameters ignores it. `src/__typechecks__/activationOptions.ts`,
+`analyseContext.ts` and `objectActivation.ts` hold these shapes.
+
 ## A request's own headers
 
 Since 19.0.0 a member whose request sets **both** `Accept` and `Content-Type`
@@ -383,11 +420,21 @@ Which request sets what was read from `@mcp-abap-adt/adt-clients`. For a chain,
 the main write counts (the message class message's create and update: the
 PUT). Where a member's implementations disagree, the majority decides.
 
-The members that take `headers`: `IAdtAbapGitClient`: `link`, `pull`, `checkExternalRepo`; `IAdtCreatable`: `create`; `IAdtUpdatable`: `update`; `IAdtMetadataUpdatable`: `updateMetadata`; `IAdtDeletable`: `delete`, `checkDeletion`; `IAdtCheckable`: `check`; `IAdtActivatable`: `activate`; `IFeatureToggleObject`: `checkState`; `IAdtTransportObjectActions`: `removeObject`, `addObject`, `createTask`, `changeTaskType`; `IAdtTransportMoveObjects`: `moveObjects`; `IAbapUnitRunner`: `runSync`; `IAdtWhereUsed`: `getWhereUsed`, `getWhereUsedScope`; `IAdtVirtualFolders`: `getVirtualFoldersContents`; `IAdtRepositoryStructure`: `fetchNodeStructure`; `IAdtGroupLifecycle`: `activateObjectsGroup`, `checkDeletionGroup`, `deleteObjectsGroup`; `IAdtDataPreview`: `getSqlQuery`, `getTableContents`; `ITraceScheduling`: `scheduleTrace`; `IAbapDebugger`: `setBreakpoints`, `getChildVariables`, `getVariables`, `syncBreakpoints`, `setDebuggerSettings`; `IAmdpDebugger`: `getDataPreview`.
+The members that take `headers`: `IAdtAbapGitClient`: `link`, `pull`, `checkExternalRepo`; `IAdtCreatable`: `create`; `IAdtUpdatable`: `update`; `IAdtMetadataUpdatable`: `updateMetadata`; `IAdtDeletable`: `delete`, `checkDeletion`; `IAdtCheckable`: `check`; `IAdtActivatable`: `activate`; `IFeatureToggleObject`: `checkState`; `IAdtTransportObjectActions`: `removeObject`, `addObject`, `createTask`, `changeTaskType`; `IAdtTransportMoveObjects`: `moveObjects`; `IAbapUnitRunner`: `runSync`; `IAdtWhereUsed`: `getWhereUsed`, `getWhereUsedScope`; `IAdtVirtualFolders`: `getVirtualFoldersContents`; `IAdtRepositoryStructure`: `fetchNodeStructure`; `IAdtGroupLifecycle`: `activateObjectsGroup`, `checkDeletionGroup`, `deleteObjectsGroup`; `IAdtObjectActivation`: `activateObjects`; `IAdtDataPreview`: `getSqlQuery`, `getTableContents`; `ITraceScheduling`: `scheduleTrace`; `IAbapDebugger`: `setBreakpoints`, `getChildVariables`, `getVariables`, `syncBreakpoints`, `setDebuggerSettings`; `IAmdpDebugger`: `getDataPreview`.
 
 The field is on each member's own options, not on `IAdtAnalyseOptions` or
 `IAdtOperationOptions`. `src/__typechecks__/headersOnEveryMember.ts` holds this
 for every member and every overload.
+
+## Migrating to 27.0.0
+
+- **A result set for the utilities adds `objectActivation`.** `IUtilResults`
+  now requires it: the reading of what `activateObjects` answers. A set built
+  for 26.x stops compiling until it names one, e.g. the strategy that
+  keeps the document as it came (`rawDocument` in `@mcp-abap-adt/adt-strategies`).
+- Nothing else breaks. An `activate` implementation declaring
+  `IAdtOperationOptions` still implements `IAdtActivatable`, and an `IAnalyse`
+  of two parameters is still one.
 
 ## Migrating to 24.0.0
 

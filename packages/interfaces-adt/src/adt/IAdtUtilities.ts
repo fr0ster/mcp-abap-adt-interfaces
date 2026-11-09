@@ -652,6 +652,13 @@ export interface IUtilResults {
    * `/activation` answers its result in the body, which the default keeps.
    */
   readonly activation: IResultStrategy<unknown>;
+  /**
+   * What a synchronous activation of several objects answers —
+   * `POST /activation` ({@link IAdtObjectActivation}). The answer is in the
+   * body: `chkl:messages`, `ioc:inactiveObjects`, or nothing. Required since
+   * 27.0.0.
+   */
+  readonly objectActivation: IResultStrategy<unknown>;
   /** What an activation run is doing — `/activation/runs/{runId}`. */
   readonly run: IResultStrategy<unknown>;
   /** What an activation run produced — `/activation/results/{runId}`. */
@@ -769,6 +776,38 @@ export interface IAdtTypedGroupLifecycle<
     transportRequest: string | undefined,
     options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TDeletion>>;
+}
+
+/**
+ * `POST /sap/bc/adt/activation?method=activate&preauditRequested=…` for several
+ * objects, answered in its body, read through `IUtilResults.objectActivation`.
+ * One request, but for one answer: `chkl:messages` with
+ * `activationExecuted="false"` and no message is followed by one
+ * `GET /activation/inactiveobjects`, handed to the reading as
+ * `IAdtAnalyseContext`. The body is the one
+ * {@link IAdtTypedGroupLifecycle.activateObjectsGroup} sends to
+ * `/activation/runs`; which of the two endpoints the system offers is in its
+ * discovery, and choosing the member is the caller's.
+ *
+ * Its own atom, beside {@link IAdtTypedGroupLifecycle}, for the reason that
+ * atom gives: no composite changes (27.0.0).
+ */
+export interface IAdtObjectActivation<
+  TObjectActivation,
+  V extends AdtVariant = AdtModernVariant,
+> {
+  activateObjects<E extends IAdtError>(
+    objects: IAdtGroupActivationReference<V>[],
+    preauditRequested: boolean | undefined,
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
+  ): Promise<IAdtResponse<TObjectActivation, E>>;
+  activateObjects(
+    objects: IAdtGroupActivationReference<V>[],
+    preauditRequested: boolean | undefined,
+    options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<TObjectActivation>>;
 }
 
 /**

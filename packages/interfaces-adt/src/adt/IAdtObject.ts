@@ -91,6 +91,10 @@ export const AdtObjectErrorCodes = {
  * token rather than `undefined`, so that the absence of a strategy and a
  * strategy's verdict of "fine" are not the same value.
  *
+ * Where the answer alone cannot be judged, the member hands the facts it read
+ * beside it as the third parameter, {@link IAdtAnalyseContext}. A reading that
+ * needs none declares two parameters.
+ *
  * **It names its own failure type.** `IAdtFailure<TError extends IAdtError>` has
  * carried the parameter since the failure half existed, and it never arrived
  * anywhere, because the options pinned this return to `IAdtError`. A consumer
@@ -125,7 +129,27 @@ export const AdtObjectErrorCodes = {
 export type IAnalyse<E extends IAdtError = IAdtError> = (
   verdict: IAdtError | AdtNoFailure,
   answer?: IAdtWireResponse,
+  context?: IAdtAnalyseContext,
 ) => E | AdtNoFailure;
+
+/**
+ * Facts beside the answer that a member hands to {@link IAnalyse}, when the
+ * answer alone cannot be judged. A reading of two parameters ignores them and
+ * stays an {@link IAnalyse}.
+ */
+export interface IAdtAnalyseContext {
+  /**
+   * **Only a member that activates fills it**, and only when it read the list
+   * of inactive objects after the activation's answer; every other member, and
+   * an activation that read nothing more, leaves it absent.
+   */
+  readonly activation?: {
+    /** The uris of the references the activation request sent. */
+    readonly named: readonly string[];
+    /** The answer to the one `GET /sap/bc/adt/activation/inactiveobjects`. */
+    readonly inactiveObjects: IAdtWireResponse;
+  };
+}
 
 /**
  * The error strategy, given with the call. **Every member that answers an
@@ -303,4 +327,22 @@ export interface IAdtUpdateOptions<E extends IAdtError = IAdtError>
    * class's source and on a domain's metadata.
    */
   ifMatch?: string;
+}
+
+/**
+ * Options of an activation of one object.
+ *
+ * Everything {@link IAdtOperationOptions} carries, and whether the activation
+ * asks for the preaudit.
+ */
+export interface IAdtActivationOptions<E extends IAdtError = IAdtError>
+  extends IAdtOperationOptions<E> {
+  /**
+   * Sent as `preauditRequested`. Absent: the member's default.
+   *
+   * With `true`, a system may answer the objects still inactive
+   * (`ioc:inactiveObjects`) and activate nothing; sending the activation again
+   * with `false` is the caller's next call.
+   */
+  preauditRequested?: boolean;
 }

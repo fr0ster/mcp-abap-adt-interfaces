@@ -35,6 +35,7 @@
 import type { AdtReadVersion } from '../shared/IReadOptions';
 import type { IAdtHeaders } from './IAdtContentTypes';
 import type {
+  IAdtActivationOptions,
   IAdtAnalyseOptions,
   IAdtCreateOptions,
   IAdtOperationOptions,
@@ -529,13 +530,13 @@ export interface IAdtActivatable<
    */
   activate<E extends IAdtError>(
     config: AdtObjectIdentity<TConfig, TParent>,
-    options: { headers: IAdtHeaders } & IAdtOperationOptions<E> & {
+    options: { headers: IAdtHeaders } & IAdtActivationOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<TActivated, E>>;
   activate(
     config: AdtObjectIdentity<TConfig, TParent>,
-    options: { headers: IAdtHeaders } & IAdtOperationOptions,
+    options: { headers: IAdtHeaders } & IAdtActivationOptions,
   ): Promise<IAdtResponse<TActivated>>;
 }
 
