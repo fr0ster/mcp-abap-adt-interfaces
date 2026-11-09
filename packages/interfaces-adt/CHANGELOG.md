@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [27.0.0] - 2026-11-09
+
+### Breaking
+
+- **`IUtilResults` requires `objectActivation`**, the reading of
+  `activateObjects` below. A result set built for 26.x stops compiling until
+  it names one ([Migrating to 27.0.0](README.md#migrating-to-2700)).
+
+### Added
+
+- **`IAdtObjectActivation`**: `activateObjects(objects, preauditRequested,
+  options)`, one `POST /sap/bc/adt/activation?method=activate` for several
+  objects, answered in its body. It takes the references
+  `activateObjectsGroup` takes (`IAdtGroupActivationReference<V>`), which
+  sends them to `/activation/runs`; a system that does not offer
+  `/activation/runs` in its discovery answers that `404` (SAP_BASIS 751,
+  fr0ster/mcp-abap-adt#351), so the caller picks the member by discovery. Its
+  own atom, beside `IAdtTypedGroupLifecycle`, so no composite changes.
+- **`IAdtActivationOptions`**: `IAdtOperationOptions` with
+  `preauditRequested`, taken by both overloads of `IAdtActivatable.activate`.
+  On 751 the activation of one object with `preauditRequested=true` answered
+  the objects still inactive (`ioc:inactiveObjects`) and activated nothing; the
+  same request with `false` activated it (fr0ster/mcp-abap-adt#351). An
+  implementation declaring `IAdtOperationOptions` still conforms.
+- **`IAdtAnalyseContext`**, an optional third parameter of `IAnalyse`. Its
+  `activation` carries the uris an activation named and the answer to one
+  `GET /activation/inactiveobjects`, for an answer that does not tell by
+  itself whether the objects were activated. A reading of two parameters is
+  still an `IAnalyse`.
+
+### Migrating to 27.0.0
+
+A full `IUtilResults` names `objectActivation`. Nothing else changes for a
+caller or an implementation; see the README.
+
 ## [26.1.0] - 2026-11-08
 
 ### Changed
