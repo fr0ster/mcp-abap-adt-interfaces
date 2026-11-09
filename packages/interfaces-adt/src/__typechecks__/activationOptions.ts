@@ -2,8 +2,8 @@
 
 import type { IAdtActivatable } from '../adt/IAdtCapabilities';
 import type { IAdtHeaders } from '../adt/IAdtContentTypes';
-import type { IAdtOperationOptions } from '../adt/IAdtObject';
-import type { IAdtResponse } from '../adt/IAdtResponse';
+import type { IAdtOperationOptions, IAnalyse } from '../adt/IAdtObject';
+import type { IAdtError, IAdtResponse } from '../adt/IAdtResponse';
 
 const answered = <T>(value: T): IAdtResponse<T> => ({
   ok: true,
@@ -21,6 +21,25 @@ const id = { name: 'ZCL_X' };
 // A caller asks for the activation without the preaudit, or leaves it out.
 void _activatable.activate(id, { headers, preauditRequested: false });
 void _activatable.activate(id, { headers });
+
+// With its own failure strategy, the preaudit option keeps the failure type.
+interface IMyFailure extends IAdtError {
+  readonly stillInactive: readonly string[];
+}
+declare const mine: IAnalyse<IMyFailure>;
+const withStrategy = _activatable.activate(id, {
+  headers,
+  preauditRequested: false,
+  analyse: mine,
+});
+type Assert<T extends true> = T;
+type Equal<A, B> =
+  (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
+    ? true
+    : false;
+export type _FailureTypeKept = Assert<
+  Equal<Awaited<typeof withStrategy>, IAdtResponse<string, IMyFailure>>
+>;
 
 // @ts-expect-error preauditRequested is a boolean
 void _activatable.activate(id, { headers, preauditRequested: 'no' });

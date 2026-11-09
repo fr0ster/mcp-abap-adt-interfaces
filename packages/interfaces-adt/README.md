@@ -377,7 +377,13 @@ Three members activate, one endpoint each:
 
 The two group members take the same references (`IAdtGroupActivationReference<V>`
 for the typed atoms). Which endpoint a system offers is in its discovery; the
-caller reads it and picks the member. Each member sends one request.
+caller reads it and picks the member. Each member sends one request, with one
+exception: when `activate` or `activateObjects` is answered `chkl:messages`
+with `activationExecuted="false"` and no message, it reads
+`GET /activation/inactiveobjects` once more and hands that answer to the
+reading (`IAdtAnalyseContext`, below). `activateObjectsGroup` reads nothing
+more: on the runs path that read, after `getActivationResults`, is the
+caller's, which holds the references the run was started with.
 
 **The preaudit.** `activate` takes `IAdtActivationOptions`
 (`src/adt/IAdtObject.ts`): `IAdtOperationOptions` with `preauditRequested`,

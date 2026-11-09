@@ -780,8 +780,11 @@ export interface IAdtTypedGroupLifecycle<
 
 /**
  * `POST /sap/bc/adt/activation?method=activate&preauditRequested=…` for several
- * objects: one request, answered in its body, read through
- * `IUtilResults.objectActivation`. The body is the one
+ * objects, answered in its body, read through `IUtilResults.objectActivation`.
+ * One request, but for one answer: `chkl:messages` with
+ * `activationExecuted="false"` and no message is followed by one
+ * `GET /activation/inactiveobjects`, handed to the reading as
+ * `IAdtAnalyseContext`. The body is the one
  * {@link IAdtTypedGroupLifecycle.activateObjectsGroup} sends to
  * `/activation/runs`; which of the two endpoints the system offers is in its
  * discovery, and choosing the member is the caller's.
