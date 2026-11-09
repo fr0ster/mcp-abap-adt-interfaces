@@ -180,6 +180,7 @@
   "IAdtAbapGitClient": "interfaces-adt",
   "IAdtAbapGitClientOptions": "interfaces-adt",
   "IAdtActivatable": "interfaces-adt",
+  "IAdtActivationOptions": "interfaces-adt",
   "IAdtAnalyseOptions": "interfaces-adt",
   "IAdtAnsweredObject": "interfaces-adt",
   "IAdtCheckable": "interfaces-adt",

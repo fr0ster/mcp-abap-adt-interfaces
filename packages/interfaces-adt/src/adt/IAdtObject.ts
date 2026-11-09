@@ -304,3 +304,21 @@ export interface IAdtUpdateOptions<E extends IAdtError = IAdtError>
    */
   ifMatch?: string;
 }
+
+/**
+ * Options of an activation of one object.
+ *
+ * Everything {@link IAdtOperationOptions} carries, and whether the activation
+ * asks for the preaudit.
+ */
+export interface IAdtActivationOptions<E extends IAdtError = IAdtError>
+  extends IAdtOperationOptions<E> {
+  /**
+   * Sent as `preauditRequested`. Absent: the member's default.
+   *
+   * With `true`, a system may answer the objects still inactive
+   * (`ioc:inactiveObjects`) and activate nothing; sending the activation again
+   * with `false` is the caller's next call.
+   */
+  preauditRequested?: boolean;
+}

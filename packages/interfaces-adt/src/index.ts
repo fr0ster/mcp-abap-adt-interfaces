@@ -193,6 +193,7 @@ export type {
   IMetadataExtensionResults,
 } from './adt/IAdtMetadataExtension';
 export type {
+  IAdtActivationOptions,
   IAdtAnalyseOptions,
   IAdtCreateOptions,
   IAdtOperationOptions,
