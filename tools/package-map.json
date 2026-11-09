@@ -211,6 +211,7 @@
   "IAdtMetadataReadable": "interfaces-adt",
   "IAdtMetadataUpdatable": "interfaces-adt",
   "IAdtObjectAccess": "interfaces-adt",
+  "IAdtObjectActivation": "interfaces-adt",
   "IAdtObjectConfig": "interfaces-adt",
   "IAdtObjectSearch": "interfaces-adt",
   "IAdtOperationOptions": "interfaces-adt",

@@ -338,6 +338,7 @@ export type {
   IAdtGroupLifecycle,
   IAdtInformationSystem,
   IAdtObjectAccess,
+  IAdtObjectActivation,
   IAdtObjectProperties,
   IAdtObjectSearch,
   IAdtRepositoryStructure,
