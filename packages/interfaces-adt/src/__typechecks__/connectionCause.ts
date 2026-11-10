@@ -6,6 +6,41 @@ import {
   type IAdtError,
 } from '../adt/IAdtResponse';
 
+type Assert<T extends true> = T;
+type Equal<A, B> =
+  (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
+    ? true
+    : false;
+
+// The list is exactly these seven, in this order: a code removed or added is
+// a compile error here.
+type _ExactList = Assert<
+  Equal<
+    typeof ADT_CONNECTION_CAUSES,
+    readonly [
+      'ECONNREFUSED',
+      'ECONNRESET',
+      'ENOTFOUND',
+      'EAI_AGAIN',
+      'ETIMEDOUT',
+      'EHOSTUNREACH',
+      'ENETUNREACH',
+    ]
+  >
+>;
+type _ExactUnion = Assert<
+  Equal<
+    AdtConnectionCause,
+    | 'ECONNREFUSED'
+    | 'ECONNRESET'
+    | 'ENOTFOUND'
+    | 'EAI_AGAIN'
+    | 'ETIMEDOUT'
+    | 'EHOSTUNREACH'
+    | 'ENETUNREACH'
+  >
+>;
+
 // The union is the list's members, nothing wider.
 const _listed: AdtConnectionCause = ADT_CONNECTION_CAUSES[0];
 void _listed;
@@ -37,6 +72,14 @@ void _withCause;
 // The field is optional: an error built for 27.0.0 still conforms.
 const _withoutCause: IAdtError = { origin: 'connection', message: 'gone' };
 void _withoutCause;
+
+// The key with no value conforms too, under exactOptionalPropertyTypes.
+const _undefinedCause: IAdtError = {
+  origin: 'connection',
+  message: 'gone',
+  connectionCause: undefined,
+};
+void _undefinedCause;
 
 const _offList: IAdtError = {
   origin: 'connection',

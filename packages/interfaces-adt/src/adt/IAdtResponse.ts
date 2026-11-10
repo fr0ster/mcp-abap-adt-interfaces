@@ -207,9 +207,11 @@ export interface IAdtError {
    * ```
    *
    * Optional, like the fields above it: a strategy that does not name the
-   * cause still conforms.
+   * cause still conforms. `| undefined` so an object holding the key with no
+   * value — which conformed before the field existed — still conforms under
+   * `exactOptionalPropertyTypes`.
    */
-  readonly connectionCause?: AdtConnectionCause;
+  readonly connectionCause?: AdtConnectionCause | undefined;
 }
 
 /**

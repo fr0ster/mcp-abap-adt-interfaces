@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   answer — `ECONNREFUSED`, `ECONNRESET`, `ENOTFOUND`, `EAI_AGAIN`,
   `ETIMEDOUT`, `EHOSTUNREACH`, `ENETUNREACH`. A closed list; no TLS codes,
   which are `interfaces-auth`'s and outside this package's dependencies.
-- **`IAdtError.connectionCause?: AdtConnectionCause`**: the listed code an
+- **`IAdtError.connectionCause?: AdtConnectionCause | undefined`**: the listed code an
   `origin: 'connection'` failure was thrown with, so a consumer can answer
   "no connection" without reading the message. Optional: an error built for
   27.0.0 still conforms.
