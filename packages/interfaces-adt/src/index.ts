@@ -206,6 +206,7 @@ export type { IAdtObjectConfig } from './adt/IAdtObjectState';
 export type { IPackageConfig, IPackageResults } from './adt/IAdtPackage';
 export type { IProgramConfig, IProgramResults } from './adt/IAdtProgram';
 export type {
+  AdtConnectionCause,
   AdtFailureOrigin,
   AdtNoFailure,
   IAdtError,
@@ -215,7 +216,7 @@ export type {
   IAdtSuccess,
   IResultStrategy,
 } from './adt/IAdtResponse';
-export { ADT_NO_FAILURE } from './adt/IAdtResponse';
+export { ADT_CONNECTION_CAUSES, ADT_NO_FAILURE } from './adt/IAdtResponse';
 export type {
   IScalarFunctionConfig,
   IScalarFunctionResults,

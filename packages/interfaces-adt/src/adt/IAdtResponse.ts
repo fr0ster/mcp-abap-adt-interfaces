@@ -75,6 +75,35 @@ export type AdtFailureOrigin =
   | 'refusal';
 
 /**
+ * The network codes a request may fail with when no connection carried it to
+ * an answer: the system refused or reset the connection, its name did not
+ * resolve (`ENOTFOUND`, or `EAI_AGAIN` while the resolver could not answer),
+ * the connection timed out, or no route reached the host.
+ *
+ * A closed list: an `origin: 'connection'` failure names its cause only when
+ * the code it was thrown with is one of these ({@link IAdtError.connectionCause}),
+ * so a consumer can say "no connection" from a code rather than from words.
+ * Node's own codes, as a socket or the resolver raises them.
+ *
+ * **No TLS codes.** A TLS failure is a handshake that took place and was
+ * refused, with its own remedy, and the codes for it are listed in
+ * `@mcp-abap-adt/interfaces-auth` (`TLS_FAILURE_CODES`), which this package
+ * does not depend on.
+ */
+export const ADT_CONNECTION_CAUSES = [
+  'ECONNREFUSED',
+  'ECONNRESET',
+  'ENOTFOUND',
+  'EAI_AGAIN',
+  'ETIMEDOUT',
+  'EHOSTUNREACH',
+  'ENETUNREACH',
+] as const;
+
+/** One of {@link ADT_CONNECTION_CAUSES}. */
+export type AdtConnectionCause = (typeof ADT_CONNECTION_CAUSES)[number];
+
+/**
  * A failure, whichever strategy produced it.
  *
  * Every error strategy returns this — the shipped ones and a consumer's own. What
@@ -161,6 +190,26 @@ export interface IAdtError {
    * ```
    */
   readonly code?: string;
+
+  /**
+   * The network code an `origin: 'connection'` failure was thrown with, when it
+   * is one of {@link ADT_CONNECTION_CAUSES}; absent for any other code, for no
+   * code, and for a refusal.
+   *
+   * The cause by its code alone — no address, no message — so a consumer can
+   * answer "no connection" without reading text:
+   *
+   * ```typescript
+   * const answer = await utils.search({ query: 'ZCL_*' });
+   * if (!answer.ok && answer.getError().connectionCause !== undefined) {
+   *   // the request reached no answer: the system is not reachable
+   * }
+   * ```
+   *
+   * Optional, like the fields above it: a strategy that does not name the
+   * cause still conforms.
+   */
+  readonly connectionCause?: AdtConnectionCause;
 }
 
 /**
