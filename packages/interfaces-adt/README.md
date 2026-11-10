@@ -48,7 +48,7 @@ npm install @mcp-abap-adt/interfaces-adt
 | `service/` | 1 | service definitions and bindings |
 | `shared/` | 1 | what more than one object type needs |
 
-Six directories, all ADT. `connection/` left for `interfaces-adt-connection` in 11.0.0. `sap/`, `auth/`, `token/`, `session/`, `serviceKey/`, `store/`, `validation/` and `Headers.ts` were here until 9.0.0 and are listed above under what left; `__typechecks__/` holds 39 files that compile shapes this contract must and must not accept, and ships in no tarball.
+Six directories, all ADT. `connection/` left for `interfaces-adt-connection` in 11.0.0. `sap/`, `auth/`, `token/`, `session/`, `serviceKey/`, `store/`, `validation/` and `Headers.ts` were here until 9.0.0 and are listed above under what left; `__typechecks__/` holds 40 files that compile shapes this contract must and must not accept, and ships in no tarball.
 
 The contract rules — what a member answers, how a strategy is supplied, how a contract is built — are in [`docs/architecture/ARCHITECTURE.md`](../../docs/architecture/ARCHITECTURE.md). Domain-by-domain documentation with examples used to sit in the facade's README; the facade is deleted, and each package documents its own contracts.
 
@@ -425,6 +425,20 @@ The members that take `headers`: `IAdtAbapGitClient`: `link`, `pull`, `checkExte
 The field is on each member's own options, not on `IAdtAnalyseOptions` or
 `IAdtOperationOptions`. `src/__typechecks__/headersOnEveryMember.ts` holds this
 for every member and every overload.
+
+## A connection failure's cause
+
+An `IAdtError` of `origin: 'connection'` may carry `connectionCause`: the
+network code the request was thrown with, when it is one of
+`ADT_CONNECTION_CAUSES` — `ECONNREFUSED`, `ECONNRESET`, `ENOTFOUND`,
+`EAI_AGAIN`, `ETIMEDOUT`, `EHOSTUNREACH`, `ENETUNREACH` — typed
+`AdtConnectionCause`. Any other code, or none, leaves the field absent. A
+consumer answers "no connection" from the code, without reading `message`.
+
+The list holds no TLS codes: they are `interfaces-auth`'s
+(`TLS_FAILURE_CODES`), and this package depends on `interfaces-adt-connection`
+alone. The field is optional, so a strategy that does not name the cause still
+conforms. `src/__typechecks__/connectionCause.ts` holds these shapes.
 
 ## Migrating to 27.0.0
 

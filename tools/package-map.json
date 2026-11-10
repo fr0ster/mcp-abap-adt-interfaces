@@ -1,5 +1,6 @@
 {
   "ABAP_UNIT_RUN_TYPES": "interfaces-adt",
+  "ADT_CONNECTION_CAUSES": "interfaces-adt",
   "ADT_NO_FAILURE": "interfaces-adt",
   "ADT_SEARCH_TYPES_BASIS_740": "interfaces-adt",
   "ADT_SEARCH_TYPES_CLOUD": "interfaces-adt",
@@ -52,6 +53,7 @@
   "AdtCodeWith": "interfaces-adt",
   "AdtCodeWithIn": "interfaces-adt",
   "AdtCollection": "interfaces-adt",
+  "AdtConnectionCause": "interfaces-adt",
   "AdtFailureOrigin": "interfaces-adt",
   "AdtGroupActivationCode": "interfaces-adt",
   "AdtGroupDeletionCheckCode": "interfaces-adt",
