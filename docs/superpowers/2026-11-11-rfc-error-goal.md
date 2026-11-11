@@ -6,8 +6,8 @@ A consumer that depends on `@mcp-abap-adt/interfaces-adt-connection`, and not on
 connection that implements it, can read which RFC failure ended a request from typed fields,
 never from words. The package declares the RFC error's fields — `key`, `group`, `code` and
 `codeString`, as the SAP NetWeaver RFC SDK reports them for a failed call — as one type, and
-declares where a connection's thrown error carries them: a nested `rfc` field beside the
-error's existing top-level `code`.
+declares the error a connection throws, a type of its own, which carries them in a nested
+`rfc` field beside its top-level `code`.
 
 A connection that fails a request over RFC can then put the SDK's error on what it throws in a
 shape every consumer of the contract agrees on, and a consumer such as the ADT strategies can
@@ -29,12 +29,14 @@ by comparing a field.
   RFC call — every HTTP failure, every session error raised before anything was sent — carries
   none and still conforms.
 - **Typed as the SDK states them.** `key`, `group`, `code` and `codeString` carry the SDK's
-  `RFC_ERROR_INFO` values as `@mcp-abap-adt/sap-rfc-lite` hands them over: `group` and `code`
-  numbers, `key` and `codeString` strings. A value set declared closed is a const array with
-  its union derived from it, in the style of `@mcp-abap-adt/interfaces-adt`'s
-  `ADT_CONNECTION_CAUSES`, and holds exactly what the SDK's header `sapnwrfc.h` lists for it;
-  `key`, a free text the SDK fills, is a plain string. No value the SDK can report is refused
-  by the type.
+  `RFC_ERROR_INFO` values as `@mcp-abap-adt/sap-rfc-lite` hands them over. `group` and `code`
+  are plain numbers and `key` a plain string — a free text the SDK fills. `codeString` is the
+  name of the SDK's return code, typed by a closed list declared as a const array with its union
+  derived from it, in the style of `@mcp-abap-adt/interfaces-adt`'s `ADT_CONNECTION_CAUSES`: it
+  holds exactly the `RFC_RC` names the SDK's header `sapnwrfc.h` lists, every one of them and
+  nothing else.
+- **Every field readonly.** The error type and the RFC fields are read, never written, by a
+  consumer; an implementation builds them whole.
 - **Only fields, no text.** The `rfc` type holds the four fields and nothing that carries the
   SDK's or the system's words: no `message`, no ABAP message variables.
 - **Exported from this package.** Every new name is exported from the package's index and
