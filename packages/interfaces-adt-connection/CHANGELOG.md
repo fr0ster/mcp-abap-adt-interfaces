@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.1.0] - 2026-11-11
+
+### Added
+
+- **`IAbapConnectionError`** — the error a connection throws, as a consumer
+  reads it: `readonly code?: string | undefined` (a session error code from
+  `ADT_SESSION_ERROR`, or a Node network code — unchanged) and
+  `readonly rfc?: IRfcErrorInfo | undefined`. A connection throws an `Error`
+  carrying these fields; a consumer narrows a caught value to the type and
+  reads which failure it was from a field, never from the message.
+- **`IRfcErrorInfo`** — what the SAP NetWeaver RFC SDK said about a failed
+  call: `key` (the SDK's free-text error key), `group` (`RFC_ERROR_GROUP`, a
+  number), `code` (`RFC_RC`, a number) and `codeString`, the return code's
+  name. No message and no ABAP message variables. All fields readonly.
+- **`RFC_RCS` / `RfcReturnCodeName`** — the SDK's 34 `RFC_RC` names, in the
+  header's order (index = numeric code), and their union: the type of
+  `codeString`, so `rfc.codeString === 'RFC_CLOSED'` is checked by the
+  compiler.
+
+Nothing a 4.0.0 consumer or implementer does changes: every field is optional,
+and no existing name, type or constant moved.
+
 ## [4.0.0] - 2026-11-08
 
 ### Changed (breaking)
