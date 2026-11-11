@@ -1,7 +1,7 @@
 # @mcp-abap-adt/interfaces-adt-connection
 
 The ABAP connection contract: what an ADT request is sent through, and what
-comes back off the wire. Types and one constant; no implementation.
+comes back off the wire. Types and two constants; no implementation.
 
 ```bash
 npm install @mcp-abap-adt/interfaces-adt-connection
@@ -14,7 +14,20 @@ npm install @mcp-abap-adt/interfaces-adt-connection
 | `IAdtWireResponse` | the answer as it came off the wire — extends `IHttpWireResponse` from `interfaces-network` with the headers ADT sends. Since 2.0.0 its `data` is `unknown` unless the caller names the type (`makeAdtRequest<string>(…)`); it was `any` — see the CHANGELOG's migration note |
 | `ISessionLifecycleAware`, `ICriticalSection`, `IRequestProfiling`, `IDeferredResponseConnection` | the connection's capability atoms — a connection honours the ones it can |
 | `ADT_SESSION_ERROR` / `AdtSessionErrorCode` | what a session failure is called |
+| `IAbapConnectionError` | the error a connection throws, as a consumer reads it: `code` — a session error code or a Node network code — and, for a failed RFC call, `rfc`. Narrow a caught value to it; never read the message. Since 4.1.0 |
+| `IRfcErrorInfo`, `RFC_RCS` / `RfcReturnCodeName` | what the RFC SDK said about a failed call: `key` (free text), `group` and `code` (numbers), `codeString` — the return code's name, one of the SDK's `RFC_RC` names. Since 4.1.0 |
 | `ITimeoutConfig` | the deadlines a caller gives a connection: `default`, `csrf`, `long` |
+
+```typescript
+try {
+  await connection.makeAdtRequest(options);
+} catch (thrown) {
+  const error = thrown as IAbapConnectionError;
+  if (error.rfc?.codeString === 'RFC_CLOSED') {
+    // the other side closed the RFC conversation
+  }
+}
+```
 
 ## Why this package exists
 

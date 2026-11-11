@@ -11,6 +11,12 @@
  * (decision 35); what separated it is the release rate (decision 38).
  */
 export type { IAbapConnection, IAdtWireResponse } from './IAbapConnection';
+export type {
+  IAbapConnectionError,
+  IRfcErrorInfo,
+  RfcReturnCodeName,
+} from './IAbapConnectionError';
+export { RFC_RCS } from './IAbapConnectionError';
 export type { IAbapRequestOptions } from './IAbapRequestOptions';
 export type {
   AdtSessionErrorCode,
