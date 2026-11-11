@@ -18,14 +18,12 @@ npm install @mcp-abap-adt/interfaces-adt-connection
 | `IRfcErrorInfo`, `RFC_RCS` / `RfcReturnCodeName` | what the RFC SDK said about a failed call: `key` (free text), `group` and `code` (numbers), `codeString` — the return code's name, one of the SDK's `RFC_RC` names. Since 4.1.0 |
 | `ITimeoutConfig` | the deadlines a caller gives a connection: `default`, `csrf`, `long` |
 
+A caught value is `unknown`: the consumer narrows it with its own check (it comes from outside
+the type system) and then reads it by this type, never by a cast:
+
 ```typescript
-try {
-  await connection.makeAdtRequest(options);
-} catch (thrown) {
-  const error = thrown as IAbapConnectionError;
-  if (error.rfc?.codeString === 'RFC_CLOSED') {
-    // the other side closed the RFC conversation
-  }
+function closedByPartner(error: IAbapConnectionError): boolean {
+  return error.rfc?.codeString === 'RFC_CLOSED';
 }
 ```
 
