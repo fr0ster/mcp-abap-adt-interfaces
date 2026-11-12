@@ -36,7 +36,7 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@mcp-abap-adt/interfaces-adt-connection": "^4.1.0"
+    "@mcp-abap-adt/interfaces-adt-connection": "^4.2.0"
   },
   "devDependencies": {
     "@types/node": "^24.2.1",
