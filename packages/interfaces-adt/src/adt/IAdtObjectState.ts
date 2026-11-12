@@ -28,9 +28,9 @@
  */
 export interface IAdtObjectConfig {
   /** Package name (required for create operations, optional for others) */
-  packageName?: string;
+  packageName?: string | undefined;
   /** Description (required for create/validate operations, optional for others) */
-  description?: string;
+  description?: string | undefined;
   /** Transport request (optional, used for create/update/delete operations) */
-  transportRequest?: string;
+  transportRequest?: string | undefined;
 }

@@ -16,9 +16,9 @@ import type { IAdtError, IAdtResponse } from './IAdtResponse';
  * declared, which is the difference between a contract and a convenience.
  */
 export interface IUnitTestScope {
-  ownTests?: boolean;
-  foreignTests?: boolean;
-  addForeignTestsAsPreview?: boolean;
+  ownTests?: boolean | undefined;
+  foreignTests?: boolean | undefined;
+  addForeignTestsAsPreview?: boolean | undefined;
 }
 
 /** Which risk levels a run accepts. */
@@ -55,16 +55,16 @@ export interface IUnitTestConfig {
    * empty one. A field naming a single test class would promise an addressing
    * this contract does not have.
    */
-  source?: string;
+  source?: string | undefined;
 
   /** Where the container class goes, when `create` has to make it. */
-  packageName?: string;
+  packageName?: string | undefined;
   /** What the container class is, when `create` has to make it. */
-  description?: string;
+  description?: string | undefined;
   /** Template the container class is created from, when `create` has to make it. */
-  classTemplate?: string;
+  classTemplate?: string | undefined;
 
-  transportRequest?: string;
+  transportRequest?: string | undefined;
 }
 
 // Unit test definition types (local to adt-clients)
@@ -74,11 +74,11 @@ export interface IClassUnitTestDefinition {
 }
 
 export interface IClassUnitTestRunOptions {
-  title?: string;
-  context?: string;
-  scope?: IUnitTestScope;
-  riskLevel?: IUnitTestRiskLevel;
-  duration?: IUnitTestDuration;
+  title?: string | undefined;
+  context?: string | undefined;
+  scope?: IUnitTestScope | undefined;
+  riskLevel?: IUnitTestRiskLevel | undefined;
+  duration?: IUnitTestDuration | undefined;
 }
 
 /**
@@ -91,16 +91,16 @@ export interface IClassUnitTestRunOptions {
  */
 export type ICdsUnitTestConfig = IUnitTestConfig & {
   /** The CDS view under test. */
-  cdsViewName?: string;
+  cdsViewName?: string | undefined;
 };
 
 /** The CDS variant adds nothing to a run's result that a contract can name. */
 /** Options for fetching a finished run's result document. */
 export interface IUnitTestResultOptions {
   /** Ask ADT to embed navigation URIs for each reported item. */
-  withNavigationUris?: boolean;
+  withNavigationUris?: boolean | undefined;
   /** Result document flavour. */
-  format?: 'abapunit' | 'junit';
+  format?: 'abapunit' | 'junit' | undefined;
 }
 
 /**

@@ -10,13 +10,13 @@ import type { IResultStrategy } from './IAdtResponse';
 // Note: packageName and description are required for create/validate operations (validated in builder methods)
 export interface IMetadataExtensionConfig {
   name: string; // Required
-  description?: string; // Required for create/validate operations, optional for others
-  packageName?: string; // Required for create/validate operations, optional for others
-  transportRequest?: string; // Only optional parameter
-  source?: string;
-  masterLanguage?: string;
-  masterSystem?: string;
-  responsible?: string;
+  description?: string | undefined; // Required for create/validate operations, optional for others
+  packageName?: string | undefined; // Required for create/validate operations, optional for others
+  transportRequest?: string | undefined; // Only optional parameter
+  source?: string | undefined;
+  masterLanguage?: string | undefined;
+  masterSystem?: string | undefined;
+  responsible?: string | undefined;
 }
 
 /** One strategy per member of a metadataExtension implementation. See `IClassResults`. */

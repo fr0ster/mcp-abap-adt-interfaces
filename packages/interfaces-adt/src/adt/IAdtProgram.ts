@@ -9,13 +9,13 @@ import type { IResultStrategy } from './IAdtResponse';
 // description is required for create/validate operations
 export interface IProgramConfig {
   programName: string;
-  masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE); with neither, none is sent and SAP takes its logon language
-  packageName?: string; // Required for create operations, optional for others
-  transportRequest?: string; // Only optional parameter
-  description?: string; // Required for create/validate operations, optional for others
-  application?: string;
-  source?: string;
-  sessionId?: string;
+  masterLanguage?: string | undefined; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE); with neither, none is sent and SAP takes its logon language
+  packageName?: string | undefined; // Required for create operations, optional for others
+  transportRequest?: string | undefined; // Only optional parameter
+  description?: string | undefined; // Required for create/validate operations, optional for others
+  application?: string | undefined;
+  source?: string | undefined;
+  sessionId?: string | undefined;
 }
 
 /** One strategy per member of a program implementation. See `IClassResults`. */

@@ -6,12 +6,12 @@ import type { IResultStrategy } from './IAdtResponse';
 
 export interface IAppendStructureConfig {
   appendStructureName: string;
-  baseObject?: string; // required for create (validated in handler)
-  masterLanguage?: string;
-  packageName?: string;
-  transportRequest?: string;
-  description?: string;
-  source?: string;
+  baseObject?: string | undefined; // required for create (validated in handler)
+  masterLanguage?: string | undefined;
+  packageName?: string | undefined;
+  transportRequest?: string | undefined;
+  description?: string | undefined;
+  source?: string | undefined;
 }
 
 /** One strategy per member of a appendStructure implementation. See `IClassResults`. */

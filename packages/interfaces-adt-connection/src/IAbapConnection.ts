@@ -76,10 +76,12 @@ export interface IAbapConnection {
    * - Manages CSRF token
    * - Retries on 401/403 with token refresh (JWT only)
    *
+   * **It names no type for the answer** (since 5.0.0). `data` is `unknown`,
+   * and the caller reads it: a connection answers what came off the wire, so
+   * one that records or forwards a request has no `T` of the caller's to give.
+   *
    * @param options - Request options (url, method, data, etc.)
-   * @returns Promise with Axios response
+   * @returns Promise with the answer as it came off the wire
    */
-  makeAdtRequest<T = unknown, D = unknown>(
-    options: IAbapRequestOptions,
-  ): Promise<IAdtWireResponse<T, D>>;
+  makeAdtRequest(options: IAbapRequestOptions): Promise<IAdtWireResponse>;
 }

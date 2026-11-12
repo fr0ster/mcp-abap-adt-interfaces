@@ -7,11 +7,11 @@ import type { IResultStrategy } from './IAdtResponse';
 // Builder configuration (camelCase)
 export interface IAccessControlConfig {
   accessControlName: string;
-  masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE); with neither, none is sent and SAP takes its logon language
-  packageName?: string;
-  transportRequest?: string;
-  description?: string;
-  source?: string;
+  masterLanguage?: string | undefined; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE); with neither, none is sent and SAP takes its logon language
+  packageName?: string | undefined;
+  transportRequest?: string | undefined;
+  description?: string | undefined;
+  source?: string | undefined;
 }
 
 /** One strategy per member of a accessControl implementation. See `IClassResults`. */

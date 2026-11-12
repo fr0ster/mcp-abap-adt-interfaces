@@ -30,7 +30,7 @@ ADT contracts: object operations, runtime analysis, execution, feeds and service
 - Since 15.2.0 `IAdtTransportSortAndCompress` sorts and compresses a task's object list, the remedy SAP names when `removeObject` is refused for a duplicated entry.
 - Since 13.0.0 `IResultStrategy`, `IAnalyse` and `IAdtFailure.response` hand over an `IAdtWireResponse` whose `data` is `unknown`, not `any` (`interfaces-adt-connection` 2.0.0): narrow it before reading. The CHANGELOG has the migration note.
 - Since 27.3.0 `IAdtError` carries what the connection said about the SAP session — `sessionError` (an `ADT_SESSION_ERROR` code) and `sessionLost` — and `IAdtResult` carries `sessionLost` beside `value`; `ADT_CONNECTION_CAUSES` lists `EPIPE`. Additions only, apart from the list's length. See "A connection failure's cause" and "The SAP session".
-- Depends on `@mcp-abap-adt/interfaces-adt-connection` `^4.2.0` (since 27.3.0: `IAdtError.sessionError`, `IAdtError.sessionLost` and `IAdtResult.sessionLost` are its `AdtSessionErrorCode` and `AdtSessionLoss`, the latter first declared in 4.2.0), and on nothing else. Types and constants; no implementation.
+- Depends on `@mcp-abap-adt/interfaces-adt-connection` `^5.0.0` (since 27.4.0; `IAdtError.sessionError`, `IAdtError.sessionLost` and `IAdtResult.sessionLost` are its `AdtSessionErrorCode` and `AdtSessionLoss`, the latter first declared in 4.2.0), and on nothing else. Types and constants; no implementation.
 
 ## Install
 
@@ -49,7 +49,7 @@ npm install @mcp-abap-adt/interfaces-adt
 | `service/` | 1 | service definitions and bindings |
 | `shared/` | 1 | what more than one object type needs |
 
-Six directories, all ADT. `connection/` left for `interfaces-adt-connection` in 11.0.0. `sap/`, `auth/`, `token/`, `session/`, `serviceKey/`, `store/`, `validation/` and `Headers.ts` were here until 9.0.0 and are listed above under what left; `__typechecks__/` holds 43 files that compile shapes this contract must and must not accept, and ships in no tarball.
+Six directories, all ADT. `connection/` left for `interfaces-adt-connection` in 11.0.0. `sap/`, `auth/`, `token/`, `session/`, `serviceKey/`, `store/`, `validation/` and `Headers.ts` were here until 9.0.0 and are listed above under what left; `__typechecks__/` holds 44 files that compile shapes this contract must and must not accept, and ships in no tarball.
 
 The contract rules — what a member answers, how a strategy is supplied, how a contract is built — are in [`docs/architecture/ARCHITECTURE.md`](../../docs/architecture/ARCHITECTURE.md). Domain-by-domain documentation with examples used to sit in the facade's README; the facade is deleted, and each package documents its own contracts.
 
@@ -481,6 +481,19 @@ Each field is optional, `| undefined` for `exactOptionalPropertyTypes`, so an
 error or a result built for 27.2.0 still conforms.
 `src/__typechecks__/sessionError.ts` and `src/__typechecks__/sessionLost.ts`
 hold these shapes.
+
+## Optional fields take `undefined` (27.4.0)
+
+Under `exactOptionalPropertyTypes`, the optional fields of the object configs
+(every `…Config`), `IAdtError`, `IAdtOperationOptions`, `IDebuggerIdentity`,
+the options of `getActivationRun` and `getVirtualFoldersContents`, the runtime
+readers' options declared here (`IFeedQueryOptions`, the profiler trace
+options, `IClassUnitTestRunOptions` with `IUnitTestScope`,
+`IUnitTestResultOptions`), `IAdtClientOptions` and `IAdtSystemContext` are
+`?: T | undefined`: a caller passes a possibly absent value as it holds it,
+with no spread to leave the key out. An absent field and an `undefined` one
+mean the same. The CHANGELOG lists each type;
+`src/__typechecks__/explicitUndefined.ts` holds the shapes.
 
 ## Migrating to 27.0.0
 

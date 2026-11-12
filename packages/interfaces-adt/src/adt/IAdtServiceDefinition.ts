@@ -7,11 +7,11 @@ import type { IResultStrategy } from './IAdtResponse';
 // Builder configuration (camelCase)
 export interface IServiceDefinitionConfig {
   serviceDefinitionName: string;
-  masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE); with neither, none is sent and SAP takes its logon language
-  packageName?: string; // Required for create operations, optional for others
-  transportRequest?: string; // Only optional parameter
-  description?: string; // Required for create/validate operations, optional for others
-  source?: string; // Service definition source code (CDS service definition syntax)
+  masterLanguage?: string | undefined; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE); with neither, none is sent and SAP takes its logon language
+  packageName?: string | undefined; // Required for create operations, optional for others
+  transportRequest?: string | undefined; // Only optional parameter
+  description?: string | undefined; // Required for create/validate operations, optional for others
+  source?: string | undefined; // Service definition source code (CDS service definition syntax)
 }
 
 /** One strategy per member of a serviceDefinition implementation. See `IClassResults`. */

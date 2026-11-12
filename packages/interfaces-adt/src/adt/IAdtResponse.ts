@@ -155,13 +155,13 @@ export interface IAdtError {
    * than ours. The document itself is not repeated — it is `response.data`, and
    * two fields for one thing is the fault this design has been removing.
    */
-  readonly adtType?: string;
+  readonly adtType?: string | undefined;
 
   /** `<namespace id="…">`, when the document names one. */
-  readonly namespace?: string;
+  readonly namespace?: string | undefined;
 
   /** The response it arrived on, when an answer arrived at all. */
-  readonly response?: IAdtWireResponse;
+  readonly response?: IAdtWireResponse | undefined;
 
   /**
    * The call that produced it.
@@ -170,10 +170,12 @@ export interface IAdtError {
    * locked" means a different thing depending on which asked, and a caller
    * cannot analyse what they cannot locate.
    */
-  readonly request?: {
-    readonly method?: string;
-    readonly url?: string;
-  };
+  readonly request?:
+    | {
+        readonly method?: string | undefined;
+        readonly url?: string | undefined;
+      }
+    | undefined;
 
   /**
    * The failure's own code, when the strategy names one.
@@ -197,7 +199,7 @@ export interface IAdtError {
    * }
    * ```
    */
-  readonly code?: string;
+  readonly code?: string | undefined;
 
   /**
    * The network code an `origin: 'connection'` failure was thrown with, when it

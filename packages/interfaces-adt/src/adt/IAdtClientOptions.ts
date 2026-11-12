@@ -9,10 +9,10 @@
 import type { IAdtContentTypes } from './IAdtContentTypes';
 
 export interface IAdtSystemContext {
-  masterSystem?: string;
-  responsible?: string;
+  masterSystem?: string | undefined;
+  responsible?: string | undefined;
   /** Master/original language for newly created objects (adtcore:masterLanguage). Sourced from SAP_LANGUAGE; when unset, none is sent and SAP takes its logon language. */
-  masterLanguage?: string;
+  masterLanguage?: string | undefined;
 }
 
 /**
@@ -21,11 +21,11 @@ export interface IAdtSystemContext {
  * format the server refused is the consumer's own.
  */
 export interface IAdtClientOptions {
-  masterSystem?: string;
-  responsible?: string;
+  masterSystem?: string | undefined;
+  responsible?: string | undefined;
   /** Master/original language for newly created objects. When unset, none is sent and SAP takes the request's logon language. */
-  masterLanguage?: string;
-  contentTypes?: IAdtContentTypes;
+  masterLanguage?: string | undefined;
+  contentTypes?: IAdtContentTypes | undefined;
   /** Whether the SAP system uses Unicode encoding. Affects Content-Type headers for source code operations. */
-  unicode?: boolean;
+  unicode?: boolean | undefined;
 }

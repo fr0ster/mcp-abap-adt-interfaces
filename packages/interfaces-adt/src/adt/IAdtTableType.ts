@@ -45,12 +45,12 @@ export interface ITableTypeConfig {
    */
 
   tableTypeName: string;
-  masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE); with neither, none is sent and SAP takes its logon language
-  packageName?: string; // Required for create operations, optional for others
-  transportRequest?: string; // Only optional parameter
+  masterLanguage?: string | undefined; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE); with neither, none is sent and SAP takes its logon language
+  packageName?: string | undefined; // Required for create operations, optional for others
+  transportRequest?: string | undefined; // Only optional parameter
   // XML-based TableType parameters (TableType is XML-based entity like Domain/DataElement)
-  rowTypeName?: string; // Structure name for dictionaryType (required for update)
-  description?: string; // Required for create/validate operations, optional for others
+  rowTypeName?: string | undefined; // Structure name for dictionaryType (required for update)
+  description?: string | undefined; // Required for create/validate operations, optional for others
 }
 
 /** One strategy per member of a tableType implementation. See `IClassResults`. */

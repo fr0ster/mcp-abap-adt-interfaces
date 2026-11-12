@@ -23,28 +23,30 @@ export type EnhancementType = 'enhoxhb' | 'enhoxhh' | 'enhsxsb';
  */
 export interface IEnhancementConfig {
   enhancementName: string;
-  masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE); with neither, none is sent and SAP takes its logon language
+  masterLanguage?: string | undefined; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE); with neither, none is sent and SAP takes its logon language
   enhancementType: EnhancementType;
-  description?: string;
-  packageName?: string;
-  transportRequest?: string;
-  source?: string;
-  enhancementSpot?: string;
-  badiDefinition?: string;
+  description?: string | undefined;
+  packageName?: string | undefined;
+  transportRequest?: string | undefined;
+  source?: string | undefined;
+  enhancementSpot?: string | undefined;
+  badiDefinition?: string | undefined;
   /**
    * Host object of an ENHO/XHH source code plugin; needed to create it.
    * `uri`, `type` (PROG/P, CLAS/OC, FUGR/F, …) and `name` identify the host.
    * `program` is its main program name (programname): the program itself,
    * SAPL<group> for a function group, or the class pool for a class.
    */
-  enhancedObject?: { uri: string; type: string; name: string; program: string };
+  enhancedObject?:
+    | { uri: string; type: string; name: string; program: string }
+    | undefined;
   /**
    * Full enhancement option name implemented by an ENHO/XHH plugin; needed to
    * create it. Obtained from GET {hostUri}/enhancements/options.
    */
-  enhancementOption?: string;
+  enhancementOption?: string | undefined;
   /** ENHO/XHH option mode: S (static) or D (dynamic); needed to create it. */
-  enhancementMode?: 'S' | 'D';
+  enhancementMode?: 'S' | 'D' | undefined;
 }
 
 // Metadata type — promoted verbatim from adt-clients

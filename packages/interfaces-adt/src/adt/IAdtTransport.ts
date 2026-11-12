@@ -101,10 +101,10 @@ export interface ITransportConfig {
    */
 
   description: string;
-  transportType?: 'workbench' | 'customizing';
-  targetSystem?: string;
-  owner?: string;
-  transportNumber?: string; // Set after create, used for read operations
+  transportType?: 'workbench' | 'customizing' | undefined;
+  targetSystem?: string | undefined;
+  owner?: string | undefined;
+  transportNumber?: string | undefined; // Set after create, used for read operations
 }
 
 // Transport state

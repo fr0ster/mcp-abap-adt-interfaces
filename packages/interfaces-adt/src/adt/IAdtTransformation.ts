@@ -9,12 +9,12 @@ export type TransformationType = 'SimpleTransformation' | 'XSLTProgram';
 // Builder configuration (camelCase)
 export interface ITransformationConfig {
   transformationName: string;
-  masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE); with neither, none is sent and SAP takes its logon language
+  masterLanguage?: string | undefined; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE); with neither, none is sent and SAP takes its logon language
   transformationType: TransformationType;
-  packageName?: string;
-  transportRequest?: string;
-  description?: string;
-  source?: string;
+  packageName?: string | undefined;
+  transportRequest?: string | undefined;
+  description?: string | undefined;
+  source?: string | undefined;
 }
 
 // The state types were removed in 29.0.0: each member answers what its own

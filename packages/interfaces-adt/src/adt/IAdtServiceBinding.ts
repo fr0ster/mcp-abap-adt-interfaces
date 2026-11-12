@@ -70,18 +70,18 @@ export interface ICreateServiceBindingParams {
 
 export interface IServiceBindingConfig {
   bindingName: string;
-  packageName?: string;
-  description?: string;
-  serviceDefinitionName?: string;
-  serviceName?: string;
-  serviceVersion?: string;
-  bindingVariant?: ServiceBindingVariant;
-  masterLanguage?: string;
-  masterSystem?: string;
-  responsible?: string;
-  desiredPublicationState?: DesiredPublicationState;
-  serviceType?: GeneratedServiceType;
-  transportRequest?: string;
+  packageName?: string | undefined;
+  description?: string | undefined;
+  serviceDefinitionName?: string | undefined;
+  serviceName?: string | undefined;
+  serviceVersion?: string | undefined;
+  bindingVariant?: ServiceBindingVariant | undefined;
+  masterLanguage?: string | undefined;
+  masterSystem?: string | undefined;
+  responsible?: string | undefined;
+  desiredPublicationState?: DesiredPublicationState | undefined;
+  serviceType?: GeneratedServiceType | undefined;
+  transportRequest?: string | undefined;
 }
 
 /** Which service group to read: the binding, and the service it exposes. */

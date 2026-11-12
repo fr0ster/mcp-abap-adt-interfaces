@@ -9,22 +9,22 @@ import type { IResultStrategy } from './IAdtResponse';
 // description is required for create/validate operations
 export interface IClassConfig {
   className: string;
-  masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE); with neither, none is sent and SAP takes its logon language
-  description?: string; // Required for create/validate operations, optional for others
-  packageName?: string; // Required for create operations, optional for others
-  transportRequest?: string; // Only optional parameter
-  source?: string;
-  testClassCode?: string;
-  testClassName?: string;
-  localTypesCode?: string; // Local helper classes, interface definitions and type declarations
-  definitionsCode?: string; // Class-relevant local types (private section types)
-  macrosCode?: string; // Macro definitions (legacy ABAP)
-  superclass?: string;
-  final?: boolean;
-  createProtected?: boolean;
-  masterSystem?: string;
-  responsible?: string;
-  classTemplate?: string;
+  masterLanguage?: string | undefined; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE); with neither, none is sent and SAP takes its logon language
+  description?: string | undefined; // Required for create/validate operations, optional for others
+  packageName?: string | undefined; // Required for create operations, optional for others
+  transportRequest?: string | undefined; // Only optional parameter
+  source?: string | undefined;
+  testClassCode?: string | undefined;
+  testClassName?: string | undefined;
+  localTypesCode?: string | undefined; // Local helper classes, interface definitions and type declarations
+  definitionsCode?: string | undefined; // Class-relevant local types (private section types)
+  macrosCode?: string | undefined; // Macro definitions (legacy ABAP)
+  superclass?: string | undefined;
+  final?: boolean | undefined;
+  createProtected?: boolean | undefined;
+  masterSystem?: string | undefined;
+  responsible?: string | undefined;
+  classTemplate?: string | undefined;
 }
 
 // Class-includes config types — promoted verbatim from adt-clients
@@ -39,26 +39,26 @@ export interface ILocalTestClassConfig {
    * Source of the whole testclasses include. ADT addresses the include, not a
    * single test class inside it, so there is no field naming one.
    */
-  source?: string;
-  transportRequest?: string;
+  source?: string | undefined;
+  transportRequest?: string | undefined;
 }
 
 export interface ILocalTypesConfig {
   className: string;
-  source?: string;
-  transportRequest?: string;
+  source?: string | undefined;
+  transportRequest?: string | undefined;
 }
 
 export interface ILocalDefinitionsConfig {
   className: string;
-  source?: string;
-  transportRequest?: string;
+  source?: string | undefined;
+  transportRequest?: string | undefined;
 }
 
 export interface ILocalMacrosConfig {
   className: string;
-  source?: string;
-  transportRequest?: string;
+  source?: string | undefined;
+  transportRequest?: string | undefined;
 }
 
 /**
