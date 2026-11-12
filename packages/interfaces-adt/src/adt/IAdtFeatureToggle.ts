@@ -57,12 +57,12 @@ export interface IFeatureToggleSource {
 
 export interface IFeatureToggleConfig {
   featureToggleName: string;
-  packageName?: string;
-  description?: string;
-  transportRequest?: string;
-  masterSystem?: string;
-  responsible?: string;
-  source?: IFeatureToggleSource;
+  packageName?: string | undefined;
+  description?: string | undefined;
+  transportRequest?: string | undefined;
+  masterSystem?: string | undefined;
+  responsible?: string | undefined;
+  source?: IFeatureToggleSource | undefined;
 }
 
 /**

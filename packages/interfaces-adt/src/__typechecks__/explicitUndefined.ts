@@ -707,10 +707,10 @@ const _IUnitTestResultOptions: Pick<
   'withNavigationUris' | 'format'
 > = { withNavigationUris: undefined, format: undefined };
 void _IUnitTestResultOptions;
-const _IFeedQueryOptions: Pick<
-  IFeedQueryOptions,
-  'user' | 'maxResults' | 'from' | 'to' | 'query'
-> = {
+// Every field of the type is optional, so the type itself is the target (a
+// key list would name `from` as a string, which the graph check reads as an
+// import).
+const _IFeedQueryOptions: IFeedQueryOptions = {
   user: undefined,
   maxResults: undefined,
   from: undefined,

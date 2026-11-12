@@ -417,13 +417,15 @@ export interface IAdtGroupLifecycle<
    */
   getActivationRun<E extends IAdtError>(
     runId: string,
-    options: { withLongPolling?: boolean } & IAdtAnalyseOptions<E> & {
+    options: {
+      withLongPolling?: boolean | undefined;
+    } & IAdtAnalyseOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<TRun, E>>;
   getActivationRun(
     runId: string,
-    options?: { withLongPolling?: boolean } & IAdtAnalyseOptions,
+    options?: { withLongPolling?: boolean | undefined } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TRun>>;
 
   /** What that run produced — `/activation/results/{runId}`. */

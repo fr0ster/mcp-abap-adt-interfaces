@@ -12,9 +12,9 @@ import type { IResultStrategy } from './IAdtResponse';
 export interface IFunctionIncludeConfig {
   functionGroupName: string;
   includeName: string;
-  description?: string;
-  transportRequest?: string;
-  source?: string;
+  description?: string | undefined;
+  transportRequest?: string | undefined;
+  source?: string | undefined;
 }
 
 /** One strategy per member of a functionInclude implementation. See `IClassResults`. */

@@ -7,6 +7,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [27.4.0] - 2026-11-12
+
+### Changed
+
+- **An optional field takes `undefined`.** Under `exactOptionalPropertyTypes` a
+  field declared `name?: T` refuses an explicit `undefined`, so a caller holding
+  a possibly absent value had to leave the key out by hand. To these contracts
+  an absent field and an `undefined` one mean the same, and each optional field
+  of the following is now declared `?: T | undefined` (nested literals
+  included):
+  - the configs the object members take — every exported `…Config`
+    (`IAdtObjectConfig`, `IClassConfig` and its four local-part configs,
+    `IInterfaceConfig`, `IProgramConfig`, `IIncludeConfig`, `IDdlConfig`,
+    `IDomainConfig`, `IDataElementConfig`, `IStructureConfig`, `ITableConfig`,
+    `ITableTypeConfig`, `IFunctionGroupConfig`, `IFunctionModuleConfig`,
+    `IFunctionIncludeConfig`, `IPackageConfig`, `IMessageClassConfig`,
+    `IMessageClassMessageConfig`, `IBehaviorDefinitionConfig`,
+    `IBehaviorImplementationConfig`, `IMetadataExtensionConfig`,
+    `IServiceDefinitionConfig`, `IServiceBindingConfig`,
+    `IAccessControlConfig`, `IAppendStructureConfig`,
+    `IAuthorizationFieldConfig`, `IEnhancementConfig`, `IFeatureToggleConfig`,
+    `IScalarFunctionConfig`, `IScalarFunctionImplementationConfig`,
+    `ITransformationConfig`, `ITransportConfig`, `IUnitTestConfig`,
+    `ICdsUnitTestConfig`) — what `create`, `update`, `validate`,
+    `updateMetadata`, `check` and the other members that take them receive;
+  - `IAdtError` (`request`'s `method` and `url` too) and
+    `IAdtOperationOptions`;
+  - `IDebuggerIdentity`: `requestUser?: never | undefined` on the terminal
+    mode;
+  - the options of `getActivationRun` (`withLongPolling`) and
+    `getVirtualFoldersContents` (`IGetVirtualFoldersContentsParams`);
+  - the runtime readers' options declared here: `IFeedQueryOptions`,
+    `IProfilerTraceHitListOptions`, `IProfilerTraceStatementsOptions`,
+    `IProfilerTraceDbAccessesOptions`, `IClassUnitTestRunOptions` with
+    `IUnitTestScope`, `IUnitTestResultOptions`;
+  - `IAdtClientOptions` and `IAdtSystemContext`.
+
+  It widens what a caller may pass, so every caller still compiles; a reader of
+  these fields already handles their absence. An implementation that reads one
+  of them and treats a present key as a value narrows first, as it did for an
+  absent one. `src/__typechecks__/explicitUndefined.ts` passes `undefined` to
+  each field.
+- `@mcp-abap-adt/interfaces-adt-connection` is now `^5.0.0`, the release whose
+  `makeAdtRequest` takes no type parameters. This package names
+  `IAdtWireResponse` (unchanged) and no member of `IAbapConnection`, so nothing
+  here changes with it; the range keeps one copy of the connection contract in
+  a consumer that takes 5.0.0.
+
 ## [27.3.0] - 2026-11-12
 
 ### Added

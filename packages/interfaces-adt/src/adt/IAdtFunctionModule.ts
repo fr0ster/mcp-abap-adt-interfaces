@@ -23,11 +23,11 @@ export interface ICreateFunctionModuleParams {
 export interface IFunctionModuleConfig {
   functionGroupName: string; // Required
   functionModuleName: string; // Required
-  transportRequest?: string; // Only optional parameter
-  description?: string; // Required for create/validate operations, optional for others
-  source?: string; // Required for create/update operations, optional for others
-  masterSystem?: string; // SAP system ID (three characters) — required on on-premise
-  responsible?: string; // User responsible for the object
+  transportRequest?: string | undefined; // Only optional parameter
+  description?: string | undefined; // Required for create/validate operations, optional for others
+  source?: string | undefined; // Required for create/update operations, optional for others
+  masterSystem?: string | undefined; // SAP system ID (three characters) — required on on-premise
+  responsible?: string | undefined; // User responsible for the object
 }
 
 /** One strategy per member of a functionModule implementation. See `IClassResults`. */

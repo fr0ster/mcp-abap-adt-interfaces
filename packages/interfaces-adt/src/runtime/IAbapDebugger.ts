@@ -56,7 +56,7 @@ export type IDebuggerIdentity =
       debuggingMode: 'terminal';
       terminalId: string;
       ideId: string;
-      requestUser?: never;
+      requestUser?: never | undefined;
     };
 
 interface IBreakpointCommon {

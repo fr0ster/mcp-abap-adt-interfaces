@@ -28,12 +28,12 @@ import type { IResultStrategy } from './IAdtResponse';
 // description is required for create/validate operations
 export interface IIncludeConfig {
   includeName: string;
-  masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE); with neither, none is sent and SAP takes its logon language
-  packageName?: string; // Required for create operations, optional for others
-  transportRequest?: string; // Only optional parameter
-  description?: string; // Required for create/validate operations, optional for others
-  source?: string;
-  onLock?: (lockHandle: string) => void;
+  masterLanguage?: string | undefined; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE); with neither, none is sent and SAP takes its logon language
+  packageName?: string | undefined; // Required for create operations, optional for others
+  transportRequest?: string | undefined; // Only optional parameter
+  description?: string | undefined; // Required for create/validate operations, optional for others
+  source?: string | undefined;
+  onLock?: ((lockHandle: string) => void) | undefined;
 }
 
 /** One strategy per member of a include implementation. See `IClassResults`. */

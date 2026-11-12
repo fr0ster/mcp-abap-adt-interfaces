@@ -7,11 +7,11 @@ import type { IResultStrategy } from './IAdtResponse';
 // Handler configuration (camelCase)
 export interface IScalarFunctionConfig {
   scalarFunctionName: string;
-  masterLanguage?: string;
-  packageName?: string;
-  transportRequest?: string;
-  description?: string;
-  source?: string;
+  masterLanguage?: string | undefined;
+  packageName?: string | undefined;
+  transportRequest?: string | undefined;
+  description?: string | undefined;
+  source?: string | undefined;
 }
 
 /** One strategy per member of a scalarFunction implementation. See `IClassResults`. */

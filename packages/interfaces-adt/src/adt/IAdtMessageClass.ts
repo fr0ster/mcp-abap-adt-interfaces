@@ -7,13 +7,13 @@ export interface IMessageClassConfig {
   /** Message class name (e.g. ZMY_MSGS) */
   name: string;
   /** Short description */
-  description?: string;
+  description?: string | undefined;
   /** Package name — required for create */
-  packageName?: string;
+  packageName?: string | undefined;
   /** Transport request — sent as corrNr (create/update) or <del:transportNumber> (delete) for transportable packages */
-  transportRequest?: string;
+  transportRequest?: string | undefined;
   /** Master language of the message class on create; with none given, SAP takes its logon language */
-  masterLanguage?: string;
+  masterLanguage?: string | undefined;
 }
 
 // State returned from operations
@@ -26,13 +26,13 @@ export interface IMessageClassMessageConfig {
   /** Message number (e.g. '001') */
   msgno: string;
   /** Message text — required for create/update */
-  msgtext?: string;
+  msgtext?: string | undefined;
   /** Whether the message is self-explanatory (mc:selfexplainatory attribute) */
-  selfExplanatory?: boolean;
+  selfExplanatory?: boolean | undefined;
   /** Long description for the message (adtcore:description attribute) */
-  description?: string;
+  description?: string | undefined;
   /** Transport request — sent as &corrNr= on the parent-class PUT for create/update/delete (transportable packages) */
-  transportRequest?: string;
+  transportRequest?: string | undefined;
 }
 
 /** One strategy per member of a messageClass implementation. See `IClassResults`. */

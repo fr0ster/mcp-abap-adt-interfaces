@@ -37,18 +37,19 @@ export interface IDataElementConfig {
    */
 
   dataElementName: string;
-  masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE); with neither, none is sent and SAP takes its logon language
-  packageName?: string; // Required for create operations, optional for others
-  transportRequest?: string; // Only optional parameter
-  description?: string; // Required for create/validate operations, optional for others
-  dataType?: string;
-  length?: number;
+  masterLanguage?: string | undefined; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE); with neither, none is sent and SAP takes its logon language
+  packageName?: string | undefined; // Required for create operations, optional for others
+  transportRequest?: string | undefined; // Only optional parameter
+  description?: string | undefined; // Required for create/validate operations, optional for others
+  dataType?: string | undefined;
+  length?: number | undefined;
   typeKind?:
     | 'domain'
     | 'predefinedAbapType'
     | 'refToPredefinedAbapType'
     | 'refToDictionaryType'
-    | 'refToClifType';
+    | 'refToClifType'
+    | undefined;
 }
 
 /** One strategy per member of a dataElement implementation. See `IClassResults`. */

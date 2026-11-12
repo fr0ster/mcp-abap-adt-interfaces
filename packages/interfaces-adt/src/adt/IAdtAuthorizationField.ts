@@ -6,23 +6,23 @@ import type { IResultStrategy } from './IAdtResponse';
 
 export interface IAuthorizationFieldConfig {
   authorizationFieldName: string;
-  packageName?: string;
-  description?: string;
-  transportRequest?: string;
-  masterSystem?: string;
-  responsible?: string;
+  packageName?: string | undefined;
+  description?: string | undefined;
+  transportRequest?: string | undefined;
+  masterSystem?: string | undefined;
+  responsible?: string | undefined;
 
-  fieldName?: string;
-  rollName?: string;
-  checkTable?: string;
-  exitFb?: string;
-  abapLanguageVersion?: string;
-  search?: string;
-  objexit?: string;
-  domname?: string;
-  outputlen?: string;
-  convexit?: string;
-  orglvlinfo?: string;
+  fieldName?: string | undefined;
+  rollName?: string | undefined;
+  checkTable?: string | undefined;
+  exitFb?: string | undefined;
+  abapLanguageVersion?: string | undefined;
+  search?: string | undefined;
+  objexit?: string | undefined;
+  domname?: string | undefined;
+  outputlen?: string | undefined;
+  convexit?: string | undefined;
+  orglvlinfo?: string | undefined;
 }
 
 /** One strategy per member of a authorizationField implementation. See `IClassResults`. */

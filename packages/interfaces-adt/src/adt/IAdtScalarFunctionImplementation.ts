@@ -9,12 +9,12 @@ export type ScalarFunctionEngine = 'sqlEngine' | 'amdpEngine';
 export interface IScalarFunctionImplementationConfig {
   implementationName: string;
   scalarFunctionName: string;
-  engineValue?: ScalarFunctionEngine;
-  masterLanguage?: string;
-  packageName?: string;
-  transportRequest?: string;
-  description?: string;
-  source?: string;
+  engineValue?: ScalarFunctionEngine | undefined;
+  masterLanguage?: string | undefined;
+  packageName?: string | undefined;
+  transportRequest?: string | undefined;
+  description?: string | undefined;
+  source?: string | undefined;
 }
 
 /** One strategy per member of a scalarFunctionImplementation implementation. See `IClassResults`. */

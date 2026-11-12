@@ -14,10 +14,10 @@ export type IAbapTimestamp = string;
 // --- Feed-level types ---
 
 export interface IFeedQueryOptions {
-  user?: string;
-  maxResults?: number;
-  from?: IAbapTimestamp;
-  to?: IAbapTimestamp;
+  user?: string | undefined;
+  maxResults?: number | undefined;
+  from?: IAbapTimestamp | undefined;
+  to?: IAbapTimestamp | undefined;
   /**
    * The feed's `$query` expression, sent as given — built from the attributes
    * and operators the feed's descriptor declares, e.g.
@@ -27,7 +27,7 @@ export interface IFeedQueryOptions {
    * request carries one `$query`, so a caller filtering by user and by more puts
    * the user into this expression.
    */
-  query?: string;
+  query?: string | undefined;
 }
 
 // --- System message types ---

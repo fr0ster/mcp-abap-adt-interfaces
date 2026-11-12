@@ -47,18 +47,18 @@ export interface IProfilerTraceParameters {
 }
 
 export interface IProfilerTraceHitListOptions {
-  withSystemEvents?: boolean;
+  withSystemEvents?: boolean | undefined;
 }
 
 export interface IProfilerTraceStatementsOptions {
-  id?: number;
-  withDetails?: boolean;
-  autoDrillDownThreshold?: number;
-  withSystemEvents?: boolean;
+  id?: number | undefined;
+  withDetails?: boolean | undefined;
+  autoDrillDownThreshold?: number | undefined;
+  withSystemEvents?: boolean | undefined;
 }
 
 export interface IProfilerTraceDbAccessesOptions {
-  withSystemEvents?: boolean;
+  withSystemEvents?: boolean | undefined;
 }
 
 /**

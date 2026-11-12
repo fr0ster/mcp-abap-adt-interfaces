@@ -20,17 +20,17 @@ export interface IPackageConfig {
    */
 
   packageName: string; // Required
-  superPackage?: string; // Required for create operations, optional for others
-  description?: string; // Required for create/validate operations, optional for others
-  packageType?: string;
-  softwareComponent?: string;
-  transportLayer?: string;
-  transportRequest?: string; // Only optional parameter
-  applicationComponent?: string;
-  responsible?: string;
-  masterSystem?: string;
-  masterLanguage?: string; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE); with neither, none is sent and SAP takes its logon language
-  recordChanges?: boolean;
+  superPackage?: string | undefined; // Required for create operations, optional for others
+  description?: string | undefined; // Required for create/validate operations, optional for others
+  packageType?: string | undefined;
+  softwareComponent?: string | undefined;
+  transportLayer?: string | undefined;
+  transportRequest?: string | undefined; // Only optional parameter
+  applicationComponent?: string | undefined;
+  responsible?: string | undefined;
+  masterSystem?: string | undefined;
+  masterLanguage?: string | undefined; // Original/master language for create; falls back to systemContext (SAP_LANGUAGE); with neither, none is sent and SAP takes its logon language
+  recordChanges?: boolean | undefined;
 }
 
 /** One strategy per member of a package implementation. See `IClassResults`. */

@@ -174,11 +174,11 @@ export interface IVirtualFoldersPreselection {
  * Virtual folders contents parameters
  */
 export interface IGetVirtualFoldersContentsParams {
-  objectSearchPattern?: string;
-  preselection?: IVirtualFoldersPreselection[];
-  facetOrder?: string[];
-  withVersions?: boolean;
-  ignoreShortDescriptions?: boolean;
+  objectSearchPattern?: string | undefined;
+  preselection?: IVirtualFoldersPreselection[] | undefined;
+  facetOrder?: string[] | undefined;
+  withVersions?: boolean | undefined;
+  ignoreShortDescriptions?: boolean | undefined;
 }
 
 // ── What each group operation is given (22.0.0) ─────────────────────────────

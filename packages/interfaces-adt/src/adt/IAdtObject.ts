@@ -246,7 +246,7 @@ export interface IAdtOperationOptions<E extends IAdtError = IAdtError>
    * XML looks like is documented, and what to put here is the caller's to
    * know.
    */
-  source?: string;
+  source?: string | undefined;
 
   /**
    * The lock handle to put on the write request.
@@ -260,7 +260,7 @@ export interface IAdtOperationOptions<E extends IAdtError = IAdtError>
    * allowed is ADT’s judgement, and ADT answers it; a library that refused
    * first would be standing in front of the server with an opinion of its own.
    */
-  lockHandle?: string;
+  lockHandle?: string | undefined;
 
   /**
    * HTTP request timeout for operations in milliseconds
@@ -277,7 +277,7 @@ export interface IAdtOperationOptions<E extends IAdtError = IAdtError>
    *
    * @see withLongPolling - Use long polling for waiting object readiness
    */
-  timeout?: number;
+  timeout?: number | undefined;
 }
 
 /**
