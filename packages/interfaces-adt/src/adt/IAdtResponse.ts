@@ -351,10 +351,11 @@ export interface IAdtFailure<TError extends IAdtError = IAdtError> {
  * at the call. They do not any more — a per-call parser is a second signature
  * every implementer owes whether or not their callers use it.
  *
- * So what does this interface buy, if it holds one field? It is the **named half
- * of an answer**, the counterpart to `IAdtError`, and it is where anything a
- * result needs to say *about itself* goes when a case for one appears — stated
- * as a contract, which is decision 19's rule for what a result may carry. What it must never hold is the
+ * So what does this interface buy beyond `value`? It is the **named half of an
+ * answer**, the counterpart to `IAdtError`, and it is where anything a result
+ * needs to say *about itself* goes — since 27.3.0 `sessionLost`, the
+ * connection's word about the request the value was read from — stated as a
+ * contract, which is decision 19's rule for what a result may carry. What it must never hold is the
  * transport frame: a `response` field was in the first draft and put `status`,
  * `headers` and `data` back inside every result under one more layer of nesting.
  *
@@ -373,8 +374,9 @@ export interface IAdtResult<T> {
   /**
    * Present when the request whose answer this result was read from was
    * answered with the SAP session replaced — the connection's `sessionLost` on
-   * that answer. The value is SAP's answer, as it came; the connection's
-   * session is gone with it, so the next request on it fails. Absent otherwise.
+   * that answer. SAP's answer stands — `value` is what the result strategy read
+   * from it — and the connection's session is gone with it, so the next
+   * request on it fails. Absent otherwise.
    *
    * The connection's word about the request, not a reading of the document, so
    * it is here and not in `value`: it reaches the caller whatever result
