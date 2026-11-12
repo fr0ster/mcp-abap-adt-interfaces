@@ -71,6 +71,7 @@
   "AdtPerformingVariantsIn": "interfaces-adt",
   "AdtServingVariantsIn": "interfaces-adt",
   "AdtSessionErrorCode": "interfaces-adt-connection",
+  "AdtSessionLoss": "interfaces-adt-connection",
   "AdtSourceTypeCode": "interfaces-adt",
   "AdtTaskType": "interfaces-adt",
   "AdtTypeCode": "interfaces-adt",
