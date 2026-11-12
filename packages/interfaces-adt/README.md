@@ -29,7 +29,7 @@ ADT contracts: object operations, runtime analysis, execution, feeds and service
 - Since 15.3.0 `IAdtTransportMoveObjects` moves entries from one task to another, each identified by its position in the source.
 - Since 15.2.0 `IAdtTransportSortAndCompress` sorts and compresses a task's object list, the remedy SAP names when `removeObject` is refused for a duplicated entry.
 - Since 13.0.0 `IResultStrategy`, `IAnalyse` and `IAdtFailure.response` hand over an `IAdtWireResponse` whose `data` is `unknown`, not `any` (`interfaces-adt-connection` 2.0.0): narrow it before reading. The CHANGELOG has the migration note.
-- Depends on `@mcp-abap-adt/interfaces-adt-connection` `^3.0.0 || ^4.0.0` (since 26.1.0; 4.0.0's `getBaseUrl()` answering `undefined` reaches none of this package's types), and on nothing else. Types and constants; no implementation.
+- Depends on `@mcp-abap-adt/interfaces-adt-connection` `^4.1.0` (since 27.2.0: `IAdtError.rfc` is its `IRfcErrorInfo`, first declared in 4.1.0), and on nothing else. Types and constants; no implementation.
 
 ## Install
 
