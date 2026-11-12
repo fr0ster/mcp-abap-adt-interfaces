@@ -29,7 +29,8 @@ ADT contracts: object operations, runtime analysis, execution, feeds and service
 - Since 15.3.0 `IAdtTransportMoveObjects` moves entries from one task to another, each identified by its position in the source.
 - Since 15.2.0 `IAdtTransportSortAndCompress` sorts and compresses a task's object list, the remedy SAP names when `removeObject` is refused for a duplicated entry.
 - Since 13.0.0 `IResultStrategy`, `IAnalyse` and `IAdtFailure.response` hand over an `IAdtWireResponse` whose `data` is `unknown`, not `any` (`interfaces-adt-connection` 2.0.0): narrow it before reading. The CHANGELOG has the migration note.
-- Depends on `@mcp-abap-adt/interfaces-adt-connection` `^4.1.0` (since 27.2.0: `IAdtError.rfc` is its `IRfcErrorInfo`, first declared in 4.1.0), and on nothing else. Types and constants; no implementation.
+- Since 27.3.0 `IAdtError` carries what the connection said about the SAP session — `sessionError` (an `ADT_SESSION_ERROR` code) and `sessionLost` — and `IAdtResult` carries `sessionLost` beside `value`; `ADT_CONNECTION_CAUSES` lists `EPIPE`. Additions only, apart from the list's length. See "A connection failure's cause" and "The SAP session".
+- Depends on `@mcp-abap-adt/interfaces-adt-connection` `^4.2.0` (since 27.3.0: `IAdtError.sessionError`, `IAdtError.sessionLost` and `IAdtResult.sessionLost` are its `AdtSessionErrorCode` and `AdtSessionLoss`, the latter first declared in 4.2.0), and on nothing else. Types and constants; no implementation.
 
 ## Install
 
@@ -431,8 +432,9 @@ for every member and every overload.
 An `IAdtError` of `origin: 'connection'` may carry `connectionCause`: the
 network code the request was thrown with, when it is one of
 `ADT_CONNECTION_CAUSES` — `ECONNREFUSED`, `ECONNRESET`, `ENOTFOUND`,
-`EAI_AGAIN`, `ETIMEDOUT`, `EHOSTUNREACH`, `ENETUNREACH` — typed
-`AdtConnectionCause`. Any other code, or none, leaves the field absent. A
+`EAI_AGAIN`, `ETIMEDOUT`, `EHOSTUNREACH`, `ENETUNREACH`, `EPIPE` (since
+27.3.0: a write to a socket the server had reset, on an established
+connection) — typed `AdtConnectionCause`. Any other code, or none, leaves the field absent. A
 consumer answers "no connection" from the code, without reading `message`.
 
 The list holds no TLS codes: they are `interfaces-auth`'s
@@ -446,6 +448,39 @@ An `IAdtError` of `origin: 'connection'` thrown by an RFC call may also carry
 outcome from `rfc.codeString` (`RFC_CLOSED`, say), never from `message`. The
 field is absent for an HTTP failure and for a refusal, and optional, like
 `connectionCause`. `src/__typechecks__/rfcField.ts` holds these shapes.
+
+## The SAP session
+
+Since 27.3.0 an answer says, by field, what the connection said about the SAP
+session, so a consumer never reads it from `message`:
+
+- `IAdtError.sessionError` — the connection's session error code an
+  `origin: 'connection'` failure was thrown with, one of `ADT_SESSION_ERROR`
+  (`ADT_NOT_CONNECTED`, `ADT_SESSION_REPLACED`, `ADT_RELEASE_PENDING`), typed
+  `AdtSessionErrorCode`. Separate from `code`, the strategy's failure code.
+- `IAdtError.sessionLost` and `IAdtResult.sessionLost` — present when the
+  request the answer answers was answered with the SAP session replaced
+  (`interfaces-adt-connection`'s `sessionLost`, typed `AdtSessionLoss`). The
+  answer is SAP's, failure or value; the connection's session is gone with it.
+
+```typescript
+if (!answer.ok) {
+  const error = answer.getError();
+  if (
+    error.sessionError === ADT_SESSION_ERROR.NOT_CONNECTED ||
+    error.sessionLost !== undefined
+  ) {
+    // this connection is spent
+  }
+} else if (answer.getResult().sessionLost !== undefined) {
+  // the value stands; the next request needs a new connection
+}
+```
+
+Each field is optional, `| undefined` for `exactOptionalPropertyTypes`, so an
+error or a result built for 27.2.0 still conforms.
+`src/__typechecks__/sessionError.ts` and `src/__typechecks__/sessionLost.ts`
+hold these shapes.
 
 ## Migrating to 27.0.0
 

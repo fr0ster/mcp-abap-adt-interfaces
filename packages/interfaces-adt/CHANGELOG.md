@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [27.3.0] - 2026-11-12
+
+### Added
+
+- **`IAdtError.sessionError?: AdtSessionErrorCode | undefined`**: the
+  connection's session error code an `origin: 'connection'` failure was thrown
+  with (`ADT_SESSION_ERROR`: `ADT_NOT_CONNECTED`, `ADT_SESSION_REPLACED`,
+  `ADT_RELEASE_PENDING`), so a consumer reads which session failure it was
+  from the field, never from the message. Separate from `code`, the
+  strategy's failure code.
+- **`IAdtError.sessionLost?` and `IAdtResult.sessionLost?:
+  AdtSessionLoss | undefined`**: the request the answer answers was answered
+  with the SAP session replaced (the connection's `sessionLost`); the answer is
+  SAP's, and the connection's session is gone with it. On the result it sits
+  beside `value`, so it reaches the caller whatever result strategy made the
+  value.
+- Each optional, `| undefined`: an error or a result built for 27.2.0 still
+  conforms.
+
+### Changed
+
+- **`ADT_CONNECTION_CAUSES` lists `EPIPE`** (appended; every other entry keeps
+  its index): a write to a socket the server had reset, measured on an
+  established connection in the mcp-abap-adt CI on macOS (85 of 500 runs on
+  Node 22, 34 of 500 on Node 24). `AdtConnectionCause` gains it. Code that
+  asserts the list's exact length or members sees eight entries.
+- `@mcp-abap-adt/interfaces-adt-connection` is now `^4.2.0`, the release that
+  declares `AdtSessionLoss`.
+
 ## [27.2.0] - 2026-11-12
 
 ### Added
