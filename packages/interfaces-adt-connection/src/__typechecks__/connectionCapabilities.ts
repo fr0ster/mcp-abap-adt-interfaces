@@ -18,15 +18,14 @@ const _sessionless: IAbapConnection = {
   getBaseUrl: async () => 'https://h',
   getSessionId: () => null,
   setSessionType: () => {},
-  // Generic in T/D, so the stub must be too — a fixed `data` shape cannot
-  // satisfy a caller that asks for its own.
-  makeAdtRequest: async <T = unknown, D = unknown>() =>
-    ({
-      data: undefined,
-      status: 200,
-      statusText: 'OK',
-      headers: {},
-    }) as unknown as IAdtWireResponse<T, D>,
+  // Not generic: since 5.0.0 the caller names no type for `data`, so a stub
+  // answers what came off the wire and asserts nothing.
+  makeAdtRequest: async (): Promise<IAdtWireResponse> => ({
+    data: undefined,
+    status: 200,
+    statusText: 'OK',
+    headers: {},
+  }),
 };
 void _sessionless;
 

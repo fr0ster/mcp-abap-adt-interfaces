@@ -1,8 +1,8 @@
 // Compile-only assertions. If these stop compiling, the types regressed.
 //
-// Since 2.0.0 an answer whose types the caller did not name is `unknown`, not
-// `any`: a caller narrows it or names the type, and a typo in a field read is
-// a compile error rather than a value of `undefined`.
+// Since 2.0.0 an answer's `data` is `unknown`, not `any`, and since 5.0.0 the
+// caller cannot name another type for it: a caller narrows it, and a typo in a
+// field read is a compile error rather than a value of `undefined`.
 
 import type { IAbapConnection, IAdtWireResponse } from '../IAbapConnection';
 import type { IAbapRequestOptions } from '../IAbapRequestOptions';
@@ -25,9 +25,10 @@ async function _untypedAnswer(): Promise<void> {
   // @ts-expect-error an untyped answer must be narrowed before it is read
   answer.data.length;
 
-  // Named, the answer is what the caller said.
-  const typed = await connection.makeAdtRequest<string>(options);
-  const text: string = typed.data;
-  void text;
+  // Narrowed, the answer is what the check proved.
+  if (typeof answer.data === 'string') {
+    const text: string = answer.data;
+    void text;
+  }
 }
 void _untypedAnswer;

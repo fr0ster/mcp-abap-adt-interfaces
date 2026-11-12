@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.0.0] - 2026-11-12
+
+### Changed (breaking)
+
+- **`IAbapConnection.makeAdtRequest(options: IAbapRequestOptions): Promise<IAdtWireResponse>`**
+  — the type parameters `<T = unknown, D = unknown>` are gone. The answer's
+  `data` is `unknown`, and the caller reads it. A caller that chose `T` made
+  every connection that records or forwards a request assert one, since
+  nothing such a connection holds is a `T` the caller picked; a non-generic
+  connection could not satisfy the interface at all.
+  `IAdtWireResponse<T = unknown, D = unknown>` itself is unchanged and stays
+  generic, for a caller that types an answer it has read.
+
+Who is affected, each direction checked with the compiler
+(`src/__typechecks__/nonGenericRequest.ts`):
+
+- **A caller that passes type arguments** — `makeAdtRequest<string>(…)` — no
+  longer compiles. Nothing else a caller writes changes.
+- **An implementer** that keeps its own `<T, D>` still conforms: a generic
+  method is assignable to the non-generic member. One that answers
+  `IAdtWireResponse` without type parameters conforms now, and needs no
+  assertion.
+- **A package whose public signatures take an `IAbapConnection`** and that
+  wants a non-generic connection handed to it names this major: a non-generic
+  connection is not assignable to 4.x's generic interface.
+
+### Migrating to 5.0.0
+
+See [`MIGRATION-5.0.md`](MIGRATION-5.0.md).
+
 ## [4.2.0] - 2026-11-12
 
 ### Added
