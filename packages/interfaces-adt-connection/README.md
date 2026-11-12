@@ -11,9 +11,10 @@ npm install @mcp-abap-adt/interfaces-adt-connection
 |---|---|
 | `IAbapConnection` | a connection an ADT request is made through: `makeAdtRequest`, connect/disconnect, the session type. Since 4.0.0 `getBaseUrl()` answers `Promise<string \| undefined>`: `undefined` for a connection with no HTTP origin (RFC), so a caller narrows before using it — see the CHANGELOG's migration note |
 | `IAbapRequestOptions` | what one request carries |
-| `IAdtWireResponse` | the answer as it came off the wire — extends `IHttpWireResponse` from `interfaces-network` with the headers ADT sends. Since 2.0.0 its `data` is `unknown` unless the caller names the type (`makeAdtRequest<string>(…)`); it was `any` — see the CHANGELOG's migration note |
+| `IAdtWireResponse` | the answer as it came off the wire — extends `IHttpWireResponse` from `interfaces-network` with the headers ADT sends. Since 2.0.0 its `data` is `unknown` unless the caller names the type (`makeAdtRequest<string>(…)`); it was `any` — see the CHANGELOG's migration note. Since 4.2.0 it may carry `sessionLost` (below) |
 | `ISessionLifecycleAware`, `ICriticalSection`, `IRequestProfiling`, `IDeferredResponseConnection` | the connection's capability atoms — a connection honours the ones it can |
 | `ADT_SESSION_ERROR` / `AdtSessionErrorCode` | what a session failure is called |
+| `AdtSessionLoss` | the type of `sessionLost` on `IAdtWireResponse` and on `IAbapConnectionError`: present when the answer of a stateless request showed the SAP session replaced. The answer is SAP's, as it came; the connection's session is gone with it, so a new session is a new connection. `code` is unchanged by it. Since 4.2.0 |
 | `IAbapConnectionError` | the error a connection throws, as a consumer reads it: `code` — a session error code or a Node network code — and, for a failed RFC call, `rfc`. Narrow a caught value to it; never read the message. Since 4.1.0 |
 | `IRfcErrorInfo`, `RFC_RCS` / `RfcReturnCodeName` | what the RFC SDK said about a failed call: `key` (free text), `group` and `code` (numbers), `codeString` — the return code's name, one of the SDK's `RFC_RC` names. Since 4.1.0 |
 | `ITimeoutConfig` | the deadlines a caller gives a connection: `default`, `csrf`, `long` |
@@ -24,6 +25,15 @@ the type system) and then reads it by this type, never by a cast:
 ```typescript
 function closedByPartner(error: IAbapConnectionError): boolean {
   return error.rfc?.codeString === 'RFC_CLOSED';
+}
+```
+
+A stateless request whose answer showed the SAP session replaced resolves or rejects with SAP's
+answer, and says so on that answer (since 4.2.0):
+
+```typescript
+function sessionWasLost(answer: IAdtWireResponse | IAbapConnectionError): boolean {
+  return answer.sessionLost === ADT_SESSION_ERROR.SESSION_REPLACED;
 }
 ```
 

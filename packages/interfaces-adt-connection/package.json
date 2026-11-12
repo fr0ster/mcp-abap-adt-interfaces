@@ -1,6 +1,6 @@
 {
   "name": "@mcp-abap-adt/interfaces-adt-connection",
-  "version": "4.1.0",
+  "version": "4.2.0",
   "description": "The ABAP connection contract: IAbapConnection, its capability atoms, the wire response, the session error codes and the error a connection throws",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

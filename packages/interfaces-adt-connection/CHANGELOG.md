@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.2.0] - 2026-11-12
+
+### Added
+
+- **`sessionLost` on `IAdtWireResponse` and on `IAbapConnectionError`** —
+  `readonly sessionLost?: AdtSessionLoss | undefined`. Present on the answer of a
+  stateless request whose answer showed the SAP session replaced: on the
+  response it resolves, or on SAP's refusal it rejects. The answer is SAP's, as
+  it came; the connection's session is gone with it. A consumer reads the field,
+  attributable to that one request, never a message. `code` is unchanged by it.
+- **`AdtSessionLoss`** — the field's type,
+  `typeof ADT_SESSION_ERROR.SESSION_REPLACED`: the loss is named by the existing
+  code and by that code alone.
+
+Nothing a 4.1.0 consumer or implementer does changes: the field is optional, and
+no existing name, type or constant moved.
+
 ## [4.1.0] - 2026-11-11
 
 ### Added
