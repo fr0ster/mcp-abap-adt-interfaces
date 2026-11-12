@@ -33,6 +33,8 @@
  */
 
 import type {
+  AdtSessionErrorCode,
+  AdtSessionLoss,
   IAdtWireResponse,
   IRfcErrorInfo,
 } from '@mcp-abap-adt/interfaces-adt-connection';
@@ -81,7 +83,9 @@ export type AdtFailureOrigin =
  * The network codes a request may fail with when no connection carried it to
  * an answer: the system refused or reset the connection, its name did not
  * resolve (`ENOTFOUND`, or `EAI_AGAIN` while the resolver could not answer),
- * the connection timed out, or no route reached the host.
+ * the connection timed out, no route reached the host, or a write went to a
+ * socket the server had already reset (`EPIPE` — measured on an established
+ * connection, where the request's write met the reset before any answer).
  *
  * A closed list: an `origin: 'connection'` failure names its cause only when
  * the code it was thrown with is one of these ({@link IAdtError.connectionCause}),
@@ -101,6 +105,7 @@ export const ADT_CONNECTION_CAUSES = [
   'ETIMEDOUT',
   'EHOSTUNREACH',
   'ENETUNREACH',
+  'EPIPE',
 ] as const;
 
 /** One of {@link ADT_CONNECTION_CAUSES}. */
@@ -234,6 +239,43 @@ export interface IAdtError {
    * conforms; `| undefined` for `exactOptionalPropertyTypes`.
    */
   readonly rfc?: IRfcErrorInfo | undefined;
+  /**
+   * The connection's session error code an `origin: 'connection'` failure was
+   * thrown with, when it is one of `ADT_SESSION_ERROR`
+   * (`@mcp-abap-adt/interfaces-adt-connection`); absent for any other code,
+   * for no code, and for a refusal.
+   *
+   * Read which session failure it was from the field, never from `message`:
+   *
+   * ```typescript
+   * const answer = await debuggerApi.terminateDebugger();
+   * if (
+   *   !answer.ok &&
+   *   answer.getError().sessionError === ADT_SESSION_ERROR.NOT_CONNECTED
+   * ) {
+   *   // the connection has no usable session: the instance is spent
+   * }
+   * ```
+   *
+   * Separate from {@link code}, which is the strategy's failure code. Optional,
+   * like `connectionCause`; `| undefined` for `exactOptionalPropertyTypes`.
+   */
+  readonly sessionError?: AdtSessionErrorCode | undefined;
+  /**
+   * Present when the request this failure answers was answered with the SAP
+   * session replaced — the connection's `sessionLost` on its refusal or on the
+   * answer the refusal was read from: the answer is SAP's, and the
+   * connection's session is gone with it. Absent otherwise.
+   *
+   * ```typescript
+   * if (!answer.ok && answer.getError().sessionLost !== undefined) {
+   *   // SAP's answer stands; this connection cannot be used again
+   * }
+   * ```
+   *
+   * Optional; `| undefined` for `exactOptionalPropertyTypes`.
+   */
+  readonly sessionLost?: AdtSessionLoss | undefined;
 }
 
 /**
@@ -294,7 +336,7 @@ export interface IAdtFailure<TError extends IAdtError = IAdtError> {
  *
  * **The two halves are not symmetric in how they vary, and saying otherwise was
  * wrong.** An error strategy varies the *fullness of one contract*: `IAdtError`
- * has two required fields and five optional ones, so `brief` and `full` are
+ * has two required fields and the rest optional, so `brief` and `full` are
  * genuinely two amounts of it. A result cannot work that way: a hit shape with
  * a required `description` cannot be returned with fewer fields without the
  * compiler refusing.
@@ -309,10 +351,11 @@ export interface IAdtFailure<TError extends IAdtError = IAdtError> {
  * at the call. They do not any more — a per-call parser is a second signature
  * every implementer owes whether or not their callers use it.
  *
- * So what does this interface buy, if it holds one field? It is the **named half
- * of an answer**, the counterpart to `IAdtError`, and it is where anything a
- * result needs to say *about itself* goes when a case for one appears — stated
- * as a contract, which is decision 19's rule for what a result may carry. What it must never hold is the
+ * So what does this interface buy beyond `value`? It is the **named half of an
+ * answer**, the counterpart to `IAdtError`, and it is where anything a result
+ * needs to say *about itself* goes — since 27.3.0 `sessionLost`, the
+ * connection's word about the request the value was read from — stated as a
+ * contract, which is decision 19's rule for what a result may carry. What it must never hold is the
  * transport frame: a `response` field was in the first draft and put `status`,
  * `headers` and `data` back inside every result under one more layer of nesting.
  *
@@ -328,6 +371,26 @@ export interface IAdtFailure<TError extends IAdtError = IAdtError> {
 export interface IAdtResult<T> {
   /** What the member promised — whatever this implementation reads. */
   readonly value: T;
+  /**
+   * Present when the request whose answer this result was read from was
+   * answered with the SAP session replaced — the connection's `sessionLost` on
+   * that answer. SAP's answer stands — `value` is what the result strategy read
+   * from it — and the connection's session is gone with it, so the next
+   * request on it fails. Absent otherwise.
+   *
+   * The connection's word about the request, not a reading of the document, so
+   * it is here and not in `value`: it reaches the caller whatever result
+   * strategy made `value`.
+   *
+   * ```typescript
+   * if (answer.ok && answer.getResult().sessionLost !== undefined) {
+   *   // use the value; open a new connection for what comes next
+   * }
+   * ```
+   *
+   * Optional; `| undefined` for `exactOptionalPropertyTypes`.
+   */
+  readonly sessionLost?: AdtSessionLoss | undefined;
 }
 
 /**
