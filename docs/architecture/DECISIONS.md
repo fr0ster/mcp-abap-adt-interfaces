@@ -1372,7 +1372,7 @@ because TypeScript cannot narrow an object from what a method returns.
 **Both halves are named contracts**, `IAdtResult<T>` and `IAdtError`. They do not
 vary the same way, and that difference is real rather than an inconsistency: an
 error strategy varies the *fullness of `IAdtError`*, which has two required fields
-and five optional; a result strategy varies **`T` itself**, through the strategy
+and the rest optional; a result strategy varies **`T` itself**, through the strategy
 overload, because a result contract like `ISearchResult` has required fields and
 cannot be returned half-filled.
 
