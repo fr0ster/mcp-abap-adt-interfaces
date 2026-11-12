@@ -440,6 +440,13 @@ The list holds no TLS codes: they are `interfaces-auth`'s
 alone. The field is optional, so a strategy that does not name the cause still
 conforms. `src/__typechecks__/connectionCause.ts` holds these shapes.
 
+An `IAdtError` of `origin: 'connection'` thrown by an RFC call may also carry
+`rfc`: what the RFC SDK said, as `interfaces-adt-connection`'s
+`IRfcErrorInfo` (`key`, `group`, `code`, `codeString`). A consumer reads the
+outcome from `rfc.codeString` (`RFC_CLOSED`, say), never from `message`. The
+field is absent for an HTTP failure and for a refusal, and optional, like
+`connectionCause`. `src/__typechecks__/rfcField.ts` holds these shapes.
+
 ## Migrating to 27.0.0
 
 - **A result set for the utilities adds `objectActivation`.** `IUtilResults`

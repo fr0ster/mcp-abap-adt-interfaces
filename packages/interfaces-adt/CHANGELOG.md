@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [27.2.0] - 2026-11-12
+
+### Added
+
+- **`IAdtError.rfc?: IRfcErrorInfo | undefined`**: what the RFC SDK said
+  when an `origin: 'connection'` failure was thrown by an RFC call carrying it
+  (the connection's `rfc`: `key`, `group`, `code`, `codeString`), so a
+  consumer reads, say, `RFC_CLOSED` from the field rather than the message.
+  Optional: an error built for 27.1.0 still conforms.
+
+### Changed
+
+- `@mcp-abap-adt/interfaces-adt-connection` is now `^4.1.0`, the release that
+  declares `IRfcErrorInfo`.
+
 ## [27.1.0] - 2026-11-10
 
 ### Added

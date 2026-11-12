@@ -32,7 +32,10 @@
  * `instanceof` as a convenience.
  */
 
-import type { IAdtWireResponse } from '@mcp-abap-adt/interfaces-adt-connection';
+import type {
+  IAdtWireResponse,
+  IRfcErrorInfo,
+} from '@mcp-abap-adt/interfaces-adt-connection';
 
 /**
  * What an error strategy answers when the answer is **not** a failure.
@@ -212,6 +215,25 @@ export interface IAdtError {
    * `exactOptionalPropertyTypes`.
    */
   readonly connectionCause?: AdtConnectionCause | undefined;
+  /**
+   * What the RFC SDK said, when an `origin: 'connection'` failure was thrown
+   * by an RFC call that carried it ({@link IRfcErrorInfo}, the connection's
+   * `rfc`); absent for an HTTP failure, for a refusal, and when the thrown
+   * value carried no such fields.
+   *
+   * Read the outcome from its fields, never from `message`:
+   *
+   * ```typescript
+   * const answer = await debuggerApi.terminateDebugger();
+   * if (!answer.ok && answer.getError().rfc?.codeString === 'RFC_CLOSED') {
+   *   // the system closed the RFC conversation
+   * }
+   * ```
+   *
+   * Optional, like `connectionCause`: a strategy that does not carry it still
+   * conforms; `| undefined` for `exactOptionalPropertyTypes`.
+   */
+  readonly rfc?: IRfcErrorInfo | undefined;
 }
 
 /**
