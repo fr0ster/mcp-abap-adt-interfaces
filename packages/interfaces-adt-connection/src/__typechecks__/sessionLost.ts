@@ -79,6 +79,11 @@ export const _refusal: Error & IAbapConnectionError = Object.assign(
 export const _refusalWithoutMark: Error & IAbapConnectionError = new Error(
   'refused',
 );
+// Absent stated explicitly (exactOptionalPropertyTypes): still an error shape.
+export const _errorExplicitlyAbsent: IAbapConnectionError = {
+  code: 'ERR_BAD_REQUEST',
+  sessionLost: undefined,
+};
 
 export function _readOnlyError(error: IAbapConnectionError): void {
   // @ts-expect-error sessionLost is readonly
