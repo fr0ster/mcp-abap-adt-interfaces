@@ -780,7 +780,9 @@ declare const _groups: IAdtGroupLifecycle<
 >;
 declare const _analyse: IAnalyse;
 void _groups.getActivationRun('R', { withLongPolling: undefined });
-void _groups.getActivationRun('R', {
+// The type argument selects the generic overload; without it the call
+// resolves to the plain one.
+void _groups.getActivationRun<IAdtError>('R', {
   withLongPolling: undefined,
   analyse: _analyse,
 });

@@ -69,4 +69,6 @@ A non-generic connection is not assignable to 4.x's `IAbapConnection` (`unknown`
 is not assignable to a caller's `T`). To accept one, name `^5.0.0`. For that
 package's callers this is no break: any connection they hold today is generic,
 and a generic connection is assignable to the 5.0.0 parameter. Keep one copy of
-this package in the tree: two copies of one interface do not compare equal.
+this package in the tree: 4.x's and 5.0.0's `IAbapConnection` differ in
+`makeAdtRequest`, so a non-generic connection typed by 5.0.0 is not assignable
+where a 4.x copy is named.
