@@ -1,3 +1,5 @@
+import type { AdtSessionLoss } from './IConnectionCapabilities';
+
 /**
  * The return codes of the SAP NetWeaver RFC SDK, by name: `RFC_RC` in the SDK's
  * header `sapnwrfc.h`, every member in its order (index = the numeric code),
@@ -92,4 +94,11 @@ export interface IAbapConnectionError {
    * call was made.
    */
   readonly rfc?: IRfcErrorInfo | undefined;
+  /**
+   * Present on SAP's refusal of a stateless request whose answer showed the
+   * SAP session replaced: the refusal is SAP's, as it came, and the
+   * connection's session is gone — the instance is spent. Absent on every
+   * other failure. {@link code} is unchanged by it.
+   */
+  readonly sessionLost?: AdtSessionLoss | undefined;
 }

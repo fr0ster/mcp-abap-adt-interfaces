@@ -20,6 +20,7 @@ export { RFC_RCS } from './IAbapConnectionError';
 export type { IAbapRequestOptions } from './IAbapRequestOptions';
 export type {
   AdtSessionErrorCode,
+  AdtSessionLoss,
   ICriticalSection,
   IDeferredResponseConnection,
   IRequestProfiling,

@@ -6,6 +6,7 @@ import type {
   IHttpWireResponse,
 } from '@mcp-abap-adt/interfaces-network';
 import type { IAbapRequestOptions } from './IAbapRequestOptions';
+import type { AdtSessionLoss } from './IConnectionCapabilities';
 
 export type IAdtHeaderValue = IHttpHeaderValue;
 
@@ -26,6 +27,12 @@ export interface IAdtWireResponse<T = unknown, D = unknown>
     'Content-Location'?: IAdtHeaderValue;
     'sap-adt-location'?: IAdtHeaderValue;
   };
+  /**
+   * Present on the answer of a stateless request whose answer showed the SAP
+   * session replaced: the answer is SAP's, as it came, and the connection's
+   * session is gone — the instance is spent. Absent on every other answer.
+   */
+  readonly sessionLost?: AdtSessionLoss | undefined;
 }
 
 /**

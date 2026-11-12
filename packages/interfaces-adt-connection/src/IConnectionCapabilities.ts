@@ -30,6 +30,14 @@ export type AdtSessionErrorCode =
   (typeof ADT_SESSION_ERROR)[keyof typeof ADT_SESSION_ERROR];
 
 /**
+ * What a connection says on an answer when that answer showed the SAP session
+ * lost: `sessionLost` on the response a stateless request resolves
+ * (`IAdtWireResponse`) and on SAP's refusal it rejects (`IAbapConnectionError`).
+ * The answer is SAP's; the connection's session is gone with it.
+ */
+export type AdtSessionLoss = typeof ADT_SESSION_ERROR.SESSION_REPLACED;
+
+/**
  * A connection whose session is owned, observable and explicitly torn down.
  *
  * Without this, "is my session still the one I locked over?" is unanswerable
