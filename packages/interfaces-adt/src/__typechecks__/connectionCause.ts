@@ -12,7 +12,7 @@ type Equal<A, B> =
     ? true
     : false;
 
-// The list is exactly these seven, in this order: a code removed or added is
+// The list is exactly these eight, in this order: a code removed or added is
 // a compile error here.
 type _ExactList = Assert<
   Equal<
@@ -25,6 +25,7 @@ type _ExactList = Assert<
       'ETIMEDOUT',
       'EHOSTUNREACH',
       'ENETUNREACH',
+      'EPIPE',
     ]
   >
 >;
@@ -38,6 +39,7 @@ type _ExactUnion = Assert<
     | 'ETIMEDOUT'
     | 'EHOSTUNREACH'
     | 'ENETUNREACH'
+    | 'EPIPE'
   >
 >;
 
@@ -48,9 +50,12 @@ const _refused: AdtConnectionCause = 'ECONNREFUSED';
 void _refused;
 const _again: AdtConnectionCause = 'EAI_AGAIN';
 void _again;
+// A write to a socket the server reset.
+const _pipe: AdtConnectionCause = 'EPIPE';
+void _pipe;
 
 // @ts-expect-error a code off the list is not a cause
-const _unlisted: AdtConnectionCause = 'EPIPE';
+const _unlisted: AdtConnectionCause = 'ECONNABORTED';
 void _unlisted;
 
 // @ts-expect-error a TLS code is not on this list
@@ -59,7 +64,7 @@ void _tls;
 
 // The list is closed: it cannot be added to.
 // @ts-expect-error a readonly tuple has no push
-ADT_CONNECTION_CAUSES.push('EPIPE');
+ADT_CONNECTION_CAUSES.push('ECONNABORTED');
 
 // A connection failure names its cause by a listed code.
 const _withCause: IAdtError = {
@@ -83,9 +88,9 @@ void _undefinedCause;
 
 const _offList: IAdtError = {
   origin: 'connection',
-  message: 'broken pipe',
+  message: 'connection aborted',
   // @ts-expect-error only a listed code is a cause
-  connectionCause: 'EPIPE',
+  connectionCause: 'ECONNABORTED',
 };
 void _offList;
 
