@@ -48,12 +48,72 @@ void _full;
 
 declare const _plain: IAbapConnection;
 
+// **Each member's signature, exactly.** Assignability alone would let a member
+// drift wider or narrower and still compile; equality does not.
+type Assert<T extends true> = T;
+type Equal<A, B> =
+  (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
+    ? true
+    : false;
+type Member<K extends keyof IAbapConnection> = NonNullable<IAbapConnection[K]>;
+type SessionMode = 'stateful' | 'stateless';
+
+export type _Disconnect = Assert<
+  Equal<Member<'disconnect'>, () => Promise<void>>
+>;
+export type _FlushGoodbye = Assert<
+  Equal<Member<'flushGoodbye'>, (timeoutMs?: number) => Promise<void>>
+>;
+export type _IsConnected = Assert<Equal<Member<'isConnected'>, () => boolean>>;
+export type _BeginCriticalSection = Assert<
+  Equal<Member<'beginCriticalSection'>, () => void>
+>;
+export type _EndCriticalSection = Assert<
+  Equal<Member<'endCriticalSection'>, () => void>
+>;
+export type _GetSessionMode = Assert<
+  Equal<Member<'getSessionMode'>, () => SessionMode>
+>;
+export type _GetSessionType = Assert<
+  Equal<Member<'getSessionType'>, () => SessionMode>
+>;
+export type _SessionCookies = Assert<
+  Equal<Member<'sessionCookies'>, () => string | null>
+>;
+export type _GetConfig = Assert<
+  Equal<Member<'getConfig'>, () => IAbapConnectionConfig>
+>;
+export type _ConnectionType = Assert<
+  Equal<IAbapConnectionConfig['connectionType'], 'http' | 'rfc' | undefined>
+>;
+
+// Where an atom declares the same member, the two are identical.
+export type _SameDisconnect = Assert<
+  Equal<Member<'disconnect'>, ISessionLifecycleAware['disconnect']>
+>;
+export type _SameFlushGoodbye = Assert<
+  Equal<Member<'flushGoodbye'>, ISessionLifecycleAware['flushGoodbye']>
+>;
+export type _SameIsConnected = Assert<
+  Equal<Member<'isConnected'>, ISessionLifecycleAware['isConnected']>
+>;
+export type _SameBegin = Assert<
+  Equal<
+    Member<'beginCriticalSection'>,
+    ICriticalSection['beginCriticalSection']
+  >
+>;
+export type _SameEnd = Assert<
+  Equal<Member<'endCriticalSection'>, ICriticalSection['endCriticalSection']>
+>;
+
 // Called with `?.`, each answers its own type or `undefined` — no detection,
 // no cast.
 void (async () => {
   const _ending: Promise<void> | undefined = _plain.disconnect?.();
   await _ending;
-  await _plain.flushGoodbye?.();
+  const _flushing: Promise<void> | undefined = _plain.flushGoodbye?.();
+  await _flushing;
   await _plain.flushGoodbye?.(1_000);
   const _live: boolean | undefined = _plain.isConnected?.();
   void _live;
