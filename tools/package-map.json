@@ -166,6 +166,7 @@
   "HttpError": "interfaces-network",
   "HttpStatus": "interfaces-auth",
   "IAbapConnection": "interfaces-adt-connection",
+  "IAbapConnectionConfig": "interfaces-adt-connection",
   "IAbapConnectionError": "interfaces-adt-connection",
   "IAbapDebugger": "interfaces-adt",
   "IAbapGitExternalRepoCredentials": "interfaces-adt",

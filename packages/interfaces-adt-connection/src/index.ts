@@ -10,7 +10,11 @@
  * connector either follow or install a second copy. The subject is still ADT
  * (decision 35); what separated it is the release rate (decision 38).
  */
-export type { IAbapConnection, IAdtWireResponse } from './IAbapConnection';
+export type {
+  IAbapConnection,
+  IAbapConnectionConfig,
+  IAdtWireResponse,
+} from './IAbapConnection';
 export type {
   IAbapConnectionError,
   IRfcErrorInfo,
