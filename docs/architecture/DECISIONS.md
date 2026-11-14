@@ -3244,6 +3244,36 @@ group — and its presence is not a promise: an S/4HANA 2025 system lists
 **What would change it.** A release whose answers the conformance check
 refuses, or an API the library starts to serve; either is an edit of a table.
 
+---
+
+## 48. A full connector's members are optional members of `IAbapConnection`
+
+**Decided 2026-11-14, in `interfaces-adt-connection` 5.1.0.**
+
+**The problem.** A consumer that holds its connections as `IAbapConnection` —
+the MCP server does, since an embedder hands it its own — still calls what a
+full connector has beyond the contract: the teardown (`disconnect`,
+`flushGoodbye`, `isConnected`), the critical section, the session mode, the
+session cookies, the configuration's transport. None of these was declared on
+`IAbapConnection`, so each call went through a run-time check of the member's
+presence, which types the member as a function of unknown arguments and an
+unknown answer: the compiler saw none of the signatures.
+
+**The decision.** These members are optional members of `IAbapConnection`, each
+with the signature the connector declares; a caller calls one with `?.`.
+`getConfig()` answers `IAbapConnectionConfig`, the transport alone, declared in
+this package, which depends on `interfaces-network` alone; a connector's own
+configuration is assignable to it.
+
+**Against.** Narrowing to the capability atoms (decision 3) at each call: the
+holder's value is an `IAbapConnection`, and narrowing it is the same run-time
+check. The atoms stay: where one declares the same member the two are
+identical, and a consumer that needs the member present narrows to the atom.
+
+**What would change it.** A connector whose member of one of these names needs
+another signature, or a member that a holder must be able to rely on — which is
+an atom, or a required member and a major.
+
 ## Open, and what would settle it
 
 Not decisions. These are questions this repository has met and deliberately left
