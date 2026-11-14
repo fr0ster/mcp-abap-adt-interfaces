@@ -36,6 +36,23 @@ export interface IAdtWireResponse<T = unknown, D = unknown>
 }
 
 /**
+ * What a connection states of its configuration through
+ * {@link IAbapConnection.getConfig}: the transport it goes over, and nothing
+ * else.
+ *
+ * A connector's own configuration type carries far more (the system's URL or
+ * RFC address, the client, the credential); this is the part a holder of an
+ * `IAbapConnection` reads. Declared here, not borrowed from the configuration
+ * contracts, because this package depends on `interfaces-network` alone — so a
+ * connector returns its own configuration, which is assignable to this.
+ * Since 5.1.0.
+ */
+export interface IAbapConnectionConfig {
+  /** `'rfc'` over RFC; `'http'`, or absent, over HTTP. */
+  readonly connectionType?: 'http' | 'rfc' | undefined;
+}
+
+/**
  * ABAP Connection interface
  *
  * Minimal interface for consumers to interact with SAP ADT.
@@ -43,6 +60,15 @@ export interface IAdtWireResponse<T = unknown, D = unknown>
  *
  * For JWT connections, token refresh is handled internally via ITokenRefresher.
  * For Basic connections, no token refresh is needed.
+ *
+ * **The optional members** (since 5.1.0) are what a full connector has beyond
+ * the five every connection meets. A connection may lack any of them — an RFC
+ * transport, a batch recorder, an embedder's own or a test stub — so a caller
+ * calls one with `?.` (`connection.disconnect?.()`) and needs no detection at
+ * run time. Each has the signature of the member the connector declares; where
+ * a capability atom (`ISessionLifecycleAware`, `ICriticalSection`) declares the
+ * same member, the two are identical, and a consumer that needs the member
+ * present still narrows to the atom.
  */
 export interface IAbapConnection {
   /**
@@ -84,4 +110,71 @@ export interface IAbapConnection {
    * @returns Promise with the answer as it came off the wire
    */
   makeAdtRequest(options: IAbapRequestOptions): Promise<IAdtWireResponse>;
+
+  /**
+   * Tells the server this session is finished: the logoff is written, not
+   * awaited for its answer ({@link flushGoodbye} waits for that). The same
+   * member as `ISessionLifecycleAware.disconnect`. Optional: a connection with
+   * no session of its own to end has none, so a caller uses `?.`.
+   */
+  disconnect?(): Promise<void>;
+
+  /**
+   * Waits for the goodbye {@link disconnect} sent, within a budget, and
+   * resolves rather than throws. The same member as
+   * `ISessionLifecycleAware.flushGoodbye`. Optional, called with `?.`.
+   *
+   * @param timeoutMs how long to wait; an implementation chooses its default.
+   */
+  flushGoodbye?(timeoutMs?: number): Promise<void>;
+
+  /**
+   * Whether a caller may start work on this connection: `false` once its
+   * session is gone or being torn down. The same member as
+   * `ISessionLifecycleAware.isConnected`. Optional, called with `?.`.
+   */
+  isConnected?(): boolean;
+
+  /**
+   * Enters a section in which the ordinary per-request deadline is suspended
+   * (a lock → write → unlock chain). Nests; each call needs its own
+   * {@link endCriticalSection}. The same member as
+   * `ICriticalSection.beginCriticalSection`. Optional, called with `?.`.
+   */
+  beginCriticalSection?(): void;
+
+  /**
+   * Leaves the section {@link beginCriticalSection} entered; ordinary
+   * deadlines resume when the outermost one ends. The same member as
+   * `ICriticalSection.endCriticalSection`. Optional, called with `?.`.
+   */
+  endCriticalSection?(): void;
+
+  /**
+   * The session mode the connection's next requests are sent in, as
+   * {@link setSessionType} set it. A connector's name for it. Optional, called
+   * with `?.`.
+   */
+  getSessionMode?(): 'stateful' | 'stateless';
+
+  /**
+   * The same reading as {@link getSessionMode}, under the name a batch
+   * recorder gives it. Optional, called with `?.`.
+   */
+  getSessionType?(): 'stateful' | 'stateless';
+
+  /**
+   * The session's cookies as one string, which a later connection can be
+   * built on to resume the session; `null` when there are none (no session
+   * yet, or a transport without cookies, such as RFC). Optional, called with
+   * `?.`.
+   */
+  sessionCookies?(): string | null;
+
+  /**
+   * What the connection states of its configuration: the transport it goes
+   * over ({@link IAbapConnectionConfig}). A connector answers its own
+   * configuration, which is assignable to it. Optional, called with `?.`.
+   */
+  getConfig?(): IAbapConnectionConfig;
 }

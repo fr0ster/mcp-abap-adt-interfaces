@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.0] - 2026-11-14
+
+### Added
+
+- **Optional, typed members of `IAbapConnection`** — what a full connector has
+  beyond the five members every connection meets, each with the signature the
+  connector declares:
+  - `disconnect?(): Promise<void>`
+  - `flushGoodbye?(timeoutMs?: number): Promise<void>`
+  - `isConnected?(): boolean`
+  - `beginCriticalSection?(): void`, `endCriticalSection?(): void`
+  - `getSessionMode?(): 'stateful' | 'stateless'` (the connector's name) and
+    `getSessionType?(): 'stateful' | 'stateless'` (a batch recorder's)
+  - `sessionCookies?(): string | null`
+  - `getConfig?(): IAbapConnectionConfig`
+
+  A holder of an `IAbapConnection` calls one with `?.`
+  (`connection.disconnect?.()`) and needs no detection at run time; a
+  connection may lack any of them. Where a capability atom declares the same
+  member (`ISessionLifecycleAware`, `ICriticalSection`), the two are identical,
+  and a consumer that needs the member present still narrows to the atom.
+- **`IAbapConnectionConfig`** — what `getConfig()` answers:
+  `readonly connectionType?: 'http' | 'rfc' | undefined`, the transport alone.
+  Declared here because this package depends on `interfaces-network` alone; a
+  connector's own configuration, wider than this, is assignable to it.
+
+Nothing a 5.0.0 caller writes changes, and an implementer that has none of
+these members, or has them with these signatures, conforms as before
+(`AbstractAbapConnection` of `@mcp-abap-adt/connection` 25.0.0 and
+`AdtBatchConnection` of `@mcp-abap-adt/adt-clients` do). **One that has a
+member of one of these names with another signature no longer conforms** —
+say, an `isConnected` that answers something other than a boolean, or a
+`getConfig` whose answer's `connectionType` is not `'http'` or `'rfc'`
+(`src/__typechecks__/optionalMembers.ts`). Released as a minor: an added
+optional member is additive for every caller and every implementer that does
+not already use the name for something else.
+
 ## [5.0.0] - 2026-11-12
 
 ### Changed (breaking)
