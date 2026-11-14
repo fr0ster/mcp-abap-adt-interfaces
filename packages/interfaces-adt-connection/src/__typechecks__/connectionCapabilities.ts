@@ -10,9 +10,10 @@ import {
 } from '../IConnectionCapabilities';
 
 // The point of the split: a transport that owns no HTTP session is STILL a
-// valid IAbapConnection. If the atom ever migrates into IAbapConnection, this
-// stops compiling — which is the warning, since RFC connections, batch
-// recorders and test stubs all live here.
+// valid IAbapConnection. If the atom ever migrates into IAbapConnection as
+// required members, this stops compiling — which is the warning, since RFC
+// connections, batch recorders and test stubs all live here. (Since 5.1.0
+// IAbapConnection declares the same members as optional: `optionalMembers.ts`.)
 const _sessionless: IAbapConnection = {
   connect: async () => {},
   getBaseUrl: async () => 'https://h',
@@ -132,7 +133,7 @@ void _everything;
 declare const _plain: IAbapConnection;
 
 void (() => {
-  // @ts-expect-error a plain connection protects nothing: the atom is additive
+  // @ts-expect-error a plain connection may protect nothing: without the atom the member is optional, called with `?.`
   _plain.beginCriticalSection();
 });
 
@@ -156,7 +157,7 @@ void (async () => {
 });
 
 void (() => {
-  // @ts-expect-error a plain connection has no session to say goodbye to
+  // @ts-expect-error a plain connection may have no session to say goodbye to: called with `?.`
   _sessionless.flushGoodbye();
 });
 
