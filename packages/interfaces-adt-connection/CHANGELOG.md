@@ -33,10 +33,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Declared here because this package depends on `interfaces-network` alone; a
   connector's own configuration, wider than this, is assignable to it.
 
-Nothing a 5.0.0 consumer writes changes. An implementer conforms as before,
-unless it has a member of one of these names with another signature — say, an
-`isConnected` that answers something other than a boolean — which no longer
-compiles against the interface (`src/__typechecks__/optionalMembers.ts`).
+Nothing a 5.0.0 caller writes changes, and an implementer that has none of
+these members, or has them with these signatures, conforms as before
+(`AbstractAbapConnection` of `@mcp-abap-adt/connection` 25.0.0 and
+`AdtBatchConnection` of `@mcp-abap-adt/adt-clients` do). **One that has a
+member of one of these names with another signature no longer conforms** —
+say, an `isConnected` that answers something other than a boolean, or a
+`getConfig` whose answer's `connectionType` is not `'http'` or `'rfc'`
+(`src/__typechecks__/optionalMembers.ts`). Released as a minor: an added
+optional member is additive for every caller and every implementer that does
+not already use the name for something else.
 
 ## [5.0.0] - 2026-11-12
 
