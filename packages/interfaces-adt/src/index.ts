@@ -276,6 +276,19 @@ export type {
 } from './adt/IAdtStructure';
 export type { ITableConfig, ITableResults } from './adt/IAdtTable';
 export type {
+  IAdtTableSettingsUpdatable,
+  IAdtTableSettingsUpdateOptions,
+  ITableBuffering,
+  ITableSettings,
+  ITableSettingsConfig,
+  ITableSettingsResults,
+  ITableSettingsUpdateConfig,
+  TableBufferingAllowed,
+  TableBufferingType,
+  TableDataClass,
+  TableSizeCategory,
+} from './adt/IAdtTableSettings';
+export type {
   ITableTypeConfig,
   ITableTypeResults,
   TableTypeAccessType,
