@@ -522,8 +522,10 @@ and its table has no entry. Read and written on premise and on the cloud,
   - `active` answers the last activated version: before the first activation
     only the screen fields' `?...` placeholders, after a change the text as
     activated.
-  A value outside these is not refused by SAP; it falls back to the working
-  area (Code). The answer is the part's text, CR LF between lines:
+  SAP reads the value case-insensitively, and an unknown or empty value
+  answers the working area (measured on premise). On the cloud every value is
+  accepted and none distinguished (no inactive version existed, measured
+  read-only). The answer is the part's text, CR LF between lines:
   - symbols: `@MaxLength:20`, then `001=Text`, one empty line between symbols;
   - selections: every parameter and select option of the program, sorted by
     name, the name upper case and padded to eight (`P_TEST  =Text`), an empty
@@ -534,7 +536,14 @@ and its table has no entry. Read and written on premise and on the cloud,
     characters refuses the whole write (`406`, `SEDX_ADT/110`); and a text
     sent with `@DDICReference` is replaced by the label (all measured);
   - headings: `listHeader=…`, an empty line, `columnHeader_1=…` to
-    `columnHeader_4=…`.
+    `columnHeader_4=…` — all five, an empty one as `columnHeader_4=`; a write
+    deletes a heading sent empty or left out (measured).
+  The keys, measured and in SAP's handlers, are constants for a caller (the
+  contract checks none): `TEXT_SYMBOL_KEY_LENGTH` (exactly 3; a longer key
+  `406` `SEDX_ADT/106`), `SELECTION_TEXT_NAME_MAX_LENGTH` (8; `406`
+  `SEDX_ADT/102`; an unknown name is stored, not checked against the screen),
+  `TEXT_HEADING_KEYS` / `TextHeadingKey` (any other key `406`
+  `SEDX_ADT/101`).
   `TextElementsDocument` is the parsed shape a reading strategy answers.
 - **Write** with `IAdtTextElementsUpdatable`: its `update` takes
   `ITextElementsUpdateConfig` — the object, the part and the part's **whole**
@@ -571,21 +580,21 @@ and its table has no entry. Read and written on premise and on the cloud,
      `textElements` API. Naming the object alone ran no activation for the
      text elements (measured on premise for a program and on the cloud for a
      class; each other pairing is unmeasured, `measured: false`). A function
-     group's text elements have no code, so they are not in a typed
-     activation.
+     group's text elements go as `PROG/PX` with
+     `/sap/bc/adt/textelements/functiongroups/{group}` (measured on premise).
 - **Where-used**, per code (measured read-only, 2026-11-19; SAP's handler
   `CL_RIS_ADT_RES_REFERENCES` refuses no type, and answers `200` with no
   result and "Where-Used List is not supported for &1" where it serves none,
   Code):
-  - `PROG/PX`, on premise: served — `/sap/bc/adt/textelements/programs/{name}`
-    resolves to `PROG/PX`, the scope offers `PROG/P` and `PROG/PS`. A
-    function group's text elements resolve to `PROG/PX` too
-    (`/sap/bc/adt/textelements/functiongroups/{group}`), so they are found
-    through it; `FUGR/PX` is no where-used type.
+  - `PROG/PX`: served on premise and on the cloud —
+    `/sap/bc/adt/textelements/programs/{name}` resolves to `PROG/PX` (on
+    premise the scope offers `PROG/P` and `PROG/PS`; on the cloud, measured
+    for the delivered `RSPARAM`). A function group's text elements resolve
+    to `PROG/PX` too (`/sap/bc/adt/textelements/functiongroups/{group}`), so
+    they are found through it; `FUGR/PX` is no where-used type.
   - `CLAS/OCX`: not served, on premise or on the cloud ("Where-Used List is
     not supported for Text Element: Class."), so no where-used parameter
     takes it.
-  - `PROG/PX` on the cloud: not measured, left out there.
   - A part's address (`…/source/symbols`) is not served.
 - **On the cloud** the lock answers `MODIFICATION_SUPPORT=NoModification`, and
   the write is accepted and saved all the same (measured).
@@ -596,9 +605,13 @@ and its table has no entry. Read and written on premise and on the cloud,
   a write the inactive list holds the group (`FUGR/F`) and its text elements
   as `PROG/PX`, named `SAPL{GROUP}`; one activation naming the group's URI
   and the text elements' URI, each with `adtcore:name="{GROUP}"`, activates
-  both. No release's `typestructure` lists `FUGR/PX`, so the type tables carry
-  no code for a function group's text elements: the contract reads, locks and
-  writes them by kind and name, and their typed activation is open.
+  both. No release's `typestructure` lists `FUGR/PX`, so it is no code of
+  the tables: the contract reads, locks and writes a function group's text
+  elements by kind and name, and types them `PROG/PX` under their own URI —
+  `{ name: 'ZFG', type: 'PROG/PX', uri:
+  '/sap/bc/adt/textelements/functiongroups/zfg' }`, beside `FUGR/F` or alone,
+  activates them (measured on premise; the name may be `{GROUP}` or
+  `SAPL{GROUP}`, the URI decides).
 
 ## A table's technical settings (28.0.0)
 
@@ -691,14 +704,13 @@ mean the same. The CHANGELOG lists each type;
     tables (`IAdtUtilityCodeTables`); so do `AdtGroupActivationCode<V>` and
     `IAdtGroupActivationReference<V>['type']` — what `activateObjects` and the
     typed `activateObjectsGroup` take.
-  - Where-used, per code as measured: `AdtWhereUsedCode<'onprem'>`, so
-    `IAdtWhereUsedParamsOf<'onprem'>['object_type']` and
-    `IAdtWhereUsedScopeParamsOf<'onprem'>['object_type']`, gain `'PROG/PX'`,
-    as the untyped `IGetWhereUsedParams['object_type']` and
+  - Where-used, per code as measured: `AdtWhereUsedCode<V>`, so
+    `IAdtWhereUsedParamsOf<V>['object_type']` and
+    `IAdtWhereUsedScopeParamsOf<V>['object_type']`, gain `'PROG/PX'` on
+    `onprem`, `cloud` and the default `'onprem' | 'cloud'`, as the untyped
+    `IGetWhereUsedParams['object_type']` and
     `IGetWhereUsedScopeParams['object_type']` do. `CLAS/OCX` is in none of
-    them (SAP serves no where-used for it, measured), and on `cloud` and the
-    default `'onprem' | 'cloud'` they are unchanged (`PROG/PX` there is not
-    measured).
+    them: SAP serves no where-used for it (measured).
   - References and answers: `IObjectReference['type']` (default
     `AdtTypeCode`), `IAdtCodedReference<AdtTypeCode>['type']` and
     `IAdtCodedReference<AdtCodeOf<V>>['type']`, and the known-code branch of
