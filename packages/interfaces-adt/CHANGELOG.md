@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [29.0.0] - 2026-11-19
+
+### Breaking
+
+- **`ITableSettings.translation` is `ITableTranslation`**, the
+  `ts:translation` element's four attributes — `value` (`UEBERSETZ`),
+  `isVisible`, `isEditable` and `granularity` — where 28.0.0 typed it as the
+  `ts:value` string. SAP's transformation (`SDDIC_ADT_TTAB`) requires all four
+  on a PUT: a write carrying `ts:value` alone was refused, 400 `00/001` "The
+  system expected the attribute '{http://www.sap.com/dictionary/table/settings}isVisible'"
+  on premise and "The attribute '…isVisible' was expected" on the cloud
+  (measured 2026-11-19). The read type (`ITableSettingsRead`) and the
+  full-replacement write (`ITableSettingsUpdateConfig.settings`) both carry it.
+
+### Migration
+
+- A settings value built for 28.0.0 changes `translation: '<value>'` to
+  `translation: { value, isVisible, isEditable, granularity }`, each taken from
+  what the read answered (the systems read answered `value: ''`,
+  `isVisible: false`, `isEditable: false`, `granularity: '2'`).
+
+### Added
+
+- `ITableTranslation`, exported.
+
 ## [28.0.0] - 2026-11-19
 
 ### Breaking

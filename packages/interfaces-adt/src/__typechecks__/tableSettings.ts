@@ -51,7 +51,12 @@ const settings: ITableSettings = {
   storageType: 'C',
   sharingType: '',
   loadUnit: '',
-  translation: '',
+  translation: {
+    value: '',
+    isVisible: false,
+    isEditable: false,
+    granularity: '2',
+  },
   loggingEnabled: false,
 };
 void handler.updateMetadata(
@@ -78,7 +83,12 @@ const _noDataClass: ITableSettings = {
   storageType: 'C',
   sharingType: '',
   loadUnit: '',
-  translation: '',
+  translation: {
+    value: '',
+    isVisible: false,
+    isEditable: false,
+    granularity: '2',
+  },
   loggingEnabled: false,
 };
 void _noDataClass;
@@ -91,7 +101,12 @@ const _noStorageType: ITableSettings = {
   buffering: { allowed: 'N', type: '', areaKeyFields: 0 },
   sharingType: '',
   loadUnit: '',
-  translation: '',
+  translation: {
+    value: '',
+    isVisible: false,
+    isEditable: false,
+    granularity: '2',
+  },
   loggingEnabled: false,
 };
 void _noStorageType;
@@ -168,6 +183,22 @@ void handler.updateMetadata(
   // @ts-expect-error the overload with a verdict needs the handle as well
   { headers, analyse },
 );
+
+// ── The translation: all four attributes, SAP refuses a write without one ──
+
+const _translationAsText: ITableSettings = {
+  ...settings,
+  // @ts-expect-error the translation is the element's four attributes, not its value alone
+  translation: '',
+};
+void _translationAsText;
+
+const _translationWithoutVisibility: ITableSettings = {
+  ...settings,
+  // @ts-expect-error SAP refuses a PUT without ts:isVisible (400 00/001)
+  translation: { value: '', isEditable: false, granularity: '2' },
+};
+void _translationWithoutVisibility;
 
 // ── `isWritableByAMDP`: returned by cloud, not written by this contract ────
 
