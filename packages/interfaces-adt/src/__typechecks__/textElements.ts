@@ -366,27 +366,32 @@ void _limit;
 const _programTextsOnPrem: IAdtWhereUsedParamsOf<'onprem'> = {
   object_name: 'RSPARAM',
   object_type: 'PROG/PX',
+  container: 'program',
 };
 void _programTextsOnPrem;
 const _programTextsScope: IAdtWhereUsedScopeParamsOf<'onprem'> = {
   object_name: 'RSPARAM',
   object_type: 'PROG/PX',
+  container: 'program',
 };
 void _programTextsScope;
 const _programTextsUntyped: IGetWhereUsedParams = {
   object_name: 'RSPARAM',
   object_type: 'PROG/PX',
+  container: 'program',
 };
 void _programTextsUntyped;
 // On the cloud too: a delivered program's text elements (RSPARAM), measured.
 const _programTextsCloud: IAdtWhereUsedParamsOf<'cloud'> = {
   object_name: 'RSPARAM',
   object_type: 'PROG/PX',
+  container: 'program',
 };
 void _programTextsCloud;
 const _programTextsModern: IAdtWhereUsedParamsOf = {
   object_name: 'RSPARAM',
   object_type: 'PROG/PX',
+  container: 'program',
 };
 void _programTextsModern;
 const _classTextsOnPrem: IAdtWhereUsedParamsOf<'onprem'> = {
@@ -479,3 +484,75 @@ const _limits: [3, 8] = [
   SELECTION_TEXT_NAME_MAX_LENGTH,
 ];
 void _limits;
+
+// ── PROG/PX names its container; no other code takes one ──────────────────
+
+// A function group's text elements: the same code, the other address.
+const _groupTextsWhereUsed: IAdtWhereUsedParamsOf<'onprem'> = {
+  object_name: 'SEUF',
+  object_type: 'PROG/PX',
+  container: 'functionGroup',
+};
+void _groupTextsWhereUsed;
+const _groupTextsScopeCloud: IAdtWhereUsedScopeParamsOf<'cloud'> = {
+  object_name: 'ZFG',
+  object_type: 'PROG/PX',
+  container: 'functionGroup',
+};
+void _groupTextsScopeCloud;
+// @ts-expect-error PROG/PX is two addresses: the container is required, nothing defaults
+const _noContainer: IGetWhereUsedParams = {
+  object_name: 'RSPARAM',
+  object_type: 'PROG/PX',
+};
+void _noContainer;
+// @ts-expect-error nor in the scope request
+const _noContainerScope: IAdtWhereUsedScopeParamsOf<'onprem'> = {
+  object_name: 'RSPARAM',
+  object_type: 'PROG/PX',
+};
+void _noContainerScope;
+const _classContainer: IGetWhereUsedParams = {
+  object_name: 'RSPARAM',
+  object_type: 'PROG/PX',
+  // @ts-expect-error a class's text elements are CLAS/OCX, not a container
+  container: 'class',
+};
+void _classContainer;
+const _otherContainer: IAdtWhereUsedParamsOf<'onprem'> = {
+  object_name: 'RSPARAM',
+  object_type: 'PROG/PX',
+  // @ts-expect-error only the two containers
+  container: 'include',
+};
+void _otherContainer;
+const _programWithContainer: IGetWhereUsedParams = {
+  object_name: 'RSPARAM',
+  object_type: 'PROG/P',
+  // @ts-expect-error another code takes no container
+  container: 'program',
+};
+void _programWithContainer;
+const _classWithContainer: IGetWhereUsedScopeParams = {
+  object_name: 'ZCL_X',
+  object_type: 'CLAS/OC',
+  // @ts-expect-error nor in the scope request
+  container: 'program',
+};
+void _classWithContainer;
+// Codes other than PROG/PX are as before: no container.
+const _plainProgram: IAdtWhereUsedParamsOf<'onprem'> = {
+  object_name: 'RSPARAM',
+  object_type: 'PROG/P',
+};
+void _plainProgram;
+// A variable of the whole union states the container only when it is PROG/PX.
+declare const someCode: Exclude<
+  IAdtWhereUsedParamsOf<'onprem'>['object_type'],
+  'PROG/PX'
+>;
+const _anyOtherCode: IAdtWhereUsedParamsOf<'onprem'> = {
+  object_name: 'X',
+  object_type: someCode,
+};
+void _anyOtherCode;

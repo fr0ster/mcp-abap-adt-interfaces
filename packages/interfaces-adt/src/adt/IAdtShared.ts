@@ -12,6 +12,7 @@ import type {
   AdtVariant,
 } from './AdtTypeTables';
 import type { AdtGroupOnlyCode, AdtUtilityCodeWith } from './AdtUtilityCodes';
+import type { TextElementsWhereUsedContainer } from './IAdtTextElements';
 
 /**
  * An object as an answer named it: its type code when the tables know it, the
@@ -170,21 +171,42 @@ type TextElementsWhereUsedRefused<V extends AdtVariant> = {
 type WhereUsedTypeCode = Exclude<AdtTypeCode, 'CLAS/OCX'>;
 
 /**
- * Where-used scope parameters (Step 1: get available object types)
+ * Which object a `PROG/PX` where-used names, and so its address: `PROG/PX` is
+ * the text elements of a program (`/sap/bc/adt/textelements/programs/{name}`)
+ * and of a function group (`/sap/bc/adt/textelements/functiongroups/{name}`) —
+ * both resolve to `PROG/PX` and both are served (measured on premise; a
+ * program's on the cloud too). The table keeps one collection per code, so
+ * the parameter says which.
+ *
+ * Required with `PROG/PX`, refused with any other code: a one-member union
+ * per code would split past TypeScript's 25 combinations, so it is one
+ * object over all of `C` joined with "is `PROG/PX` with a container, or
+ * another code without one", as {@link IAdtCodedReference} is.
  */
-export interface IGetWhereUsedScopeParams<
-  C extends WhereUsedTypeCode | AdtGroupOnlyCode = WhereUsedTypeCode,
-> {
-  object_name: string;
-  object_type: C;
-}
+type WhereUsedContainer<C> = [Extract<C, 'PROG/PX'>] extends [never]
+  ? { container?: never }
+  :
+      | { object_type: 'PROG/PX'; container: TextElementsWhereUsedContainer }
+      | { object_type: Exclude<C, 'PROG/PX'>; container?: never };
 
 /**
- * Where-used parameters (Step 2: execute search)
+ * Where-used scope parameters (Step 1: get available object types).
+ * `PROG/PX` names its `container` (required); no other code takes one.
  */
-export interface IGetWhereUsedParams<
+export type IGetWhereUsedScopeParams<
   C extends WhereUsedTypeCode | AdtGroupOnlyCode = WhereUsedTypeCode,
-> {
+> = {
+  object_name: string;
+  object_type: C;
+} & WhereUsedContainer<C>;
+
+/**
+ * Where-used parameters (Step 2: execute search). `PROG/PX` names its
+ * `container` (required); no other code takes one.
+ */
+export type IGetWhereUsedParams<
+  C extends WhereUsedTypeCode | AdtGroupOnlyCode = WhereUsedTypeCode,
+> = {
   object_name: string;
   object_type: C;
   /**
@@ -194,7 +216,7 @@ export interface IGetWhereUsedParams<
    * /usageReferences/scope sub-resource.
    */
   scopeXml?: string;
-}
+} & WhereUsedContainer<C>;
 
 /**
  * Virtual folders preselection entry

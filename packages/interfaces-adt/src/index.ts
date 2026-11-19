@@ -322,6 +322,7 @@ export type {
   TextElementsPart,
   TextElementsPartOf,
   TextElementsReadVersion,
+  TextElementsWhereUsedContainer,
   TextHeadingKey,
 } from './adt/IAdtTextElements';
 export {

@@ -118,6 +118,19 @@ export interface ITextElementsPartsByKind {
   readonly functionGroup: TextElementsPart;
 }
 
+/**
+ * The objects whose text elements are `PROG/PX` — a program's and a function
+ * group's (a class's are `CLAS/OCX`): what a `PROG/PX` where-used names as
+ * its `container`, which decides the address
+ * (`/sap/bc/adt/textelements/programs/{name}` or
+ * `…/functiongroups/{name}`). Both resolve to `PROG/PX` and are served
+ * (measured on premise; a program's on the cloud too).
+ */
+export type TextElementsWhereUsedContainer = Exclude<
+  TextElementsObjectKind,
+  'class'
+>;
+
 /** The parts an object of kind `K` has. */
 export type TextElementsPartOf<K extends TextElementsObjectKind> =
   ITextElementsPartsByKind[K];
