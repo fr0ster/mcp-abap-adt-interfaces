@@ -14,22 +14,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`AdtApiName`, `AdtTypeCode`, `AdtObjectKind`, `CodesOfMain<'PROG'>`,
   `CodesOfMain<'CLAS'>` and the unions derived from the on-premise and cloud
   tables gain members** — `textElements`, `PROG/PX`, `CLAS/OCX` and
-  `text_elements` (below). A union that widens breaks an exhaustive map over
-  it, so this is a major.
+  `text_elements` (below); and so do the utility, group activation and
+  where-used codes drawn from them (`AdtUtilityCode`,
+  `AdtGroupActivationCode`, `AdtWhereUsedCode`, …, listed under Migration).
+  A union that widens breaks an exhaustive map over it, so this is a major.
 
 ### Migration
 
-- An exhaustive map over `AdtApiName` (`{ [A in AdtApiName]: … }`) adds
-  `textElements`; one over `AdtTypeCode` adds `'PROG/PX'` and `'CLAS/OCX'`,
-  one over `CodesOfMain<'PROG'>` adds `'PROG/PX'` and one over
-  `CodesOfMain<'CLAS'>` adds `'CLAS/OCX'`; one over `AdtObjectKind` adds
-  `'text_elements'`. The same holds for every union derived from the tables
-  for the on-premise and cloud variants: `AdtApi<V>`, `AdtTypeCodeOf<V>`,
-  `AdtCodeOf<V>`, and the projections by operation — `AdtApiWith<V, Op>`,
-  `AdtTypeCodeWith<V, Op>`, `AdtCodeWith<V, Op>`, `AdtApiWithIn<T, Op>` —
-  wherever `Op` is among `read`, `update`, `lock` and `unlock`. A map keyed by
-  any of them, or a `switch` relying on exhaustiveness over one, adds the
-  members. The main types are unchanged.
+- **Every union that widens**, found by a compile-time probe of each export
+  of 29.0.0 against 30.0.0 (every variant `onprem`, `cloud`, `basis740` and
+  `'onprem' | 'cloud'`; every operation). Nothing of `basis740` changed.
+  - The API names: `AdtApiName`, `keyof AdtApiTable<R>`, `AdtApi<V>`, and
+    `AdtApiWith<V, Op>` / `AdtApiWithIn<T, Op>` for `Op` among `read`,
+    `update`, `lock`, `unlock` — gain `textElements`.
+  - The codes: `AdtTypeCode`, `AdtTypeCodeOf<V>`, `AdtCodeOf<V>`,
+    `AdtCodeOfIn<Tables, V>`, and `AdtTypeCodeWith<V, Op>`, `AdtCodeWith<V, Op>`,
+    `AdtCodeWithIn<Tables, V, Op>` for the same four operations — gain
+    `'PROG/PX'` and `'CLAS/OCX'`; `CodesOfMain<'PROG'>` gains `'PROG/PX'` and
+    `CodesOfMain<'CLAS'>` gains `'CLAS/OCX'`.
+  - The kinds: `AdtObjectKind` gains `'text_elements'`.
+  - The utility codes: `AdtUtilityCode` gains both codes, and
+    `AdtUtilityCodeWith<V, 'groupActivation'>` gains them through the utility
+    tables (`IAdtUtilityCodeTables`); so do `AdtGroupActivationCode<V>` and
+    `IAdtGroupActivationReference<V>['type']` — what `activateObjects` and the
+    typed `activateObjectsGroup` take.
+  - Where-used: `AdtWhereUsedCode<V>`, so `IAdtWhereUsedParamsOf<V>['object_type']`
+    and `IAdtWhereUsedScopeParamsOf<V>['object_type']`, gain both codes, as
+    `IGetWhereUsedParams['object_type']` and
+    `IGetWhereUsedScopeParams['object_type']` (default `AdtTypeCode`) do.
+    Where-used of a text element is not measured.
+  - References and answers: `IObjectReference['type']` (default
+    `AdtTypeCode`) and the known-code branch of `IAdtAnsweredObject['type']`
+    gain both codes.
+  - The tables themselves: `IAdtTypeTables` (a `textElements` entry on
+    `onprem` and `cloud`) and `IAdtUtilityCodeTables` (two codes on each).
+- **What a consumer does.** A map keyed by any of these
+  (`{ [C in AdtTypeCode]: … }`, `Record<AdtObjectKind, …>`, …) adds the new
+  keys; a `switch` that relies on exhaustiveness over one (a `never` check in
+  its `default`) adds the cases — `textElements` / `'text_elements'` for an
+  API or a kind, `'PROG/PX'` and `'CLAS/OCX'` for a code, which is a program's
+  or a class's text elements, addressed under `/sap/bc/adt/textelements/…`.
+  A consumer that maps a code to an address or a reader handles them, or
+  refuses them, there. A consumer reading an `IAdtAnsweredObject` gets
+  either code as `type`, typed, where 29.0.0 carried it as `unknownType`, the
+  text as it came. Nothing that only passes values through changes.
+  The main types (`AdtMainType`) are unchanged: `PROG` and `CLAS` were there.
 
 ### Added
 
@@ -71,7 +100,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `ITextElementsResults`: `source` and `updated`.
   - No activation member: a write lands inactive, and one activation request
     naming the object and `/sap/bc/adt/textelements/{kind}/{name}` activates
-    both (measured); the object's reference alone does not.
+    both (measured); the object's reference alone does not. `PROG/PX` and
+    `CLAS/OCX` are in `ADT_UTILITY_CODES_ONPREM` and `ADT_UTILITY_CODES_CLOUD`
+    with `groupActivation` (as `DEVC/K` is), so the typed `activateObjects`
+    and `activateObjectsGroup` take the text elements' reference —
+    `{ name, type: 'PROG/PX', uri: '/sap/bc/adt/textelements/programs/{name}' }`
+    — beside the object's. Measured on premise for a program and on the cloud
+    for a class; each other pairing is `measured: false`.
+  - `ITextElementsPartConfig` and `ITextElementsUpdateConfig` keep
+    `objectKind` and `part` `readonly`: a built config cannot be re-kinded.
+    `IAdtTextElementsReadOptions` refuses `source`, `lockHandle` and
+    `ifMatch` (`?: never`).
   - The original language only: SAP ignores the logon language for these
     (measured); there is no language field.
 - **`textElements` in `ADT_TYPES_ONPREM` and `ADT_TYPES_CLOUD`**: kind
