@@ -27,9 +27,13 @@
  * class's reference runs nothing for it; it activates when one activation
  * request names both the object (`PROG/P`, `CLAS/OC`, `FUGR/F`) and
  * `/sap/bc/adt/textelements/{programs|classes|functiongroups}/{name}`
- * (measured on premise and on the cloud for a program and a class,
+ * (measured on premise for a program and on the cloud for a class,
  * 2026-11-19). There is no activation member here: that is the group
- * activation's, with both references.
+ * activation's, with both references — `PROG/PX` and `CLAS/OCX` are in the
+ * utility tables with `groupActivation`, so `activateObjects` and the typed
+ * `activateObjectsGroup` take `{ name, type: 'PROG/PX', uri:
+ * '/sap/bc/adt/textelements/programs/{name}' }` beside the object's own
+ * reference.
  *
  * **The original language only.** SAP reads and writes the texts in the
  * object's original language (TADIR `masterlang`) whatever the logon language
@@ -201,12 +205,16 @@ export interface ITextElementsConfig {
 /**
  * One part of one object's text elements: what a read takes. A class names
  * `symbols` only.
+ *
+ * The kind and the part are `readonly`: they are the discriminant, and
+ * assigning `objectKind = 'class'` to a config that names a program's part
+ * would make a pair SAP does not serve.
  */
 export type ITextElementsPartConfig = {
   [K in TextElementsObjectKind]: {
-    objectKind: K;
+    readonly objectKind: K;
     objectName: string;
-    part: TextElementsPartOf<K>;
+    readonly part: TextElementsPartOf<K>;
   };
 }[TextElementsObjectKind];
 
@@ -216,10 +224,13 @@ export type ITextElementsPartConfig = {
  *
  * **The list is the whole part.** An entry it leaves out is deleted by SAP;
  * an empty list deletes every entry of the part.
+ *
+ * The kind is `readonly`, as is the document's `part`: changing either on a
+ * built config would pair a kind with a part it does not have.
  */
 export type ITextElementsUpdateConfig = {
   [K in TextElementsObjectKind]: {
-    objectKind: K;
+    readonly objectKind: K;
     objectName: string;
     transportRequest?: string | undefined;
   } & Extract<TextElementsDocument, { readonly part: TextElementsPartOf<K> }>;
@@ -244,11 +255,19 @@ export type IAdtTextElementsUpdateOptions<E extends IAdtError = IAdtError> =
   };
 
 /**
- * The options of a text elements read: the error strategy and a timeout. No
- * `source`, no `lockHandle` — a read honours neither (decision 29).
+ * The options of a text elements read: the error strategy and a timeout.
+ *
+ * What only a write carries is refused, for a variable as well as a literal
+ * (`?: never`, as {@link IAdtTextElementsUpdateOptions} refuses `source`): a
+ * read honours no `source`, `lockHandle` or `ifMatch` (decision 29).
  */
 export type IAdtTextElementsReadOptions<E extends IAdtError = IAdtError> =
-  IAdtAnalyseOptions<E> & { timeout?: number | undefined };
+  IAdtAnalyseOptions<E> & {
+    timeout?: number | undefined;
+    source?: never;
+    lockHandle?: never;
+    ifMatch?: never;
+  };
 
 /**
  * One part of the text elements can be read.

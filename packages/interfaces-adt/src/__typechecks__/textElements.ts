@@ -11,6 +11,7 @@ import type { IAdtLockable } from '../adt/IAdtCapabilities';
 import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type { IAnalyse } from '../adt/IAdtObject';
 import type { IAdtError } from '../adt/IAdtResponse';
+import type { IAdtGroupActivationReference } from '../adt/IAdtShared';
 import type {
   IAdtTextElementsReadable,
   IAdtTextElementsUpdatable,
@@ -28,6 +29,10 @@ import type {
   TextElementsPartOf,
   TextElementsReadVersion,
 } from '../adt/IAdtTextElements';
+import type {
+  IAdtObjectActivation,
+  IAdtTypedGroupLifecycle,
+} from '../adt/IAdtUtilities';
 import type { AdtReadVersion } from '../shared/IReadOptions';
 
 declare const handler: IAdtTextElementsReadable<string> &
@@ -240,3 +245,85 @@ const _options: IAdtTextElementsUpdateOptions = {
   timeout: undefined,
 };
 void _options;
+
+// ── The discriminant is readonly: no kind paired with a part it lacks ──────
+
+declare const programPart: ITextElementsPartConfig;
+// @ts-expect-error the kind is the discriminant; a config is built, not re-kinded
+programPart.objectKind = 'class';
+// @ts-expect-error the part is fixed with the kind
+programPart.part = 'headings';
+declare const programWrite: ITextElementsUpdateConfig;
+// @ts-expect-error a write's kind is not reassigned either
+programWrite.objectKind = 'class';
+// @ts-expect-error nor its part
+programWrite.part = 'symbols';
+
+// ── A read takes no write-only field, not even through a variable ──────────
+
+declare const writeOptions: {
+  timeout: number;
+  lockHandle: string;
+  source: string;
+};
+void handler.read(
+  { objectKind: 'program', objectName: 'ZPROG', part: 'symbols' },
+  undefined,
+  // @ts-expect-error a read honours no lock handle and no source
+  writeOptions,
+);
+declare const withIfMatch: { ifMatch: string };
+void handler.read(
+  { objectKind: 'program', objectName: 'ZPROG', part: 'symbols' },
+  'inactive',
+  // @ts-expect-error a read sends no If-Match
+  withIfMatch,
+);
+void handler.read(
+  { objectKind: 'program', objectName: 'ZPROG', part: 'symbols' },
+  'active',
+  { timeout: 1000 },
+);
+
+// ── Activation: the object with its text elements, typed, on both variants ─
+
+// A program activates on premise (ABAP cloud activates no program).
+const programWithTexts: IAdtGroupActivationReference<'onprem'>[] = [
+  { name: 'ZPROG', type: 'PROG/P', uri: '/sap/bc/adt/programs/programs/zprog' },
+  {
+    name: 'ZPROG',
+    type: 'PROG/PX',
+    uri: '/sap/bc/adt/textelements/programs/zprog',
+  },
+];
+const classWithTexts: IAdtGroupActivationReference<'cloud'>[] = [
+  { name: 'ZCL_X', type: 'CLAS/OC', uri: '/sap/bc/adt/oo/classes/zcl_x' },
+  {
+    name: 'ZCL_X',
+    type: 'CLAS/OCX',
+    uri: '/sap/bc/adt/textelements/classes/zcl_x',
+  },
+];
+const onPremClass: IAdtGroupActivationReference<'onprem'> = {
+  name: 'ZCL_X',
+  type: 'CLAS/OCX',
+};
+void onPremClass;
+declare const onPremActivation: IAdtObjectActivation<string, 'onprem'>;
+declare const cloudActivation: IAdtObjectActivation<string, 'cloud'>;
+declare const onPremLifecycle: IAdtTypedGroupLifecycle<
+  string,
+  string,
+  string,
+  'onprem'
+>;
+void onPremActivation.activateObjects(programWithTexts, true, { headers });
+void cloudActivation.activateObjects(classWithTexts, true, { headers });
+void onPremLifecycle.activateObjectsGroup(programWithTexts, true, { headers });
+// 7.40 has no text elements: its activation does not take them.
+const _basisTexts: IAdtGroupActivationReference<'basis740'> = {
+  name: 'ZPROG',
+  // @ts-expect-error SAP_BASIS 7.40 serves no /textelements
+  type: 'PROG/PX',
+};
+void _basisTexts;
