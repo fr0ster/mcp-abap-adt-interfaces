@@ -642,6 +642,7 @@
   "SAML_RULE_DIAGNOSTIC": "interfaces-auth",
   "SAML_STATUS_CODES": "interfaces-auth",
   "SAP_CONNECTION_HEADERS": "interfaces-network",
+  "SELECTION_TEXT_MAX_LENGTH": "interfaces-adt",
   "SERVICE_BINDING_VARIANT_MAP": "interfaces-adt",
   "SNC_ARCHS": "interfaces-auth",
   "SNC_CANDIDATE_SOURCES": "interfaces-auth",

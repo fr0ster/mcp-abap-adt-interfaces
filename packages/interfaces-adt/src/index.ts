@@ -324,6 +324,7 @@ export type {
   TextElementsReadVersion,
 } from './adt/IAdtTextElements';
 export {
+  SELECTION_TEXT_MAX_LENGTH,
   TEXT_ELEMENTS_OBJECT_KINDS,
   TEXT_ELEMENTS_PARTS,
 } from './adt/IAdtTextElements';

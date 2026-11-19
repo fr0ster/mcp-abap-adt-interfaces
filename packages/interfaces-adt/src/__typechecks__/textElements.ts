@@ -16,6 +16,7 @@ import type {
   IAdtTextElementsReadable,
   IAdtTextElementsUpdatable,
   IAdtTextElementsUpdateOptions,
+  ISelectionText,
   ITextElementsConfig,
   ITextElementsPartConfig,
   ITextElementsUpdateConfig,
@@ -29,6 +30,7 @@ import type {
   TextElementsPartOf,
   TextElementsReadVersion,
 } from '../adt/IAdtTextElements';
+import { SELECTION_TEXT_MAX_LENGTH } from '../adt/IAdtTextElements';
 import type {
   IAdtObjectActivation,
   IAdtTypedGroupLifecycle,
@@ -145,7 +147,11 @@ void handler.update(
     objectKind: 'program',
     objectName: 'ZPROG',
     part: 'selections',
-    selections: [{ name: 'P_TEST  ', text: 'Test parameter' }],
+    selections: [
+      { name: 'P_TEST  ', text: 'Test parameter', ddicReference: false },
+      // A dictionary text: SAP stores the field's label, whatever the text.
+      { name: 'P_ARBGB', text: '', ddicReference: true },
+    ],
     transportRequest: 'E19K900001',
   },
   { headers, lockHandle: 'HANDLE' },
@@ -327,3 +333,17 @@ const _basisTexts: IAdtGroupActivationReference<'basis740'> = {
   type: 'PROG/PX',
 };
 void _basisTexts;
+
+// ── The lock config's kind is readonly too ─────────────────────────────────
+
+declare const lockConfig: ITextElementsConfig;
+// @ts-expect-error a lock config is not re-kinded either
+lockConfig.objectKind = 'class';
+
+// ── A selection text states whether it is the dictionary's ────────────────
+
+// @ts-expect-error the write replaces the part: whether a text is the dictionary's is stated
+const _noDdicFlag: ISelectionText = { name: 'P_X', text: 'x' };
+void _noDdicFlag;
+const _limit: 30 = SELECTION_TEXT_MAX_LENGTH;
+void _limit;

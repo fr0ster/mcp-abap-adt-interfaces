@@ -6,29 +6,40 @@
  * the object's source: `/sap/bc/adt/textelements/{programs|classes|functiongroups}/{name}`,
  * one sub-resource per part (`…/source/symbols`, `…/source/selections`,
  * `…/source/headings`), each with its own media type
- * (`application/vnd.sap.adt.textelements.{part}.v1`) and the object's own
- * lock — lock class `TEXT`, taken by `POST …/{name}?_action=LOCK`, not the
- * program's or the class's lock (`CL_SEDX_ADT_RES_TEXTELEMENT`, read on premise
- * 2026-11-19). So they are not a field of {@link IProgramConfig} or
- * {@link IClassConfig}.
+ * (`application/vnd.sap.adt.textelements.{part}.v1`; measured: another
+ * `Accept` answers HTML) and the object's own lock, taken by
+ * `POST …/{name}?_action=LOCK&accessMode=MODIFY` (measured on premise and on
+ * the cloud) — lock class `TEXT`, not the program's or the class's lock (Code:
+ * `CL_SEDX_ADT_RES_TEXTELEMENT`). So they are not a field of
+ * {@link IProgramConfig} or {@link IClassConfig}.
  *
  * **Which parts an object has.** A class has text symbols only; a program and
- * a function group have all three (the handler's `get`, Code). A class with a
- * part it does not have does not compile here.
+ * a function group have all three (Code: `CL_SEDX_ADT_RES_TEXTELEMENT->get`;
+ * measured: the properties document of a program, a class and a function
+ * group lists exactly these, on premise). A class with a part it does not
+ * have does not compile here.
  *
  * **One write replaces one part: read, change, write back.** A write is
  * `PUT …/source/{part}?lockHandle=…[&corrNr=…]` with the whole part: an entry
- * the body leaves out is deleted, a new key is inserted (measured on premise
- * and on the cloud, 2026-11-19). So create, change and delete are the same
- * write, and {@link ITextElementsUpdateConfig} carries the complete list.
+ * the body leaves out is deleted, a new key is inserted, a changed one is
+ * updated. Measured for symbols on premise and on the cloud (2026-11-19);
+ * for selection texts and headings, Code: `CL_SEDX_ADT_RES_TEXTELEMENT`'s
+ * local `lcl_textpool->save` — the same insert, update and delete loop for
+ * selections, and for each heading a delete when it is sent empty. So create,
+ * change and delete are the same write, and {@link ITextElementsUpdateConfig}
+ * carries the complete list.
  *
  * **Saved inactive; activated with the object.** SAP writes the part to the
- * inactive working area. An activation that names only the program's or the
- * class's reference runs nothing for it; it activates when one activation
- * request names both the object (`PROG/P`, `CLAS/OC`, `FUGR/F`) and
+ * inactive working area (Code: `RS_INSERT_INTO_WORKING_AREA` in `save`;
+ * measured: the inactive list names the text elements after a write). An
+ * activation that names only the program's reference ran nothing for them
+ * (measured on premise); one activation request naming both the object
+ * (`PROG/P`, `CLAS/OC`, `FUGR/F`) and
  * `/sap/bc/adt/textelements/{programs|classes|functiongroups}/{name}`
- * (measured on premise for a program and on the cloud for a class,
- * 2026-11-19). There is no activation member here: that is the group
+ * activates both (measured on premise for a program and a function group,
+ * on the cloud for a class, 2026-11-19); after a later change, the text
+ * elements' reference alone activated them (measured on premise, a
+ * program). There is no activation member here: that is the group
  * activation's, with both references — `PROG/PX` and `CLAS/OCX` are in the
  * utility tables with `groupActivation`, so `activateObjects` and the typed
  * `activateObjectsGroup` take `{ name, type: 'PROG/PX', uri:
@@ -44,13 +55,14 @@
  * **On the cloud** the lock answers `MODIFICATION_SUPPORT=NoModification`, and
  * the write is accepted and saved all the same (measured 2026-11-19).
  *
- * **A function group** has the collection
- * `/sap/bc/adt/textelements/functiongroups` in the discovery of S/4HANA 2025
- * and of ABAP cloud; its addressing is not measured — the one read sent
- * (`…/functiongroups/sutl`) answered 404, "Resource REPT SAPLSUTL does not
- * exist" — and no release's `typestructure` lists a type code for its text
- * elements (the handler names `FUGR` with the program-text subtype, Code), so
- * the type tables carry `PROG/PX` and `CLAS/OCX` only.
+ * **A function group** (measured on premise, 2026-11-19): its text elements
+ * are at `/sap/bc/adt/textelements/functiongroups/{group}`, the plain group
+ * name (`…/sapl{group}` answers 404). The properties document names them
+ * `FUGR/PX`; after a write the inactive list holds the group (`FUGR/F`) and
+ * them as `PROG/PX`, named `SAPL{GROUP}`; one activation naming the group's
+ * URI and theirs, each with `adtcore:name="{GROUP}"`, activates both. No
+ * release's `typestructure` lists `FUGR/PX`, so the type tables carry
+ * `PROG/PX` and `CLAS/OCX` only.
  *
  * Types and constants only.
  */
@@ -92,8 +104,9 @@ export const TEXT_ELEMENTS_PARTS = [
 export type TextElementsPart = (typeof TEXT_ELEMENTS_PARTS)[number];
 
 /**
- * The parts each object has (`CL_SEDX_ADT_RES_TEXTELEMENT`, `get`, Code): a
- * class has text symbols only.
+ * The parts each object has (Code: `CL_SEDX_ADT_RES_TEXTELEMENT->get`;
+ * measured in the properties documents on premise): a class has text symbols
+ * only.
  */
 export interface ITextElementsPartsByKind {
   readonly program: TextElementsPart;
@@ -107,20 +120,23 @@ export type TextElementsPartOf<K extends TextElementsObjectKind> =
 
 /**
  * The version a read asks for (`?version=`): every value SAP's handler maps
- * (`CL_SEDX_ADT_RES_TEXTELEMENT`, `cl_adt_utility=>get_wb_version`, Code).
+ * (Code: `CL_SEDX_ADT_RES_TEXTELEMENT`, `cl_adt_utility=>get_wb_version`).
  *
- * - absent: the working area — the inactive version when it is the user's own
- *   inactive item, else the active one (Code); a read straight after a write
- *   answers the write (measured on premise and on the cloud);
- * - `inactive`: the inactive version (measured on premise and on the cloud);
- *   when there is none, SAP answers the active one (Code);
- * - `active`: the active version (Code; not yet measured);
- * - `workingArea`: the working area, the value Eclipse sends (seen in Eclipse's
- *   requests; the handler maps it through `get_wb_version`, Code; not yet
- *   measured here).
+ * Measured on premise (2026-11-19) for a program's selection texts — after a
+ * write never activated, after the activation, and after a later change not
+ * yet activated:
  *
- * A value outside these is not refused by SAP: it falls back to the working
- * area (Code). The contract offers only the three.
+ * - absent, `inactive` and `workingArea` answer the same: the working area,
+ *   the inactive version when there is one, else the active one;
+ * - `active` answers the last activated version — before the first
+ *   activation only the screen fields' `?...` placeholders, after a change
+ *   the text as it was activated.
+ *
+ * Absent and `inactive` were measured on the cloud too, for a class's
+ * symbols. A value outside these is not refused by SAP: it falls back to the
+ * working area (Code: `CL_SEDX_ADT_RES_TEXTELEMENT`, an unmapped value is an
+ * initial version, replaced by the working area's). The contract offers only
+ * the three.
  */
 export type TextElementsReadVersion = AdtReadVersion;
 
@@ -132,39 +148,70 @@ export type TextElementsReadVersion = AdtReadVersion;
  */
 export interface ITextSymbol {
   /**
-   * The symbol's key: up to three characters (`001`, `R01`); SAP writes it
-   * upper case and refuses a longer one (`SEDX_ADT` 102, Code).
+   * The symbol's key: up to three characters (`001`, `R01`); SAP upper-cases
+   * it and refuses a longer one (Code: `CL_SEDX_ADT_SRC_UTIL`,
+   * `map_source_to_textpool_data`, `SEDX_ADT/102`).
    */
   readonly key: string;
   /** The text, everything after the first `=`. */
   readonly text: string;
   /**
    * The symbol's maximum length, `@MaxLength:N`: a count, so a number. SAP
-   * refuses a negative one (`SEDX_ADT` 103, Code).
+   * refuses a negative one (Code: `CL_SEDX_ADT_SRC_UTIL`,
+   * `map_source_to_textpool_data`, `SEDX_ADT/103`).
    */
   readonly maxLength: number;
 }
 
 /**
- * One selection text: a line `NAME=text` for a parameter or a select option.
+ * The longest selection text SAP takes: 30 characters. A longer one refuses
+ * the whole write — `406`, "Length of text symbol … exceeds 30 characters",
+ * `SEDX_ADT/110` — and nothing is saved (measured on premise, 2026-11-19;
+ * Code: `CL_SEDX_ADT_C_HANDLER_SELECTIS`). For a caller to check against; the
+ * contract does not.
+ */
+export const SELECTION_TEXT_MAX_LENGTH = 30;
+
+/**
+ * One selection text: a line `NAME=text` for a parameter or a select option,
+ * after an `@DDICReference` line when the text is the dictionary's.
  *
- * The name is as SAP writes it: a read pads it to eight characters
- * (`P_TEST  =Test parameter EN`, measured on premise after writing
- * `P_TEST=…`). How SAP shows a selection text taken from the dictionary is
- * not measured.
+ * Measured on premise (2026-11-19): a read lists every parameter and select
+ * option of the program, sorted by name, the name upper case and padded to
+ * eight characters (`P_TEST  =Test parameter EN`); a screen field with no
+ * text yet reads `?...`. A write takes the name padded or not.
  */
 export interface ISelectionText {
-  /** The parameter's or select option's name, as read. */
+  /**
+   * The parameter's or select option's name, as read: up to eight characters
+   * (Code: `CL_SEDX_ADT_C_HANDLER_SELECTIS` refuses a longer one,
+   * `SEDX_ADT/102`; not measured).
+   */
   readonly name: string;
-  /** The text, everything after the first `=`. */
+  /**
+   * The text, everything after the first `=`: at most
+   * {@link SELECTION_TEXT_MAX_LENGTH} characters. With `ddicReference`, a
+   * read answers the dictionary field's label, and a write's text is ignored —
+   * SAP stores the label (measured).
+   */
   readonly text: string;
+  /**
+   * Whether the text is the dictionary's (`@DDICReference` before the line):
+   * the field's label, not a text of the program's (measured on premise).
+   * Required, since a write replaces the part: an entry sent without it gets
+   * the text it carries (measured). On a field not typed by the dictionary:
+   * not measured.
+   */
+  readonly ddicReference: boolean;
 }
 
 /**
  * The list and column headings: one list header and four column headers,
  * the lines `listHeader=…` and `columnHeader_1=…` to `columnHeader_4=…` (read
- * on premise, 2026-11-19). Each is required, since a write replaces the part;
- * an empty heading is `''`.
+ * on premise, 2026-11-19, all empty). Each is required, since a write sets
+ * every one: a heading sent empty is deleted, any other inserted or updated
+ * (Code: `lcl_textpool->save`, `update_header`; a headings write is not
+ * measured). An empty heading is `''`.
  */
 export interface ITextHeadings {
   readonly listHeader: string;
@@ -197,7 +244,8 @@ export type TextElementsDocument =
  * `unlock` take. `transportRequest` is the `corrNr` of a write.
  */
 export interface ITextElementsConfig {
-  objectKind: TextElementsObjectKind;
+  /** `readonly`, as in the part configs: a built config is not re-kinded. */
+  readonly objectKind: TextElementsObjectKind;
   objectName: string;
   transportRequest?: string | undefined;
 }
