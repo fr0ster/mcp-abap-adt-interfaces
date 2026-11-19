@@ -48,6 +48,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     `IGetWhereUsedParams['object_type']` and
     `IGetWhereUsedScopeParams['object_type']` do. `CLAS/OCX` is in none of
     them: SAP serves no where-used for it (measured).
+  - **`PROG/PX` names its container in a where-used.** `IGetWhereUsedParams`
+    and `IGetWhereUsedScopeParams` (and so `IAdtWhereUsedParamsOf<V>` /
+    `IAdtWhereUsedScopeParamsOf<V>`) are type aliases now, not interfaces:
+    with `object_type: 'PROG/PX'` they require `container: 'program' |
+    'functionGroup'` (`TextElementsWhereUsedContainer`), which decides the
+    address (`/sap/bc/adt/textelements/programs/{name}` or
+    `…/functiongroups/{name}`), and every other code refuses a `container`.
+    What a consumer does:
+    - a literal with another code compiles as before;
+    - a value whose `object_type` is a variable of the whole union (it may be
+      `PROG/PX`) needs the `container` when it is `PROG/PX` — narrow the code
+      first, or build the `PROG/PX` case apart;
+    - `interface X extends IGetWhereUsedParams` (the default, a union) no
+      longer compiles (`TS2312`): use a type alias with `&`, or extend a
+      single code's params (`IGetWhereUsedParams<'PROG/P'>` still does).
   - **An explicit type argument that no longer fits.** `IGetWhereUsedParams`
     and `IGetWhereUsedScopeParams` constrain `C` to every code but
     `CLAS/OCX`, so `IGetWhereUsedParams<AdtTypeCode>` and
@@ -134,6 +149,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     nowhere ("… not supported for Text Element: Class."), so
     `AdtWhereUsedCode` and the untyped where-used parameters leave it out.
     All of them stay in the group activation.
+  - A `PROG/PX` where-used names its `container` (`'program'` or
+    `'functionGroup'`, `TextElementsWhereUsedContainer`, required), which
+    decides the address — a program's and a function group's text elements
+    are both `PROG/PX` and both served (measured), and the table keeps one
+    collection per code. No other code takes a `container`.
   - A function group's text elements are typed `PROG/PX` under their own URI
     (`/sap/bc/adt/textelements/functiongroups/{group}`): beside `FUGR/F`, or
     alone, that reference activates them (measured on premise; the name may
