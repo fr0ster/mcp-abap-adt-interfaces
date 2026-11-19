@@ -7,6 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [27.5.0] - 2026-11-19
+
+### Added
+
+- **A table's technical settings, as a contract of their own**
+  (`src/adt/IAdtTableSettings.ts`). SAP keeps them at
+  `/sap/bc/adt/ddic/db/settings/{name}` (`TABL/DTT`, content type
+  `application/vnd.sap.adt.table.settings.v2+xml`), with their own ETag and
+  their own lock (ESDICT `TABT`); measured on premise and on the cloud,
+  2026-11-19. They are not part of `ITableConfig` or `ITableResults`.
+  - `ITableSettingsConfig` (`tableName`, `transportRequest?`): what reading
+    and locking take.
+  - `ITableSettingsUpdateConfig`: the identity, `description` (required — SAP
+    refuses a write without it, SWB_TOOL 019) and `settings: ITableSettings`.
+  - `ITableSettings`: `dataClassCategory`, `sizeCategory` and `buffering`
+    (`ITableBuffering`: `allowed`, `type?`, `areaKeyFields?`) required, since
+    SAP writes every field of the document and this contract chooses no value
+    for the caller; `storageType`, `sharingType`, `loadUnit`, `translation`
+    and `loggingEnabled` optional, an absent one not sent.
+  - The value sets: `TableDataClass` (the data class value help's six entries
+    on S/4HANA 2025), `TableSizeCategory` (`'0'`–`'9'`),
+    `TableBufferingAllowed` (`N`, `X`, `A`), `TableBufferingType` (`P`, `G`,
+    `X`).
+  - `IAdtTableSettingsUpdatable<TMetadataUpdated>`: `updateMetadata(config,
+    options)`, one PUT under the caller's lock, its body built from the config;
+    `IAdtTableSettingsUpdateOptions` is `IAdtUpdateOptions` with `source?:
+    never`. Reading is `IAdtMetadataReadable`, the lock `IAdtLockable`.
+  - `ITableSettingsResults`: `metadata` and `metadataUpdated`.
+- **`tableSettings` in `ADT_TYPES_ONPREM` and `ADT_TYPES_CLOUD`**: kind
+  `table_settings`, collection `/sap/bc/adt/ddic/db/settings`, code `TABL/DTT`
+  (parent none, as `typestructure` lists it; names up to 16, the table's),
+  with `readMetadata`, `updateMetadata`, `lock` and `unlock`. No `activate`:
+  activating the table (`TABL/DT`) activates its settings. SAP_BASIS 7.40's
+  discovery has no such collection, so `ADT_TYPES_BASIS_740` has no entry.
+  `AdtApiName` gains `'tableSettings'`, and `AdtTypeCode`, `AdtObjectKind` and
+  `CodesOfMain<'TABL'>` gain `TABL/DTT` / `table_settings` with it: a map over
+  them names the new member.
+
 ## [27.4.0] - 2026-11-12
 
 ### Changed

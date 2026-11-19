@@ -12,6 +12,7 @@ ADT contracts: object operations, runtime analysis, execution, feeds and service
 - Since 15.0.0 `skipCount` is gone from breakpoints (the server ignores it) and `clientId` pairs an answer row with its request. The CHANGELOG has the migration note.
 - Since 15.1.0 the plain class and program run take `debuggee` (`IDebuggeeIds`): the terminal id and IDE id a terminal-mode listener catches the run by.
 - Since 23.1.0 the ABAP Unit run registry: `ABAP_UNIT_RUN_TYPES`, every `osl:object type` value a run may name, what a run of it runs and on what evidence; `AbapUnitRunObjectType` (its keys), `AbapUnitRunTarget` (an object or a package) and the generic runner contract `IAbapUnitRunner`. Additions only. See "The ABAP Unit run registry".
+- Since 27.5.0 a table's technical settings (`TABL/DTT`, `tableSettings` in the on-premise and cloud tables) are their own contract: `ITableSettingsConfig`, `ITableSettingsUpdateConfig` with the typed `ITableSettings`, the write atom `IAdtTableSettingsUpdatable` and `ITableSettingsResults`. A map over `AdtTypeCode`, `AdtApiName` or `AdtObjectKind` adds the new member. See "A table's technical settings".
 - Since 27.0.0 `IUtilResults` requires `objectActivation`, the reading of the new atom `IAdtObjectActivation` (`activateObjects`, the synchronous `POST /activation` for several objects); `activate` takes `IAdtActivationOptions` (`preauditRequested`); and `IAnalyse` takes an optional third parameter, `IAdtAnalyseContext`. See "Activation" and "Migrating to 27.0.0".
 - Since 25.2.0 `update` and `updateMetadata` take `IAdtUpdateOptions`: `IAdtOperationOptions` with `ifMatch`, the ETag a read answered, sent as `If-Match` so the system refuses a write over a changed document (`412`). Additions only.
 - Since 25.1.0 `IAtcResultsReadable` reads the ATC results the system holds: `listResults` (`IAtcResultListOptions`, `createdBy` required) and `getResult` by Display ID. Additions only.
@@ -481,6 +482,39 @@ Each field is optional, `| undefined` for `exactOptionalPropertyTypes`, so an
 error or a result built for 27.2.0 still conforms.
 `src/__typechecks__/sessionError.ts` and `src/__typechecks__/sessionLost.ts`
 hold these shapes.
+
+## A table's technical settings (27.5.0)
+
+A database table's technical settings — data class, size category,
+buffering, logging — are a resource of their own,
+`/sap/bc/adt/ddic/db/settings/{name}` (`TABL/DTT`, content type
+`application/vnd.sap.adt.table.settings.v2+xml`), with their own ETag and
+their own lock (ESDICT `TABT`, which the table's lock does not cover). So they
+are not part of `ITableConfig` or `ITableResults`, and the tables list them as
+the API `tableSettings` (kind `table_settings`) on S/4HANA and ABAP cloud,
+with `readMetadata`, `updateMetadata`, `lock` and `unlock`. SAP_BASIS 7.40
+does not serve the collection, and its table has no entry.
+
+- **Read** with `IAdtMetadataReadable<ITableSettingsConfig, …>`: the
+  document, `ts:tableSettings`. SAP creates default settings when it creates a
+  table, so a read right after the create answers them (`version="new"`).
+- **Write** with `IAdtTableSettingsUpdatable`: its `updateMetadata` takes
+  `ITableSettingsUpdateConfig` — the table's name, its `description` (SAP
+  refuses a write without one, SWB_TOOL 019) and `ITableSettings` — and builds
+  the body from it; the options refuse a `source`. A write is a replace: SAP
+  writes every DD09L field from the document, so data class, size category and
+  buffering are required, and an optional field left out is written as SAP's
+  initial value.
+- **The sequence is the caller's**: `lock` (stateful), `updateMetadata` with
+  the lock handle (and `transportRequest` as `corrNr`), `unlock` on every path,
+  then activate the **table** — activating `TABL/DT` activates its settings;
+  there is no activation of the settings alone.
+
+The value sets: `TableDataClass` is the data class value help's list on
+S/4HANA 2025 (`APPL0`, `APPL1`, `APPL2`, `DDIM`, `DFACT`, `DODS`);
+`TableSizeCategory` is `'0'` to `'9'`, a code as the document writes it;
+`TableBufferingAllowed` is `N`, `X`, `A`, and `TableBufferingType` `P`, `G`,
+`X`. Storage type, sharing type, load unit and translation are strings.
 
 ## Optional fields take `undefined` (27.4.0)
 
