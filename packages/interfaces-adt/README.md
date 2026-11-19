@@ -508,8 +508,10 @@ does not serve the collection, and its table has no entry.
   the whole DD09L row from the document and resets a field it leaves out, so
   every field the document carries is required. `translation` is the
   `ts:translation` element's four attributes (`ITableTranslation`: `value`,
-  `isVisible`, `isEditable`, `granularity`, since 29.0.0): SAP refuses a PUT
-  without any of them (400 `00/001`, measured), so write them back as read.
+  `isVisible`, `isEditable`, `granularity`, since 29.0.0): SAP's transformation
+  declares all four; a PUT carrying only `value` was refused (400 `00/001`,
+  measured: `isVisible` expected) — a refusal for each other omission is inferred,
+  not measured — so write all four back as read.
   `isWritableByAMDP` is
   returned by cloud and not written by this contract (unmeasured): it is on
   `ITableSettingsRead`, the read result, and a write refuses it.
