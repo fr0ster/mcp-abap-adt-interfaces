@@ -331,7 +331,7 @@ export {
   TEXT_ELEMENTS_OBJECT_KINDS,
   TEXT_ELEMENTS_PARTS,
   TEXT_HEADING_KEYS,
-  TEXT_SYMBOL_KEY_LENGTH,
+  TEXT_SYMBOL_KEY_MAX_LENGTH,
 } from './adt/IAdtTextElements';
 export type {
   ITransformationConfig,

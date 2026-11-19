@@ -690,7 +690,7 @@
   "TEXT_ELEMENTS_OBJECT_KINDS": "interfaces-adt",
   "TEXT_ELEMENTS_PARTS": "interfaces-adt",
   "TEXT_HEADING_KEYS": "interfaces-adt",
-  "TEXT_SYMBOL_KEY_LENGTH": "interfaces-adt",
+  "TEXT_SYMBOL_KEY_MAX_LENGTH": "interfaces-adt",
   "TLS_FAILURE_CODES": "interfaces-auth",
   "TOKEN_BINDING_PROBLEMS": "interfaces-auth",
   "TRANSPORT_SEARCH_CONFIGURATIONS_URL": "interfaces-adt",

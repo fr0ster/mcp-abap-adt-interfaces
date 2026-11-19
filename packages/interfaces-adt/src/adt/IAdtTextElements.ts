@@ -6,8 +6,10 @@
  * the object's source: `/sap/bc/adt/textelements/{programs|classes|functiongroups}/{name}`,
  * one sub-resource per part (`…/source/symbols`, `…/source/selections`,
  * `…/source/headings`), each with its own media type
- * (`application/vnd.sap.adt.textelements.{part}.v1`; measured: another
- * `Accept` answers HTML) and the object's own lock, taken by
+ * (`application/vnd.sap.adt.textelements.{part}.v1`: with exactly that
+ * `Accept` SAP answers the part's text; with the wildcard alone (any type),
+ * and with the part's media type, `text/plain` and the wildcard, it answered
+ * an HTML page — measured on premise) and the object's own lock, taken by
  * `POST …/{name}?_action=LOCK&accessMode=MODIFY` (measured on premise and on
  * the cloud) — lock class `TEXT`, not the program's or the class's lock (Code:
  * `CL_SEDX_ADT_RES_TEXTELEMENT`). So they are not a field of
@@ -168,12 +170,13 @@ export type TextElementsReadVersion = AdtReadVersion;
  */
 export interface ITextSymbol {
   /**
-   * The symbol's key: exactly {@link TEXT_SYMBOL_KEY_LENGTH} characters
-   * (`001`, `R01`, `0#1`); a longer one (`0001`) refuses the whole write,
-   * `406` `SEDX_ADT/106` "Cannot parse the source code" (measured on premise;
-   * Code: `CL_SEDX_ADT_SRC_UTIL=>map_source_to_textpool_data` reads a symbol
-   * line only with `=` within its first four characters). SAP upper-cases it
-   * (Code: `map_text_elements_to_source`).
+   * The symbol's key: at most {@link TEXT_SYMBOL_KEY_MAX_LENGTH} characters.
+   * Three were accepted (`001`, `0#1`, `AB1`, measured on premise); four
+   * (`0001`) refuse the whole write, `406` `SEDX_ADT/106` "Cannot parse the
+   * source code" (measured; Code: `CL_SEDX_ADT_SRC_UTIL=>map_source_to_textpool_data`,
+   * `strlen( <line> ) >= 4 and <line>(4) cs '='`). A shorter key is not
+   * measured. SAP upper-cases it on a read (Code: `map_text_elements_to_source`,
+   * `to_upper( <fs>-key(3) )`).
    */
   readonly key: string;
   /** The text, everything after the first `=`. */
@@ -187,15 +190,15 @@ export interface ITextSymbol {
 }
 
 /**
- * A text symbol's key is exactly three characters: SAP reads a symbol line
- * only with `=` within its first four characters, and refuses a longer key
- * `406` `SEDX_ADT/106` "Cannot parse the source code" (measured on premise
- * with `0001`; Code: `CL_SEDX_ADT_SRC_UTIL=>map_source_to_textpool_data`).
- * Any three characters its key check accepts are taken — `0#1` and `AB1`
- * were stored (measured). For a caller to check against; the contract does
+ * The longest text symbol key measured as accepted: three characters (`001`,
+ * `0#1`, `AB1` were stored, measured on premise). Four (`0001`) refuse the
+ * whole write, `406` `SEDX_ADT/106` "Cannot parse the source code"
+ * (measured; Code: `CL_SEDX_ADT_SRC_UTIL=>map_source_to_textpool_data` reads
+ * a symbol line only with `=` within its first four characters). A shorter
+ * key is not measured. For a caller to check against; the contract does
  * not.
  */
-export const TEXT_SYMBOL_KEY_LENGTH = 3;
+export const TEXT_SYMBOL_KEY_MAX_LENGTH = 3;
 
 /**
  * The longest selection text name SAP takes: eight characters. A longer one
@@ -384,8 +387,11 @@ export type IAdtTextElementsReadOptions<E extends IAdtError = IAdtError> =
  * One part of the text elements can be read.
  *
  * `GET …/source/{part}[?version=…]`, with the part's own media type as
- * `Accept` — SAP answers HTML to any other. The answer is the part's plain
- * text (`text/plain`-like, CR LF between lines), in the original language.
+ * `Accept` (with the wildcard alone SAP answered an HTML page, measured on
+ * premise). The
+ * answer is the part's text in the original language, its lines separated by
+ * CR LF, an entry from the next by an empty line (symbols, selections) — as
+ * measured on premise and on the cloud; selection names padded to eight.
  */
 export interface IAdtTextElementsReadable<TSource> {
   /**
@@ -427,7 +433,9 @@ export interface IAdtTextElementsUpdatable<TUpdated> {
    * caller passes as `options.lockHandle`.
    *
    * @returns whatever this implementation's reading makes of the answer —
-   *          SAP answers 200 with the part as saved
+   *          SAP answered 200 with the part as saved (measured on premise for
+   *          symbols and selections: a dictionary text came back as the
+   *          field's label, sorted and padded; on the cloud for symbols)
    */
   update<E extends IAdtError>(
     config: ITextElementsUpdateConfig,

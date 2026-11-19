@@ -40,7 +40,7 @@ import {
   SELECTION_TEXT_MAX_LENGTH,
   SELECTION_TEXT_NAME_MAX_LENGTH,
   TEXT_HEADING_KEYS,
-  TEXT_SYMBOL_KEY_LENGTH,
+  TEXT_SYMBOL_KEY_MAX_LENGTH,
   type TextHeadingKey,
 } from '../adt/IAdtTextElements';
 import type {
@@ -480,7 +480,7 @@ void _headingKeys;
 const _fifthColumn: TextHeadingKey = 'columnHeader_5';
 void _fifthColumn;
 const _limits: [3, 8] = [
-  TEXT_SYMBOL_KEY_LENGTH,
+  TEXT_SYMBOL_KEY_MAX_LENGTH,
   SELECTION_TEXT_NAME_MAX_LENGTH,
 ];
 void _limits;
