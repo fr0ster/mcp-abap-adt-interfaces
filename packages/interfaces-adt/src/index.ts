@@ -283,11 +283,12 @@ export type {
   ITableSettingsConfig,
   ITableSettingsResults,
   ITableSettingsUpdateConfig,
+  KnownTableDataClass,
   TableBufferingAllowed,
   TableBufferingType,
-  TableDataClass,
   TableSizeCategory,
 } from './adt/IAdtTableSettings';
+export { TABLE_DATA_CLASSES } from './adt/IAdtTableSettings';
 export type {
   ITableTypeConfig,
   ITableTypeResults,

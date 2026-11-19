@@ -4,19 +4,22 @@
 // `IAdtMetadataReadable`, locked through `IAdtLockable`, and written through
 // `IAdtTableSettingsUpdatable`, whose body is the config and never a
 // `source`. A write states what it sets: data class, size category and
-// buffering are required, and every optional field takes `undefined`.
+// buffering are required, a data class is any the system defines, and every
+// optional field takes `undefined`.
 
 import type {
   IAdtLockable,
   IAdtMetadataReadable,
 } from '../adt/IAdtCapabilities';
 import type { IAdtHeaders } from '../adt/IAdtContentTypes';
-import type {
-  IAdtTableSettingsUpdatable,
-  IAdtTableSettingsUpdateOptions,
-  ITableSettings,
-  ITableSettingsConfig,
-  ITableSettingsUpdateConfig,
+import {
+  type IAdtTableSettingsUpdatable,
+  type IAdtTableSettingsUpdateOptions,
+  type ITableSettings,
+  type ITableSettingsConfig,
+  type ITableSettingsUpdateConfig,
+  type KnownTableDataClass,
+  TABLE_DATA_CLASSES,
 } from '../adt/IAdtTableSettings';
 
 declare const handler: IAdtMetadataReadable<ITableSettingsConfig, string> &
@@ -61,13 +64,19 @@ const _noDataClass: ITableSettings = {
 };
 void _noDataClass;
 
-const _unknownDataClass: ITableSettings = {
-  // @ts-expect-error a data class the value help does not list
-  dataClassCategory: 'APPL9',
+// A customer data class is a data class: the field is not limited to the
+// value help's six.
+const _customerDataClass: ITableSettings = {
+  dataClassCategory: 'USER1',
   sizeCategory: '0',
   buffering: { allowed: 'N' },
 };
-void _unknownDataClass;
+void _customerDataClass;
+
+// The measured six are there to be found.
+const _known: KnownTableDataClass = TABLE_DATA_CLASSES[1];
+const _knownIsAClass: ITableSettings['dataClassCategory'] = _known;
+void _knownIsAClass;
 
 const _numericSize: ITableSettings = {
   dataClassCategory: 'APPL0',

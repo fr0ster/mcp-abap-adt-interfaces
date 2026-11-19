@@ -28,17 +28,25 @@ import type { IAdtUpdateOptions, IAnalyse } from './IAdtObject';
 import type { IAdtError, IAdtResponse, IResultStrategy } from './IAdtResponse';
 
 /**
- * A data class (`TABART`) — the value help's list on S/4HANA 2025
+ * The data classes (`TABART`) the value help lists on S/4HANA 2025
  * (`…/settings/dataClass/values`, measured 2026-11-19): master data,
  * transaction data, organisation and customizing, and the three BW classes.
+ *
+ * **For discovery, not a limit.** A system may define customer data classes
+ * (`USER`, `USER1`, …), so {@link ITableSettings.dataClassCategory} is a
+ * `string`; these are the values known to exist everywhere measured.
  */
-export type TableDataClass =
-  | 'APPL0'
-  | 'APPL1'
-  | 'APPL2'
-  | 'DDIM'
-  | 'DFACT'
-  | 'DODS';
+export const TABLE_DATA_CLASSES = [
+  'APPL0',
+  'APPL1',
+  'APPL2',
+  'DDIM',
+  'DFACT',
+  'DODS',
+] as const;
+
+/** One of {@link TABLE_DATA_CLASSES}. */
+export type KnownTableDataClass = (typeof TABLE_DATA_CLASSES)[number];
 
 /**
  * A size category (`TABKAT`), SAP's fixed values `0` to `9`. Written as the
@@ -97,7 +105,11 @@ export interface ITableBuffering {
  * know and no write has been measured with. Both are in what a read answers.
  */
 export interface ITableSettings {
-  readonly dataClassCategory: TableDataClass;
+  /**
+   * The data class: one of {@link TABLE_DATA_CLASSES}, or a customer data
+   * class the system defines.
+   */
+  readonly dataClassCategory: string;
   readonly sizeCategory: TableSizeCategory;
   readonly buffering: ITableBuffering;
   /** `ROWORCOLST`: `C` (column store) on the systems read. */
