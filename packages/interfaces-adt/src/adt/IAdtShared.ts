@@ -167,7 +167,8 @@ type TextElementsWhereUsedRefused<V extends AdtVariant> = {
 
 /**
  * The codes an untyped where-used parameter may name: every code but
- * `CLAS/OCX`, which no system serves (measured, see
+ * `CLAS/OCX`, which the on-premise and cloud systems measured did not serve
+ * (the answer depends on the system's RIS metadata; see
  * {@link ITextElementsWhereUsedRefused}).
  */
 type WhereUsedTypeCode = Exclude<AdtTypeCode, 'CLAS/OCX'>;
@@ -280,9 +281,9 @@ export type AdtGroupDeletionCode<V extends AdtVariant = AdtModernVariant> =
 /**
  * The codes where-used is asked of: every code of `V` but a function include,
  * whose group the where-used request has no field for, a message class
- * message, which has no address of its own, and the text elements' codes SAP
- * does not serve there ({@link ITextElementsWhereUsedRefused}: `CLAS/OCX`,
- * measured); and the utility codes
+ * message, which has no address of its own, and the text elements' codes
+ * the systems measured did not serve there
+ * ({@link ITextElementsWhereUsedRefused}: `CLAS/OCX`); and the utility codes
  * listing `whereUsed` (`VIEW/DV`).
  */
 export type AdtWhereUsedCode<V extends AdtVariant = AdtModernVariant> =

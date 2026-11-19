@@ -253,7 +253,8 @@ const _viewByDefault: IObjectReference = { name: 'ZV', type: 'VIEW/DV' };
 void _viewByDefault;
 export type DefaultsUnchanged = [
   Assert<Equal<IObjectReference['type'], AdtTypeCode>>,
-  // Every code but a class's text elements, which no system serves (measured).
+  // Every code but a class's text elements, which the on-premise and cloud
+  // systems measured did not serve.
   Assert<
     Equal<IGetWhereUsedParams['object_type'], Exclude<AdtTypeCode, 'CLAS/OCX'>>
   >,
