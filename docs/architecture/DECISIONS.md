@@ -3346,10 +3346,16 @@ caller's actual risk. And one write of all three parts: SAP has three
 resources and three PUTs, and a single member issuing three requests is not
 one endpoint (decision 16).
 
+A selection text taken from the dictionary — its own `@DDICReference` line
+before the entry, answered as the field's label, its text replaced by the
+label on a write (measured on premise) — is stated by
+`ISelectionText.ddicReference`, so the typed document carries every line
+measured.
+
 **What would change it.** The same as decision 49: SAP changing the line
 format faster than this contract follows, or a consumer needing a line this
-type cannot state (a selection text taken from the dictionary, unmeasured) —
-then `options.source` beside the implementation's builder.
+type cannot state — then `options.source` beside the implementation's
+builder.
 
 ## Open, and what would settle it
 
