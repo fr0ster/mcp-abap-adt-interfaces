@@ -284,6 +284,7 @@ export type {
   ITableSettingsRead,
   ITableSettingsResults,
   ITableSettingsUpdateConfig,
+  ITableTranslation,
   KnownTableBufferingAllowed,
   KnownTableBufferingType,
   KnownTableDataClass,

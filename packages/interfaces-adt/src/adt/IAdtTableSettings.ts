@@ -119,6 +119,26 @@ export interface ITableBuffering {
 }
 
 /**
+ * The `ts:translation` element's attributes, as the transformation
+ * `SDDIC_ADT_TTAB` writes them. Read on premise and on the cloud
+ * (2026-11-19): `ts:value=""`, `ts:isVisible="false"`, `ts:isEditable="false"`,
+ * `ts:granularity="2"`.
+ */
+export interface ITableTranslation {
+  /** `ts:value`: `UEBERSETZ`; `''` on the systems read. */
+  readonly value: string;
+  /** `ts:isVisible`. */
+  readonly isVisible: boolean;
+  /** `ts:isEditable`. */
+  readonly isEditable: boolean;
+  /**
+   * `ts:granularity`: a one-character code (`1` manual, `2` original, from
+   * SAP's handler code); `'2'` on the systems read.
+   */
+  readonly granularity: string;
+}
+
+/**
  * Every setting a write carries, element by element, as the document names
  * them (transformation `SDDIC_ADT_TTAB`).
  *
@@ -149,8 +169,12 @@ export interface ITableSettings {
   readonly sharingType: string;
   /** `LOAD_UNIT`; `''` on the systems read. */
   readonly loadUnit: string;
-  /** `UEBERSETZ`, sent as `ts:translation`'s `ts:value`; `''` on the systems read. */
-  readonly translation: string;
+  /**
+   * `ts:translation`: its four attributes, every one of them required on a
+   * write (SAP refuses a PUT without `ts:isVisible`, 400 `00/001`, measured on
+   * premise and on the cloud). Write them back as read.
+   */
+  readonly translation: ITableTranslation;
   /** `PROTOKOLL`: log data changes. */
   readonly loggingEnabled: boolean;
 }
