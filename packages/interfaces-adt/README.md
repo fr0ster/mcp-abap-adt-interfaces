@@ -573,6 +573,20 @@ and its table has no entry. Read and written on premise and on the cloud,
      class; each other pairing is unmeasured, `measured: false`). A function
      group's text elements have no code, so they are not in a typed
      activation.
+- **Where-used**, per code (measured read-only, 2026-11-19; SAP's handler
+  `CL_RIS_ADT_RES_REFERENCES` refuses no type, and answers `200` with no
+  result and "Where-Used List is not supported for &1" where it serves none,
+  Code):
+  - `PROG/PX`, on premise: served — `/sap/bc/adt/textelements/programs/{name}`
+    resolves to `PROG/PX`, the scope offers `PROG/P` and `PROG/PS`. A
+    function group's text elements resolve to `PROG/PX` too
+    (`/sap/bc/adt/textelements/functiongroups/{group}`), so they are found
+    through it; `FUGR/PX` is no where-used type.
+  - `CLAS/OCX`: not served, on premise or on the cloud ("Where-Used List is
+    not supported for Text Element: Class."), so no where-used parameter
+    takes it.
+  - `PROG/PX` on the cloud: not measured, left out there.
+  - A part's address (`…/source/symbols`) is not served.
 - **On the cloud** the lock answers `MODIFICATION_SUPPORT=NoModification`, and
   the write is accepted and saved all the same (measured).
 - **A function group** (measured on premise, 2026-11-19): its text elements
@@ -677,10 +691,14 @@ mean the same. The CHANGELOG lists each type;
     tables (`IAdtUtilityCodeTables`); so do `AdtGroupActivationCode<V>` and
     `IAdtGroupActivationReference<V>['type']` — what `activateObjects` and the
     typed `activateObjectsGroup` take.
-  - Where-used: `AdtWhereUsedCode<V>`, so `IAdtWhereUsedParamsOf<V>['object_type']`
-    and `IAdtWhereUsedScopeParamsOf<V>['object_type']`, gain both codes, as
-    `IGetWhereUsedParams['object_type']` and
-    `IGetWhereUsedScopeParams['object_type']` (default `AdtTypeCode`) do.
+  - Where-used, per code as measured: `AdtWhereUsedCode<'onprem'>`, so
+    `IAdtWhereUsedParamsOf<'onprem'>['object_type']` and
+    `IAdtWhereUsedScopeParamsOf<'onprem'>['object_type']`, gain `'PROG/PX'`,
+    as the untyped `IGetWhereUsedParams['object_type']` and
+    `IGetWhereUsedScopeParams['object_type']` do. `CLAS/OCX` is in none of
+    them (SAP serves no where-used for it, measured), and on `cloud` and the
+    default `'onprem' | 'cloud'` they are unchanged (`PROG/PX` there is not
+    measured).
   - References and answers: `IObjectReference['type']` (default
     `AdtTypeCode`), `IAdtCodedReference<AdtTypeCode>['type']` and
     `IAdtCodedReference<AdtCodeOf<V>>['type']`, and the known-code branch of
