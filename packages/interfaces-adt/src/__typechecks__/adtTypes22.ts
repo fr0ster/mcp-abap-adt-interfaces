@@ -216,9 +216,15 @@ export type GroupOnly = [
   Assert<
     Equal<
       AdtUtilityCodeWith<AdtModernVariant, 'groupActivation'>,
-      'VIEW/DV' | 'DEVC/K'
+      'VIEW/DV' | 'DEVC/K' | 'PROG/PX' | 'CLAS/OCX'
     >
   >,
+  // The text elements activate beside their object: measured on premise for a
+  // program, on the cloud for a class.
+  Assert<Equal<IAdtUtilityCodeTables['onprem']['PROG/PX']['measured'], true>>,
+  Assert<Equal<IAdtUtilityCodeTables['onprem']['CLAS/OCX']['measured'], false>>,
+  Assert<Equal<IAdtUtilityCodeTables['cloud']['CLAS/OCX']['measured'], true>>,
+  Assert<Equal<IAdtUtilityCodeTables['cloud']['PROG/PX']['measured'], false>>,
   Assert<Equal<AdtUtilityCodeWith<'basis740', 'groupActivation'>, 'VIEW/DV'>>,
   Assert<Equal<IAdtUtilityCodeTables['basis740']['DEVC/K']['measured'], true>>,
   Assert<Equal<IAdtUtilityCodeTables['onprem']['DEVC/K']['measured'], false>>,
@@ -247,7 +253,11 @@ const _viewByDefault: IObjectReference = { name: 'ZV', type: 'VIEW/DV' };
 void _viewByDefault;
 export type DefaultsUnchanged = [
   Assert<Equal<IObjectReference['type'], AdtTypeCode>>,
-  Assert<Equal<IGetWhereUsedParams['object_type'], AdtTypeCode>>,
+  // Every code but a class's text elements, which the on-premise and cloud
+  // systems measured did not serve.
+  Assert<
+    Equal<IGetWhereUsedParams['object_type'], Exclude<AdtTypeCode, 'CLAS/OCX'>>
+  >,
 ];
 
 // ── The references per operation ───────────────────────────────────────────

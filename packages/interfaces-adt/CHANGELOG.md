@@ -7,6 +7,219 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [30.0.0] - 2026-11-19
+
+### Breaking
+
+- **`AdtApiName`, `AdtTypeCode`, `AdtObjectKind`, `CodesOfMain<'PROG'>`,
+  `CodesOfMain<'CLAS'>` and the unions derived from the on-premise and cloud
+  tables gain members** — `textElements`, `PROG/PX`, `CLAS/OCX` and
+  `text_elements` (below); and so do the utility, group activation and
+  where-used codes drawn from them (`AdtUtilityCode`,
+  `AdtGroupActivationCode`, `AdtWhereUsedCode`, …, listed under Migration).
+  A union that widens breaks an exhaustive map over it, so this is a major.
+
+### Migration
+
+- **Every union that widens**, found by a compile-time probe of each export
+  of 29.0.0 against 30.0.0 (every variant `onprem`, `cloud`, `basis740` and
+  `'onprem' | 'cloud'`; every operation). No union of `basis740` widened; its
+  where-used parameters tighten as every variant's do (below).
+  - The API names: `AdtApiName`, `keyof AdtApiTable<R>`, `AdtApi<V>`, and
+    `AdtApiWith<V, Op>` / `AdtApiWithIn<T, Op>` for `Op` among `read`,
+    `update`, `lock`, `unlock` — gain `textElements`; and with `AdtApiName`
+    every `parent` that names an API: `IAdtCodeFacts<R>['parent']`,
+    `IAdtCodelessApiEntry<R>['parent']`, and so `AdtApiEntry<R>['parent']`
+    (`IAdtCodedApiEntry<R>`'s codes carry it).
+  - The codes: `AdtTypeCode`, `AdtTypeCodeOf<V>`, `AdtCodeOf<V>`,
+    `AdtCodeOfIn<Tables, V>`, and `AdtTypeCodeWith<V, Op>`, `AdtCodeWith<V, Op>`,
+    `AdtCodeWithIn<Tables, V, Op>` for the same four operations — gain
+    `'PROG/PX'` and `'CLAS/OCX'`; `CodesOfMain<'PROG'>` gains `'PROG/PX'` and
+    `CodesOfMain<'CLAS'>` gains `'CLAS/OCX'`.
+  - The kinds: `AdtObjectKind` gains `'text_elements'`.
+  - The utility codes: `AdtUtilityCode` gains both codes, and
+    `AdtUtilityCodeWith<V, 'groupActivation'>` gains them through the utility
+    tables (`IAdtUtilityCodeTables`); so do `AdtGroupActivationCode<V>` and
+    `IAdtGroupActivationReference<V>['type']` — what `activateObjects` and the
+    typed `activateObjectsGroup` take.
+  - Where-used, per code as measured: `AdtWhereUsedCode<V>`, so
+    `IAdtWhereUsedParamsOf<V>['object_type']` and
+    `IAdtWhereUsedScopeParamsOf<V>['object_type']`, gain `'PROG/PX'` on
+    `onprem`, `cloud` and the default `'onprem' | 'cloud'`, as the untyped
+    `IGetWhereUsedParams['object_type']` and
+    `IGetWhereUsedScopeParams['object_type']` do. `CLAS/OCX` is in none of
+    them: the systems measured serve no where-used for it.
+  - **`PROG/PX` names its container in a where-used.** `IGetWhereUsedParams`
+    and `IGetWhereUsedScopeParams` (and so `IAdtWhereUsedParamsOf<V>` /
+    `IAdtWhereUsedScopeParamsOf<V>`) are type aliases now, not interfaces:
+    with `object_type: 'PROG/PX'` they require `container: 'program' |
+    'functionGroup'` (`TextElementsWhereUsedContainer`), which decides the
+    address (`/sap/bc/adt/textelements/programs/{name}` or
+    `…/functiongroups/{name}`), and every other code refuses a `container`.
+    What a consumer does:
+    - a literal with another code compiles as before;
+    - a value whose `object_type` is a variable of the whole union (it may be
+      `PROG/PX`) needs the `container` when it is `PROG/PX` — narrow the code
+      first, or build the `PROG/PX` case apart;
+    - `interface X extends IGetWhereUsedParams` (the default, a union) no
+      longer compiles (`TS2312`), nor does a generic
+      `interface X<C extends …> extends IGetWhereUsedParams<C>` (the type is
+      a conditional over `C`): use a type alias with `&`
+      (`type X<C extends …> = IGetWhereUsedParams<C> & { … }`), or extend a
+      single code's params (`IGetWhereUsedParams<'PROG/P'>` still does);
+    - a builder typed by the union — `(code: AdtWhereUsedCode<V>):
+      IAdtWhereUsedParamsOf<V> => ({ object_name, object_type: code })`,
+      generic in `V` or for one variant — no longer compiles (`TS2322`): the
+      code may be `PROG/PX`, which needs its `container`. Generic in `V`,
+      exclude it from the input (`code: Exclude<AdtWhereUsedCode<V>,
+      'PROG/PX'>`) — branching on `code === 'PROG/PX'` still fails there
+      (`TS2322`), since the code stays generic. For one variant the branch
+      compiles too (`code === 'PROG/PX' ? { …, container } : { … }`);
+    - a value of another code that carries a `container` of its own — say
+      `{ object_type: 'PROG/P', container: string }` built for a consumer's
+      own use — no longer passes as where-used parameters, on every variant
+      `basis740` included (whose where-used has no `PROG/PX` at all): drop
+      the field before passing it (`const { container, ...params } = value`);
+    - `object_type` and `container` are `readonly`, like the text elements'
+      `objectKind` and `part`: code that assigns them on a built value builds
+      a new one instead (`{ ...params, object_type: … }`, the container
+      stated with it).
+  - **An explicit type argument that no longer fits.** `IGetWhereUsedParams`
+    and `IGetWhereUsedScopeParams` constrain `C` to every code but
+    `CLAS/OCX`, so `IGetWhereUsedParams<AdtTypeCode>` and
+    `IGetWhereUsedScopeParams<AdtTypeCode>` (or with `| AdtGroupOnlyCode`)
+    stop compiling with `TS2344`: `AdtTypeCode` now holds `CLAS/OCX`. Drop
+    the argument and use the default (every code where-used is asked of),
+    use the variant's `IAdtWhereUsedParamsOf<V>` /
+    `IAdtWhereUsedScopeParamsOf<V>`, or pass
+    `Exclude<AdtTypeCode, 'CLAS/OCX'>`. These two are the only exported
+    generics where a type argument valid on 29.0.0 is refused on 30.0.0 —
+    found by instantiating every exported generic with its 29.0.0
+    constraints under 30.0.0's names (generics whose constraint names a
+    sibling parameter, such as `AdtCodeOfIn<Tables, V>`, take the caller's
+    own tables and were not instantiated).
+  - References and answers: `IObjectReference['type']` (default
+    `AdtTypeCode`), `IAdtCodedReference<AdtTypeCode>['type']` and
+    `IAdtCodedReference<AdtCodeOf<V>>['type']`, and the known-code branch of
+    `IAdtAnsweredObject['type']` gain both codes.
+  - The tables themselves: `IAdtTypeTables` (a `textElements` entry on
+    `onprem` and `cloud`) and `IAdtUtilityCodeTables` (two codes on each).
+- **What a consumer does.** A map keyed by any of these
+  (`{ [C in AdtTypeCode]: … }`, `Record<AdtObjectKind, …>`, …) adds the new
+  keys; a `switch` that relies on exhaustiveness over one (a `never` check in
+  its `default`) adds the cases — `textElements` / `'text_elements'` for an
+  API or a kind, `'PROG/PX'` and `'CLAS/OCX'` for a code, which is a program's
+  or a class's text elements, addressed under `/sap/bc/adt/textelements/…`.
+  A consumer that maps a code to an address or a reader handles them, or
+  refuses them, there. A consumer reading an `IAdtAnsweredObject` gets
+  either code as `type`, typed, where 29.0.0 carried it as `unknownType`, the
+  text as it came. Nothing that only passes values through changes.
+  The main types (`AdtMainType`) are unchanged: `PROG` and `CLAS` were there.
+
+### Added
+
+- **Text elements, as a contract of their own**
+  (`src/adt/IAdtTextElements.ts`): the text symbols, selection texts and
+  list and column headings of a program, a class or a function group. SAP
+  keeps them at `/sap/bc/adt/textelements/{programs|classes|functiongroups}/{name}`,
+  one part per sub-resource (`…/source/{symbols|selections|headings}`, media
+  type `application/vnd.sap.adt.textelements.{part}.v1`), under their own
+  lock (class `TEXT`); read and written on premise and on the cloud,
+  2026-11-19, for a program and a class. They are not part of
+  `IProgramConfig` or `IClassConfig`.
+  - `TEXT_ELEMENTS_OBJECT_KINDS` (`program`, `class`, `functionGroup`) and
+    `TEXT_ELEMENTS_PARTS` (`symbols`, `selections`, `headings`), with
+    `TextElementsObjectKind` and `TextElementsPart`;
+    `ITextElementsPartsByKind` / `TextElementsPartOf<K>`: a class has text
+    symbols only (SAP's handler, Code).
+  - `ITextElementsConfig` (`objectKind`, `objectName`, `transportRequest?`):
+    what the lock takes, through `IAdtLockable` with both fields required.
+  - `ITextElementsPartConfig`: the object and a part it has — what a read
+    takes. `TextElementsReadVersion` is `AdtReadVersion` — `active`,
+    `inactive` or `workingArea`, every value SAP's handler maps (Eclipse
+    sends `workingArea`); absent, SAP's working area.
+  - The typed documents: `ITextSymbol` (`key`, `text`, `maxLength`),
+    `ISelectionText` (`name`, `text`), `ITextHeadings` (`listHeader`,
+    `columnHeader1`–`columnHeader4`, each required), and
+    `TextElementsDocument`, the part with its list.
+  - `ITextElementsUpdateConfig`: the object and one whole part. **A write
+    replaces the part**: an entry the list leaves out is deleted (measured),
+    so create, change and delete are one write.
+  - `IAdtTextElementsReadable<TSource>`: `read(config, version?, options?)`,
+    `IAdtTextElementsReadOptions` (`analyse`, `timeout`).
+    `IAdtTextElementsUpdatable<TUpdated>`: `update(config, options)`, one PUT,
+    its body built from the config (decision 50);
+    `IAdtTextElementsUpdateOptions` is `IAdtUpdateOptions` with `source?:
+    never` and `lockHandle` required, in both overloads.
+  - `ITextElementsResults`: `source` and `updated`.
+  - No activation member: a write lands inactive, and one activation request
+    naming the object and `/sap/bc/adt/textelements/{kind}/{name}` activates
+    both (measured); the object's reference alone does not. `PROG/PX` and
+    `CLAS/OCX` are in `ADT_UTILITY_CODES_ONPREM` and `ADT_UTILITY_CODES_CLOUD`
+    with `groupActivation` (as `DEVC/K` is), so the typed `activateObjects`
+    and `activateObjectsGroup` take the text elements' reference —
+    `{ name, type: 'PROG/PX', uri: '/sap/bc/adt/textelements/programs/{name}' }`
+    — beside the object's. Measured on premise for a program and on the cloud
+    for a class; each other pairing is `measured: false`.
+  - Where-used follows SAP, per code (measured read-only, 2026-11-19; Code:
+    `CL_RIS_ADT_RES_REFERENCES`, which refuses no type and answers `200` with
+    "Where-Used List is not supported for &1" and no result where it serves
+    none): `PROG/PX` is served on premise — the scope offers `PROG/P` and
+    `PROG/PS` — and on the cloud (a delivered program's, `RSPARAM`), and a
+    function group's text elements resolve to it; `CLAS/OCX` was not served
+    on the on-premise and cloud systems measured ("… not supported for Text
+    Element: Class."; the answer depends on the system's RIS metadata), so
+    `AdtWhereUsedCode` and the untyped where-used parameters leave it out.
+    All of them stay in the group activation.
+  - A `PROG/PX` where-used names its `container` (`'program'` or
+    `'functionGroup'`, `TextElementsWhereUsedContainer`, required), which
+    decides the address — a program's and a function group's text elements
+    are both `PROG/PX` and both served (measured), and the table keeps one
+    collection per code. No other code takes a `container`.
+  - A function group's text elements are typed `PROG/PX` under their own URI
+    (`/sap/bc/adt/textelements/functiongroups/{group}`): beside `FUGR/F`, or
+    alone, that reference activates them (measured on premise; the name may
+    be `{GROUP}` or `SAPL{GROUP}`, the URI decides). `FUGR/PX` — only the
+    properties document's `adtcore:type` — is no code of the tables.
+  - The key limits, measured on premise and in SAP's handlers, as constants
+    for a caller (no check here): `TEXT_SYMBOL_KEY_MAX_LENGTH` (3 accepted,
+    `0#1` and `AB1` included; 4 refused `406` `SEDX_ADT/106`; shorter not
+    measured),
+    `SELECTION_TEXT_NAME_MAX_LENGTH` (8; `406` `SEDX_ADT/102`), and the
+    closed heading keys `TEXT_HEADING_KEYS` / `TextHeadingKey` (any other
+    `406` `SEDX_ADT/101`). An unknown selection name is stored, not checked
+    against the selection screen (measured).
+  - Headings: a heading sent empty or left out is deleted, and a read lists
+    all five (measured). `?version=` is case-insensitive, and an unknown or
+    empty value answers the working area (measured on premise); on the cloud
+    every value is accepted and none distinguished (no inactive version
+    existed, measured read-only).
+  - `ITextElementsConfig`, `ITextElementsPartConfig` and
+    `ITextElementsUpdateConfig` keep `objectKind` (and `part`) `readonly`: a
+    built config cannot be re-kinded.
+  - `ISelectionText.ddicReference` (required): the `@DDICReference` line,
+    a text that is the dictionary field's label — SAP answers the label and
+    replaces any text a write sends (measured). `SELECTION_TEXT_MAX_LENGTH`
+    is 30: a longer text refuses the whole write, `406` `SEDX_ADT/110`
+    (measured); documented, not checked.
+  - `TextElementsReadVersion` is measured on premise: absent, `inactive` and
+    `workingArea` answer the working area, `active` the last activated
+    version.
+    `IAdtTextElementsReadOptions` refuses `source`, `lockHandle` and
+    `ifMatch` (`?: never`).
+  - The original language only: SAP ignores the logon language for these
+    (measured); there is no language field.
+- **`textElements` in `ADT_TYPES_ONPREM` and `ADT_TYPES_CLOUD`**: kind
+  `text_elements`, collection `/sap/bc/adt/textelements`, codes `PROG/PX`
+  (collection `…/programs`) and `CLAS/OCX` (`…/classes`) — parent none and
+  names up to 30, as each `typestructure` lists them — with `read`, `update`,
+  `lock` and `unlock`. No function group code: no release's `typestructure`
+  lists one. A function group's text elements are measured on premise
+  (`…/functiongroups/{group}`, the plain name; the properties name them
+  `FUGR/PX`, the inactive list `PROG/PX` `SAPL{GROUP}`; the group's and the
+  text elements' URIs activate together). SAP_BASIS 7.40's discovery has no
+  `/textelements` collection, so `ADT_TYPES_BASIS_740` has no entry.
+
 ## [29.0.0] - 2026-11-19
 
 ### Breaking
