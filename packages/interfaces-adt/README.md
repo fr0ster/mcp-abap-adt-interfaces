@@ -503,14 +503,30 @@ on S/4HANA and ABAP cloud. SAP_BASIS 7.40's discovery has no such collection,
 and its table has no entry. Read and written on premise and on the cloud,
 2026-11-19, for a program and a class.
 
+- **What discovery lists** (S/4HANA 2025 and ABAP cloud alike; SAP_BASIS
+  7.40 none): three collections — `/sap/bc/adt/textelements/programs`,
+  `…/classes`, `…/functiongroups` — each accepting
+  `application/vnd.sap.adt.textelements.v1+xml` (the properties document) and
+  with no templates. No other kind (interface, function module, include) has
+  one. The parts and their media types are not in discovery: they are links
+  of the properties document.
 - **Which parts an object has.** A class has text symbols only; a program and
   a function group have all three (SAP's handler, `CL_SEDX_ADT_RES_TEXTELEMENT`).
   `ITextElementsPartConfig` and `ITextElementsUpdateConfig` hold this: a class
   with another part does not compile.
 - **Read** with `IAdtTextElementsReadable`: `read(config, version?)`, the
-  object and its part; `version` is `active` or `inactive`, and absent is SAP's
-  working area — the inactive save when there is one (a read straight after a
-  write answers the write). The answer is the part's text, CR LF between lines:
+  object and its part. `version` is every value SAP's handler maps
+  (`get_wb_version`, Code):
+  - absent: the working area — the user's own inactive version when there is
+    one, else the active one; a read straight after a write answers the write
+    (measured);
+  - `inactive`: the inactive version (measured), the active one when there is
+    none (Code);
+  - `active`: the active version (Code, not yet measured);
+  - `workingArea`: the working area, as Eclipse sends it (Code, not yet
+    measured here).
+  A value outside these is not refused by SAP; it falls back to the working
+  area (Code). The answer is the part's text, CR LF between lines:
   - symbols: `@MaxLength:20`, then `001=Text`, one empty line between symbols;
   - selections: `P_TEST  =Text`, the name padded to eight by SAP;
   - headings: `listHeader=…`, an empty line, `columnHeader_1=…` to

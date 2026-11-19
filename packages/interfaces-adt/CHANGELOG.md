@@ -50,8 +50,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `ITextElementsConfig` (`objectKind`, `objectName`, `transportRequest?`):
     what the lock takes, through `IAdtLockable` with both fields required.
   - `ITextElementsPartConfig`: the object and a part it has — what a read
-    takes. `TextElementsReadVersion` is `active` or `inactive`; absent, SAP's
-    working area.
+    takes. `TextElementsReadVersion` is `AdtReadVersion` — `active`,
+    `inactive` or `workingArea`, every value SAP's handler maps (Code; Eclipse
+    sends `workingArea`); absent, SAP's working area. Measured: absent and
+    `inactive`, on premise and on the cloud; `active` and `workingArea` are
+    still to be measured.
   - The typed documents: `ITextSymbol` (`key`, `text`, `maxLength`),
     `ISelectionText` (`name`, `text`), `ITextHeadings` (`listHeader`,
     `columnHeader1`–`columnHeader4`, each required), and
