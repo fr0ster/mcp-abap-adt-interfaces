@@ -740,9 +740,11 @@ mean the same. The CHANGELOG lists each type;
     - a builder typed by the union — `(code: AdtWhereUsedCode<V>):
       IAdtWhereUsedParamsOf<V> => ({ object_name, object_type: code })`,
       generic in `V` or for one variant — no longer compiles (`TS2322`): the
-      code may be `PROG/PX`, which needs its `container`. Exclude it from the
-      input (`code: Exclude<AdtWhereUsedCode<V>, 'PROG/PX'>`), or handle it
-      apart (`code === 'PROG/PX' ? { …, container } : { … }`);
+      code may be `PROG/PX`, which needs its `container`. Generic in `V`,
+      exclude it from the input (`code: Exclude<AdtWhereUsedCode<V>,
+      'PROG/PX'>`) — branching on `code === 'PROG/PX'` still fails there
+      (`TS2322`), since the code stays generic. For one variant the branch
+      compiles too (`code === 'PROG/PX' ? { …, container } : { … }`);
     - a value of another code that carries a `container` of its own — say
       `{ object_type: 'PROG/P', container: string }` built for a consumer's
       own use — no longer passes as where-used parameters, on every variant
