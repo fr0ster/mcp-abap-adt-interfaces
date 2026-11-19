@@ -12,6 +12,8 @@ import type {
   IAdtMetadataReadable,
 } from '../adt/IAdtCapabilities';
 import type { IAdtHeaders } from '../adt/IAdtContentTypes';
+import type { IAnalyse } from '../adt/IAdtObject';
+import type { IAdtError } from '../adt/IAdtResponse';
 import {
   type IAdtTableSettingsUpdatable,
   type IAdtTableSettingsUpdateOptions,
@@ -141,11 +143,29 @@ void _numericSize;
 
 // ── The body is the config: no `source`, not even through a variable ───────
 
-declare const withSource: { headers: IAdtHeaders; source: string };
+declare const withSource: {
+  headers: IAdtHeaders;
+  lockHandle: string;
+  source: string;
+};
 void handler.updateMetadata(
   { tableName: 'ZTABLE', description: 'A table', settings },
   // @ts-expect-error a settings write has no second channel for its body
   withSource,
+);
+
+// ── The lock is the caller's, and a write cannot be sent without it ────────
+
+void handler.updateMetadata(
+  { tableName: 'ZTABLE', description: 'A table', settings },
+  // @ts-expect-error a settings write needs the settings' own lock handle
+  { headers },
+);
+declare const analyse: IAnalyse<IAdtError>;
+void handler.updateMetadata(
+  { tableName: 'ZTABLE', description: 'A table', settings },
+  // @ts-expect-error the overload with a verdict needs the handle as well
+  { headers, analyse },
 );
 
 // ── The cloud's `isWritableByAMDP` is optional and takes `undefined` ───────
@@ -156,7 +176,7 @@ void _cloud;
 void _notGiven;
 
 const _options: IAdtTableSettingsUpdateOptions = {
-  lockHandle: undefined,
+  lockHandle: 'HANDLE',
   timeout: undefined,
 };
 void _options;

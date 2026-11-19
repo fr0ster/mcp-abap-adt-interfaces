@@ -179,14 +179,22 @@ export interface ITableSettingsUpdateConfig extends ITableSettingsConfig {
 }
 
 /**
- * The options of a settings write: those of every write, without a `source`.
+ * The options of a settings write: those of every write, without a `source`
+ * and with the lock handle required.
  *
  * The body is built from {@link ITableSettingsUpdateConfig}, so there is no
  * second channel to send one through: `source?: never` refuses it for a
  * variable as well as a literal, as {@link IAdtCreateOptions} does.
+ *
+ * `lockHandle` is required: the settings write is measured only under the
+ * settings' own lock (`POST ?_action=LOCK&accessMode=MODIFY`), and the
+ * table's lock does not cover them.
  */
 export type IAdtTableSettingsUpdateOptions<E extends IAdtError = IAdtError> =
-  Omit<IAdtUpdateOptions<E>, 'source'> & { source?: never };
+  Omit<IAdtUpdateOptions<E>, 'source' | 'lockHandle'> & {
+    source?: never;
+    lockHandle: string;
+  };
 
 /**
  * The settings can be written.
