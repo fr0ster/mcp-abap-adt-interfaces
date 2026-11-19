@@ -7,6 +7,79 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [30.0.0] - 2026-11-19
+
+### Breaking
+
+- **`AdtApiName`, `AdtTypeCode`, `AdtObjectKind`, `CodesOfMain<'PROG'>`,
+  `CodesOfMain<'CLAS'>` and the unions derived from the on-premise and cloud
+  tables gain members** — `textElements`, `PROG/PX`, `CLAS/OCX` and
+  `text_elements` (below). A union that widens breaks an exhaustive map over
+  it, so this is a major.
+
+### Migration
+
+- An exhaustive map over `AdtApiName` (`{ [A in AdtApiName]: … }`) adds
+  `textElements`; one over `AdtTypeCode` adds `'PROG/PX'` and `'CLAS/OCX'`,
+  one over `CodesOfMain<'PROG'>` adds `'PROG/PX'` and one over
+  `CodesOfMain<'CLAS'>` adds `'CLAS/OCX'`; one over `AdtObjectKind` adds
+  `'text_elements'`. The same holds for every union derived from the tables
+  for the on-premise and cloud variants: `AdtApi<V>`, `AdtTypeCodeOf<V>`,
+  `AdtCodeOf<V>`, and the projections by operation — `AdtApiWith<V, Op>`,
+  `AdtTypeCodeWith<V, Op>`, `AdtCodeWith<V, Op>`, `AdtApiWithIn<T, Op>` —
+  wherever `Op` is among `read`, `update`, `lock` and `unlock`. A map keyed by
+  any of them, or a `switch` relying on exhaustiveness over one, adds the
+  members. The main types are unchanged.
+
+### Added
+
+- **Text elements, as a contract of their own**
+  (`src/adt/IAdtTextElements.ts`): the text symbols, selection texts and
+  list and column headings of a program, a class or a function group. SAP
+  keeps them at `/sap/bc/adt/textelements/{programs|classes|functiongroups}/{name}`,
+  one part per sub-resource (`…/source/{symbols|selections|headings}`, media
+  type `application/vnd.sap.adt.textelements.{part}.v1`), under their own
+  lock (class `TEXT`); read and written on premise and on the cloud,
+  2026-11-19, for a program and a class. They are not part of
+  `IProgramConfig` or `IClassConfig`.
+  - `TEXT_ELEMENTS_OBJECT_KINDS` (`program`, `class`, `functionGroup`) and
+    `TEXT_ELEMENTS_PARTS` (`symbols`, `selections`, `headings`), with
+    `TextElementsObjectKind` and `TextElementsPart`;
+    `ITextElementsPartsByKind` / `TextElementsPartOf<K>`: a class has text
+    symbols only (SAP's handler, Code).
+  - `ITextElementsConfig` (`objectKind`, `objectName`, `transportRequest?`):
+    what the lock takes, through `IAdtLockable` with both fields required.
+  - `ITextElementsPartConfig`: the object and a part it has — what a read
+    takes. `TextElementsReadVersion` is `active` or `inactive`; absent, SAP's
+    working area.
+  - The typed documents: `ITextSymbol` (`key`, `text`, `maxLength`),
+    `ISelectionText` (`name`, `text`), `ITextHeadings` (`listHeader`,
+    `columnHeader1`–`columnHeader4`, each required), and
+    `TextElementsDocument`, the part with its list.
+  - `ITextElementsUpdateConfig`: the object and one whole part. **A write
+    replaces the part**: an entry the list leaves out is deleted (measured),
+    so create, change and delete are one write.
+  - `IAdtTextElementsReadable<TSource>`: `read(config, version?, options?)`,
+    `IAdtTextElementsReadOptions` (`analyse`, `timeout`).
+    `IAdtTextElementsUpdatable<TUpdated>`: `update(config, options)`, one PUT,
+    its body built from the config (decision 50);
+    `IAdtTextElementsUpdateOptions` is `IAdtUpdateOptions` with `source?:
+    never` and `lockHandle` required, in both overloads.
+  - `ITextElementsResults`: `source` and `updated`.
+  - No activation member: a write lands inactive, and one activation request
+    naming the object and `/sap/bc/adt/textelements/{kind}/{name}` activates
+    both (measured); the object's reference alone does not.
+  - The original language only: SAP ignores the logon language for these
+    (measured); there is no language field.
+- **`textElements` in `ADT_TYPES_ONPREM` and `ADT_TYPES_CLOUD`**: kind
+  `text_elements`, collection `/sap/bc/adt/textelements`, codes `PROG/PX`
+  (collection `…/programs`) and `CLAS/OCX` (`…/classes`) — parent none and
+  names up to 30, as each `typestructure` lists them — with `read`, `update`,
+  `lock` and `unlock`. No function group code: no release's `typestructure`
+  lists one, and the function group address is in discovery but unmeasured
+  (the one read sent answered 404). SAP_BASIS 7.40's discovery has no
+  `/textelements` collection, so `ADT_TYPES_BASIS_740` has no entry.
+
 ## [29.0.0] - 2026-11-19
 
 ### Breaking

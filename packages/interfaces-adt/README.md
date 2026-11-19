@@ -12,6 +12,7 @@ ADT contracts: object operations, runtime analysis, execution, feeds and service
 - Since 15.0.0 `skipCount` is gone from breakpoints (the server ignores it) and `clientId` pairs an answer row with its request. The CHANGELOG has the migration note.
 - Since 15.1.0 the plain class and program run take `debuggee` (`IDebuggeeIds`): the terminal id and IDE id a terminal-mode listener catches the run by.
 - Since 23.1.0 the ABAP Unit run registry: `ABAP_UNIT_RUN_TYPES`, every `osl:object type` value a run may name, what a run of it runs and on what evidence; `AbapUnitRunObjectType` (its keys), `AbapUnitRunTarget` (an object or a package) and the generic runner contract `IAbapUnitRunner`. Additions only. See "The ABAP Unit run registry".
+- Since 30.0.0 the text elements of a program, a class or a function group — text symbols, selection texts, list and column headings — are their own contract (`/sap/bc/adt/textelements/…`, lock class `TEXT`): `IAdtTextElementsReadable` reads one part, `IAdtTextElementsUpdatable` writes one whole part from a typed document (`ITextSymbol`, `ISelectionText`, `ITextHeadings`), `ITextElementsResults`. The tables gain the API `textElements` (`PROG/PX`, `CLAS/OCX`, kind `text_elements`) on S/4HANA and ABAP cloud: a map over `AdtApiName`, `AdtTypeCode`, `AdtObjectKind`, `CodesOfMain<'PROG'>`, `CodesOfMain<'CLAS'>` or a union derived from the tables adds the members — the reason for the major. See "Text elements" and "Migrating to 30.0.0".
 - Since 29.0.0 `ITableSettings.translation` is an `ITableTranslation`, the `ts:translation` element's four attributes, where 28.0.0 had a string: SAP refuses a write without `ts:isVisible` (400 `00/001`). See "Migrating to 29.0.0".
 - Since 28.0.0 a table's technical settings (`TABL/DTT`, `tableSettings` in the on-premise and cloud tables) are their own contract: `ITableSettingsConfig`, `ITableSettingsUpdateConfig` with the full `ITableSettings`, the write atom `IAdtTableSettingsUpdatable` and `ITableSettingsResults`. A map over `AdtApiName`, `AdtTypeCode`, `AdtObjectKind`, `CodesOfMain<'TABL'>` or a union derived from the tables (`AdtApi<V>`, `AdtTypeCodeOf<V>`, `AdtApiWith<V, Op>`, …) adds the new member — the reason for the major. See "A table's technical settings" and "Migrating to 28.0.0".
 - Since 27.0.0 `IUtilResults` requires `objectActivation`, the reading of the new atom `IAdtObjectActivation` (`activateObjects`, the synchronous `POST /activation` for several objects); `activate` takes `IAdtActivationOptions` (`preauditRequested`); and `IAnalyse` takes an optional third parameter, `IAdtAnalyseContext`. See "Activation" and "Migrating to 27.0.0".
@@ -484,6 +485,67 @@ error or a result built for 27.2.0 still conforms.
 `src/__typechecks__/sessionError.ts` and `src/__typechecks__/sessionLost.ts`
 hold these shapes.
 
+## Text elements (30.0.0)
+
+The text elements of a program, a class or a function group — text symbols,
+selection texts, list and column headings — are a resource of their own,
+`/sap/bc/adt/textelements/{programs|classes|functiongroups}/{name}`, one
+sub-resource per part (`…/source/symbols`, `…/source/selections`,
+`…/source/headings`), each with its media type
+`application/vnd.sap.adt.textelements.{part}.v1` (SAP answers HTML to any other
+`Accept`), and under their own lock — lock class `TEXT`, taken on the text
+elements' address, which the program's or the class's lock does not cover. So
+they are not part of `IProgramConfig` or `IClassConfig`, and the tables list
+them as the API `textElements` (kind `text_elements`): `PROG/PX` under
+`/sap/bc/adt/textelements/programs` and `CLAS/OCX` under
+`/sap/bc/adt/textelements/classes`, with `read`, `update`, `lock` and `unlock`,
+on S/4HANA and ABAP cloud. SAP_BASIS 7.40's discovery has no such collection,
+and its table has no entry. Read and written on premise and on the cloud,
+2026-11-19, for a program and a class.
+
+- **Which parts an object has.** A class has text symbols only; a program and
+  a function group have all three (SAP's handler, `CL_SEDX_ADT_RES_TEXTELEMENT`).
+  `ITextElementsPartConfig` and `ITextElementsUpdateConfig` hold this: a class
+  with another part does not compile.
+- **Read** with `IAdtTextElementsReadable`: `read(config, version?)`, the
+  object and its part; `version` is `active` or `inactive`, and absent is SAP's
+  working area — the inactive save when there is one (a read straight after a
+  write answers the write). The answer is the part's text, CR LF between lines:
+  - symbols: `@MaxLength:20`, then `001=Text`, one empty line between symbols;
+  - selections: `P_TEST  =Text`, the name padded to eight by SAP;
+  - headings: `listHeader=…`, an empty line, `columnHeader_1=…` to
+    `columnHeader_4=…`.
+  `TextElementsDocument` is the parsed shape a reading strategy answers.
+- **Write** with `IAdtTextElementsUpdatable`: its `update` takes
+  `ITextElementsUpdateConfig` — the object, the part and the part's **whole**
+  list — and builds the body from it (decision 50); the options refuse a
+  `source` and require the `lockHandle`. **An entry the list leaves out is
+  deleted**: create, change and delete are the same write. An empty list
+  deletes the part's every entry.
+- **The original language only.** SAP reads and writes the texts in the
+  object's original language whatever the logon language (a write under
+  `sap-language` RU on premise and DE on the cloud landed in the original EN,
+  measured). There is no language here, and no translation.
+- **The sequence is the caller's:**
+  1. `lock` the object's text elements (`IAdtLockable<ITextElementsConfig,
+     'objectKind' | 'objectName'>`, stateful);
+  2. `read` the part under the lock — what it holds now;
+  3. change the list;
+  4. `update` with the lock handle (and `transportRequest` as `corrNr`);
+  5. `unlock`, on every path;
+  6. activate the object **and** its text elements in one activation request:
+     the object's reference (`PROG/P`, `CLAS/OC`, `FUGR/F`) and
+     `/sap/bc/adt/textelements/{programs|classes|functiongroups}/{name}`. Naming
+     the object alone ran no activation for the text elements (measured);
+     the contract offers no activation of its own.
+- **On the cloud** the lock answers `MODIFICATION_SUPPORT=NoModification`, and
+  the write is accepted and saved all the same (measured).
+- **A function group** is in the discovery of both newer releases
+  (`/sap/bc/adt/textelements/functiongroups`), and the contract addresses it,
+  but its addressing is not measured — the one read sent
+  (`…/functiongroups/sutl`) answered 404 — and no release's `typestructure`
+  lists a type code for its text elements, so the tables carry none.
+
 ## A table's technical settings (28.0.0)
 
 A database table's technical settings — data class, size category,
@@ -552,6 +614,20 @@ options, `IClassUnitTestRunOptions` with `IUnitTestScope`,
 with no spread to leave the key out. An absent field and an `undefined` one
 mean the same. The CHANGELOG lists each type;
 `src/__typechecks__/explicitUndefined.ts` holds the shapes.
+
+## Migrating to 30.0.0
+
+- **An exhaustive map over the type-table unions adds the text elements.**
+  `AdtApiName` gains `textElements`; `AdtTypeCode` gains `'PROG/PX'` and
+  `'CLAS/OCX'`, and with them `CodesOfMain<'PROG'>` and `CodesOfMain<'CLAS'>`;
+  `AdtObjectKind` gains `'text_elements'`. So does every union derived from the
+  tables for the on-premise and cloud variants: `AdtApi<V>`,
+  `AdtTypeCodeOf<V>`, `AdtCodeOf<V>`, and the projections by operation —
+  `AdtApiWith<V, Op>`, `AdtTypeCodeWith<V, Op>`, `AdtCodeWith<V, Op>`,
+  `AdtApiWithIn<T, Op>` — wherever `Op` is among `read`, `update`, `lock` and
+  `unlock`. A map keyed by any of them, or a `switch` relying on
+  exhaustiveness over one, adds the members. The main types (`AdtMainType`)
+  are unchanged: `PROG` and `CLAS` were there. Nothing else changes.
 
 ## Migrating to 29.0.0
 
