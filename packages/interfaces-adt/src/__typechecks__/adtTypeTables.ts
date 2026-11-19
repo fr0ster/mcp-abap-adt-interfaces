@@ -314,6 +314,7 @@ type NewerApis =
   | 'ddl'
   | 'table'
   | 'tableSettings'
+  | 'textElements'
   | 'structure'
   | 'appendStructure'
   | 'tableType'
@@ -370,6 +371,8 @@ type NewerCodes =
   | 'TABL/DT'
   | 'TABL/DTT'
   | 'TABL/DS'
+  | 'PROG/PX'
+  | 'CLAS/OCX'
   | 'TTYP/DA'
   | 'DOMA/DD'
   | 'DTEL/DE'
@@ -448,6 +451,7 @@ export type Projections = [
       | 'ddl'
       | 'table'
       | 'table_settings'
+      | 'text_elements'
       | 'structure'
       | 'table_type'
       | 'domain'
@@ -565,8 +569,8 @@ export type NewerShapes = [
     >
   >,
   // A program include, a function include, an authorization field, a feature
-  // toggle, the two message class APIs and a table's settings have no
-  // transport read.
+  // toggle, the two message class APIs, a table's settings and the text
+  // elements have no transport read.
   Assert<
     Equal<
       AdtTypeCodeWith<'onprem', 'transport'>,
@@ -579,6 +583,8 @@ export type NewerShapes = [
         | 'MSAG/N'
         | 'MSAG/NN'
         | 'TABL/DTT'
+        | 'PROG/PX'
+        | 'CLAS/OCX'
       >
     >
   >,

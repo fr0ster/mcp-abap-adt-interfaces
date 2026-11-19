@@ -292,6 +292,16 @@ type RecordedOnPremise = {
       operations: 'readMetadata' | 'updateMetadata' | 'lock' | 'unlock';
     };
   };
+  textElements: {
+    'PROG/PX': {
+      parent: null;
+      operations: 'read' | 'update' | 'lock' | 'unlock';
+    };
+    'CLAS/OCX': {
+      parent: null;
+      operations: 'read' | 'update' | 'lock' | 'unlock';
+    };
+  };
   structure: {
     'TABL/DS': {
       parent: null;

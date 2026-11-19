@@ -359,6 +359,28 @@ export const ADT_TYPES_ONPREM = {
       },
     },
   },
+  textElements: {
+    kind: 'text_elements',
+    collection: '/sap/bc/adt/textelements',
+    codes: {
+      'PROG/PX': {
+        main: 'PROG',
+        parent: null,
+        nameMaxLength: 30,
+        operations: ['read', 'update', 'lock', 'unlock'],
+        evidence: 'system-description-s4-2025--07-typestructure',
+        collection: '/sap/bc/adt/textelements/programs',
+      },
+      'CLAS/OCX': {
+        main: 'CLAS',
+        parent: null,
+        nameMaxLength: 30,
+        operations: ['read', 'update', 'lock', 'unlock'],
+        evidence: 'system-description-s4-2025--07-typestructure',
+        collection: '/sap/bc/adt/textelements/classes',
+      },
+    },
+  },
   structure: {
     kind: 'structure',
     collection: '/sap/bc/adt/ddic/structures',
@@ -1347,6 +1369,28 @@ export const ADT_TYPES_CLOUD = {
         nameMaxLength: 16,
         operations: ['readMetadata', 'updateMetadata', 'lock', 'unlock'],
         evidence: 'system-description-abap-cloud--07-typestructure',
+      },
+    },
+  },
+  textElements: {
+    kind: 'text_elements',
+    collection: '/sap/bc/adt/textelements',
+    codes: {
+      'PROG/PX': {
+        main: 'PROG',
+        parent: null,
+        nameMaxLength: 30,
+        operations: ['read', 'update', 'lock', 'unlock'],
+        evidence: 'system-description-abap-cloud--07-typestructure',
+        collection: '/sap/bc/adt/textelements/programs',
+      },
+      'CLAS/OCX': {
+        main: 'CLAS',
+        parent: null,
+        nameMaxLength: 30,
+        operations: ['read', 'update', 'lock', 'unlock'],
+        evidence: 'system-description-abap-cloud--07-typestructure',
+        collection: '/sap/bc/adt/textelements/classes',
       },
     },
   },
