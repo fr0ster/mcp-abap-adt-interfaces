@@ -3359,30 +3359,36 @@ builder.
 
 ## 51. A table settings patch reads and writes in one member
 
-**Decided 2026-11-19, in `interfaces-adt` 30.1.0.** An exception to decision
-16 for one member; it does not reopen it.
+**Decided 2026-11-19, in `interfaces-adt` 30.1.0.** An exception to
+decisions 16 (one endpoint, one member) and 37 (a member does not look up
+what the caller can pass), for one member.
 
-**The problem.** A caller who means to change one setting — the data class,
-say — must send all of them: SAP writes every DD09L field from the document
-(`CL_TABT_WB_PERSIST->move_adt_to_ddv`, Code on both systems) and resets one
-the document leaves out (measured on both, 2026-11-19; on the cloud
-`isWritableByAMDP` among them). The three calls that keep the rest — read,
-overlay, write back with the read's ETag — are the same for every caller, and
-the overlay is where a field gets lost.
+**The problem.** A caller who means to change one setting must send all of
+them: SAP writes every DD09L field from the document and resets one the
+document leaves out (`CL_TABT_WB_PERSIST->move_adt_to_ddv`, Code on both
+systems; measured on both, 2026-11-19; on the cloud `isWritableByAMDP` among
+them). So the change is a merge onto the stored settings, and the merge is
+only right on a read made **under the lock, right before the PUT**: a read
+the caller made earlier, or one it passes in, may already be stale, and a
+stale base resets what another session changed in between. The ETag that
+guards the PUT must be that same read's.
 
-**Decided.** `IAdtTableSettingsPatchable.patchMetadata` makes them one member:
-under the caller's lock, it reads the working area with its ETag, overlays
-`ITableSettingsChanges` (at least one setting, `buffering` and `translation`
-field by field), and writes the whole document guarded by `If-Match`. Two
-requests, one member. The lock and the activation stay the caller's, as for
-`updateMetadata`.
+**Decided.** `IAdtTableSettingsPatchable.patchMetadata` owns the read:
+under the caller's lock it reads the working area with its ETag, overlays
+`ITableSettingsChangesOf<V>`, and writes the whole document with `If-Match`.
+Two requests, one member. Decision 37 does not apply in its sense — what the
+member looks up is not something the caller can pass correctly, since only
+a read inside the member is fresh for its own PUT. The lock and the
+activation stay the caller's, as for `updateMetadata`, which remains for a
+caller who holds every setting.
 
-**Against.** The caller's three calls, as decision 16 has it: every caller
-would repeat the overlay, and a field it forgot is reset on SAP's side.
-**`updateMetadata` alone** remains for a caller who holds every setting.
+**Against.** The caller's three calls (decision 16): every caller would
+repeat the overlay, read too early, or forget a field — and a forgotten
+field is reset on SAP's side, not refused.
 
-**What would change it.** SAP accepting a partial settings document — then
-the patch is one PUT, and decision 16 holds again.
+**What would change it.** One condition: SAP accepting a partial settings
+document — a PUT that keeps the settings it does not name. Then the patch is
+one PUT of the changes, no read, and decisions 16 and 37 hold again.
 
 ## Open, and what would settle it
 
