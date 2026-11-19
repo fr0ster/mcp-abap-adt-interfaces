@@ -655,8 +655,9 @@ does not serve the collection, and its table has no entry.
   The contract keeps the element required. SAP stores `value` alone
   (`move_adt_to_ddv` writes `uebersetz` from `translation-value` only, Code
   on both); the other three are computed on a read. `buffering.areaKeyFields`
-  is written only with type `G` (Code on both): with another type it stays
-  `0`.
+  (`SCHFELDANZ`) is written only when the resulting type is `G` (Code on
+  both): after a type change away from `G`, and whenever the resulting type
+  is not `G`, the count is not kept.
 - **`isWritableByAMDP`, per system kind (since 30.1.0).** The cloud's
   `move_adt_to_ddv` writes `allowed_for_amdp_write` from the document (Code,
   cloud), and a cloud PUT without the element reset it to `false` (measured).
@@ -670,14 +671,23 @@ does not serve the collection, and its table has no entry.
 - **Patch** with `IAdtTableSettingsPatchable<T, V>` (since 30.1.0, decision
   51): `patchMetadata` takes the table and `ITableSettingsChangesOf<V>` — at
   least one setting; `buffering` field by field, with `areaKeyFields` only
-  beside type `G` or with the type kept; `translation` by its `value`, the one
+  beside type `G` or with the type kept — and then refused before any PUT
+  when the type read is not `G`; `translation` by its `value`, the one
   attribute SAP stores; `isWritableByAMDP` on the cloud only — and, under the
   caller's `lockHandle`, reads the working area with its ETag, overlays the
   changes, and writes the whole document with `If-Match`. Every setting not
   named keeps the value read. Its headers name the media type alone
   (`IAdtTableSettingsPatchHeaders`): the implementation sends the PUT's
-  `Content-Type` without a charset, so no caller's charset reaches the
-  guarded write.
+  `Content-Type` without a charset (`headers.accept` is the literal
+  `TABLE_SETTINGS_MEDIA_TYPE`), so no caller's charset reaches the guarded
+  write.
+- **What the types cannot see.** The per-kind rules are TypeScript's
+  structural checks. A caller who widens the variant (a cloud writer used as
+  `IAdtTableSettingsUpdatable<T>`, a generic forwarding the default) or
+  carries extra keys through a variable, a union or a spread passes values
+  the rules would refuse as literals. A shipped implementation writes only
+  what SAP persists, and `patchMetadata` is the safe path: it writes back
+  what it read.
 - **The sequence is the caller's, and its order keeps a concurrent edit:**
   1. `lock` (stateful) — the settings' own lock;
   2. `readMetadata` under the lock — what the settings are now, after any edit
@@ -832,8 +842,9 @@ mean the same. The CHANGELOG lists each type;
   `ITableSettingsRead.translation` and `ITableSettingsUpdateConfig.settings.translation`)
   is `ITableTranslation` — `{ value, isVisible, isEditable, granularity }` —
   where it was the `ts:value` string. A settings write built from 28.0.0 sent
-  `ts:value` alone and SAP refused it: 400 `00/001` "The system expected the
-  attribute …isVisible" (measured on premise and on the cloud, 2026-11-19).
+  `ts:value` alone and SAP refused it, 400 `00/001` — on premise "The system
+  expected the attribute '{…}isVisible'", on the cloud "The attribute
+  '{…}isVisible' was expected" (measured, 2026-11-19).
   Pass all four as read: `translation: { value: '', isVisible: false,
   isEditable: false, granularity: '2' }` is what the systems read answered.
 
