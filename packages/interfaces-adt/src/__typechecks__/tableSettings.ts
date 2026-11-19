@@ -34,6 +34,7 @@ import {
   TABLE_BUFFERING_ALLOWED,
   TABLE_BUFFERING_TYPES,
   TABLE_DATA_CLASSES,
+  TABLE_SETTINGS_MEDIA_TYPE,
   TABLE_SIZE_CATEGORIES,
 } from '../adt/IAdtTableSettings';
 
@@ -299,6 +300,21 @@ void _onPremiseRead;
 const patchHeaders = {
   accept: 'application/vnd.sap.adt.table.settings.v2+xml',
 } as const;
+const _withCharset: IAdtTableSettingsPatchHeaders = {
+  // @ts-expect-error the media type exactly, no charset
+  accept: 'application/vnd.sap.adt.table.settings.v2+xml; charset=utf-8',
+};
+void _withCharset;
+const _fromConstant: IAdtTableSettingsPatchHeaders = {
+  accept: TABLE_SETTINGS_MEDIA_TYPE,
+};
+void _fromConstant;
+declare const anyAccept: string;
+const _anyAccept: IAdtTableSettingsPatchHeaders = {
+  // @ts-expect-error a string that may carry a charset is not the media type
+  accept: anyAccept,
+};
+void _anyAccept;
 declare const cloudPatcher: IAdtTableSettingsPatchable<string, 'cloud'>;
 declare const onPremisePatcher: IAdtTableSettingsPatchable<string, 'onprem'>;
 void cloudPatcher.patchMetadata(

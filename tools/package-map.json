@@ -697,6 +697,7 @@
   "TABLE_BUFFERING_ALLOWED": "interfaces-adt",
   "TABLE_BUFFERING_TYPES": "interfaces-adt",
   "TABLE_DATA_CLASSES": "interfaces-adt",
+  "TABLE_SETTINGS_MEDIA_TYPE": "interfaces-adt",
   "TABLE_SIZE_CATEGORIES": "interfaces-adt",
   "TEXT_ELEMENTS_OBJECT_KINDS": "interfaces-adt",
   "TEXT_ELEMENTS_PARTS": "interfaces-adt",

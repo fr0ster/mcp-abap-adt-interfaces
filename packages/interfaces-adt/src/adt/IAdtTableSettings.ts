@@ -339,12 +339,15 @@ type AtLeastOne<T> = {
 }[keyof T];
 
 /**
- * A buffering change: at least one field. `areaKeyFields` goes only with type
- * `G`, or with no type (the type read is kept): SAP writes it only for `G`
- * (`move_adt_to_ddv`, Code on both systems), so a change of the type to
- * anything else drops it, and `{ type: 'P', areaKeyFields: 1 }` does not
- * compile. A type given as a `string` that is not the literal `'G'` takes no
- * `areaKeyFields`.
+ * A buffering change: at least one field. SAP writes `SCHFELDANZ` only when
+ * the **resulting** type is `G` (`move_adt_to_ddv`: `IF e_dd09l_wa-pufferung =
+ * 'G'.`, Code on both systems): with any other resulting type the count is not
+ * kept. So `areaKeyFields` goes only with type `G`, or with no type (the type
+ * read is kept); `{ type: 'P', areaKeyFields: 1 }` and a `string` type that is
+ * not the literal `'G'` with it do not compile. With the type kept, the
+ * resulting type is the one read: `patchMetadata` refuses an `areaKeyFields`
+ * change whose resulting type (the read merged with the changes) is not `G`,
+ * before any PUT — a check on what SAP answered, not on the caller's types.
  */
 export type ITableBufferingChange =
   | AtLeastOne<{
@@ -416,15 +419,22 @@ export interface ITableSettingsPatchConfig<
 }
 
 /**
- * The media type a patch reads and writes with: the settings document's
- * (`application/vnd.sap.adt.table.settings.v2+xml`). It is the read's
- * `Accept`, and the guarded PUT's `Accept` and `Content-Type` — sent without a
- * charset, so no caller's charset reaches the guarded write (with
- * `; charset=utf-8` beside a fresh `If-Match` SAP answered `412`
- * `SADT_RESOURCE/043`; without it `200`; measured on both).
+ * The settings document's media type, without a charset — the v2 a read is
+ * answered with (a v1 `Accept` was answered `406`, measured on both).
+ */
+export const TABLE_SETTINGS_MEDIA_TYPE =
+  'application/vnd.sap.adt.table.settings.v2+xml';
+
+/**
+ * The media type a patch reads and writes with: exactly
+ * {@link TABLE_SETTINGS_MEDIA_TYPE}, a literal, so a value with a charset does
+ * not compile. It is the read's `Accept`, and the guarded PUT's `Accept` and
+ * `Content-Type` — sent without a charset (with `; charset=utf-8` beside a
+ * fresh `If-Match` SAP answered `412` `SADT_RESOURCE/043`; without it `200`;
+ * measured on both).
  */
 export interface IAdtTableSettingsPatchHeaders {
-  readonly accept: string;
+  readonly accept: typeof TABLE_SETTINGS_MEDIA_TYPE;
   readonly contentType?: never;
 }
 
@@ -458,6 +468,14 @@ export type IAdtTableSettingsPatchOptions<E extends IAdtError = IAdtError> =
  * not measured.
  *
  * Two requests in one member: decision 51.
+ *
+ * **What the types cannot see.** The per-kind rules are TypeScript's
+ * structural checks: a caller who widens the variant (a cloud writer used as
+ * `IAdtTableSettingsUpdatable<T>`, a generic that forwards the default), or
+ * carries extra keys through a variable, a union or a spread, passes values
+ * the rules would refuse as literals. A shipped implementation writes only
+ * what SAP persists, and `patchMetadata` is the safe path: it writes back
+ * what it read.
  */
 export interface IAdtTableSettingsPatchable<
   TMetadataUpdated,
