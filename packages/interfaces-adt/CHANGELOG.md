@@ -26,8 +26,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     SAP writes every field of the document and this contract chooses no value
     for the caller; `storageType`, `sharingType`, `loadUnit`, `translation`
     and `loggingEnabled` optional, an absent one not sent.
-  - The value sets: `TableDataClass` (the data class value help's six entries
-    on S/4HANA 2025), `TableSizeCategory` (`'0'`–`'9'`),
+  - The value sets: `dataClassCategory` is a `string`, since customer data
+    classes (`USER`, `USER1`, …) exist; `TABLE_DATA_CLASSES` and
+    `KnownTableDataClass` name the data class value help's six entries on
+    S/4HANA 2025 for discovery, without limiting the field;
+    `TableSizeCategory` (`'0'`–`'9'`),
     `TableBufferingAllowed` (`N`, `X`, `A`), `TableBufferingType` (`P`, `G`,
     `X`).
   - `IAdtTableSettingsUpdatable<TMetadataUpdated>`: `updateMetadata(config,

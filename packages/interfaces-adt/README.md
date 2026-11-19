@@ -510,8 +510,10 @@ does not serve the collection, and its table has no entry.
   then activate the **table** — activating `TABL/DT` activates its settings;
   there is no activation of the settings alone.
 
-The value sets: `TableDataClass` is the data class value help's list on
-S/4HANA 2025 (`APPL0`, `APPL1`, `APPL2`, `DDIM`, `DFACT`, `DODS`);
+The value sets: a data class is a `string`, since a system may define
+customer data classes (`USER`, `USER1`, …); `TABLE_DATA_CLASSES` (type
+`KnownTableDataClass`) lists the value help's six on S/4HANA 2025 (`APPL0`,
+`APPL1`, `APPL2`, `DDIM`, `DFACT`, `DODS`) for discovery, not as a limit;
 `TableSizeCategory` is `'0'` to `'9'`, a code as the document writes it;
 `TableBufferingAllowed` is `N`, `X`, `A`, and `TableBufferingType` `P`, `G`,
 `X`. Storage type, sharing type, load unit and translation are strings.
