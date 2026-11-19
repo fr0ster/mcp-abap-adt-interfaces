@@ -3274,6 +3274,47 @@ identical, and a consumer that needs the member present narrows to the atom.
 another signature, or a member that a holder must be able to rely on — which is
 an atom, or a required member and a major.
 
+## 49. A table's technical settings are written from a typed config, not `options.source`
+
+**Decided 2026-11-19, in `interfaces-adt` 28.0.0.** An exception to
+decisions 32 and 33 for one resource; it does not reopen them.
+
+**The problem.** A table's technical settings (`TABL/DTT`,
+`/sap/bc/adt/ddic/db/settings/{name}`) are a small, fixed document whose
+write replaces the whole DD09L row: SAP writes every field from the document,
+and one left out is reset to its initial value (`CL_TABT_WB_PERSIST`,
+`DDIF_TABT_PUT`, read 2026-11-19). The owner needs non-default settings —
+data class, size category, buffering, logging — and a consumer stating them
+as a hand-built XML string has nothing to tell it that it left a field out,
+which is exactly the failure that resets one.
+
+**Decided.** `IAdtTableSettingsUpdatable.updateMetadata` takes
+`ITableSettingsUpdateConfig` — the table's name, its `description` and
+`ITableSettings`, in which every field the document carries is required — and
+the implementation builds the body from it. The options refuse a `source`
+(`source?: never`, as `IAdtCreateOptions` does), so there is still one channel
+for the body, as decision 33 requires; it is the config here. The codes are
+strings (a system may define its own), with the known values exported as
+constants.
+
+**Against.** `IAdtMetadataUpdatable` with the document in `options.source`,
+as decision 32 decided for documents: the omission that resets a setting would
+compile. And the typed config beside an `options.source` that is ignored:
+two channels, the thing decision 33 removed.
+
+**Why the cost of decision 32 does not apply here.** Decision 32 refused a
+modelled document because it must be kept in step with what SAP adds, for
+every document type. This is one document of ten fields, fixed by one simple
+transformation (`SDDIC_ADT_TTAB`, `tt:extensible="deep"`), and the replace
+makes completeness the caller's actual risk: the compiler's help is worth more
+here than the drift it can suffer. A field SAP adds later reaches a write only
+when this contract names it.
+
+**What would change it.** SAP adding settings faster than the contract can
+follow, or a consumer needing to send a document this type cannot state —
+then `options.source` beside a builder in the implementation, as decision 32
+has it.
+
 ## Open, and what would settle it
 
 Not decisions. These are questions this repository has met and deliberately left
