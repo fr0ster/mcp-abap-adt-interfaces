@@ -12,7 +12,7 @@ ADT contracts: object operations, runtime analysis, execution, feeds and service
 - Since 15.0.0 `skipCount` is gone from breakpoints (the server ignores it) and `clientId` pairs an answer row with its request. The CHANGELOG has the migration note.
 - Since 15.1.0 the plain class and program run take `debuggee` (`IDebuggeeIds`): the terminal id and IDE id a terminal-mode listener catches the run by.
 - Since 23.1.0 the ABAP Unit run registry: `ABAP_UNIT_RUN_TYPES`, every `osl:object type` value a run may name, what a run of it runs and on what evidence; `AbapUnitRunObjectType` (its keys), `AbapUnitRunTarget` (an object or a package) and the generic runner contract `IAbapUnitRunner`. Additions only. See "The ABAP Unit run registry".
-- Since 27.5.0 a table's technical settings (`TABL/DTT`, `tableSettings` in the on-premise and cloud tables) are their own contract: `ITableSettingsConfig`, `ITableSettingsUpdateConfig` with the typed `ITableSettings`, the write atom `IAdtTableSettingsUpdatable` and `ITableSettingsResults`. A map over `AdtTypeCode`, `AdtApiName` or `AdtObjectKind` adds the new member. See "A table's technical settings".
+- Since 28.0.0 a table's technical settings (`TABL/DTT`, `tableSettings` in the on-premise and cloud tables) are their own contract: `ITableSettingsConfig`, `ITableSettingsUpdateConfig` with the full `ITableSettings`, the write atom `IAdtTableSettingsUpdatable` and `ITableSettingsResults`. A map over `AdtApiName`, `AdtTypeCode`, `AdtObjectKind` or `CodesOfMain<'TABL'>` adds the new member — the reason for the major. See "A table's technical settings" and "Migrating to 28.0.0".
 - Since 27.0.0 `IUtilResults` requires `objectActivation`, the reading of the new atom `IAdtObjectActivation` (`activateObjects`, the synchronous `POST /activation` for several objects); `activate` takes `IAdtActivationOptions` (`preauditRequested`); and `IAnalyse` takes an optional third parameter, `IAdtAnalyseContext`. See "Activation" and "Migrating to 27.0.0".
 - Since 25.2.0 `update` and `updateMetadata` take `IAdtUpdateOptions`: `IAdtOperationOptions` with `ifMatch`, the ETag a read answered, sent as `If-Match` so the system refuses a write over a changed document (`412`). Additions only.
 - Since 25.1.0 `IAtcResultsReadable` reads the ATC results the system holds: `listResults` (`IAtcResultListOptions`, `createdBy` required) and `getResult` by Display ID. Additions only.
@@ -483,7 +483,7 @@ error or a result built for 27.2.0 still conforms.
 `src/__typechecks__/sessionError.ts` and `src/__typechecks__/sessionLost.ts`
 hold these shapes.
 
-## A table's technical settings (27.5.0)
+## A table's technical settings (28.0.0)
 
 A database table's technical settings — data class, size category,
 buffering, logging — are a resource of their own,
@@ -500,23 +500,26 @@ does not serve the collection, and its table has no entry.
   table, so a read right after the create answers them (`version="new"`).
 - **Write** with `IAdtTableSettingsUpdatable`: its `updateMetadata` takes
   `ITableSettingsUpdateConfig` — the table's name, its `description` (SAP
-  refuses a write without one, SWB_TOOL 019) and `ITableSettings` — and builds
-  the body from it; the options refuse a `source`. A write is a replace: SAP
-  writes every DD09L field from the document, so data class, size category and
-  buffering are required, and an optional field left out is written as SAP's
-  initial value.
+  refuses a write without one, SWB_TOOL 019, measured on premise) and
+  `ITableSettings` — and builds the body from it (decision 49); the options
+  refuse a `source` and require the `lockHandle`.
+- **An update replaces every setting: read, change, write back.** SAP writes
+  the whole DD09L row from the document and resets a field it leaves out, so
+  every field the document carries is required; the cloud's
+  `isWritableByAMDP` is optional and sent when given.
 - **The sequence is the caller's**: `lock` (stateful), `updateMetadata` with
   the lock handle (and `transportRequest` as `corrNr`), `unlock` on every path,
-  then activate the **table** — activating `TABL/DT` activates its settings;
-  there is no activation of the settings alone.
+  then activate the **table**. Activating `TABL/DT` activated the settings,
+  measured on premise and on the cloud; activating `TABL/DTT` alone was never
+  measured, and the contract offers no activation of the settings.
 
-The value sets: a data class is a `string`, since a system may define
-customer data classes (`USER`, `USER1`, …); `TABLE_DATA_CLASSES` (type
-`KnownTableDataClass`) lists the value help's six on S/4HANA 2025 (`APPL0`,
-`APPL1`, `APPL2`, `DDIM`, `DFACT`, `DODS`) for discovery, not as a limit;
-`TableSizeCategory` is `'0'` to `'9'`, a code as the document writes it;
-`TableBufferingAllowed` is `N`, `X`, `A`, and `TableBufferingType` `P`, `G`,
-`X`. Storage type, sharing type, load unit and translation are strings.
+The codes are strings, since a system may define its own (customer data
+classes `USER`, `USER1`, …). The known values are constants for discovery,
+not limits: `TABLE_DATA_CLASSES` — the data class value help's six on
+S/4HANA 2025 (`APPL0`, `APPL1`, `APPL2`, `DDIM`, `DFACT`, `DODS`), measured;
+`TABLE_SIZE_CATEGORIES` (`'0'`–`'9'`), `TABLE_BUFFERING_ALLOWED` (`N`, `X`,
+`A`) and `TABLE_BUFFERING_TYPES` (`P`, `G`, `X`) — SAP's standard domain
+values, not measured. Each has its `Known…` type.
 
 ## Optional fields take `undefined` (27.4.0)
 
@@ -530,6 +533,14 @@ options, `IClassUnitTestRunOptions` with `IUnitTestScope`,
 with no spread to leave the key out. An absent field and an `undefined` one
 mean the same. The CHANGELOG lists each type;
 `src/__typechecks__/explicitUndefined.ts` holds the shapes.
+
+## Migrating to 28.0.0
+
+- **An exhaustive map over the type-table unions adds the table settings.**
+  `AdtApiName` gains `tableSettings`, `AdtTypeCode` and `CodesOfMain<'TABL'>`
+  gain `'TABL/DTT'`, `AdtObjectKind` gains `'table_settings'`. A map keyed by
+  one of them, or a `switch` relying on exhaustiveness, adds the member.
+  Nothing else changes.
 
 ## Migrating to 27.0.0
 
