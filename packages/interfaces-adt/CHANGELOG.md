@@ -11,17 +11,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking
 
-- **`AdtApiName`, `AdtTypeCode`, `AdtObjectKind` and `CodesOfMain<'TABL'>`
-  gain a member** — `tableSettings`, `TABL/DTT` and `table_settings` (below).
+- **`AdtApiName`, `AdtTypeCode`, `AdtObjectKind`, `CodesOfMain<'TABL'>` and
+  the unions derived from the on-premise and cloud tables gain a member** —
+  `tableSettings`, `TABL/DTT` and `table_settings` (below).
   A union that widens breaks an exhaustive map over it, so this is a major.
 
 ### Migration
 
 - An exhaustive map over `AdtApiName` (`{ [A in AdtApiName]: … }`) adds
   `tableSettings`; one over `AdtTypeCode` or `CodesOfMain<'TABL'>` adds
-  `'TABL/DTT'`; one over `AdtObjectKind` adds `'table_settings'`. A `switch`
-  that relies on exhaustiveness over them adds the case. Nothing else changes:
-  a consumer with no such map compiles as it did on 27.4.0.
+  `'TABL/DTT'`; one over `AdtObjectKind` adds `'table_settings'`. The same
+  holds for every union derived from the tables for the on-premise and cloud
+  variants: `AdtApi<V>`, `AdtTypeCodeOf<V>`, `AdtCodeOf<V>`, and the
+  projections by operation — `AdtApiWith<V, Op>`, `AdtTypeCodeWith<V, Op>`,
+  `AdtCodeWith<V, Op>`, `AdtApiWithIn<T, Op>` — wherever `Op` is among
+  `readMetadata`, `updateMetadata`, `lock` and `unlock`. A map keyed by any of
+  them, or a `switch` relying on exhaustiveness over one, adds the member.
 
 ### Added
 

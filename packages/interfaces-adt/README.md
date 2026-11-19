@@ -12,7 +12,7 @@ ADT contracts: object operations, runtime analysis, execution, feeds and service
 - Since 15.0.0 `skipCount` is gone from breakpoints (the server ignores it) and `clientId` pairs an answer row with its request. The CHANGELOG has the migration note.
 - Since 15.1.0 the plain class and program run take `debuggee` (`IDebuggeeIds`): the terminal id and IDE id a terminal-mode listener catches the run by.
 - Since 23.1.0 the ABAP Unit run registry: `ABAP_UNIT_RUN_TYPES`, every `osl:object type` value a run may name, what a run of it runs and on what evidence; `AbapUnitRunObjectType` (its keys), `AbapUnitRunTarget` (an object or a package) and the generic runner contract `IAbapUnitRunner`. Additions only. See "The ABAP Unit run registry".
-- Since 28.0.0 a table's technical settings (`TABL/DTT`, `tableSettings` in the on-premise and cloud tables) are their own contract: `ITableSettingsConfig`, `ITableSettingsUpdateConfig` with the full `ITableSettings`, the write atom `IAdtTableSettingsUpdatable` and `ITableSettingsResults`. A map over `AdtApiName`, `AdtTypeCode`, `AdtObjectKind` or `CodesOfMain<'TABL'>` adds the new member — the reason for the major. See "A table's technical settings" and "Migrating to 28.0.0".
+- Since 28.0.0 a table's technical settings (`TABL/DTT`, `tableSettings` in the on-premise and cloud tables) are their own contract: `ITableSettingsConfig`, `ITableSettingsUpdateConfig` with the full `ITableSettings`, the write atom `IAdtTableSettingsUpdatable` and `ITableSettingsResults`. A map over `AdtApiName`, `AdtTypeCode`, `AdtObjectKind`, `CodesOfMain<'TABL'>` or a union derived from the tables (`AdtApi<V>`, `AdtTypeCodeOf<V>`, `AdtApiWith<V, Op>`, …) adds the new member — the reason for the major. See "A table's technical settings" and "Migrating to 28.0.0".
 - Since 27.0.0 `IUtilResults` requires `objectActivation`, the reading of the new atom `IAdtObjectActivation` (`activateObjects`, the synchronous `POST /activation` for several objects); `activate` takes `IAdtActivationOptions` (`preauditRequested`); and `IAnalyse` takes an optional third parameter, `IAdtAnalyseContext`. See "Activation" and "Migrating to 27.0.0".
 - Since 25.2.0 `update` and `updateMetadata` take `IAdtUpdateOptions`: `IAdtOperationOptions` with `ifMatch`, the ETag a read answered, sent as `If-Match` so the system refuses a write over a changed document (`412`). Additions only.
 - Since 25.1.0 `IAtcResultsReadable` reads the ATC results the system holds: `listResults` (`IAtcResultListOptions`, `createdBy` required) and `getResult` by Display ID. Additions only.
@@ -550,9 +550,13 @@ mean the same. The CHANGELOG lists each type;
 
 - **An exhaustive map over the type-table unions adds the table settings.**
   `AdtApiName` gains `tableSettings`, `AdtTypeCode` and `CodesOfMain<'TABL'>`
-  gain `'TABL/DTT'`, `AdtObjectKind` gains `'table_settings'`. A map keyed by
-  one of them, or a `switch` relying on exhaustiveness, adds the member.
-  Nothing else changes.
+  gain `'TABL/DTT'`, `AdtObjectKind` gains `'table_settings'`. So does every
+  union derived from the tables for the on-premise and cloud variants:
+  `AdtApi<V>`, `AdtTypeCodeOf<V>`, `AdtCodeOf<V>`, and the projections by
+  operation — `AdtApiWith<V, Op>`, `AdtTypeCodeWith<V, Op>`, `AdtCodeWith<V,
+  Op>`, `AdtApiWithIn<T, Op>` — wherever `Op` is among `readMetadata`,
+  `updateMetadata`, `lock` and `unlock`. A map keyed by any of them, or a
+  `switch` relying on exhaustiveness over one, adds the member.
 
 ## Migrating to 27.0.0
 
