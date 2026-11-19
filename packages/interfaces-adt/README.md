@@ -516,19 +516,23 @@ and its table has no entry. Read and written on premise and on the cloud,
   with another part does not compile.
 - **Read** with `IAdtTextElementsReadable`: `read(config, version?)`, the
   object and its part. `version` is every value SAP's handler maps
-  (`get_wb_version`, Code):
-  - absent: the working area — the user's own inactive version when there is
-    one, else the active one; a read straight after a write answers the write
-    (measured);
-  - `inactive`: the inactive version (measured), the active one when there is
-    none (Code);
-  - `active`: the active version (Code, not yet measured);
-  - `workingArea`: the working area, as Eclipse sends it (Code, not yet
-    measured here).
+  (`get_wb_version`), measured on premise for a program's selection texts:
+  - absent, `inactive` and `workingArea` answer the working area — the
+    inactive version when there is one, else the active one;
+  - `active` answers the last activated version: before the first activation
+    only the screen fields' `?...` placeholders, after a change the text as
+    activated.
   A value outside these is not refused by SAP; it falls back to the working
   area (Code). The answer is the part's text, CR LF between lines:
   - symbols: `@MaxLength:20`, then `001=Text`, one empty line between symbols;
-  - selections: `P_TEST  =Text`, the name padded to eight by SAP;
+  - selections: every parameter and select option of the program, sorted by
+    name, the name upper case and padded to eight (`P_TEST  =Text`), an empty
+    line between two entries; a field with no text yet `?...`; a text taken
+    from the dictionary after its own `@DDICReference` line, answered as the
+    field's label (`ISelectionText.ddicReference`, required). A write takes
+    the name padded or not; a text over `SELECTION_TEXT_MAX_LENGTH` (30)
+    characters refuses the whole write (`406`, `SEDX_ADT/110`); and a text
+    sent with `@DDICReference` is replaced by the label (all measured);
   - headings: `listHeader=…`, an empty line, `columnHeader_1=…` to
     `columnHeader_4=…`.
   `TextElementsDocument` is the parsed shape a reading strategy answers.
@@ -571,11 +575,16 @@ and its table has no entry. Read and written on premise and on the cloud,
      activation.
 - **On the cloud** the lock answers `MODIFICATION_SUPPORT=NoModification`, and
   the write is accepted and saved all the same (measured).
-- **A function group** is in the discovery of both newer releases
-  (`/sap/bc/adt/textelements/functiongroups`), and the contract addresses it,
-  but its addressing is not measured — the one read sent
-  (`…/functiongroups/sutl`) answered 404 — and no release's `typestructure`
-  lists a type code for its text elements, so the tables carry none.
+- **A function group** (measured on premise, 2026-11-19): its text elements
+  are at `/sap/bc/adt/textelements/functiongroups/{group}`, the plain group
+  name (`…/sapl{group}` answers 404; the earlier 404 on `sutl` was a group
+  that does not exist). The properties document names them `FUGR/PX`; after
+  a write the inactive list holds the group (`FUGR/F`) and its text elements
+  as `PROG/PX`, named `SAPL{GROUP}`; one activation naming the group's URI
+  and the text elements' URI, each with `adtcore:name="{GROUP}"`, activates
+  both. No release's `typestructure` lists `FUGR/PX`, so the type tables carry
+  no code for a function group's text elements: the contract reads, locks and
+  writes them by kind and name, and their typed activation is open.
 
 ## A table's technical settings (28.0.0)
 
@@ -653,7 +662,10 @@ mean the same. The CHANGELOG lists each type;
   `'onprem' | 'cloud'`; every operation). Nothing of `basis740` changed.
   - The API names: `AdtApiName`, `keyof AdtApiTable<R>`, `AdtApi<V>`, and
     `AdtApiWith<V, Op>` / `AdtApiWithIn<T, Op>` for `Op` among `read`,
-    `update`, `lock`, `unlock` — gain `textElements`.
+    `update`, `lock`, `unlock` — gain `textElements`; and with `AdtApiName`
+    every `parent` that names an API: `IAdtCodeFacts<R>['parent']`,
+    `IAdtCodelessApiEntry<R>['parent']`, and so `AdtApiEntry<R>['parent']`
+    (`IAdtCodedApiEntry<R>`'s codes carry it).
   - The codes: `AdtTypeCode`, `AdtTypeCodeOf<V>`, `AdtCodeOf<V>`,
     `AdtCodeOfIn<Tables, V>`, and `AdtTypeCodeWith<V, Op>`, `AdtCodeWith<V, Op>`,
     `AdtCodeWithIn<Tables, V, Op>` for the same four operations — gain
@@ -669,10 +681,10 @@ mean the same. The CHANGELOG lists each type;
     and `IAdtWhereUsedScopeParamsOf<V>['object_type']`, gain both codes, as
     `IGetWhereUsedParams['object_type']` and
     `IGetWhereUsedScopeParams['object_type']` (default `AdtTypeCode`) do.
-    Where-used of a text element is not measured.
   - References and answers: `IObjectReference['type']` (default
-    `AdtTypeCode`) and the known-code branch of `IAdtAnsweredObject['type']`
-    gain both codes.
+    `AdtTypeCode`), `IAdtCodedReference<AdtTypeCode>['type']` and
+    `IAdtCodedReference<AdtCodeOf<V>>['type']`, and the known-code branch of
+    `IAdtAnsweredObject['type']` gain both codes.
   - The tables themselves: `IAdtTypeTables` (a `textElements` entry on
     `onprem` and `cloud`) and `IAdtUtilityCodeTables` (two codes on each).
 - **What a consumer does.** A map keyed by any of these
