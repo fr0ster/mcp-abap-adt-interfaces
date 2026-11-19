@@ -216,9 +216,15 @@ export type GroupOnly = [
   Assert<
     Equal<
       AdtUtilityCodeWith<AdtModernVariant, 'groupActivation'>,
-      'VIEW/DV' | 'DEVC/K'
+      'VIEW/DV' | 'DEVC/K' | 'PROG/PX' | 'CLAS/OCX'
     >
   >,
+  // The text elements activate beside their object: measured on premise for a
+  // program, on the cloud for a class.
+  Assert<Equal<IAdtUtilityCodeTables['onprem']['PROG/PX']['measured'], true>>,
+  Assert<Equal<IAdtUtilityCodeTables['onprem']['CLAS/OCX']['measured'], false>>,
+  Assert<Equal<IAdtUtilityCodeTables['cloud']['CLAS/OCX']['measured'], true>>,
+  Assert<Equal<IAdtUtilityCodeTables['cloud']['PROG/PX']['measured'], false>>,
   Assert<Equal<AdtUtilityCodeWith<'basis740', 'groupActivation'>, 'VIEW/DV'>>,
   Assert<Equal<IAdtUtilityCodeTables['basis740']['DEVC/K']['measured'], true>>,
   Assert<Equal<IAdtUtilityCodeTables['onprem']['DEVC/K']['measured'], false>>,

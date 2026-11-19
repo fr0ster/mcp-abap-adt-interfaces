@@ -53,8 +53,13 @@ export type AdtUtilityCodeTable<R extends string> = {
 /**
  * On **S/4HANA 2025**: `VIEW/DV`, a DDIC database view, which group
  * activation, group deletion and where-used address under
- * `/sap/bc/adt/ddic/views` and no API serves; and `DEVC/K` in a group
- * activation, which the API table lists no `activate` for — sent, unmeasured.
+ * `/sap/bc/adt/ddic/views` and no API serves; `DEVC/K` in a group
+ * activation, which the API table lists no `activate` for — sent, unmeasured;
+ * and the text elements, `PROG/PX` and `CLAS/OCX`, in a group activation
+ * beside their program or class (`textElements` lists no `activate`): a write
+ * lands inactive, and one activation naming the object and
+ * `/sap/bc/adt/textelements/{programs|classes}/{name}` activates both —
+ * measured on premise for a program (`PROG/PX`), not for a class here.
  */
 export const ADT_UTILITY_CODES_ONPREM = {
   'VIEW/DV': {
@@ -68,9 +73,23 @@ export const ADT_UTILITY_CODES_ONPREM = {
     measured: false,
     evidence: 'system-description-s4-2025--07-typestructure',
   },
+  'PROG/PX': {
+    operations: ['groupActivation'],
+    measured: true,
+    evidence: 'system-description-s4-2025--07-typestructure',
+  },
+  'CLAS/OCX': {
+    operations: ['groupActivation'],
+    measured: false,
+    evidence: 'system-description-s4-2025--07-typestructure',
+  },
 } as const satisfies AdtUtilityCodeTable<'s4-2025'>;
 
-/** On **ABAP cloud**: the same as {@link ADT_UTILITY_CODES_ONPREM}. */
+/**
+ * On **ABAP cloud**: the same as {@link ADT_UTILITY_CODES_ONPREM}; the text
+ * elements' activation measured here for a class (`CLAS/OCX`), not for a
+ * program.
+ */
 export const ADT_UTILITY_CODES_CLOUD = {
   'VIEW/DV': {
     operations: ['groupActivation', 'groupDeletion', 'whereUsed'],
@@ -81,6 +100,16 @@ export const ADT_UTILITY_CODES_CLOUD = {
   'DEVC/K': {
     operations: ['groupActivation'],
     measured: false,
+    evidence: 'system-description-abap-cloud--07-typestructure',
+  },
+  'PROG/PX': {
+    operations: ['groupActivation'],
+    measured: false,
+    evidence: 'system-description-abap-cloud--07-typestructure',
+  },
+  'CLAS/OCX': {
+    operations: ['groupActivation'],
+    measured: true,
     evidence: 'system-description-abap-cloud--07-typestructure',
   },
 } as const satisfies AdtUtilityCodeTable<'abap-cloud'>;
