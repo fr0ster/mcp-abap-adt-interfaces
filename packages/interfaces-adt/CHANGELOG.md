@@ -48,7 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     `onprem`, `cloud` and the default `'onprem' | 'cloud'`, as the untyped
     `IGetWhereUsedParams['object_type']` and
     `IGetWhereUsedScopeParams['object_type']` do. `CLAS/OCX` is in none of
-    them: SAP serves no where-used for it (measured).
+    them: the systems measured serve no where-used for it.
   - **`PROG/PX` names its container in a where-used.** `IGetWhereUsedParams`
     and `IGetWhereUsedScopeParams` (and so `IAdtWhereUsedParamsOf<V>` /
     `IAdtWhereUsedScopeParamsOf<V>`) are type aliases now, not interfaces:
@@ -67,6 +67,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       a conditional over `C`): use a type alias with `&`
       (`type X<C extends …> = IGetWhereUsedParams<C> & { … }`), or extend a
       single code's params (`IGetWhereUsedParams<'PROG/P'>` still does);
+    - a builder typed by the union — `(code: AdtWhereUsedCode<V>):
+      IAdtWhereUsedParamsOf<V> => ({ object_name, object_type: code })`,
+      generic in `V` or for one variant — no longer compiles (`TS2322`): the
+      code may be `PROG/PX`, which needs its `container`. Exclude it from the
+      input (`code: Exclude<AdtWhereUsedCode<V>, 'PROG/PX'>`), or handle it
+      apart (`code === 'PROG/PX' ? { …, container } : { … }`);
     - a value of another code that carries a `container` of its own — say
       `{ object_type: 'PROG/P', container: string }` built for a consumer's
       own use — no longer passes as where-used parameters, on every variant
@@ -158,8 +164,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     "Where-Used List is not supported for &1" and no result where it serves
     none): `PROG/PX` is served on premise — the scope offers `PROG/P` and
     `PROG/PS` — and on the cloud (a delivered program's, `RSPARAM`), and a
-    function group's text elements resolve to it; `CLAS/OCX` is served
-    nowhere ("… not supported for Text Element: Class."), so
+    function group's text elements resolve to it; `CLAS/OCX` was not served
+    on the on-premise and cloud systems measured ("… not supported for Text
+    Element: Class."; the answer depends on the system's RIS metadata), so
     `AdtWhereUsedCode` and the untyped where-used parameters leave it out.
     All of them stay in the group activation.
   - A `PROG/PX` where-used names its `container` (`'program'` or
@@ -173,8 +180,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     be `{GROUP}` or `SAPL{GROUP}`, the URI decides). `FUGR/PX` — only the
     properties document's `adtcore:type` — is no code of the tables.
   - The key limits, measured on premise and in SAP's handlers, as constants
-    for a caller (no check here): `TEXT_SYMBOL_KEY_LENGTH` (3; a longer key
-    `406` `SEDX_ADT/106`; `0#1` and `AB1` accepted),
+    for a caller (no check here): `TEXT_SYMBOL_KEY_MAX_LENGTH` (3 accepted,
+    `0#1` and `AB1` included; 4 refused `406` `SEDX_ADT/106`; shorter not
+    measured),
     `SELECTION_TEXT_NAME_MAX_LENGTH` (8; `406` `SEDX_ADT/102`), and the
     closed heading keys `TEXT_HEADING_KEYS` / `TextHeadingKey` (any other
     `406` `SEDX_ADT/101`). An unknown selection name is stored, not checked
