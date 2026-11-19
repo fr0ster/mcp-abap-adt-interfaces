@@ -276,11 +276,15 @@ export type {
 } from './adt/IAdtStructure';
 export type { ITableConfig, ITableResults } from './adt/IAdtTable';
 export type {
+  IAdtTableSettingsPatchable,
+  IAdtTableSettingsPatchOptions,
   IAdtTableSettingsUpdatable,
   IAdtTableSettingsUpdateOptions,
   ITableBuffering,
   ITableSettings,
+  ITableSettingsChanges,
   ITableSettingsConfig,
+  ITableSettingsPatchConfig,
   ITableSettingsRead,
   ITableSettingsResults,
   ITableSettingsUpdateConfig,

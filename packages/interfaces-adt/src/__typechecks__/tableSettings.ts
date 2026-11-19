@@ -15,9 +15,12 @@ import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type { IAnalyse } from '../adt/IAdtObject';
 import type { IAdtError } from '../adt/IAdtResponse';
 import {
+  type IAdtTableSettingsPatchable,
+  type IAdtTableSettingsPatchOptions,
   type IAdtTableSettingsUpdatable,
   type IAdtTableSettingsUpdateOptions,
   type ITableSettings,
+  type ITableSettingsChanges,
   type ITableSettingsConfig,
   type ITableSettingsRead,
   type ITableSettingsUpdateConfig,
@@ -200,40 +203,82 @@ const _translationWithoutVisibility: ITableSettings = {
 };
 void _translationWithoutVisibility;
 
-// ── `isWritableByAMDP`: returned by cloud, not written by this contract ────
+// ── `isWritableByAMDP`: the cloud writes it, so a write carries it as read ──
+// (30.1.0: a cloud PUT that leaves it out resets it to false, measured).
 
-const _cloudRead: ITableSettingsRead = { ...settings, isWritableByAMDP: false };
+const _cloudRead: ITableSettingsRead = { ...settings, isWritableByAMDP: true };
 const _onPremiseRead: ITableSettingsRead = {
   ...settings,
   isWritableByAMDP: undefined,
 };
 void _onPremiseRead;
 
-const _writeLiteral: ITableSettingsUpdateConfig = {
-  tableName: 'ZTABLE',
-  description: 'A table',
-  // @ts-expect-error a write does not carry isWritableByAMDP
-  settings: { ...settings, isWritableByAMDP: false },
-};
-void _writeLiteral;
-
+// A read written back as it is: nothing to drop, nothing reset.
 const _writeRead: ITableSettingsUpdateConfig = {
   tableName: 'ZTABLE',
   description: 'A table',
-  // @ts-expect-error nor through a read result passed back as it is
   settings: _cloudRead,
 };
 void _writeRead;
-
-// Read, change, write back: what only a read returns is dropped first.
-const { isWritableByAMDP: _dropped, ...readBack } = _cloudRead;
-void _dropped;
-const _writeBack: ITableSettingsUpdateConfig = {
+const _writeChanged: ITableSettingsUpdateConfig = {
   tableName: 'ZTABLE',
   description: 'A table',
-  settings: { ...readBack, dataClassCategory: 'APPL1' },
+  settings: { ..._cloudRead, dataClassCategory: 'APPL1' },
 };
-void _writeBack;
+void _writeChanged;
+
+// ── A patch: at least one setting, field by field, the ETag its own ──────────
+
+declare const patcher: IAdtTableSettingsPatchable<string>;
+void patcher.patchMetadata(
+  { tableName: 'ZTABLE', changes: { dataClassCategory: 'APPL1' } },
+  { headers, lockHandle: 'HANDLE' },
+);
+void patcher.patchMetadata(
+  {
+    tableName: 'ZTABLE',
+    transportRequest: 'E19K900001',
+    changes: { buffering: { allowed: 'X' }, isWritableByAMDP: true },
+  },
+  { headers, lockHandle: 'HANDLE' },
+);
+// @ts-expect-error a patch changes at least one setting
+const _noChanges: ITableSettingsChanges = {};
+void _noChanges;
+const _partialTranslation: ITableSettingsChanges = {
+  translation: { value: 'X' },
+};
+void _partialTranslation;
+void patcher.patchMetadata(
+  { tableName: 'ZTABLE', changes: { loggingEnabled: true } },
+  // @ts-expect-error a patch needs the settings' lock handle
+  { headers },
+);
+void patcher.patchMetadata(
+  { tableName: 'ZTABLE', changes: { loggingEnabled: true } },
+  // @ts-expect-error the patch sends the ETag it read: no ifMatch of the caller's
+  { headers, lockHandle: 'HANDLE', ifMatch: '"e"' },
+);
+declare const patchWithSource: {
+  headers: IAdtHeaders;
+  lockHandle: string;
+  source: string;
+};
+void patcher.patchMetadata(
+  { tableName: 'ZTABLE', changes: { loggingEnabled: true } },
+  // @ts-expect-error no second channel for the body
+  patchWithSource,
+);
+const _wrongChange: ITableSettingsChanges = {
+  // @ts-expect-error a count stays a number
+  buffering: { areaKeyFields: '1' },
+};
+void _wrongChange;
+const _patchOptions: IAdtTableSettingsPatchOptions = {
+  lockHandle: 'HANDLE',
+  timeout: undefined,
+};
+void _patchOptions;
 
 const _options: IAdtTableSettingsUpdateOptions = {
   lockHandle: 'HANDLE',
