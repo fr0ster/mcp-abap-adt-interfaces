@@ -556,3 +556,17 @@ const _anyOtherCode: IAdtWhereUsedParamsOf<'onprem'> = {
   object_type: someCode,
 };
 void _anyOtherCode;
+
+// ── The where-used discriminant and its container are readonly ────────────
+
+declare const builtWhereUsed: IGetWhereUsedParams;
+// @ts-expect-error a built where-used is not re-coded
+builtWhereUsed.object_type = 'PROG/P';
+declare const programTextsWhereUsed: IAdtWhereUsedParamsOf<'onprem'> & {
+  readonly object_type: 'PROG/PX';
+};
+// @ts-expect-error nor moved to the other address
+programTextsWhereUsed.container = 'functionGroup';
+declare const builtScope: IAdtWhereUsedScopeParamsOf<'cloud'>;
+// @ts-expect-error the scope request's code neither
+builtScope.object_type = 'CLAS/OC';

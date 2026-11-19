@@ -178,16 +178,25 @@ type WhereUsedTypeCode = Exclude<AdtTypeCode, 'CLAS/OCX'>;
  * program's on the cloud too). The table keeps one collection per code, so
  * the parameter says which.
  *
+ * `object_type` and `container` are `readonly`: they are the discriminant
+ * and the address it decides, and a built value is not re-coded.
+ *
  * Required with `PROG/PX`, refused with any other code: a one-member union
  * per code would split past TypeScript's 25 combinations, so it is one
  * object over all of `C` joined with "is `PROG/PX` with a container, or
  * another code without one", as {@link IAdtCodedReference} is.
  */
 type WhereUsedContainer<C> = [Extract<C, 'PROG/PX'>] extends [never]
-  ? { container?: never }
+  ? { readonly container?: never }
   :
-      | { object_type: 'PROG/PX'; container: TextElementsWhereUsedContainer }
-      | { object_type: Exclude<C, 'PROG/PX'>; container?: never };
+      | {
+          readonly object_type: 'PROG/PX';
+          readonly container: TextElementsWhereUsedContainer;
+        }
+      | {
+          readonly object_type: Exclude<C, 'PROG/PX'>;
+          readonly container?: never;
+        };
 
 /**
  * Where-used scope parameters (Step 1: get available object types).
@@ -197,7 +206,7 @@ export type IGetWhereUsedScopeParams<
   C extends WhereUsedTypeCode | AdtGroupOnlyCode = WhereUsedTypeCode,
 > = {
   object_name: string;
-  object_type: C;
+  readonly object_type: C;
 } & WhereUsedContainer<C>;
 
 /**
@@ -208,7 +217,7 @@ export type IGetWhereUsedParams<
   C extends WhereUsedTypeCode | AdtGroupOnlyCode = WhereUsedTypeCode,
 > = {
   object_name: string;
-  object_type: C;
+  readonly object_type: C;
   /**
    * Optional: scope XML from getWhereUsedScope() with user-modified selections.
    * When omitted, the search runs unscoped (SAP's default scope) — getWhereUsed()
