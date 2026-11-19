@@ -12,7 +12,7 @@ ADT contracts: object operations, runtime analysis, execution, feeds and service
 - Since 15.0.0 `skipCount` is gone from breakpoints (the server ignores it) and `clientId` pairs an answer row with its request. The CHANGELOG has the migration note.
 - Since 15.1.0 the plain class and program run take `debuggee` (`IDebuggeeIds`): the terminal id and IDE id a terminal-mode listener catches the run by.
 - Since 23.1.0 the ABAP Unit run registry: `ABAP_UNIT_RUN_TYPES`, every `osl:object type` value a run may name, what a run of it runs and on what evidence; `AbapUnitRunObjectType` (its keys), `AbapUnitRunTarget` (an object or a package) and the generic runner contract `IAbapUnitRunner`. Additions only. See "The ABAP Unit run registry".
-- Since 30.0.0 the text elements of a program, a class or a function group — text symbols, selection texts, list and column headings — are their own contract (`/sap/bc/adt/textelements/…`, lock class `TEXT`): `IAdtTextElementsReadable` reads one part, `IAdtTextElementsUpdatable` writes one whole part from a typed document (`ITextSymbol`, `ISelectionText`, `ITextHeadings`), `ITextElementsResults`. The tables gain the API `textElements` (`PROG/PX`, `CLAS/OCX`, kind `text_elements`) on S/4HANA and ABAP cloud: a map over `AdtApiName`, `AdtTypeCode`, `AdtObjectKind`, `CodesOfMain<'PROG'>`, `CodesOfMain<'CLAS'>` or a union derived from the tables adds the members — the reason for the major. See "Text elements" and "Migrating to 30.0.0".
+- Since 30.0.0 the text elements of a program, a class or a function group — text symbols, selection texts, list and column headings — are their own contract (`/sap/bc/adt/textelements/…`, lock class `TEXT`): `IAdtTextElementsReadable` reads one part, `IAdtTextElementsUpdatable` writes one whole part from a typed document (`ITextSymbol`, `ISelectionText`, `ITextHeadings`), `ITextElementsResults`. The tables gain the API `textElements` (`PROG/PX`, `CLAS/OCX`, kind `text_elements`) on S/4HANA and ABAP cloud: a map over `AdtApiName`, `AdtTypeCode`, `AdtObjectKind`, `CodesOfMain<'PROG'>`, `CodesOfMain<'CLAS'>` or a union derived from the tables — the utility, group activation and where-used codes among them (`AdtUtilityCode`, `AdtGroupActivationCode`, `AdtWhereUsedCode`) — adds the members; the reason for the major. The typed `activateObjects` / `activateObjectsGroup` take the text elements' reference beside the object's. See "Text elements" and "Migrating to 30.0.0".
 - Since 29.0.0 `ITableSettings.translation` is an `ITableTranslation`, the `ts:translation` element's four attributes, where 28.0.0 had a string: SAP refuses a write without `ts:isVisible` (400 `00/001`). See "Migrating to 29.0.0".
 - Since 28.0.0 a table's technical settings (`TABL/DTT`, `tableSettings` in the on-premise and cloud tables) are their own contract: `ITableSettingsConfig`, `ITableSettingsUpdateConfig` with the full `ITableSettings`, the write atom `IAdtTableSettingsUpdatable` and `ITableSettingsResults`. A map over `AdtApiName`, `AdtTypeCode`, `AdtObjectKind`, `CodesOfMain<'TABL'>` or a union derived from the tables (`AdtApi<V>`, `AdtTypeCodeOf<V>`, `AdtApiWith<V, Op>`, …) adds the new member — the reason for the major. See "A table's technical settings" and "Migrating to 28.0.0".
 - Since 27.0.0 `IUtilResults` requires `objectActivation`, the reading of the new atom `IAdtObjectActivation` (`activateObjects`, the synchronous `POST /activation` for several objects); `activate` takes `IAdtActivationOptions` (`preauditRequested`); and `IAnalyse` takes an optional third parameter, `IAdtAnalyseContext`. See "Activation" and "Migrating to 27.0.0".
@@ -549,11 +549,26 @@ and its table has no entry. Read and written on premise and on the cloud,
   3. change the list;
   4. `update` with the lock handle (and `transportRequest` as `corrNr`);
   5. `unlock`, on every path;
-  6. activate the object **and** its text elements in one activation request:
-     the object's reference (`PROG/P`, `CLAS/OC`, `FUGR/F`) and
-     `/sap/bc/adt/textelements/{programs|classes|functiongroups}/{name}`. Naming
-     the object alone ran no activation for the text elements (measured);
-     the contract offers no activation of its own.
+  6. activate the object **and** its text elements in one activation request,
+     through the typed `activateObjects` (`IAdtObjectActivation`) or
+     `activateObjectsGroup` (`IAdtTypedGroupLifecycle`) of the variant: the
+     object's reference and the text elements' —
+     ```ts
+     // on premise: a program
+     const refs: IAdtGroupActivationReference<'onprem'>[] = [
+       { name: 'ZPROG', type: 'PROG/P', uri: '/sap/bc/adt/programs/programs/zprog' },
+       { name: 'ZPROG', type: 'PROG/PX', uri: '/sap/bc/adt/textelements/programs/zprog' },
+     ];
+     // on the cloud: a class — { type: 'CLAS/OC', … } and
+     // { type: 'CLAS/OCX', uri: '/sap/bc/adt/textelements/classes/zcl_x' }
+     ```
+     `PROG/PX` and `CLAS/OCX` are utility codes with `groupActivation` on
+     premise and on the cloud (as `DEVC/K` is), not an `activate` of the
+     `textElements` API. Naming the object alone ran no activation for the
+     text elements (measured on premise for a program and on the cloud for a
+     class; each other pairing is unmeasured, `measured: false`). A function
+     group's text elements have no code, so they are not in a typed
+     activation.
 - **On the cloud** the lock answers `MODIFICATION_SUPPORT=NoModification`, and
   the write is accepted and saved all the same (measured).
 - **A function group** is in the discovery of both newer releases
@@ -633,17 +648,44 @@ mean the same. The CHANGELOG lists each type;
 
 ## Migrating to 30.0.0
 
-- **An exhaustive map over the type-table unions adds the text elements.**
-  `AdtApiName` gains `textElements`; `AdtTypeCode` gains `'PROG/PX'` and
-  `'CLAS/OCX'`, and with them `CodesOfMain<'PROG'>` and `CodesOfMain<'CLAS'>`;
-  `AdtObjectKind` gains `'text_elements'`. So does every union derived from the
-  tables for the on-premise and cloud variants: `AdtApi<V>`,
-  `AdtTypeCodeOf<V>`, `AdtCodeOf<V>`, and the projections by operation —
-  `AdtApiWith<V, Op>`, `AdtTypeCodeWith<V, Op>`, `AdtCodeWith<V, Op>`,
-  `AdtApiWithIn<T, Op>` — wherever `Op` is among `read`, `update`, `lock` and
-  `unlock`. A map keyed by any of them, or a `switch` relying on
-  exhaustiveness over one, adds the members. The main types (`AdtMainType`)
-  are unchanged: `PROG` and `CLAS` were there. Nothing else changes.
+- **Every union that widens**, found by a compile-time probe of each export
+  of 29.0.0 against 30.0.0 (every variant `onprem`, `cloud`, `basis740` and
+  `'onprem' | 'cloud'`; every operation). Nothing of `basis740` changed.
+  - The API names: `AdtApiName`, `keyof AdtApiTable<R>`, `AdtApi<V>`, and
+    `AdtApiWith<V, Op>` / `AdtApiWithIn<T, Op>` for `Op` among `read`,
+    `update`, `lock`, `unlock` — gain `textElements`.
+  - The codes: `AdtTypeCode`, `AdtTypeCodeOf<V>`, `AdtCodeOf<V>`,
+    `AdtCodeOfIn<Tables, V>`, and `AdtTypeCodeWith<V, Op>`, `AdtCodeWith<V, Op>`,
+    `AdtCodeWithIn<Tables, V, Op>` for the same four operations — gain
+    `'PROG/PX'` and `'CLAS/OCX'`; `CodesOfMain<'PROG'>` gains `'PROG/PX'` and
+    `CodesOfMain<'CLAS'>` gains `'CLAS/OCX'`.
+  - The kinds: `AdtObjectKind` gains `'text_elements'`.
+  - The utility codes: `AdtUtilityCode` gains both codes, and
+    `AdtUtilityCodeWith<V, 'groupActivation'>` gains them through the utility
+    tables (`IAdtUtilityCodeTables`); so do `AdtGroupActivationCode<V>` and
+    `IAdtGroupActivationReference<V>['type']` — what `activateObjects` and the
+    typed `activateObjectsGroup` take.
+  - Where-used: `AdtWhereUsedCode<V>`, so `IAdtWhereUsedParamsOf<V>['object_type']`
+    and `IAdtWhereUsedScopeParamsOf<V>['object_type']`, gain both codes, as
+    `IGetWhereUsedParams['object_type']` and
+    `IGetWhereUsedScopeParams['object_type']` (default `AdtTypeCode`) do.
+    Where-used of a text element is not measured.
+  - References and answers: `IObjectReference['type']` (default
+    `AdtTypeCode`) and the known-code branch of `IAdtAnsweredObject['type']`
+    gain both codes.
+  - The tables themselves: `IAdtTypeTables` (a `textElements` entry on
+    `onprem` and `cloud`) and `IAdtUtilityCodeTables` (two codes on each).
+- **What a consumer does.** A map keyed by any of these
+  (`{ [C in AdtTypeCode]: … }`, `Record<AdtObjectKind, …>`, …) adds the new
+  keys; a `switch` that relies on exhaustiveness over one (a `never` check in
+  its `default`) adds the cases — `textElements` / `'text_elements'` for an
+  API or a kind, `'PROG/PX'` and `'CLAS/OCX'` for a code, which is a program's
+  or a class's text elements, addressed under `/sap/bc/adt/textelements/…`.
+  A consumer that maps a code to an address or a reader handles them, or
+  refuses them, there. A consumer reading an `IAdtAnsweredObject` gets
+  either code as `type`, typed, where 29.0.0 carried it as `unknownType`, the
+  text as it came. Nothing that only passes values through changes.
+  The main types (`AdtMainType`) are unchanged: `PROG` and `CLAS` were there.
 
 ## Migrating to 29.0.0
 
