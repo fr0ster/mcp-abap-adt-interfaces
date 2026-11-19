@@ -41,10 +41,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     tables (`IAdtUtilityCodeTables`); so do `AdtGroupActivationCode<V>` and
     `IAdtGroupActivationReference<V>['type']` — what `activateObjects` and the
     typed `activateObjectsGroup` take.
-  - Where-used: `AdtWhereUsedCode<V>`, so `IAdtWhereUsedParamsOf<V>['object_type']`
-    and `IAdtWhereUsedScopeParamsOf<V>['object_type']`, gain both codes, as
-    `IGetWhereUsedParams['object_type']` and
-    `IGetWhereUsedScopeParams['object_type']` (default `AdtTypeCode`) do.
+  - Where-used, per code as measured: `AdtWhereUsedCode<'onprem'>`, so
+    `IAdtWhereUsedParamsOf<'onprem'>['object_type']` and
+    `IAdtWhereUsedScopeParamsOf<'onprem'>['object_type']`, gain `'PROG/PX'`,
+    as the untyped `IGetWhereUsedParams['object_type']` and
+    `IGetWhereUsedScopeParams['object_type']` do. `CLAS/OCX` is in none of
+    them (SAP serves no where-used for it, measured), and on `cloud` and the
+    default `'onprem' | 'cloud'` they are unchanged (`PROG/PX` there is not
+    measured).
   - References and answers: `IObjectReference['type']` (default
     `AdtTypeCode`), `IAdtCodedReference<AdtTypeCode>['type']` and
     `IAdtCodedReference<AdtCodeOf<V>>['type']`, and the known-code branch of
@@ -108,6 +112,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     `{ name, type: 'PROG/PX', uri: '/sap/bc/adt/textelements/programs/{name}' }`
     — beside the object's. Measured on premise for a program and on the cloud
     for a class; each other pairing is `measured: false`.
+  - Where-used follows SAP, per code (measured read-only, 2026-11-19; Code:
+    `CL_RIS_ADT_RES_REFERENCES`, which refuses no type and answers `200` with
+    "Where-Used List is not supported for &1" and no result where it serves
+    none): `PROG/PX` is served on premise — the scope offers `PROG/P` and
+    `PROG/PS` — and a function group's text elements resolve to it;
+    `CLAS/OCX` is served nowhere ("… not supported for Text Element:
+    Class."), so `AdtWhereUsedCode` and the untyped where-used parameters
+    leave it out; `PROG/PX` on the cloud is not measured and left out there.
+    All of them stay in the group activation.
   - `ITextElementsConfig`, `ITextElementsPartConfig` and
     `ITextElementsUpdateConfig` keep `objectKind` (and `part`) `readonly`: a
     built config cannot be re-kinded.
