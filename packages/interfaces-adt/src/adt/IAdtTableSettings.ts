@@ -393,7 +393,9 @@ type TableSettingsChangeFields<W extends AdtModernVariant> = {
 /**
  * What a patch changes on variant `V`: at least one setting — `{}`,
  * `{ buffering: {} }` and `{ translation: {} }` do not compile. Every setting
- * not named keeps the value read. The fields are optional without
+ * not named keeps the value read, with one exception SAP makes: when the
+ * resulting buffering type is not `G`, SAP clears the area-key count (see
+ * {@link IAdtTableSettingsPatchable}). The fields are optional without
  * `| undefined`: under `exactOptionalPropertyTypes` an explicit `undefined`
  * does not compile; an implementation treats a field set to `undefined` by a
  * caller without that flag as not named (the value read is kept).
@@ -410,7 +412,9 @@ export type ITableSettingsChanges = ITableSettingsChangesOf;
 
 /**
  * What a patch takes: the table, and the settings to change. The description
- * is the one read; every setting not named keeps the value read.
+ * is the one read; every setting not named keeps the value read, except the
+ * area-key count when the resulting buffering type is not `G` (see
+ * {@link IAdtTableSettingsPatchable}).
  */
 export interface ITableSettingsPatchConfig<
   V extends AdtModernVariant = AdtModernVariant,
