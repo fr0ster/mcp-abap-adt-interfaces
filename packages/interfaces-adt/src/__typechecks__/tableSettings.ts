@@ -18,8 +18,14 @@ import {
   type ITableSettings,
   type ITableSettingsConfig,
   type ITableSettingsUpdateConfig,
+  type KnownTableBufferingAllowed,
+  type KnownTableBufferingType,
   type KnownTableDataClass,
+  type KnownTableSizeCategory,
+  TABLE_BUFFERING_ALLOWED,
+  TABLE_BUFFERING_TYPES,
   TABLE_DATA_CLASSES,
+  TABLE_SIZE_CATEGORIES,
 } from '../adt/IAdtTableSettings';
 
 declare const handler: IAdtMetadataReadable<ITableSettingsConfig, string> &
@@ -77,6 +83,24 @@ void _customerDataClass;
 const _known: KnownTableDataClass = TABLE_DATA_CLASSES[1];
 const _knownIsAClass: ITableSettings['dataClassCategory'] = _known;
 void _knownIsAClass;
+
+// A size category and the buffering codes are not limited to SAP's standard
+// domain values either: the known ones are constants, the fields strings.
+const _otherCodes: ITableSettings = {
+  dataClassCategory: 'APPL0',
+  sizeCategory: '10',
+  buffering: { allowed: 'Y', type: 'Z' },
+};
+void _otherCodes;
+const _knownSize: KnownTableSizeCategory = TABLE_SIZE_CATEGORIES[0];
+const _knownAllowed: KnownTableBufferingAllowed = TABLE_BUFFERING_ALLOWED[0];
+const _knownType: KnownTableBufferingType = TABLE_BUFFERING_TYPES[0];
+const _knownCodes: ITableSettings = {
+  dataClassCategory: _known,
+  sizeCategory: _knownSize,
+  buffering: { allowed: _knownAllowed, type: _knownType },
+};
+void _knownCodes;
 
 const _numericSize: ITableSettings = {
   dataClassCategory: 'APPL0',

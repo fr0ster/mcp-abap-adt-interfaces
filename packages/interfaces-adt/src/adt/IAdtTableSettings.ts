@@ -49,40 +49,66 @@ export const TABLE_DATA_CLASSES = [
 export type KnownTableDataClass = (typeof TABLE_DATA_CLASSES)[number];
 
 /**
- * A size category (`TABKAT`), SAP's fixed values `0` to `9`. Written as the
- * document carries it (`<ts:sizeCategory>0</ts:sizeCategory>`, measured): a
- * code, so a string.
+ * Size categories (`TABKAT`): `0` to `9`. **SAP's standard domain values, not
+ * measured** — the size value help answered no entries without a table's
+ * context. Written as the document carries it
+ * (`<ts:sizeCategory>0</ts:sizeCategory>`, measured): a code, so a string.
+ *
+ * For discovery, not a limit: {@link ITableSettings.sizeCategory} is a
+ * `string`.
  */
-export type TableSizeCategory =
-  | '0'
-  | '1'
-  | '2'
-  | '3'
-  | '4'
-  | '5'
-  | '6'
-  | '7'
-  | '8'
-  | '9';
+export const TABLE_SIZE_CATEGORIES = [
+  '0',
+  '1',
+  '2',
+  '3',
+  '4',
+  '5',
+  '6',
+  '7',
+  '8',
+  '9',
+] as const;
+
+/** One of {@link TABLE_SIZE_CATEGORIES}. */
+export type KnownTableSizeCategory = (typeof TABLE_SIZE_CATEGORIES)[number];
 
 /**
  * Whether the table may be buffered (`BUFALLOW`): `N` not allowed, `X`
- * allowed, `A` allowed but switched off. SAP writes a blank as `N`
- * (`CL_TABT_WB_PERSIST`); this type has no blank, so the caller says which.
+ * allowed, `A` allowed but switched off. **SAP's standard domain values, not
+ * measured** — only `N` was read. SAP writes a blank as `N`
+ * (`CL_TABT_WB_PERSIST`).
+ *
+ * For discovery, not a limit: {@link ITableBuffering.allowed} is a `string`.
  */
-export type TableBufferingAllowed = 'N' | 'X' | 'A';
+export const TABLE_BUFFERING_ALLOWED = ['N', 'X', 'A'] as const;
+
+/** One of {@link TABLE_BUFFERING_ALLOWED}. */
+export type KnownTableBufferingAllowed =
+  (typeof TABLE_BUFFERING_ALLOWED)[number];
 
 /**
- * The buffering type (`PUFFERUNG`): `P` single records, `G` generic area,
- * `X` full. SAP reads {@link ITableBuffering.areaKeyFields} only for `G`.
+ * Buffering types (`PUFFERUNG`): `P` single records, `G` generic area, `X`
+ * full. **SAP's standard domain values, not measured** — only the empty one
+ * (no buffering) was read. SAP reads {@link ITableBuffering.areaKeyFields}
+ * only for `G`.
+ *
+ * For discovery, not a limit: {@link ITableBuffering.type} is a `string`.
  */
-export type TableBufferingType = 'P' | 'G' | 'X';
+export const TABLE_BUFFERING_TYPES = ['P', 'G', 'X'] as const;
+
+/** One of {@link TABLE_BUFFERING_TYPES}. */
+export type KnownTableBufferingType = (typeof TABLE_BUFFERING_TYPES)[number];
 
 /** The `ts:buffering` group. */
 export interface ITableBuffering {
-  readonly allowed: TableBufferingAllowed;
-  /** Absent: the element is not sent, and SAP writes no buffering type. */
-  readonly type?: TableBufferingType | undefined;
+  /** One of {@link TABLE_BUFFERING_ALLOWED}, or another the system knows. */
+  readonly allowed: string;
+  /**
+   * One of {@link TABLE_BUFFERING_TYPES}, or another the system knows.
+   * Absent: the element is not sent, and SAP writes no buffering type.
+   */
+  readonly type?: string | undefined;
   /**
    * The number of key fields of a generic area (`SCHFELDANZ`); a count, so a
    * number. SAP writes it only with type `G`.
@@ -110,7 +136,8 @@ export interface ITableSettings {
    * class the system defines.
    */
   readonly dataClassCategory: string;
-  readonly sizeCategory: TableSizeCategory;
+  /** One of {@link TABLE_SIZE_CATEGORIES}, or another the system knows. */
+  readonly sizeCategory: string;
   readonly buffering: ITableBuffering;
   /** `ROWORCOLST`: `C` (column store) on the systems read. */
   readonly storageType?: string | undefined;
