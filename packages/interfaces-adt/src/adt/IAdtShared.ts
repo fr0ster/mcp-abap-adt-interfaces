@@ -136,10 +136,43 @@ export interface IGetDiscoveryParams {
 }
 
 /**
+ * The text elements' codes where-used does not serve, per variant — measured
+ * 2026-11-19, read-only. SAP's handler (`CL_RIS_ADT_RES_REFERENCES`) resolves
+ * any URI and refuses no type: for a type the RIS metadata names no
+ * referencing types for, it answers `200` with no result and "Where-Used List
+ * is not supported for &1" (Code). So:
+ *
+ * - `CLAS/OCX`: not served, on premise and on the cloud — "Where-Used List is
+ *   not supported for Text Element: Class." (measured on both);
+ * - `PROG/PX`: served on premise — `/sap/bc/adt/textelements/programs/{name}`
+ *   resolves to `PROG/PX`, and the scope offers `PROG/P` and `PROG/PS`
+ *   (measured); a function group's text elements resolve to `PROG/PX` too
+ *   (measured), so they are found through it. On the cloud not measured, so
+ *   left out there.
+ */
+interface ITextElementsWhereUsedRefused {
+  readonly onprem: 'CLAS/OCX';
+  readonly cloud: 'CLAS/OCX' | 'PROG/PX';
+  readonly basis740: never;
+}
+
+/** The codes of {@link ITextElementsWhereUsedRefused} on any variant of `V`. */
+type TextElementsWhereUsedRefused<V extends AdtVariant> = {
+  [W in V]: ITextElementsWhereUsedRefused[W];
+}[V];
+
+/**
+ * The codes an untyped where-used parameter may name: every code but
+ * `CLAS/OCX`, which no system serves (measured, see
+ * {@link ITextElementsWhereUsedRefused}).
+ */
+type WhereUsedTypeCode = Exclude<AdtTypeCode, 'CLAS/OCX'>;
+
+/**
  * Where-used scope parameters (Step 1: get available object types)
  */
 export interface IGetWhereUsedScopeParams<
-  C extends AdtTypeCode | AdtGroupOnlyCode = AdtTypeCode,
+  C extends WhereUsedTypeCode | AdtGroupOnlyCode = WhereUsedTypeCode,
 > {
   object_name: string;
   object_type: C;
@@ -149,7 +182,7 @@ export interface IGetWhereUsedScopeParams<
  * Where-used parameters (Step 2: execute search)
  */
 export interface IGetWhereUsedParams<
-  C extends AdtTypeCode | AdtGroupOnlyCode = AdtTypeCode,
+  C extends WhereUsedTypeCode | AdtGroupOnlyCode = WhereUsedTypeCode,
 > {
   object_name: string;
   object_type: C;
@@ -212,12 +245,17 @@ export type AdtGroupDeletionCode<V extends AdtVariant = AdtModernVariant> =
 
 /**
  * The codes where-used is asked of: every code of `V` but a function include,
- * whose group the where-used request has no field for, and a message class
- * message, which has no address of its own; and the utility codes listing
- * `whereUsed` (`VIEW/DV`).
+ * whose group the where-used request has no field for, a message class
+ * message, which has no address of its own, and the text elements' codes SAP
+ * does not serve there ({@link ITextElementsWhereUsedRefused}: `CLAS/OCX`
+ * everywhere, `PROG/PX` on the cloud, measured); and the utility codes
+ * listing `whereUsed` (`VIEW/DV`).
  */
 export type AdtWhereUsedCode<V extends AdtVariant = AdtModernVariant> =
-  | Exclude<AdtCodeOf<V>, 'FUGR/I' | 'MSAG/NN'>
+  | Exclude<
+      AdtCodeOf<V>,
+      'FUGR/I' | 'MSAG/NN' | TextElementsWhereUsedRefused<V>
+    >
   | AdtUtilityCodeWith<V, 'whereUsed'>;
 
 /**

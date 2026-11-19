@@ -11,7 +11,13 @@ import type { IAdtLockable } from '../adt/IAdtCapabilities';
 import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type { IAnalyse } from '../adt/IAdtObject';
 import type { IAdtError } from '../adt/IAdtResponse';
-import type { IAdtGroupActivationReference } from '../adt/IAdtShared';
+import type {
+  IAdtGroupActivationReference,
+  IAdtWhereUsedParamsOf,
+  IAdtWhereUsedScopeParamsOf,
+  IGetWhereUsedParams,
+  IGetWhereUsedScopeParams,
+} from '../adt/IAdtShared';
 import type {
   IAdtTextElementsReadable,
   IAdtTextElementsUpdatable,
@@ -347,3 +353,79 @@ const _noDdicFlag: ISelectionText = { name: 'P_X', text: 'x' };
 void _noDdicFlag;
 const _limit: 30 = SELECTION_TEXT_MAX_LENGTH;
 void _limit;
+
+// ── Where-used, per code, as measured ─────────────────────────────────────
+
+// A program's text elements: served on premise (the scope offers PROG/P, PROG/PS).
+const _programTextsOnPrem: IAdtWhereUsedParamsOf<'onprem'> = {
+  object_name: 'RSPARAM',
+  object_type: 'PROG/PX',
+};
+void _programTextsOnPrem;
+const _programTextsScope: IAdtWhereUsedScopeParamsOf<'onprem'> = {
+  object_name: 'RSPARAM',
+  object_type: 'PROG/PX',
+};
+void _programTextsScope;
+const _programTextsUntyped: IGetWhereUsedParams = {
+  object_name: 'RSPARAM',
+  object_type: 'PROG/PX',
+};
+void _programTextsUntyped;
+const _programTextsCloud: IAdtWhereUsedParamsOf<'cloud'> = {
+  object_name: 'ZFG',
+  // @ts-expect-error on the cloud a program text's where-used is not measured
+  object_type: 'PROG/PX',
+};
+void _programTextsCloud;
+const _classTextsOnPrem: IAdtWhereUsedParamsOf<'onprem'> = {
+  object_name: 'ZCL_X',
+  // @ts-expect-error "Where-Used List is not supported for Text Element: Class."
+  object_type: 'CLAS/OCX',
+};
+void _classTextsOnPrem;
+const _classTextsCloudScope: IAdtWhereUsedScopeParamsOf<'cloud'> = {
+  object_name: 'ZCL_X',
+  // @ts-expect-error not on the cloud either
+  object_type: 'CLAS/OCX',
+};
+void _classTextsCloudScope;
+const _classTextsUntyped: IGetWhereUsedScopeParams = {
+  object_name: 'ZCL_X',
+  // @ts-expect-error nor through the untyped default
+  object_type: 'CLAS/OCX',
+};
+void _classTextsUntyped;
+// @ts-expect-error nor named as the parameter
+type _ClassTextsExplicit = IGetWhereUsedParams<'CLAS/OCX'>;
+const _functionGroupTexts: IAdtWhereUsedParamsOf<'onprem'> = {
+  object_name: 'ZFG',
+  // @ts-expect-error FUGR/PX is no where-used type: a group's text elements resolve to PROG/PX
+  object_type: 'FUGR/PX',
+};
+void _functionGroupTexts;
+// Every one of them still activates beside its object.
+const _activations: IAdtGroupActivationReference<'onprem'>[] = [
+  {
+    name: 'ZPROG',
+    type: 'PROG/PX',
+    uri: '/sap/bc/adt/textelements/programs/zprog',
+  },
+  {
+    name: 'ZCL_X',
+    type: 'CLAS/OCX',
+    uri: '/sap/bc/adt/textelements/classes/zcl_x',
+  },
+  {
+    name: 'ZFG',
+    type: 'PROG/PX',
+    uri: '/sap/bc/adt/textelements/functiongroups/zfg',
+  },
+];
+void _activations;
+const _cloudActivation: IAdtGroupActivationReference<'cloud'> = {
+  name: 'ZCL_X',
+  type: 'CLAS/OCX',
+  uri: '/sap/bc/adt/textelements/classes/zcl_x',
+};
+void _cloudActivation;
