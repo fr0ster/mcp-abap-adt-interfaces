@@ -26,7 +26,9 @@ import type {
   TextElementsObjectKind,
   TextElementsPart,
   TextElementsPartOf,
+  TextElementsReadVersion,
 } from '../adt/IAdtTextElements';
+import type { AdtReadVersion } from '../shared/IReadOptions';
 
 declare const handler: IAdtTextElementsReadable<string> &
   IAdtLockable<ITextElementsConfig, 'objectKind' | 'objectName'> &
@@ -54,6 +56,7 @@ export type Vocabularies = [
   Assert<Equal<TextElementsPartOf<'class'>, 'symbols'>>,
   Assert<Equal<TextElementsPartOf<'program'>, TextElementsPart>>,
   Assert<Equal<TextElementsPartOf<'functionGroup'>, TextElementsPart>>,
+  Assert<Equal<TextElementsReadVersion, AdtReadVersion>>,
 ];
 
 // ── Reading: the object and the part ───────────────────────────────────────
@@ -79,10 +82,15 @@ void handler.read({
   part: 'headings',
 });
 
+// Every version SAP's handler maps, the one Eclipse sends included.
+void handler.read(
+  { objectKind: 'program', objectName: 'ZPROG', part: 'selections' },
+  'workingArea',
+);
 void handler.read(
   { objectKind: 'program', objectName: 'ZPROG', part: 'symbols' },
-  // @ts-expect-error the working area is SAP's default, never sent as a value
-  'workingArea',
+  // @ts-expect-error a version is one of the three SAP maps
+  'newest',
 );
 
 // @ts-expect-error a read names its part

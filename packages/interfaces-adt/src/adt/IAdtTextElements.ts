@@ -51,6 +51,7 @@
  * Types and constants only.
  */
 
+import type { AdtReadVersion } from '../shared/IReadOptions';
 import type { IAdtHeaders } from './IAdtContentTypes';
 import type {
   IAdtAnalyseOptions,
@@ -101,12 +102,23 @@ export type TextElementsPartOf<K extends TextElementsObjectKind> =
   ITextElementsPartsByKind[K];
 
 /**
- * The version a read asks for (`?version=`). Absent: SAP's default, the
- * working area — the inactive save when there is one, else the active texts
- * (measured: a read straight after a write answers the write, before any
- * activation). `workingArea` as a value was never sent, so it is not offered.
+ * The version a read asks for (`?version=`): every value SAP's handler maps
+ * (`CL_SEDX_ADT_RES_TEXTELEMENT`, `cl_adt_utility=>get_wb_version`, Code).
+ *
+ * - absent: the working area — the inactive version when it is the user's own
+ *   inactive item, else the active one (Code); a read straight after a write
+ *   answers the write (measured on premise and on the cloud);
+ * - `inactive`: the inactive version (measured on premise and on the cloud);
+ *   when there is none, SAP answers the active one (Code);
+ * - `active`: the active version (Code; not yet measured);
+ * - `workingArea`: the working area, the value Eclipse sends (seen in Eclipse's
+ *   requests; the handler maps it through `get_wb_version`, Code; not yet
+ *   measured here).
+ *
+ * A value outside these is not refused by SAP: it falls back to the working
+ * area (Code). The contract offers only the three.
  */
-export type TextElementsReadVersion = 'active' | 'inactive';
+export type TextElementsReadVersion = AdtReadVersion;
 
 /**
  * One text symbol: a line `KEY=text` after its `@MaxLength:N` line.
@@ -250,7 +262,8 @@ export interface IAdtTextElementsReadable<TSource> {
    * Read one part.
    *
    * @param config - the object and the part
-   * @param version - `active` or `inactive`; absent, SAP's working area
+   * @param version - `active`, `inactive` or `workingArea`; absent, SAP's
+   *                  working area
    * @returns whatever this implementation's reading makes of the answer
    */
   read<E extends IAdtError>(
