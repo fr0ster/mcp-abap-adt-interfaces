@@ -168,9 +168,12 @@ export type TextElementsReadVersion = AdtReadVersion;
  */
 export interface ITextSymbol {
   /**
-   * The symbol's key: up to three characters (`001`, `R01`); SAP upper-cases
-   * it and refuses a longer one (Code: `CL_SEDX_ADT_SRC_UTIL`,
-   * `map_source_to_textpool_data`, `SEDX_ADT/102`).
+   * The symbol's key: exactly {@link TEXT_SYMBOL_KEY_LENGTH} characters
+   * (`001`, `R01`, `0#1`); a longer one (`0001`) refuses the whole write,
+   * `406` `SEDX_ADT/106` "Cannot parse the source code" (measured on premise;
+   * Code: `CL_SEDX_ADT_SRC_UTIL=>map_source_to_textpool_data` reads a symbol
+   * line only with `=` within its first four characters). SAP upper-cases it
+   * (Code: `map_text_elements_to_source`).
    */
   readonly key: string;
   /** The text, everything after the first `=`. */
