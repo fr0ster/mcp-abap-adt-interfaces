@@ -305,6 +305,29 @@ export type {
   TableTypeRowKind,
 } from './adt/IAdtTableType';
 export type {
+  IAdtTextElementsReadable,
+  IAdtTextElementsReadOptions,
+  IAdtTextElementsUpdatable,
+  IAdtTextElementsUpdateOptions,
+  ISelectionText,
+  ITextElementsConfig,
+  ITextElementsPartConfig,
+  ITextElementsPartsByKind,
+  ITextElementsResults,
+  ITextElementsUpdateConfig,
+  ITextHeadings,
+  ITextSymbol,
+  TextElementsDocument,
+  TextElementsObjectKind,
+  TextElementsPart,
+  TextElementsPartOf,
+  TextElementsReadVersion,
+} from './adt/IAdtTextElements';
+export {
+  TEXT_ELEMENTS_OBJECT_KINDS,
+  TEXT_ELEMENTS_PARTS,
+} from './adt/IAdtTextElements';
+export type {
   ITransformationConfig,
   ITransformationResults,
   TransformationType,
