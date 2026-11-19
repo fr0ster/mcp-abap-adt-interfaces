@@ -676,7 +676,11 @@ does not serve the collection, and its table has no entry.
   attribute SAP stores; `isWritableByAMDP` on the cloud only — and, under the
   caller's `lockHandle`, reads the working area with its ETag, overlays the
   changes, and writes the whole document with `If-Match`. Every setting not
-  named keeps the value read. Its headers name the media type alone
+  named keeps the value read — with one exception: when the resulting
+  buffering type is not `G` (a type-only change from `G` to `P`, say), SAP
+  clears the area-key count, since it writes `SCHFELDANZ` only for `G`
+  (`move_adt_to_ddv`, Code on both). The patch does not block that change:
+  the count means nothing for the other types. Its headers name the media type alone
   (`IAdtTableSettingsPatchHeaders`): the implementation sends the PUT's
   `Content-Type` without a charset (`headers.accept` is the literal
   `TABLE_SETTINGS_MEDIA_TYPE`), so no caller's charset reaches the guarded
