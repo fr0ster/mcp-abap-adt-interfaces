@@ -505,8 +505,9 @@ does not serve the collection, and its table has no entry.
   refuse a `source` and require the `lockHandle`.
 - **An update replaces every setting: read, change, write back.** SAP writes
   the whole DD09L row from the document and resets a field it leaves out, so
-  every field the document carries is required; the cloud's
-  `isWritableByAMDP` is optional and sent when given.
+  every field the document carries is required. `isWritableByAMDP` is
+  returned by cloud and not written by this contract (unmeasured): it is on
+  `ITableSettingsRead`, the read result, and a write refuses it.
 - **The sequence is the caller's, and its order keeps a concurrent edit:**
   1. `lock` (stateful) — the settings' own lock;
   2. `readMetadata` under the lock — what the settings are now, after any edit

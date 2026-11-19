@@ -5,7 +5,7 @@
 // `IAdtTableSettingsUpdatable`, whose body is the config and never a
 // `source`. An update replaces every setting, so every field the document
 // carries is required; a code is any the system defines; the cloud's
-// `isWritableByAMDP` is optional and takes `undefined`.
+// `isWritableByAMDP` is on the read result only, and a write refuses it.
 
 import type {
   IAdtLockable,
@@ -19,6 +19,7 @@ import {
   type IAdtTableSettingsUpdateOptions,
   type ITableSettings,
   type ITableSettingsConfig,
+  type ITableSettingsRead,
   type ITableSettingsUpdateConfig,
   type KnownTableBufferingAllowed,
   type KnownTableBufferingType,
@@ -168,12 +169,40 @@ void handler.updateMetadata(
   { headers, analyse },
 );
 
-// ── The cloud's `isWritableByAMDP` is optional and takes `undefined` ───────
+// ── `isWritableByAMDP`: returned by cloud, not written by this contract ────
 
-const _cloud: ITableSettings = { ...settings, isWritableByAMDP: false };
-const _notGiven: ITableSettings = { ...settings, isWritableByAMDP: undefined };
-void _cloud;
-void _notGiven;
+const _cloudRead: ITableSettingsRead = { ...settings, isWritableByAMDP: false };
+const _onPremiseRead: ITableSettingsRead = {
+  ...settings,
+  isWritableByAMDP: undefined,
+};
+void _onPremiseRead;
+
+const _writeLiteral: ITableSettingsUpdateConfig = {
+  tableName: 'ZTABLE',
+  description: 'A table',
+  // @ts-expect-error a write does not carry isWritableByAMDP
+  settings: { ...settings, isWritableByAMDP: false },
+};
+void _writeLiteral;
+
+const _writeRead: ITableSettingsUpdateConfig = {
+  tableName: 'ZTABLE',
+  description: 'A table',
+  // @ts-expect-error nor through a read result passed back as it is
+  settings: _cloudRead,
+};
+void _writeRead;
+
+// Read, change, write back: what only a read returns is dropped first.
+const { isWritableByAMDP: _dropped, ...readBack } = _cloudRead;
+void _dropped;
+const _writeBack: ITableSettingsUpdateConfig = {
+  tableName: 'ZTABLE',
+  description: 'A table',
+  settings: { ...readBack, dataClassCategory: 'APPL1' },
+};
+void _writeBack;
 
 const _options: IAdtTableSettingsUpdateOptions = {
   lockHandle: 'HANDLE',

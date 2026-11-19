@@ -506,6 +506,7 @@
   "ITableResults": "interfaces-adt",
   "ITableSettings": "interfaces-adt",
   "ITableSettingsConfig": "interfaces-adt",
+  "ITableSettingsRead": "interfaces-adt",
   "ITableSettingsResults": "interfaces-adt",
   "ITableSettingsUpdateConfig": "interfaces-adt",
   "ITableTypeConfig": "interfaces-adt",

@@ -129,9 +129,10 @@ export interface ITableBuffering {
  * required: a caller reads the settings, changes what it means to change, and
  * writes the whole set back. This library chooses no value for the caller.
  *
- * `isWritableByAMDP` is the cloud's alone (the on-premise transformation does
- * not know it): optional, and sent only when given. `supportsLoggingAssessment`
- * is not here: SAP computes it on every read.
+ * Not here: `isWritableByAMDP`, returned by the cloud and not written by this
+ * contract (unmeasured; the on-premise transformation does not define it) —
+ * it is on {@link ITableSettingsRead}; and `supportsLoggingAssessment`, which
+ * SAP computes on every read.
  */
 export interface ITableSettings {
   /**
@@ -152,7 +153,23 @@ export interface ITableSettings {
   readonly translation: string;
   /** `PROTOKOLL`: log data changes. */
   readonly loggingEnabled: boolean;
-  /** The cloud's `ts:isWritableByAMDP`; absent, the element is not sent. */
+}
+
+/**
+ * The settings as a read answers them: every field a write carries, and what
+ * only a read returns. The shape a reading strategy that parses the document
+ * answers; the shipped default answers the document as it arrived.
+ *
+ * Writing it back takes {@link ITableSettings}: drop what only a read returns
+ * first (`const { isWritableByAMDP, ...settings } = read`), since the write
+ * refuses it.
+ */
+export interface ITableSettingsRead extends ITableSettings {
+  /**
+   * The cloud's `ts:isWritableByAMDP`. Returned by cloud; not written by this
+   * contract (unmeasured). Absent on premise, whose transformation does not
+   * define it.
+   */
   readonly isWritableByAMDP?: boolean | undefined;
 }
 
@@ -178,7 +195,11 @@ export interface ITableSettingsConfig {
  */
 export interface ITableSettingsUpdateConfig extends ITableSettingsConfig {
   description: string;
-  settings: ITableSettings;
+  /**
+   * Every setting the write carries. `isWritableByAMDP` is refused, for a
+   * variable as well as a literal: this contract does not write it.
+   */
+  settings: ITableSettings & { readonly isWritableByAMDP?: never };
 }
 
 /**

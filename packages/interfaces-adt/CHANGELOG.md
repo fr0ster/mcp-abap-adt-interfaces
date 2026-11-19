@@ -41,8 +41,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     document leaves out, so every field the document carries is required:
     `dataClassCategory`, `sizeCategory`, `buffering` (`ITableBuffering`:
     `allowed`, `type`, `areaKeyFields`), `storageType`, `sharingType`,
-    `loadUnit`, `translation`, `loggingEnabled`. The cloud-only
-    `isWritableByAMDP` is optional and sent when given.
+    `loadUnit`, `translation`, `loggingEnabled`. A write refuses
+    `isWritableByAMDP`.
+  - `ITableSettingsRead`: the settings as a read answers them, with the
+    optional `isWritableByAMDP` — returned by cloud; not written by this
+    contract (unmeasured; the on-premise transformation does not define it).
   - The codes are strings, since a system may define its own (customer data
     classes `USER`, `USER1`, …). The known values are constants for
     discovery, not limits: `TABLE_DATA_CLASSES` / `KnownTableDataClass` — the
