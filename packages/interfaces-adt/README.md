@@ -492,8 +492,9 @@ selection texts, list and column headings — are a resource of their own,
 `/sap/bc/adt/textelements/{programs|classes|functiongroups}/{name}`, one
 sub-resource per part (`…/source/symbols`, `…/source/selections`,
 `…/source/headings`), each with its media type
-`application/vnd.sap.adt.textelements.{part}.v1` (SAP answers HTML to any other
-`Accept`), and under their own lock — lock class `TEXT`, taken on the text
+`application/vnd.sap.adt.textelements.{part}.v1` (with that `Accept` SAP
+answers the part's text; with `*/*`, and with `{part media type}, text/plain,
+*/*`, it answered an HTML page, measured on premise), and under their own lock — lock class `TEXT`, taken on the text
 elements' address, which the program's or the class's lock does not cover. So
 they are not part of `IProgramConfig` or `IClassConfig`, and the tables list
 them as the API `textElements` (kind `text_elements`): `PROG/PX` under
@@ -525,7 +526,8 @@ and its table has no entry. Read and written on premise and on the cloud,
   SAP reads the value case-insensitively, and an unknown or empty value
   answers the working area (measured on premise). On the cloud every value is
   accepted and none distinguished (no inactive version existed, measured
-  read-only). The answer is the part's text, CR LF between lines:
+  read-only). The answer is the part's text, CR LF between lines (measured on
+  premise and on the cloud):
   - symbols: `@MaxLength:20`, then `001=Text`, one empty line between symbols;
   - selections: every parameter and select option of the program, sorted by
     name, the name upper case and padded to eight (`P_TEST  =Text`), an empty
@@ -539,8 +541,8 @@ and its table has no entry. Read and written on premise and on the cloud,
     `columnHeader_4=…` — all five, an empty one as `columnHeader_4=`; a write
     deletes a heading sent empty or left out (measured).
   The keys, measured and in SAP's handlers, are constants for a caller (the
-  contract checks none): `TEXT_SYMBOL_KEY_LENGTH` (exactly 3; a longer key
-  `406` `SEDX_ADT/106`), `SELECTION_TEXT_NAME_MAX_LENGTH` (8; `406`
+  contract checks none): `TEXT_SYMBOL_KEY_MAX_LENGTH` (3 accepted, `0#1` and
+  `AB1` included; 4 refused `406` `SEDX_ADT/106`; shorter not measured), `SELECTION_TEXT_NAME_MAX_LENGTH` (8; `406`
   `SEDX_ADT/102`; an unknown name is stored, not checked against the screen),
   `TEXT_HEADING_KEYS` / `TextHeadingKey` (any other key `406`
   `SEDX_ADT/101`).
@@ -596,8 +598,9 @@ and its table has no entry. Read and written on premise and on the cloud,
     `'functionGroup'` (required; no other code takes one), and the address is
     derived from it: `/sap/bc/adt/textelements/programs/{name}` or
     `…/functiongroups/{name}`.
-  - `CLAS/OCX`: not served, on premise or on the cloud ("Where-Used List is
-    not supported for Text Element: Class."), so no where-used parameter
+  - `CLAS/OCX`: not served on the on-premise and cloud systems measured
+    ("Where-Used List is not supported for Text Element: Class."; the answer
+    depends on the system's RIS metadata, Code), so no where-used parameter
     takes it.
   - A part's address (`…/source/symbols`) is not served.
 - **On the cloud** the lock answers `MODIFICATION_SUPPORT=NoModification`, and
@@ -715,7 +718,7 @@ mean the same. The CHANGELOG lists each type;
     `onprem`, `cloud` and the default `'onprem' | 'cloud'`, as the untyped
     `IGetWhereUsedParams['object_type']` and
     `IGetWhereUsedScopeParams['object_type']` do. `CLAS/OCX` is in none of
-    them: SAP serves no where-used for it (measured).
+    them: the systems measured serve no where-used for it.
   - **`PROG/PX` names its container in a where-used.** `IGetWhereUsedParams`
     and `IGetWhereUsedScopeParams` (and so `IAdtWhereUsedParamsOf<V>` /
     `IAdtWhereUsedScopeParamsOf<V>`) are type aliases now, not interfaces:
@@ -734,6 +737,12 @@ mean the same. The CHANGELOG lists each type;
       a conditional over `C`): use a type alias with `&`
       (`type X<C extends …> = IGetWhereUsedParams<C> & { … }`), or extend a
       single code's params (`IGetWhereUsedParams<'PROG/P'>` still does);
+    - a builder typed by the union — `(code: AdtWhereUsedCode<V>):
+      IAdtWhereUsedParamsOf<V> => ({ object_name, object_type: code })`,
+      generic in `V` or for one variant — no longer compiles (`TS2322`): the
+      code may be `PROG/PX`, which needs its `container`. Exclude it from the
+      input (`code: Exclude<AdtWhereUsedCode<V>, 'PROG/PX'>`), or handle it
+      apart (`code === 'PROG/PX' ? { …, container } : { … }`);
     - a value of another code that carries a `container` of its own — say
       `{ object_type: 'PROG/P', container: string }` built for a consumer's
       own use — no longer passes as where-used parameters, on every variant
