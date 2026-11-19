@@ -3315,6 +3315,42 @@ follow, or a consumer needing to send a document this type cannot state —
 then `options.source` beside a builder in the implementation, as decision 32
 has it.
 
+## 50. Text elements are written from a typed config, one part at a time
+
+**Decided 2026-11-19, in `interfaces-adt` 30.0.0.** The exception of
+decision 49, for a second resource; it reopens neither 32 nor 33.
+
+**The problem.** A program's, a class's or a function group's text elements
+(`/sap/bc/adt/textelements/{kind}/{name}/source/{symbols|selections|headings}`)
+are written one part at a time, and each write replaces the whole part: an
+entry the body leaves out is deleted (measured on premise and on the cloud,
+2026-11-19). The body is a line format of SAP's own (`@MaxLength:N` then
+`KEY=text`; `NAME=text`; `listHeader=…`, `columnHeader_1=…`), parsed by
+`CL_SEDX_ADT_SRC_UTIL` and refused as a whole on a line it does not read. A
+consumer writing that text by hand has nothing to tell it that a symbol lost
+its length line or that a heading is missing.
+
+**Decided.** `IAdtTextElementsUpdatable.update` takes
+`ITextElementsUpdateConfig` — the object, the part, and that part's whole
+list (`ITextSymbol[]`, `ISelectionText[]`, or `ITextHeadings` with every
+heading) — and the implementation builds the body from it. The options refuse
+a `source` and require the `lockHandle`, as decision 49's do. The parts an
+object has are in the type (`ITextElementsPartsByKind`: a class has symbols
+only), so a write to a part SAP does not serve does not compile — decision 29.
+Reading answers the part's text through the result strategy; the parsed shape
+is `TextElementsDocument`, which a write takes back as it is.
+
+**Against.** `IAdtUpdatable` with the text in `options.source`: the list
+format is SAP's and undocumented, and the deletion by omission is the
+caller's actual risk. And one write of all three parts: SAP has three
+resources and three PUTs, and a single member issuing three requests is not
+one endpoint (decision 16).
+
+**What would change it.** The same as decision 49: SAP changing the line
+format faster than this contract follows, or a consumer needing a line this
+type cannot state (a selection text taken from the dictionary, unmeasured) —
+then `options.source` beside the implementation's builder.
+
 ## Open, and what would settle it
 
 Not decisions. These are questions this repository has met and deliberately left
