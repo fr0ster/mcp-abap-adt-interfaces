@@ -3357,6 +3357,33 @@ format faster than this contract follows, or a consumer needing a line this
 type cannot state — then `options.source` beside the implementation's
 builder.
 
+## 51. A table settings patch reads and writes in one member
+
+**Decided 2026-11-19, in `interfaces-adt` 30.1.0.** An exception to decision
+16 for one member; it does not reopen it.
+
+**The problem.** A caller who means to change one setting — the data class,
+say — must send all of them: SAP writes every DD09L field from the document
+(`CL_TABT_WB_PERSIST->move_adt_to_ddv`, Code on both systems) and resets one
+the document leaves out (measured on both, 2026-11-19; on the cloud
+`isWritableByAMDP` among them). The three calls that keep the rest — read,
+overlay, write back with the read's ETag — are the same for every caller, and
+the overlay is where a field gets lost.
+
+**Decided.** `IAdtTableSettingsPatchable.patchMetadata` makes them one member:
+under the caller's lock, it reads the working area with its ETag, overlays
+`ITableSettingsChanges` (at least one setting, `buffering` and `translation`
+field by field), and writes the whole document guarded by `If-Match`. Two
+requests, one member. The lock and the activation stay the caller's, as for
+`updateMetadata`.
+
+**Against.** The caller's three calls, as decision 16 has it: every caller
+would repeat the overlay, and a field it forgot is reset on SAP's side.
+**`updateMetadata` alone** remains for a caller who holds every setting.
+
+**What would change it.** SAP accepting a partial settings document — then
+the patch is one PUT, and decision 16 holds again.
+
 ## Open, and what would settle it
 
 Not decisions. These are questions this repository has met and deliberately left
