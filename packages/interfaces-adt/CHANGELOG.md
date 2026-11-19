@@ -7,6 +7,72 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [28.0.0] - 2026-11-19
+
+### Breaking
+
+- **`AdtApiName`, `AdtTypeCode`, `AdtObjectKind`, `CodesOfMain<'TABL'>` and
+  the unions derived from the on-premise and cloud tables gain a member** —
+  `tableSettings`, `TABL/DTT` and `table_settings` (below).
+  A union that widens breaks an exhaustive map over it, so this is a major.
+
+### Migration
+
+- An exhaustive map over `AdtApiName` (`{ [A in AdtApiName]: … }`) adds
+  `tableSettings`; one over `AdtTypeCode` or `CodesOfMain<'TABL'>` adds
+  `'TABL/DTT'`; one over `AdtObjectKind` adds `'table_settings'`. The same
+  holds for every union derived from the tables for the on-premise and cloud
+  variants: `AdtApi<V>`, `AdtTypeCodeOf<V>`, `AdtCodeOf<V>`, and the
+  projections by operation — `AdtApiWith<V, Op>`, `AdtTypeCodeWith<V, Op>`,
+  `AdtCodeWith<V, Op>`, `AdtApiWithIn<T, Op>` — wherever `Op` is among
+  `readMetadata`, `updateMetadata`, `lock` and `unlock`. A map keyed by any of
+  them, or a `switch` relying on exhaustiveness over one, adds the member.
+
+### Added
+
+- **A table's technical settings, as a contract of their own**
+  (`src/adt/IAdtTableSettings.ts`). SAP keeps them at
+  `/sap/bc/adt/ddic/db/settings/{name}` (`TABL/DTT`, content type
+  `application/vnd.sap.adt.table.settings.v2+xml`), with their own ETag and
+  their own lock (ESDICT `TABT`); read on premise and on the cloud,
+  2026-11-19. They are not part of `ITableConfig` or `ITableResults`.
+  - `ITableSettingsConfig` (`tableName`, `transportRequest?`): what reading
+    and locking take.
+  - `ITableSettingsUpdateConfig`: the identity, `description` (required — SAP
+    refuses a write without it, 400 SWB_TOOL 019, measured on premise only)
+    and `settings: ITableSettings`.
+  - `ITableSettings`: **an update replaces every setting: read, change, write
+    back.** SAP's PUT writes the whole DD09L row and resets a field the
+    document leaves out, so every field the document carries is required:
+    `dataClassCategory`, `sizeCategory`, `buffering` (`ITableBuffering`:
+    `allowed`, `type`, `areaKeyFields`), `storageType`, `sharingType`,
+    `loadUnit`, `translation`, `loggingEnabled`. A write refuses
+    `isWritableByAMDP`.
+  - `ITableSettingsRead`: the settings as a read answers them, with the
+    optional `isWritableByAMDP` — returned by cloud; not written by this
+    contract (unmeasured; the on-premise transformation does not define it).
+  - The codes are strings, since a system may define its own (customer data
+    classes `USER`, `USER1`, …). The known values are constants for
+    discovery, not limits: `TABLE_DATA_CLASSES` / `KnownTableDataClass` — the
+    data class value help's six on S/4HANA 2025, measured;
+    `TABLE_SIZE_CATEGORIES` (`'0'`–`'9'`), `TABLE_BUFFERING_ALLOWED` (`N`,
+    `X`, `A`) and `TABLE_BUFFERING_TYPES` (`P`, `G`, `X`), with their
+    `Known…` types — SAP's standard domain values, not measured.
+  - `IAdtTableSettingsUpdatable<TMetadataUpdated>`: `updateMetadata(config,
+    options)`, one PUT, its body built from the config (decision 49).
+    `IAdtTableSettingsUpdateOptions` is `IAdtUpdateOptions` with `source?:
+    never` and `lockHandle` required, in both overloads. Reading is
+    `IAdtMetadataReadable`, the lock `IAdtLockable`.
+  - `ITableSettingsResults`: `metadata` and `metadataUpdated`.
+- **`tableSettings` in `ADT_TYPES_ONPREM` and `ADT_TYPES_CLOUD`**: kind
+  `table_settings`, collection `/sap/bc/adt/ddic/db/settings`, code `TABL/DTT`
+  (parent none, as `typestructure` lists it; names up to 16, the table's),
+  with `readMetadata`, `updateMetadata`, `lock` and `unlock`. No `activate`:
+  activating the table activates its settings — measured with the table's
+  reference (`TABL/DT`) alone; `TABL/DTT` alone was never activated.
+  SAP_BASIS 7.40's discovery has no such collection, so `ADT_TYPES_BASIS_740`
+  has no entry.
+
 ## [27.4.0] - 2026-11-12
 
 ### Changed

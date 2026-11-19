@@ -12,6 +12,7 @@ ADT contracts: object operations, runtime analysis, execution, feeds and service
 - Since 15.0.0 `skipCount` is gone from breakpoints (the server ignores it) and `clientId` pairs an answer row with its request. The CHANGELOG has the migration note.
 - Since 15.1.0 the plain class and program run take `debuggee` (`IDebuggeeIds`): the terminal id and IDE id a terminal-mode listener catches the run by.
 - Since 23.1.0 the ABAP Unit run registry: `ABAP_UNIT_RUN_TYPES`, every `osl:object type` value a run may name, what a run of it runs and on what evidence; `AbapUnitRunObjectType` (its keys), `AbapUnitRunTarget` (an object or a package) and the generic runner contract `IAbapUnitRunner`. Additions only. See "The ABAP Unit run registry".
+- Since 28.0.0 a table's technical settings (`TABL/DTT`, `tableSettings` in the on-premise and cloud tables) are their own contract: `ITableSettingsConfig`, `ITableSettingsUpdateConfig` with the full `ITableSettings`, the write atom `IAdtTableSettingsUpdatable` and `ITableSettingsResults`. A map over `AdtApiName`, `AdtTypeCode`, `AdtObjectKind`, `CodesOfMain<'TABL'>` or a union derived from the tables (`AdtApi<V>`, `AdtTypeCodeOf<V>`, `AdtApiWith<V, Op>`, …) adds the new member — the reason for the major. See "A table's technical settings" and "Migrating to 28.0.0".
 - Since 27.0.0 `IUtilResults` requires `objectActivation`, the reading of the new atom `IAdtObjectActivation` (`activateObjects`, the synchronous `POST /activation` for several objects); `activate` takes `IAdtActivationOptions` (`preauditRequested`); and `IAnalyse` takes an optional third parameter, `IAdtAnalyseContext`. See "Activation" and "Migrating to 27.0.0".
 - Since 25.2.0 `update` and `updateMetadata` take `IAdtUpdateOptions`: `IAdtOperationOptions` with `ifMatch`, the ETag a read answered, sent as `If-Match` so the system refuses a write over a changed document (`412`). Additions only.
 - Since 25.1.0 `IAtcResultsReadable` reads the ATC results the system holds: `listResults` (`IAtcResultListOptions`, `createdBy` required) and `getResult` by Display ID. Additions only.
@@ -482,6 +483,56 @@ error or a result built for 27.2.0 still conforms.
 `src/__typechecks__/sessionError.ts` and `src/__typechecks__/sessionLost.ts`
 hold these shapes.
 
+## A table's technical settings (28.0.0)
+
+A database table's technical settings — data class, size category,
+buffering, logging — are a resource of their own,
+`/sap/bc/adt/ddic/db/settings/{name}` (`TABL/DTT`, content type
+`application/vnd.sap.adt.table.settings.v2+xml`), with their own ETag and
+their own lock (ESDICT `TABT`, which the table's lock does not cover). So they
+are not part of `ITableConfig` or `ITableResults`, and the tables list them as
+the API `tableSettings` (kind `table_settings`) on S/4HANA and ABAP cloud,
+with `readMetadata`, `updateMetadata`, `lock` and `unlock`. SAP_BASIS 7.40
+does not serve the collection, and its table has no entry.
+
+- **Read** with `IAdtMetadataReadable<ITableSettingsConfig, …>`: the
+  document, `ts:tableSettings`. SAP creates default settings when it creates a
+  table, so a read right after the create answers them (`version="new"`).
+- **Write** with `IAdtTableSettingsUpdatable`: its `updateMetadata` takes
+  `ITableSettingsUpdateConfig` — the table's name, its `description` (SAP
+  refuses a write without one, SWB_TOOL 019, measured on premise) and
+  `ITableSettings` — and builds the body from it (decision 49); the options
+  refuse a `source` and require the `lockHandle`.
+- **An update replaces every setting: read, change, write back.** SAP writes
+  the whole DD09L row from the document and resets a field it leaves out, so
+  every field the document carries is required. `isWritableByAMDP` is
+  returned by cloud and not written by this contract (unmeasured): it is on
+  `ITableSettingsRead`, the read result, and a write refuses it.
+- **The sequence is the caller's, and its order keeps a concurrent edit:**
+  1. `lock` (stateful) — the settings' own lock;
+  2. `readMetadata` under the lock — what the settings are now, after any edit
+     made before the lock was taken;
+  3. change what you mean to change in what was read;
+  4. `updateMetadata` with the lock handle (and `transportRequest` as
+     `corrNr`), passing the read's ETag as `ifMatch`
+     (`IAdtTableSettingsUpdateOptions` keeps it from `IAdtUpdateOptions`), so
+     the system refuses the write (`412`) if the settings changed since that
+     read (a GET of the settings answers an ETag, measured; `If-Match` was
+     measured on other documents, not yet on this one);
+  5. `unlock`, on every path;
+  6. then activate the **table**. Activating `TABL/DT` activated the
+     settings, measured on premise and on the cloud; activating `TABL/DTT`
+     alone was never measured, and the contract offers no activation of the
+     settings.
+
+The codes are strings, since a system may define its own (customer data
+classes `USER`, `USER1`, …). The known values are constants for discovery,
+not limits: `TABLE_DATA_CLASSES` — the data class value help's six on
+S/4HANA 2025 (`APPL0`, `APPL1`, `APPL2`, `DDIM`, `DFACT`, `DODS`), measured;
+`TABLE_SIZE_CATEGORIES` (`'0'`–`'9'`), `TABLE_BUFFERING_ALLOWED` (`N`, `X`,
+`A`) and `TABLE_BUFFERING_TYPES` (`P`, `G`, `X`) — SAP's standard domain
+values, not measured. Each has its `Known…` type.
+
 ## Optional fields take `undefined` (27.4.0)
 
 Under `exactOptionalPropertyTypes`, the optional fields of the object configs
@@ -494,6 +545,18 @@ options, `IClassUnitTestRunOptions` with `IUnitTestScope`,
 with no spread to leave the key out. An absent field and an `undefined` one
 mean the same. The CHANGELOG lists each type;
 `src/__typechecks__/explicitUndefined.ts` holds the shapes.
+
+## Migrating to 28.0.0
+
+- **An exhaustive map over the type-table unions adds the table settings.**
+  `AdtApiName` gains `tableSettings`, `AdtTypeCode` and `CodesOfMain<'TABL'>`
+  gain `'TABL/DTT'`, `AdtObjectKind` gains `'table_settings'`. So does every
+  union derived from the tables for the on-premise and cloud variants:
+  `AdtApi<V>`, `AdtTypeCodeOf<V>`, `AdtCodeOf<V>`, and the projections by
+  operation — `AdtApiWith<V, Op>`, `AdtTypeCodeWith<V, Op>`, `AdtCodeWith<V,
+  Op>`, `AdtApiWithIn<T, Op>` — wherever `Op` is among `readMetadata`,
+  `updateMetadata`, `lock` and `unlock`. A map keyed by any of them, or a
+  `switch` relying on exhaustiveness over one, adds the member.
 
 ## Migrating to 27.0.0
 

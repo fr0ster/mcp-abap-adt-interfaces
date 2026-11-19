@@ -313,6 +313,7 @@ type NewerApis =
   | 'package'
   | 'ddl'
   | 'table'
+  | 'tableSettings'
   | 'structure'
   | 'appendStructure'
   | 'tableType'
@@ -367,6 +368,7 @@ type NewerCodes =
   | 'DEVC/K'
   | 'DDLS/DF'
   | 'TABL/DT'
+  | 'TABL/DTT'
   | 'TABL/DS'
   | 'TTYP/DA'
   | 'DOMA/DD'
@@ -445,6 +447,7 @@ export type Projections = [
       | 'package'
       | 'ddl'
       | 'table'
+      | 'table_settings'
       | 'structure'
       | 'table_type'
       | 'domain'
@@ -544,6 +547,7 @@ export type NewerShapes = [
       Exclude<
         NewerCodes,
         | 'DEVC/K'
+        | 'TABL/DTT'
         | 'TTYP/DA'
         | 'DOMA/DD'
         | 'DTEL/DE'
@@ -561,13 +565,20 @@ export type NewerShapes = [
     >
   >,
   // A program include, a function include, an authorization field, a feature
-  // toggle and the two message class APIs have no transport read.
+  // toggle, the two message class APIs and a table's settings have no
+  // transport read.
   Assert<
     Equal<
       AdtTypeCodeWith<'onprem', 'transport'>,
       Exclude<
         NewerCodes,
-        'PROG/I' | 'FUGR/I' | 'AUTH' | 'FTG2/FT' | 'MSAG/N' | 'MSAG/NN'
+        | 'PROG/I'
+        | 'FUGR/I'
+        | 'AUTH'
+        | 'FTG2/FT'
+        | 'MSAG/N'
+        | 'MSAG/NN'
+        | 'TABL/DTT'
       >
     >
   >,

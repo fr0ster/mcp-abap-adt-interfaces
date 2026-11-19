@@ -26,6 +26,7 @@ const _kindByCode: { readonly [C in AdtTypeCode]: AdtObjectKind } = {
   'DEVC/K': 'package',
   'DDLS/DF': 'ddl',
   'TABL/DT': 'table',
+  'TABL/DTT': 'table_settings',
   'TABL/DS': 'structure',
   'TTYP/DA': 'table_type',
   'DOMA/DD': 'domain',

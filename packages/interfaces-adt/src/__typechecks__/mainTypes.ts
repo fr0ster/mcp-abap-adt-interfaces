@@ -52,7 +52,7 @@ export type MainOfCode = [
 export type CodesOfAMain = [
   Assert<Equal<CodesOfMain<'ENHO'>, 'ENHO/XHB' | 'ENHO/XHH'>>,
   Assert<Equal<CodesOfMain<'ENHS'>, 'ENHS/XSB'>>,
-  Assert<Equal<CodesOfMain<'TABL'>, 'TABL/DS' | 'TABL/DT'>>,
+  Assert<Equal<CodesOfMain<'TABL'>, 'TABL/DS' | 'TABL/DT' | 'TABL/DTT'>>,
   Assert<Equal<CodesOfMain<'AUTH'>, 'AUTH'>>,
 ];
 
