@@ -13,6 +13,7 @@ ADT contracts: object operations, runtime analysis, execution, feeds and service
 - Since 15.1.0 the plain class and program run take `debuggee` (`IDebuggeeIds`): the terminal id and IDE id a terminal-mode listener catches the run by.
 - Since 23.1.0 the ABAP Unit run registry: `ABAP_UNIT_RUN_TYPES`, every `osl:object type` value a run may name, what a run of it runs and on what evidence; `AbapUnitRunObjectType` (its keys), `AbapUnitRunTarget` (an object or a package) and the generic runner contract `IAbapUnitRunner`. Additions only. See "The ABAP Unit run registry".
 - Since 30.0.0 the text elements of a program, a class or a function group — text symbols, selection texts, list and column headings — are their own contract (`/sap/bc/adt/textelements/…`, lock class `TEXT`): `IAdtTextElementsReadable` reads one part, `IAdtTextElementsUpdatable` writes one whole part from a typed document (`ITextSymbol`, `ISelectionText`, `ITextHeadings`), `ITextElementsResults`. The tables gain the API `textElements` (`PROG/PX`, `CLAS/OCX`, kind `text_elements`) on S/4HANA and ABAP cloud: a map over `AdtApiName`, `AdtTypeCode`, `AdtObjectKind`, `CodesOfMain<'PROG'>`, `CodesOfMain<'CLAS'>` or a union derived from the tables — the utility, group activation and where-used codes among them (`AdtUtilityCode`, `AdtGroupActivationCode`, `AdtWhereUsedCode`) — adds the members; the reason for the major. The typed `activateObjects` / `activateObjectsGroup` take the text elements' reference beside the object's. See "Text elements" and "Migrating to 30.0.0".
+- Since 30.1.0 a settings write carries `isWritableByAMDP` as read: on the cloud a write without it reset it to `false` (measured), and 30.0.0 refused it on a write. `IAdtTableSettingsPatchable.patchMetadata` reads, overlays `ITableSettingsChanges` and writes the whole document with `If-Match` (decision 51). Additions only for a caller. See "A table's technical settings".
 - Since 29.0.0 `ITableSettings.translation` is an `ITableTranslation`, the `ts:translation` element's four attributes, where 28.0.0 had a string: SAP refuses a write without `ts:isVisible` (400 `00/001`). See "Migrating to 29.0.0".
 - Since 28.0.0 a table's technical settings (`TABL/DTT`, `tableSettings` in the on-premise and cloud tables) are their own contract: `ITableSettingsConfig`, `ITableSettingsUpdateConfig` with the full `ITableSettings`, the write atom `IAdtTableSettingsUpdatable` and `ITableSettingsResults`. A map over `AdtApiName`, `AdtTypeCode`, `AdtObjectKind`, `CodesOfMain<'TABL'>` or a union derived from the tables (`AdtApi<V>`, `AdtTypeCodeOf<V>`, `AdtApiWith<V, Op>`, …) adds the new member — the reason for the major. See "A table's technical settings" and "Migrating to 28.0.0".
 - Since 27.0.0 `IUtilResults` requires `objectActivation`, the reading of the new atom `IAdtObjectActivation` (`activateObjects`, the synchronous `POST /activation` for several objects); `activate` takes `IAdtActivationOptions` (`preauditRequested`); and `IAnalyse` takes an optional third parameter, `IAdtAnalyseContext`. See "Activation" and "Migrating to 27.0.0".
@@ -637,20 +638,33 @@ does not serve the collection, and its table has no entry.
   table, so a read right after the create answers them (`version="new"`).
 - **Write** with `IAdtTableSettingsUpdatable`: its `updateMetadata` takes
   `ITableSettingsUpdateConfig` — the table's name, its `description` (SAP
-  refuses a write without one, SWB_TOOL 019, measured on premise) and
+  refuses a write without one, SWB_TOOL 019, measured on premise and on the
+  cloud) and
   `ITableSettings` — and builds the body from it (decision 49); the options
   refuse a `source` and require the `lockHandle`.
 - **An update replaces every setting: read, change, write back.** SAP writes
   the whole DD09L row from the document and resets a field it leaves out, so
-  every field the document carries is required. `translation` is the
-  `ts:translation` element's four attributes (`ITableTranslation`: `value`,
-  `isVisible`, `isEditable`, `granularity`, since 29.0.0): SAP's transformation
-  declares all four; a PUT carrying only `value` was refused (400 `00/001`,
-  measured: `isVisible` expected) — a refusal for each other omission is inferred,
-  not measured — so write all four back as read.
-  `isWritableByAMDP` is
-  returned by cloud and not written by this contract (unmeasured): it is on
-  `ITableSettingsRead`, the read result, and a write refuses it.
+  every field the document carries is required (`CL_TABT_WB_PERSIST->move_adt_to_ddv`,
+  Code on both systems; a field left out read back reset, measured on both,
+  2026-11-19). `translation` is the `ts:translation` element's four attributes
+  (`ITableTranslation`: `value`, `isVisible`, `isEditable`, `granularity`,
+  since 29.0.0), written back as read. SAP's transformation reads the element
+  inside a `tt:cond` (Code): absent, the PUT is accepted (200); present, it
+  needs all four — `<ts:translation ts:value=""/>` and `<ts:translation/>`
+  were refused 400 `00/001` with an `XML_PATH` property (measured on both).
+  The contract keeps the element required.
+- **`isWritableByAMDP` is written as read (since 30.1.0).** The cloud's
+  `move_adt_to_ddv` writes `allowed_for_amdp_write` from the document (Code),
+  and a cloud PUT without the element reset it to `false` (measured). 30.0.0
+  refused it on a write, so every cloud write through the contract reset it;
+  now `ITableSettings` carries it, and a read is written back as it is. On
+  premise the transformation does not define it (Code): leave it out there.
+- **Patch** with `IAdtTableSettingsPatchable` (since 30.1.0, decision 51):
+  `patchMetadata` takes the table and `ITableSettingsChanges` — at least one
+  setting, `buffering` and `translation` field by field — and, under the
+  caller's `lockHandle`, reads the working area with its ETag, overlays the
+  changes, and writes the whole document with `If-Match`. Every setting not
+  named keeps the value read, `isWritableByAMDP` included.
 - **The sequence is the caller's, and its order keeps a concurrent edit:**
   1. `lock` (stateful) — the settings' own lock;
   2. `readMetadata` under the lock — what the settings are now, after any edit
@@ -660,17 +674,26 @@ does not serve the collection, and its table has no entry.
      `corrNr`), passing the read's ETag as `ifMatch`
      (`IAdtTableSettingsUpdateOptions` keeps it from `IAdtUpdateOptions`), so
      the system refuses the write (`412`) if the settings changed since that
-     read (a GET of the settings answers an ETag, measured; `If-Match` was
-     measured on other documents, not yet on this one);
+     read (measured on both: with `If-Match` and no charset the PUT is
+     accepted; with `; charset=utf-8` beside `If-Match`, `412`
+     `SADT_RESOURCE/043`);
   5. `unlock`, on every path;
   6. then activate the **table**. Activating `TABL/DT` activated the
      settings, measured on premise and on the cloud; activating `TABL/DTT`
      alone was never measured, and the contract offers no activation of the
-     settings.
+     settings. **Judge the activation by its messages, not by
+     `activationExecuted` alone:** with a data class SAP does not know
+     (`ZZNOP`, stored by the PUT, which checks only its length), the
+     activation answered `activationExecuted="true"` with the error
+     "Activation was cancelled." / "Value in field Data Class (value ZZNOP
+     not permitted)", and the table and its settings stayed inactive
+     (measured on both).
 
-The codes are strings, since a system may define its own (customer data
-classes `USER`, `USER1`, …). The known values are constants for discovery,
-not limits: `TABLE_DATA_CLASSES` — the data class value help's six on
+The codes are strings, since a system may define its own: a PUT of the
+customer data class `USER` was accepted and read back (measured on both). The
+value help lists the standard classes only (`CL_TABT_DATA_CLASS_VH`, `ddclass =
+'STD'`, Code). The known values are constants for discovery, not limits:
+`TABLE_DATA_CLASSES` — the data class value help's six on
 S/4HANA 2025 (`APPL0`, `APPL1`, `APPL2`, `DDIM`, `DFACT`, `DODS`), measured;
 `TABLE_SIZE_CATEGORIES` (`'0'`–`'9'`), `TABLE_BUFFERING_ALLOWED` (`N`, `X`,
 `A`) and `TABLE_BUFFERING_TYPES` (`P`, `G`, `X`) — SAP's standard domain

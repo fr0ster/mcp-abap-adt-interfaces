@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [30.1.0] - 2026-11-19
+
+### Fixed
+
+- **A settings write carries `isWritableByAMDP`, as the cloud writes it.**
+  The cloud's `CL_TABT_WB_PERSIST->move_adt_to_ddv` writes
+  `allowed_for_amdp_write` from the document (Code, cloud only), and a PUT
+  that leaves the element out reset it to `false` (measured on the cloud,
+  2026-11-19: written `true`, read back `true`; a later PUT without it, read
+  back `false`). 30.0.0 refused the field on a write
+  (`settings: ITableSettings & { isWritableByAMDP?: never }`), so every cloud
+  write through the contract reset it. `ITableSettings` now carries it
+  (optional), `ITableSettingsUpdateConfig.settings` is `ITableSettings`, and a
+  read (`ITableSettingsRead`) is written back as it is. On premise neither the
+  transformation nor `move_adt_to_ddv` defines it (Code): leave it out there.
+- **The translation's words say what was measured.** The element may be
+  absent (200); present, it needs all four attributes (400 `00/001` with an
+  `XML_PATH` property; Code `SDDIC_ADT_TTAB`, `tt:cond`; measured on both).
+  The contract keeps it required. The description is required on both
+  systems (SWB_TOOL 019, now measured on the cloud too).
+
+### Added
+
+- **`IAdtTableSettingsPatchable.patchMetadata`** (decision 51): under the
+  caller's lock, read the working area with its ETag, overlay the changes,
+  write the whole document with `If-Match` — SAP resets every setting a
+  write leaves out (Code on both, measured on both). `ITableSettingsChanges`
+  (at least one setting; `buffering` and `translation` field by field;
+  `isWritableByAMDP` too), `ITableSettingsPatchConfig`,
+  `IAdtTableSettingsPatchOptions` (`lockHandle` required, no `source`, no
+  `ifMatch`).
+- README: judge a table's activation by its messages — SAP answered
+  `activationExecuted="true"` with "Activation was cancelled." for a data
+  class it does not know, and the table stayed inactive (measured on both).
+
+### Changed
+
+- Only additions and a wider write type for a caller: a value that compiled
+  against 30.0.0 compiles against 30.1.0. An implementation of
+  `IAdtTableSettingsUpdatable` should write `isWritableByAMDP` when given.
+
 ## [30.0.0] - 2026-11-19
 
 ### Breaking
