@@ -26,7 +26,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `'onprem' | 'cloud'`; every operation). Nothing of `basis740` changed.
   - The API names: `AdtApiName`, `keyof AdtApiTable<R>`, `AdtApi<V>`, and
     `AdtApiWith<V, Op>` / `AdtApiWithIn<T, Op>` for `Op` among `read`,
-    `update`, `lock`, `unlock` — gain `textElements`.
+    `update`, `lock`, `unlock` — gain `textElements`; and with `AdtApiName`
+    every `parent` that names an API: `IAdtCodeFacts<R>['parent']`,
+    `IAdtCodelessApiEntry<R>['parent']`, and so `AdtApiEntry<R>['parent']`
+    (`IAdtCodedApiEntry<R>`'s codes carry it).
   - The codes: `AdtTypeCode`, `AdtTypeCodeOf<V>`, `AdtCodeOf<V>`,
     `AdtCodeOfIn<Tables, V>`, and `AdtTypeCodeWith<V, Op>`, `AdtCodeWith<V, Op>`,
     `AdtCodeWithIn<Tables, V, Op>` for the same four operations — gain
@@ -42,10 +45,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     and `IAdtWhereUsedScopeParamsOf<V>['object_type']`, gain both codes, as
     `IGetWhereUsedParams['object_type']` and
     `IGetWhereUsedScopeParams['object_type']` (default `AdtTypeCode`) do.
-    Where-used of a text element is not measured.
   - References and answers: `IObjectReference['type']` (default
-    `AdtTypeCode`) and the known-code branch of `IAdtAnsweredObject['type']`
-    gain both codes.
+    `AdtTypeCode`), `IAdtCodedReference<AdtTypeCode>['type']` and
+    `IAdtCodedReference<AdtCodeOf<V>>['type']`, and the known-code branch of
+    `IAdtAnsweredObject['type']` gain both codes.
   - The tables themselves: `IAdtTypeTables` (a `textElements` entry on
     `onprem` and `cloud`) and `IAdtUtilityCodeTables` (two codes on each).
 - **What a consumer does.** A map keyed by any of these
@@ -80,10 +83,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     what the lock takes, through `IAdtLockable` with both fields required.
   - `ITextElementsPartConfig`: the object and a part it has — what a read
     takes. `TextElementsReadVersion` is `AdtReadVersion` — `active`,
-    `inactive` or `workingArea`, every value SAP's handler maps (Code; Eclipse
-    sends `workingArea`); absent, SAP's working area. Measured: absent and
-    `inactive`, on premise and on the cloud; `active` and `workingArea` are
-    still to be measured.
+    `inactive` or `workingArea`, every value SAP's handler maps (Eclipse
+    sends `workingArea`); absent, SAP's working area.
   - The typed documents: `ITextSymbol` (`key`, `text`, `maxLength`),
     `ISelectionText` (`name`, `text`), `ITextHeadings` (`listHeader`,
     `columnHeader1`–`columnHeader4`, each required), and
@@ -107,8 +108,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     `{ name, type: 'PROG/PX', uri: '/sap/bc/adt/textelements/programs/{name}' }`
     — beside the object's. Measured on premise for a program and on the cloud
     for a class; each other pairing is `measured: false`.
-  - `ITextElementsPartConfig` and `ITextElementsUpdateConfig` keep
-    `objectKind` and `part` `readonly`: a built config cannot be re-kinded.
+  - `ITextElementsConfig`, `ITextElementsPartConfig` and
+    `ITextElementsUpdateConfig` keep `objectKind` (and `part`) `readonly`: a
+    built config cannot be re-kinded.
+  - `ISelectionText.ddicReference` (required): the `@DDICReference` line,
+    a text that is the dictionary field's label — SAP answers the label and
+    replaces any text a write sends (measured). `SELECTION_TEXT_MAX_LENGTH`
+    is 30: a longer text refuses the whole write, `406` `SEDX_ADT/110`
+    (measured); documented, not checked.
+  - `TextElementsReadVersion` is measured on premise: absent, `inactive` and
+    `workingArea` answer the working area, `active` the last activated
+    version.
     `IAdtTextElementsReadOptions` refuses `source`, `lockHandle` and
     `ifMatch` (`?: never`).
   - The original language only: SAP ignores the logon language for these
@@ -118,8 +128,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (collection `…/programs`) and `CLAS/OCX` (`…/classes`) — parent none and
   names up to 30, as each `typestructure` lists them — with `read`, `update`,
   `lock` and `unlock`. No function group code: no release's `typestructure`
-  lists one, and the function group address is in discovery but unmeasured
-  (the one read sent answered 404). SAP_BASIS 7.40's discovery has no
+  lists one. A function group's text elements are measured on premise
+  (`…/functiongroups/{group}`, the plain name; the properties name them
+  `FUGR/PX`, the inactive list `PROG/PX` `SAPL{GROUP}`; the group's and the
+  text elements' URIs activate together). SAP_BASIS 7.40's discovery has no
   `/textelements` collection, so `ADT_TYPES_BASIS_740` has no entry.
 
 ## [29.0.0] - 2026-11-19
