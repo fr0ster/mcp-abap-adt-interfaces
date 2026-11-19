@@ -286,6 +286,12 @@ type RecordedOnPremise = {
         | 'transport';
     };
   };
+  tableSettings: {
+    'TABL/DTT': {
+      parent: null;
+      operations: 'readMetadata' | 'updateMetadata' | 'lock' | 'unlock';
+    };
+  };
   structure: {
     'TABL/DS': {
       parent: null;

@@ -346,6 +346,19 @@ export const ADT_TYPES_ONPREM = {
       },
     },
   },
+  tableSettings: {
+    kind: 'table_settings',
+    collection: '/sap/bc/adt/ddic/db/settings',
+    codes: {
+      'TABL/DTT': {
+        main: 'TABL',
+        parent: null,
+        nameMaxLength: 16,
+        operations: ['readMetadata', 'updateMetadata', 'lock', 'unlock'],
+        evidence: 'system-description-s4-2025--07-typestructure',
+      },
+    },
+  },
   structure: {
     kind: 'structure',
     collection: '/sap/bc/adt/ddic/structures',
@@ -1320,6 +1333,19 @@ export const ADT_TYPES_CLOUD = {
           'delete',
           'transport',
         ],
+        evidence: 'system-description-abap-cloud--07-typestructure',
+      },
+    },
+  },
+  tableSettings: {
+    kind: 'table_settings',
+    collection: '/sap/bc/adt/ddic/db/settings',
+    codes: {
+      'TABL/DTT': {
+        main: 'TABL',
+        parent: null,
+        nameMaxLength: 16,
+        operations: ['readMetadata', 'updateMetadata', 'lock', 'unlock'],
         evidence: 'system-description-abap-cloud--07-typestructure',
       },
     },

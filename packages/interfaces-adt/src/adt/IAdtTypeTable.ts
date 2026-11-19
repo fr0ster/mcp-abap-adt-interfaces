@@ -29,6 +29,7 @@ export type AdtApiName =
   | 'package'
   | 'ddl'
   | 'table'
+  | 'tableSettings'
   | 'structure'
   | 'appendStructure'
   | 'tableType'
