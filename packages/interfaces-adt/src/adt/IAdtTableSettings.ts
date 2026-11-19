@@ -18,13 +18,17 @@
  * delete and no activation of their own here.
  *
  * **An update replaces every setting: read, change, write back.** SAP writes
- * every field of DD09L from the document it is given (`CL_TABT_WB_PERSIST`,
- * `DDIF_TABT_PUT`); a field the document leaves out is reset to its initial
- * value. So {@link ITableSettings} requires every field the document carries.
+ * every field of DD09L from the document it is given
+ * (`CL_TABT_WB_PERSIST->move_adt_to_ddv`, then `DDIF_TABT_PUT`; Code on both
+ * systems, measured on both, 2026-11-19); a field the document leaves out is
+ * reset to its initial value. So {@link ITableSettings} requires every field
+ * the document carries, and {@link IAdtTableSettingsPatchable} reads,
+ * overlays and writes the whole document.
  *
  * Types and constants only.
  */
 
+import type { AdtModernVariant } from './AdtTypeTables';
 import type { IAdtHeaders } from './IAdtContentTypes';
 import type { IAdtUpdateOptions, IAnalyse } from './IAdtObject';
 import type { IAdtError, IAdtResponse, IResultStrategy } from './IAdtResponse';
@@ -113,7 +117,11 @@ export interface ITableBuffering {
   readonly type: string;
   /**
    * The number of key fields of a generic area (`SCHFELDANZ`); a count, so a
-   * number. SAP writes it only with type `G`; a read answers `0` otherwise.
+   * number. SAP writes it only with type `G`
+   * (`CL_TABT_WB_PERSIST->move_adt_to_ddv`: `IF e_dd09l_wa-pufferung = 'G'.
+   * e_dd09l_wa-schfeldanz = …`, Code on both systems); with any other type the
+   * field is not written, so it stays initial (`0`) — a write that changes
+   * the type away from `G` drops it.
    */
   readonly areaKeyFields: number;
 }
@@ -123,6 +131,12 @@ export interface ITableBuffering {
  * `SDDIC_ADT_TTAB` writes them. Read on premise and on the cloud
  * (2026-11-19): `ts:value=""`, `ts:isVisible="false"`, `ts:isEditable="false"`,
  * `ts:granularity="2"`.
+ *
+ * **SAP stores `value` alone.** `move_adt_to_ddv` writes `uebersetz` from
+ * `translation-value` and nothing from the other three (Code, both systems);
+ * a read computes them (`move_ddv_to_adt`, `get_translation_granularity`).
+ * A write still sends all four, as read: a present element without one is
+ * refused (see {@link ITableSettings.translation}).
  */
 export interface ITableTranslation {
   /** `ts:value`: `UEBERSETZ`; `''` on the systems read. */
@@ -149,10 +163,7 @@ export interface ITableTranslation {
  * required: a caller reads the settings, changes what it means to change, and
  * writes the whole set back. This library chooses no value for the caller.
  *
- * Not here: `isWritableByAMDP`, returned by the cloud and not written by this
- * contract (unmeasured; the on-premise transformation does not define it) —
- * it is on {@link ITableSettingsRead}; and `supportsLoggingAssessment`, which
- * SAP computes on every read.
+ * Not here: `supportsLoggingAssessment`, which SAP computes on every read.
  */
 export interface ITableSettings {
   /**
@@ -170,9 +181,16 @@ export interface ITableSettings {
   /** `LOAD_UNIT`; `''` on the systems read. */
   readonly loadUnit: string;
   /**
-   * `ts:translation`: its four attributes, every one of them required on a
-   * write (SAP refuses a PUT without `ts:isVisible`, 400 `00/001`, measured on
-   * premise and on the cloud). Write them back as read.
+   * `ts:translation`: its four attributes, written back as read.
+   *
+   * SAP's transformation reads the element inside a `tt:cond`, its four
+   * attributes required there (Code: `SDDIC_ADT_TTAB`, on premise and on the
+   * cloud). Measured on both (2026-11-19): a PUT with the element absent is
+   * accepted (200), one with all four attributes is accepted, and one with
+   * the element present but an attribute missing is refused, 400 `00/001`
+   * with the transformation's words and an `XML_PATH` property
+   * (`CL_ADT_REST_ST_HANDLER->deserialize`, Code). The contract keeps the
+   * element required, so a write always carries the four attributes read.
    */
   readonly translation: ITableTranslation;
   /** `PROTOKOLL`: log data changes. */
@@ -180,22 +198,55 @@ export interface ITableSettings {
 }
 
 /**
- * The settings as a read answers them: every field a write carries, and what
- * only a read returns. The shape a reading strategy that parses the document
- * answers; the shipped default answers the document as it arrived.
+ * What each system kind adds to the settings a write carries: the cloud's
+ * `ts:isWritableByAMDP` (DD09L `ALLOWED_FOR_AMDP_WRITE`).
  *
- * Writing it back takes {@link ITableSettings}: drop what only a read returns
- * first (`const { isWritableByAMDP, ...settings } = read`), since the write
- * refuses it.
+ * - **cloud: required.** The cloud's `CL_TABT_WB_PERSIST->move_adt_to_ddv`
+ *   writes `allowed_for_amdp_write` from the document, and its transformation
+ *   reads the element inside a `tt:cond` (Code, cloud). Measured on the cloud
+ *   (2026-11-19): written `true`, read back `true`; a later PUT without it,
+ *   read back `false`. A write without it would reset it, so it does not
+ *   compile.
+ * - **onprem: refused.** Neither the on-premise transformation nor its
+ *   `move_adt_to_ddv` maps it (Code, on premise), and a read answers none.
+ */
+export interface ITableSettingsByVariant {
+  readonly onprem: { readonly isWritableByAMDP?: never };
+  readonly cloud: { readonly isWritableByAMDP: boolean };
+}
+
+/**
+ * Every setting a write carries on variant `V`: {@link ITableSettings} and
+ * what the system kind adds ({@link ITableSettingsByVariant}). For a union of
+ * variants — the default — a value of either kind.
+ */
+export type ITableSettingsOf<V extends AdtModernVariant = AdtModernVariant> = {
+  [W in V]: ITableSettings & ITableSettingsByVariant[W];
+}[V];
+
+/**
+ * The settings as a read answers them, on any system: every field a write
+ * carries, and the cloud's `isWritableByAMDP` where the read has it. The shape
+ * a reading strategy that parses the document answers; the shipped default
+ * answers the document as it arrived. A write takes a variant's own shape
+ * ({@link ITableSettingsReadOf}), so a cloud read written back carries the
+ * flag.
  */
 export interface ITableSettingsRead extends ITableSettings {
   /**
-   * The cloud's `ts:isWritableByAMDP`. Returned by cloud; not written by this
-   * contract (unmeasured). Absent on premise, whose transformation does not
-   * define it.
+   * The cloud's `ts:isWritableByAMDP`: answered by a cloud read (Measured),
+   * absent on premise, whose transformation does not define it (Code).
    */
   readonly isWritableByAMDP?: boolean | undefined;
 }
+
+/**
+ * The settings as a read answers them on variant `V` — the shape a write of
+ * `V` takes back as it is ({@link ITableSettingsOf}).
+ */
+export type ITableSettingsReadOf<
+  V extends AdtModernVariant = AdtModernVariant,
+> = ITableSettingsOf<V>;
 
 /**
  * The settings of one table, named by the table: the identity every member
@@ -212,18 +263,19 @@ export interface ITableSettingsConfig {
  *
  * `description` is required because SAP requires it: a write without
  * `adtcore:description` is refused, 400 "The description is missing"
- * (SWB_TOOL 019, measured on premise only; the cloud write was sent with a
- * description and never without one). It is the table's
+ * (SWB_TOOL 019, measured on premise and on the cloud). It is the table's
  * short text, which a read of the settings answers as `adtcore:description`;
  * SAP does not change it through this resource.
  */
-export interface ITableSettingsUpdateConfig extends ITableSettingsConfig {
+export interface ITableSettingsUpdateConfig<
+  V extends AdtModernVariant = AdtModernVariant,
+> extends ITableSettingsConfig {
   description: string;
   /**
-   * Every setting the write carries. `isWritableByAMDP` is refused, for a
-   * variable as well as a literal: this contract does not write it.
+   * Every setting the write carries on `V`: on the cloud `isWritableByAMDP`
+   * among them (required), on premise without it (refused).
    */
-  settings: ITableSettings & { readonly isWritableByAMDP?: never };
+  settings: ITableSettingsOf<V>;
 }
 
 /**
@@ -258,7 +310,10 @@ export type IAdtTableSettingsUpdateOptions<E extends IAdtError = IAdtError> =
  * unlocking after it on every path, and activating the table are the
  * caller's calls, in that order.
  */
-export interface IAdtTableSettingsUpdatable<TMetadataUpdated> {
+export interface IAdtTableSettingsUpdatable<
+  TMetadataUpdated,
+  V extends AdtModernVariant = AdtModernVariant,
+> {
   /**
    * Write the settings: the document built from `config`, under the lock the
    * caller passes as `options.lockHandle`.
@@ -267,14 +322,193 @@ export interface IAdtTableSettingsUpdatable<TMetadataUpdated> {
    *          SAP answers 200 with the inactive document
    */
   updateMetadata<E extends IAdtError>(
-    config: ITableSettingsUpdateConfig,
+    config: ITableSettingsUpdateConfig<V>,
     options: { headers: IAdtHeaders } & IAdtTableSettingsUpdateOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<TMetadataUpdated, E>>;
   updateMetadata(
-    config: ITableSettingsUpdateConfig,
+    config: ITableSettingsUpdateConfig<V>,
     options: { headers: IAdtHeaders } & IAdtTableSettingsUpdateOptions,
+  ): Promise<IAdtResponse<TMetadataUpdated>>;
+}
+
+/** `T` with at least one of its keys present. */
+type AtLeastOne<T> = {
+  [K in keyof T]-?: Required<Pick<T, K>> & Partial<Omit<T, K>>;
+}[keyof T];
+
+/**
+ * A buffering change: at least one field. SAP writes `SCHFELDANZ` only when
+ * the **resulting** type is `G` (`move_adt_to_ddv`: `IF e_dd09l_wa-pufferung =
+ * 'G'.`, Code on both systems): with any other resulting type the count is not
+ * kept. So `areaKeyFields` goes only with type `G`, or with no type (the type
+ * read is kept); `{ type: 'P', areaKeyFields: 1 }` and a `string` type that is
+ * not the literal `'G'` with it do not compile. With the type kept, the
+ * resulting type is the one read: `patchMetadata` refuses an `areaKeyFields`
+ * change whose resulting type (the read merged with the changes) is not `G`,
+ * before any PUT — a check on what SAP answered, not on the caller's types.
+ */
+export type ITableBufferingChange =
+  | AtLeastOne<{
+      readonly allowed?: string;
+      readonly type: 'G';
+      readonly areaKeyFields?: number;
+    }>
+  | AtLeastOne<{
+      readonly allowed?: string;
+      readonly type?: never;
+      readonly areaKeyFields?: number;
+    }>
+  | AtLeastOne<{
+      readonly allowed?: string;
+      readonly type: string;
+      readonly areaKeyFields?: never;
+    }>;
+
+/**
+ * A translation change: its `value` alone, the one attribute SAP stores
+ * (`move_adt_to_ddv`: `e_dd09l_wa-uebersetz = …-translation-value.`, Code on
+ * both systems). `isVisible`, `isEditable` and `granularity` are SAP's on a
+ * read; a patch writes them back as read.
+ */
+export interface ITableTranslationChange {
+  readonly value: string;
+}
+
+/** The settings a patch may change on system kind `W`. */
+type TableSettingsChangeFields<W extends AdtModernVariant> = {
+  readonly dataClassCategory?: string;
+  readonly sizeCategory?: string;
+  readonly buffering?: ITableBufferingChange;
+  readonly storageType?: string;
+  readonly sharingType?: string;
+  readonly loadUnit?: string;
+  readonly translation?: ITableTranslationChange;
+  readonly loggingEnabled?: boolean;
+} & (W extends 'cloud'
+  ? { readonly isWritableByAMDP?: boolean }
+  : { readonly isWritableByAMDP?: never });
+
+/**
+ * What a patch changes on variant `V`: at least one setting — `{}`,
+ * `{ buffering: {} }` and `{ translation: {} }` do not compile. Every setting
+ * not named keeps the value read, with one exception SAP makes: when the
+ * resulting buffering type is not `G`, SAP clears the area-key count (see
+ * {@link IAdtTableSettingsPatchable}). The fields are optional without
+ * `| undefined`: under `exactOptionalPropertyTypes` an explicit `undefined`
+ * does not compile; an implementation treats a field set to `undefined` by a
+ * caller without that flag as not named (the value read is kept).
+ * `isWritableByAMDP` on the cloud only.
+ */
+export type ITableSettingsChangesOf<
+  V extends AdtModernVariant = AdtModernVariant,
+> = {
+  [W in V]: AtLeastOne<TableSettingsChangeFields<W>>;
+}[V];
+
+/** {@link ITableSettingsChangesOf} for any newer system. */
+export type ITableSettingsChanges = ITableSettingsChangesOf;
+
+/**
+ * What a patch takes: the table, and the settings to change. The description
+ * is the one read; every setting not named keeps the value read, except the
+ * area-key count when the resulting buffering type is not `G` (see
+ * {@link IAdtTableSettingsPatchable}).
+ */
+export interface ITableSettingsPatchConfig<
+  V extends AdtModernVariant = AdtModernVariant,
+> extends ITableSettingsConfig {
+  changes: ITableSettingsChangesOf<V>;
+}
+
+/**
+ * The settings document's media type, without a charset — the v2 a read is
+ * answered with (a v1 `Accept` was answered `406`, measured on both).
+ */
+export const TABLE_SETTINGS_MEDIA_TYPE =
+  'application/vnd.sap.adt.table.settings.v2+xml';
+
+/**
+ * The media type a patch reads and writes with: exactly
+ * {@link TABLE_SETTINGS_MEDIA_TYPE}, a literal, so a value with a charset does
+ * not compile. It is the read's `Accept`, and the guarded PUT's `Accept` and
+ * `Content-Type` — sent without a charset (with `; charset=utf-8` beside a
+ * fresh `If-Match` SAP answered `412` `SADT_RESOURCE/043`; without it `200`;
+ * measured on both).
+ */
+export interface IAdtTableSettingsPatchHeaders {
+  readonly accept: typeof TABLE_SETTINGS_MEDIA_TYPE;
+  readonly contentType?: never;
+}
+
+/**
+ * The options of a patch: those of a write, with the lock handle required and
+ * neither a `source` nor an `ifMatch` — the patch sends the ETag it read.
+ */
+export type IAdtTableSettingsPatchOptions<E extends IAdtError = IAdtError> =
+  Omit<IAdtUpdateOptions<E>, 'source' | 'lockHandle' | 'ifMatch'> & {
+    source?: never;
+    ifMatch?: never;
+    lockHandle: string;
+  };
+
+/**
+ * The settings can be patched: the named settings changed, every other one
+ * kept as it is — with one exception: when the resulting buffering type is
+ * not `G` (a type-only change from `G` to `P`, say), SAP clears the area-key
+ * count, since it writes `SCHFELDANZ` only for `G` (`move_adt_to_ddv`, Code
+ * on both systems). The patch does not block that change: the count means
+ * nothing for the other types.
+ *
+ * **Read, overlay, write the whole document.** SAP resets every setting a
+ * write leaves out (`CL_TABT_WB_PERSIST->move_adt_to_ddv`, Code on both
+ * systems; measured on both, 2026-11-19), so a patch cannot send the changes
+ * alone. Under the caller's lock it reads the settings' working area
+ * (`version: 'inactive'`) with its ETag, overlays `changes` on the settings
+ * read (`buffering` field by field, `translation` by its `value`), and writes
+ * the whole document back — the description read, on the cloud
+ * `isWritableByAMDP` as read unless changed — guarded by `If-Match` with the
+ * ETag read, its `Content-Type` without a charset
+ * ({@link IAdtTableSettingsPatchHeaders}). A read with no ETag is a refusal
+ * and nothing is written; a refused read or write is answered as SAP
+ * answered it; nothing is retried. Whether SAP refuses a stale ETag here is
+ * not measured.
+ *
+ * Two requests in one member: decision 51.
+ *
+ * **What the types cannot see.** The per-kind rules are TypeScript's
+ * structural checks: a caller who widens the variant (a cloud writer used as
+ * `IAdtTableSettingsUpdatable<T>`, a generic that forwards the default), or
+ * carries extra keys through a variable, a union or a spread, passes values
+ * the rules would refuse as literals. A shipped implementation writes only
+ * what SAP persists, and `patchMetadata` is the safe path: it writes back
+ * what it read.
+ */
+export interface IAdtTableSettingsPatchable<
+  TMetadataUpdated,
+  V extends AdtModernVariant = AdtModernVariant,
+> {
+  /**
+   * Patch the settings under the caller's lock (`options.lockHandle`).
+   *
+   * @returns whatever this implementation's reading makes of the write's
+   *          answer — SAP answers 200 with the inactive document — or the
+   *          read's failure, when the read failed
+   */
+  patchMetadata<E extends IAdtError>(
+    config: ITableSettingsPatchConfig<V>,
+    options: {
+      headers: IAdtTableSettingsPatchHeaders;
+    } & IAdtTableSettingsPatchOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
+  ): Promise<IAdtResponse<TMetadataUpdated, E>>;
+  patchMetadata(
+    config: ITableSettingsPatchConfig<V>,
+    options: {
+      headers: IAdtTableSettingsPatchHeaders;
+    } & IAdtTableSettingsPatchOptions,
   ): Promise<IAdtResponse<TMetadataUpdated>>;
 }
 
@@ -282,6 +516,6 @@ export interface IAdtTableSettingsUpdatable<TMetadataUpdated> {
 export interface ITableSettingsResults {
   /** The settings document a read answers. */
   readonly metadata: IResultStrategy<unknown>;
-  /** What a write answers: the settings document, inactive. */
+  /** What a write, or a patch's write, answers: the settings document, inactive. */
   readonly metadataUpdated: IResultStrategy<unknown>;
 }

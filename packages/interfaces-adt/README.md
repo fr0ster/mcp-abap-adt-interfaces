@@ -13,7 +13,8 @@ ADT contracts: object operations, runtime analysis, execution, feeds and service
 - Since 15.1.0 the plain class and program run take `debuggee` (`IDebuggeeIds`): the terminal id and IDE id a terminal-mode listener catches the run by.
 - Since 23.1.0 the ABAP Unit run registry: `ABAP_UNIT_RUN_TYPES`, every `osl:object type` value a run may name, what a run of it runs and on what evidence; `AbapUnitRunObjectType` (its keys), `AbapUnitRunTarget` (an object or a package) and the generic runner contract `IAbapUnitRunner`. Additions only. See "The ABAP Unit run registry".
 - Since 30.0.0 the text elements of a program, a class or a function group — text symbols, selection texts, list and column headings — are their own contract (`/sap/bc/adt/textelements/…`, lock class `TEXT`): `IAdtTextElementsReadable` reads one part, `IAdtTextElementsUpdatable` writes one whole part from a typed document (`ITextSymbol`, `ISelectionText`, `ITextHeadings`), `ITextElementsResults`. The tables gain the API `textElements` (`PROG/PX`, `CLAS/OCX`, kind `text_elements`) on S/4HANA and ABAP cloud: a map over `AdtApiName`, `AdtTypeCode`, `AdtObjectKind`, `CodesOfMain<'PROG'>`, `CodesOfMain<'CLAS'>` or a union derived from the tables — the utility, group activation and where-used codes among them (`AdtUtilityCode`, `AdtGroupActivationCode`, `AdtWhereUsedCode`) — adds the members; the reason for the major. The typed `activateObjects` / `activateObjectsGroup` take the text elements' reference beside the object's. See "Text elements" and "Migrating to 30.0.0".
-- Since 29.0.0 `ITableSettings.translation` is an `ITableTranslation`, the `ts:translation` element's four attributes, where 28.0.0 had a string: SAP refuses a write without `ts:isVisible` (400 `00/001`). See "Migrating to 29.0.0".
+- Since 30.1.0 a settings write is typed by the system kind: on the cloud it requires `isWritableByAMDP` (a cloud write without it reset it to `false`, measured; 30.0.0 refused it on a write), on premise it refuses it (nothing maps it there, Code). `IAdtTableSettingsPatchable.patchMetadata` reads, overlays `ITableSettingsChangesOf<V>` and writes the whole document with `If-Match` (decision 51). What it breaks is in the CHANGELOG. See "A table's technical settings".
+- Since 29.0.0 `ITableSettings.translation` is an `ITableTranslation`, the `ts:translation` element's four attributes, where 28.0.0 had a string: a `ts:translation` element written with an attribute missing is refused (400 `00/001`), and an absent element is accepted (both measured on both systems). See "Migrating to 29.0.0".
 - Since 28.0.0 a table's technical settings (`TABL/DTT`, `tableSettings` in the on-premise and cloud tables) are their own contract: `ITableSettingsConfig`, `ITableSettingsUpdateConfig` with the full `ITableSettings`, the write atom `IAdtTableSettingsUpdatable` and `ITableSettingsResults`. A map over `AdtApiName`, `AdtTypeCode`, `AdtObjectKind`, `CodesOfMain<'TABL'>` or a union derived from the tables (`AdtApi<V>`, `AdtTypeCodeOf<V>`, `AdtApiWith<V, Op>`, …) adds the new member — the reason for the major. See "A table's technical settings" and "Migrating to 28.0.0".
 - Since 27.0.0 `IUtilResults` requires `objectActivation`, the reading of the new atom `IAdtObjectActivation` (`activateObjects`, the synchronous `POST /activation` for several objects); `activate` takes `IAdtActivationOptions` (`preauditRequested`); and `IAnalyse` takes an optional third parameter, `IAdtAnalyseContext`. See "Activation" and "Migrating to 27.0.0".
 - Since 25.2.0 `update` and `updateMetadata` take `IAdtUpdateOptions`: `IAdtOperationOptions` with `ifMatch`, the ETag a read answered, sent as `If-Match` so the system refuses a write over a changed document (`412`). Additions only.
@@ -637,20 +638,60 @@ does not serve the collection, and its table has no entry.
   table, so a read right after the create answers them (`version="new"`).
 - **Write** with `IAdtTableSettingsUpdatable`: its `updateMetadata` takes
   `ITableSettingsUpdateConfig` — the table's name, its `description` (SAP
-  refuses a write without one, SWB_TOOL 019, measured on premise) and
+  refuses a write without one, SWB_TOOL 019, measured on premise and on the
+  cloud) and
   `ITableSettings` — and builds the body from it (decision 49); the options
   refuse a `source` and require the `lockHandle`.
 - **An update replaces every setting: read, change, write back.** SAP writes
   the whole DD09L row from the document and resets a field it leaves out, so
-  every field the document carries is required. `translation` is the
-  `ts:translation` element's four attributes (`ITableTranslation`: `value`,
-  `isVisible`, `isEditable`, `granularity`, since 29.0.0): SAP's transformation
-  declares all four; a PUT carrying only `value` was refused (400 `00/001`,
-  measured: `isVisible` expected) — a refusal for each other omission is inferred,
-  not measured — so write all four back as read.
-  `isWritableByAMDP` is
-  returned by cloud and not written by this contract (unmeasured): it is on
-  `ITableSettingsRead`, the read result, and a write refuses it.
+  every field the document carries is required (`CL_TABT_WB_PERSIST->move_adt_to_ddv`,
+  Code on both systems; a field left out read back reset, measured on both,
+  2026-11-19). `translation` is the `ts:translation` element's four attributes
+  (`ITableTranslation`: `value`, `isVisible`, `isEditable`, `granularity`,
+  since 29.0.0), written back as read. SAP's transformation reads the element
+  inside a `tt:cond` (Code): absent, the PUT is accepted (200); present, it
+  needs all four — `<ts:translation ts:value=""/>` and `<ts:translation/>`
+  were refused 400 `00/001` with an `XML_PATH` property (measured on both).
+  The contract keeps the element required. SAP stores `value` alone
+  (`move_adt_to_ddv` writes `uebersetz` from `translation-value` only, Code
+  on both); the other three are computed on a read. `buffering.areaKeyFields`
+  (`SCHFELDANZ`) is written only when the resulting type is `G` (Code on
+  both): after a type change away from `G`, and whenever the resulting type
+  is not `G`, the count is not kept.
+- **`isWritableByAMDP`, per system kind (since 30.1.0).** The cloud's
+  `move_adt_to_ddv` writes `allowed_for_amdp_write` from the document (Code,
+  cloud), and a cloud PUT without the element reset it to `false` (measured).
+  30.0.0 refused it on a write, so every cloud write through the contract
+  reset it. Now the write is typed by the variant: `ITableSettingsOf<'cloud'>`
+  **requires** it, `ITableSettingsOf<'onprem'>` **refuses** it (neither the
+  on-premise transformation nor its `move_adt_to_ddv` maps it, Code), and
+  `ITableSettingsUpdateConfig<V>` / `IAdtTableSettingsUpdatable<T, V>` take
+  the variant (default: a value of either kind). A cloud read
+  (`ITableSettingsReadOf<'cloud'>`) is written back as it is.
+- **Patch** with `IAdtTableSettingsPatchable<T, V>` (since 30.1.0, decision
+  51): `patchMetadata` takes the table and `ITableSettingsChangesOf<V>` — at
+  least one setting; `buffering` field by field, with `areaKeyFields` only
+  beside type `G` or with the type kept — and then refused before any PUT
+  when the type read is not `G`; `translation` by its `value`, the one
+  attribute SAP stores; `isWritableByAMDP` on the cloud only — and, under the
+  caller's `lockHandle`, reads the working area with its ETag, overlays the
+  changes, and writes the whole document with `If-Match`. Every setting not
+  named keeps the value read — with one exception: when the resulting
+  buffering type is not `G` (a type-only change from `G` to `P`, say), SAP
+  clears the area-key count, since it writes `SCHFELDANZ` only for `G`
+  (`move_adt_to_ddv`, Code on both). The patch does not block that change:
+  the count means nothing for the other types. Its headers name the media type alone
+  (`IAdtTableSettingsPatchHeaders`): the implementation sends the PUT's
+  `Content-Type` without a charset (`headers.accept` is the literal
+  `TABLE_SETTINGS_MEDIA_TYPE`), so no caller's charset reaches the guarded
+  write.
+- **What the types cannot see.** The per-kind rules are TypeScript's
+  structural checks. A caller who widens the variant (a cloud writer used as
+  `IAdtTableSettingsUpdatable<T>`, a generic forwarding the default) or
+  carries extra keys through a variable, a union or a spread passes values
+  the rules would refuse as literals. A shipped implementation writes only
+  what SAP persists, and `patchMetadata` is the safe path: it writes back
+  what it read.
 - **The sequence is the caller's, and its order keeps a concurrent edit:**
   1. `lock` (stateful) — the settings' own lock;
   2. `readMetadata` under the lock — what the settings are now, after any edit
@@ -659,18 +700,31 @@ does not serve the collection, and its table has no entry.
   4. `updateMetadata` with the lock handle (and `transportRequest` as
      `corrNr`), passing the read's ETag as `ifMatch`
      (`IAdtTableSettingsUpdateOptions` keeps it from `IAdtUpdateOptions`), so
-     the system refuses the write (`412`) if the settings changed since that
-     read (a GET of the settings answers an ETag, measured; `If-Match` was
-     measured on other documents, not yet on this one);
+     the system can refuse a write over a changed document (`412`). Measured on
+     both, with a fresh ETag: `If-Match` and no charset → `200`; the same with
+     `; charset=utf-8` → `412` `SADT_RESOURCE/043`; a charset and no
+     `If-Match` → `200`. A stale ETag was never measured here;
   5. `unlock`, on every path;
   6. then activate the **table**. Activating `TABL/DT` activated the
      settings, measured on premise and on the cloud; activating `TABL/DTT`
      alone was never measured, and the contract offers no activation of the
-     settings.
+     settings. **Judge the activation by its messages, not by
+     `activationExecuted` alone.** A PUT of the data class `ZZNOP` (five
+     characters, no such class) was answered `200` and stored; activating the
+     table then answered `activationExecuted="true"`
+     `generationExecuted="false"` with type-`E` messages, and the table and
+     its settings stayed inactive (measured on both). On premise: "Activation
+     was cancelled." and "Value in field Data Class (value ZZNOP not
+     permitted)"; on the cloud: "Value in field Data Class; value ZZNOP not
+     permitted" (`DT(609)`). `ZZNOPE` (six characters) was refused by the PUT
+     itself, 400 `00/001` at deserialisation, `XML_PATH …dataClassCategory(1)`
+     — the field's length (measured on both).
 
-The codes are strings, since a system may define its own (customer data
-classes `USER`, `USER1`, …). The known values are constants for discovery,
-not limits: `TABLE_DATA_CLASSES` — the data class value help's six on
+The codes are strings, since a system may define its own: a PUT of the
+customer data class `USER` was accepted and read back (measured on both). The
+value help lists the standard classes only (`CL_TABT_DATA_CLASS_VH`, `ddclass =
+'STD'`, Code). The known values are constants for discovery, not limits:
+`TABLE_DATA_CLASSES` — the data class value help's six on
 S/4HANA 2025 (`APPL0`, `APPL1`, `APPL2`, `DDIM`, `DFACT`, `DODS`), measured;
 `TABLE_SIZE_CATEGORIES` (`'0'`–`'9'`), `TABLE_BUFFERING_ALLOWED` (`N`, `X`,
 `A`) and `TABLE_BUFFERING_TYPES` (`P`, `G`, `X`) — SAP's standard domain
@@ -792,8 +846,9 @@ mean the same. The CHANGELOG lists each type;
   `ITableSettingsRead.translation` and `ITableSettingsUpdateConfig.settings.translation`)
   is `ITableTranslation` — `{ value, isVisible, isEditable, granularity }` —
   where it was the `ts:value` string. A settings write built from 28.0.0 sent
-  `ts:value` alone and SAP refused it: 400 `00/001` "The system expected the
-  attribute …isVisible" (measured on premise and on the cloud, 2026-11-19).
+  `ts:value` alone and SAP refused it, 400 `00/001` — on premise "The system
+  expected the attribute '{…}isVisible'", on the cloud "The attribute
+  '{…}isVisible' was expected" (measured, 2026-11-19).
   Pass all four as read: `translation: { value: '', isVisible: false,
   isEditable: false, granularity: '2' }` is what the systems read answered.
 

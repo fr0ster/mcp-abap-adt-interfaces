@@ -7,6 +7,88 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [30.1.0] - 2026-11-19
+
+A design fix, released as a minor: the contract kept a field read-only that
+the cloud writes. What it changes for a consumer is listed under Changed.
+
+### Fixed
+
+- **A cloud settings write carries `isWritableByAMDP`; an on-premise one
+  refuses it.** The cloud's `CL_TABT_WB_PERSIST->move_adt_to_ddv` writes
+  `allowed_for_amdp_write` from the document (Code, cloud), and a PUT that
+  leaves the element out reset it to `false` (measured on the cloud,
+  2026-11-19: written `true`, read back `true`; a later PUT without it, read
+  back `false`). 30.0.0 refused the field on a write, so every cloud write
+  through the contract reset it. Neither the on-premise transformation nor
+  its `move_adt_to_ddv` maps it (Code, on premise). The write is now typed by
+  the system kind: `ITableSettingsByVariant`, `ITableSettingsOf<V>`
+  (`'cloud'` requires the flag, `'onprem'` refuses it),
+  `ITableSettingsReadOf<V>`, and `ITableSettingsUpdateConfig<V>` /
+  `IAdtTableSettingsUpdatable<T, V>` with `V` defaulting to either newer
+  system.
+- **The translation's words say what was measured.** An element written
+  with an attribute missing is refused (400 `00/001` with an `XML_PATH`
+  property), an absent element is accepted (200); measured on both, Code
+  `SDDIC_ADT_TTAB` (`tt:cond`) on both. SAP stores `value` alone
+  (`move_adt_to_ddv`, Code on both). The contract keeps the element required.
+  29.0.0 said all four attributes
+  are required; measured: an absent element is accepted, an incomplete one is
+  refused. The description is required on both systems (SWB_TOOL 019, now
+  measured on the cloud too).
+
+### Added
+
+- **`IAdtTableSettingsPatchable<T, V>.patchMetadata`** (decision 51): under
+  the caller's lock, read the working area with its ETag, overlay the
+  changes, write the whole document with `If-Match` — SAP resets every
+  setting a write leaves out (Code on both, measured on both).
+  `ITableSettingsChangesOf<V>` / `ITableSettingsChanges`: at least one
+  setting (`{}`, `{ buffering: {} }`, `{ translation: {} }` do not compile);
+  `ITableBufferingChange` (`areaKeyFields` only with type `G` or with the
+  type kept — SAP writes it only for `G`, Code on both); `ITableTranslationChange`
+  (`value` alone — the one attribute SAP stores); `isWritableByAMDP` on the
+  cloud only; no explicit `undefined` under `exactOptionalPropertyTypes`.
+  `ITableSettingsPatchConfig<V>`, `IAdtTableSettingsPatchOptions`
+  (`lockHandle` required, no `source`, no `ifMatch`) and
+  `IAdtTableSettingsPatchHeaders` (`accept` the literal
+  `TABLE_SETTINGS_MEDIA_TYPE`, no `contentType`: the implementation sends the
+  guarded PUT without a charset). A patch refuses an `areaKeyFields` change
+  whose resulting type is not `G`, before any PUT (SAP keeps the count only
+  for `G`, Code on both).
+- README and doc comment: "What the types cannot see" — a widened variant
+  or extra keys carried through a variable, union or spread pass the static
+  rules; `patchMetadata` writes back what it read.
+- README: judge a table's activation by its messages. With a stored data
+  class SAP does not know (`ZZNOP`), activating the table answered
+  `activationExecuted="true"` with type-`E` messages — on the cloud "Value
+  in field Data Class; value ZZNOP not permitted" (`DT(609)`), on premise
+  "Activation was cancelled." and "Value in field Data Class (value ZZNOP
+  not permitted)" — and the table stayed inactive (measured on both). The
+  ETag claims say what was measured (a fresh ETag: no charset `200`, a
+  charset `412`; a stale ETag never measured).
+
+### Changed
+
+- **What a consumer of 30.0.0 meets:**
+  - `ITableSettingsUpdateConfig` and `IAdtTableSettingsUpdatable` take a
+    variant `V` (default either newer system). With the default, a value of
+    either kind compiles, so every value that compiled against 30.0.0 still
+    does; with `'cloud'` a write without `isWritableByAMDP` no longer
+    compiles — the point of the fix.
+  - **Source break: the default write type's `isWritableByAMDP` widened
+    from `?: never`.** Code typed for 30.0.0 that relies on it being
+    `undefined` — an `updateMetadata` implementation declaring
+    `config: { settings: ITableSettings & { isWritableByAMDP?: never } }`, or
+    a helper taking 30.0.0's `ITableSettingsUpdateConfig['settings']` and
+    passing it on as such — gets `TS2322` when handed the 30.1.0 default
+    type. What to do: take `ITableSettingsOf<V>` (or
+    `ITableSettingsUpdateConfig<V>`) for the variant served, and on the cloud
+    write the flag as given.
+  - `ITableSettings` is unchanged; an exhaustive map over the keys of the
+    settings a cloud write carries (`keyof ITableSettingsOf<'cloud'>`) has
+    the new key `isWritableByAMDP`.
+
 ## [30.0.0] - 2026-11-19
 
 ### Breaking
