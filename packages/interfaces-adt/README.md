@@ -507,11 +507,22 @@ does not serve the collection, and its table has no entry.
   the whole DD09L row from the document and resets a field it leaves out, so
   every field the document carries is required; the cloud's
   `isWritableByAMDP` is optional and sent when given.
-- **The sequence is the caller's**: `lock` (stateful), `updateMetadata` with
-  the lock handle (and `transportRequest` as `corrNr`), `unlock` on every path,
-  then activate the **table**. Activating `TABL/DT` activated the settings,
-  measured on premise and on the cloud; activating `TABL/DTT` alone was never
-  measured, and the contract offers no activation of the settings.
+- **The sequence is the caller's, and its order keeps a concurrent edit:**
+  1. `lock` (stateful) — the settings' own lock;
+  2. `readMetadata` under the lock — what the settings are now, after any edit
+     made before the lock was taken;
+  3. change what you mean to change in what was read;
+  4. `updateMetadata` with the lock handle (and `transportRequest` as
+     `corrNr`), passing the read's ETag as `ifMatch`
+     (`IAdtTableSettingsUpdateOptions` keeps it from `IAdtUpdateOptions`), so
+     the system refuses the write (`412`) if the settings changed since that
+     read (a GET of the settings answers an ETag, measured; `If-Match` was
+     measured on other documents, not yet on this one);
+  5. `unlock`, on every path;
+  6. then activate the **table**. Activating `TABL/DT` activated the
+     settings, measured on premise and on the cloud; activating `TABL/DTT`
+     alone was never measured, and the contract offers no activation of the
+     settings.
 
 The codes are strings, since a system may define its own (customer data
 classes `USER`, `USER1`, …). The known values are constants for discovery,
