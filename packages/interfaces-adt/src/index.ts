@@ -322,11 +322,15 @@ export type {
   TextElementsPart,
   TextElementsPartOf,
   TextElementsReadVersion,
+  TextHeadingKey,
 } from './adt/IAdtTextElements';
 export {
   SELECTION_TEXT_MAX_LENGTH,
+  SELECTION_TEXT_NAME_MAX_LENGTH,
   TEXT_ELEMENTS_OBJECT_KINDS,
   TEXT_ELEMENTS_PARTS,
+  TEXT_HEADING_KEYS,
+  TEXT_SYMBOL_KEY_LENGTH,
 } from './adt/IAdtTextElements';
 export type {
   ITransformationConfig,

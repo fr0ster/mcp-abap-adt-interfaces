@@ -60,9 +60,13 @@
  * name (`…/sapl{group}` answers 404). The properties document names them
  * `FUGR/PX`; after a write the inactive list holds the group (`FUGR/F`) and
  * them as `PROG/PX`, named `SAPL{GROUP}`; one activation naming the group's
- * URI and theirs, each with `adtcore:name="{GROUP}"`, activates both. No
- * release's `typestructure` lists `FUGR/PX`, so the type tables carry
- * `PROG/PX` and `CLAS/OCX` only.
+ * URI and theirs activates both. No release's `typestructure` lists
+ * `FUGR/PX`, so a function group's text elements are typed `PROG/PX`, under
+ * their own URI: `{ type: 'PROG/PX', uri:
+ * '/sap/bc/adt/textelements/functiongroups/{group}' }` beside `FUGR/F`, or
+ * alone, activates them (measured on premise; the name may be `{GROUP}` or
+ * `SAPL{GROUP}`, the URI decides), and where-used resolves them to
+ * `PROG/PX` (measured).
  *
  * Types and constants only.
  */
@@ -132,11 +136,14 @@ export type TextElementsPartOf<K extends TextElementsObjectKind> =
  *   activation only the screen fields' `?...` placeholders, after a change
  *   the text as it was activated.
  *
- * Absent and `inactive` were measured on the cloud too, for a class's
- * symbols. A value outside these is not refused by SAP: it falls back to the
- * working area (Code: `CL_SEDX_ADT_RES_TEXTELEMENT`, an unmapped value is an
- * initial version, replaced by the working area's). The contract offers only
- * the three.
+ * SAP reads the value case-insensitively (`ACTIVE` answered the active
+ * version), and an unknown or empty value answers the working area (both
+ * measured on premise; Code: `CL_SEDX_ADT_RES_TEXTELEMENT` lower-cases it,
+ * and an unmapped value is replaced by the working area's version). The
+ * contract offers only the three.
+ *
+ * On the cloud every value is accepted (200) but not distinguished: no
+ * inactive version existed for the objects read (measured, read-only).
  */
 export type TextElementsReadVersion = AdtReadVersion;
 
@@ -164,6 +171,43 @@ export interface ITextSymbol {
 }
 
 /**
+ * A text symbol's key is exactly three characters: SAP reads a symbol line
+ * only with `=` within its first four characters, and refuses a longer key
+ * `406` `SEDX_ADT/106` "Cannot parse the source code" (measured on premise
+ * with `0001`; Code: `CL_SEDX_ADT_SRC_UTIL=>map_source_to_textpool_data`).
+ * Any three characters its key check accepts are taken — `0#1` and `AB1`
+ * were stored (measured). For a caller to check against; the contract does
+ * not.
+ */
+export const TEXT_SYMBOL_KEY_LENGTH = 3;
+
+/**
+ * The longest selection text name SAP takes: eight characters. A longer one
+ * refuses the whole write — `406`, "Key … exceeds 8 characters",
+ * `SEDX_ADT/102` (measured on premise; Code: `CL_SEDX_ADT_C_HANDLER_SELECTIS`).
+ * For a caller to check against; the contract does not.
+ */
+export const SELECTION_TEXT_NAME_MAX_LENGTH = 8;
+
+/**
+ * The heading keys SAP reads, in its order: any other is refused, `406`
+ * `SEDX_ADT/101` "Invalid key … defined" (measured on premise with
+ * `columnHeader_5`; Code: `CL_SEDX_ADT_C_HANDLER_HEADING`). Each is a field of
+ * {@link ITextHeadings}: `listHeader` is `listHeader`, `columnHeader_N` is
+ * `columnHeaderN`.
+ */
+export const TEXT_HEADING_KEYS = [
+  'listHeader',
+  'columnHeader_1',
+  'columnHeader_2',
+  'columnHeader_3',
+  'columnHeader_4',
+] as const;
+
+/** One of {@link TEXT_HEADING_KEYS}. */
+export type TextHeadingKey = (typeof TEXT_HEADING_KEYS)[number];
+
+/**
  * The longest selection text SAP takes: 30 characters. A longer one refuses
  * the whole write — `406`, "Length of text symbol … exceeds 30 characters",
  * `SEDX_ADT/110` — and nothing is saved (measured on premise, 2026-11-19;
@@ -183,9 +227,10 @@ export const SELECTION_TEXT_MAX_LENGTH = 30;
  */
 export interface ISelectionText {
   /**
-   * The parameter's or select option's name, as read: up to eight characters
-   * (Code: `CL_SEDX_ADT_C_HANDLER_SELECTIS` refuses a longer one,
-   * `SEDX_ADT/102`; not measured).
+   * The parameter's or select option's name, as read: up to
+   * {@link SELECTION_TEXT_NAME_MAX_LENGTH} characters. SAP does not check it
+   * against the selection screen: an unknown name (`P_NOPE`) is stored and
+   * read back (measured on premise).
    */
   readonly name: string;
   /**
@@ -208,10 +253,12 @@ export interface ISelectionText {
 /**
  * The list and column headings: one list header and four column headers,
  * the lines `listHeader=…` and `columnHeader_1=…` to `columnHeader_4=…` (read
- * on premise, 2026-11-19, all empty). Each is required, since a write sets
- * every one: a heading sent empty is deleted, any other inserted or updated
- * (Code: `lcl_textpool->save`, `update_header`; a headings write is not
- * measured). An empty heading is `''`.
+ * on premise, 2026-11-19). A read lists all five, an absent one as `''`.
+ * Each is required, since a write sets every one: a heading sent empty or
+ * left out of the body is deleted, any other inserted or updated (measured
+ * on premise; Code: `lcl_textpool->save`, `update_header` — an absent key and
+ * an empty one are the same initial field). The keys are
+ * {@link TEXT_HEADING_KEYS}.
  */
 export interface ITextHeadings {
   readonly listHeader: string;

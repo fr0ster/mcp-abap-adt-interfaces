@@ -36,7 +36,13 @@ import type {
   TextElementsPartOf,
   TextElementsReadVersion,
 } from '../adt/IAdtTextElements';
-import { SELECTION_TEXT_MAX_LENGTH } from '../adt/IAdtTextElements';
+import {
+  SELECTION_TEXT_MAX_LENGTH,
+  SELECTION_TEXT_NAME_MAX_LENGTH,
+  TEXT_HEADING_KEYS,
+  TEXT_SYMBOL_KEY_LENGTH,
+  type TextHeadingKey,
+} from '../adt/IAdtTextElements';
 import type {
   IAdtObjectActivation,
   IAdtTypedGroupLifecycle,
@@ -372,12 +378,17 @@ const _programTextsUntyped: IGetWhereUsedParams = {
   object_type: 'PROG/PX',
 };
 void _programTextsUntyped;
+// On the cloud too: a delivered program's text elements (RSPARAM), measured.
 const _programTextsCloud: IAdtWhereUsedParamsOf<'cloud'> = {
-  object_name: 'ZFG',
-  // @ts-expect-error on the cloud a program text's where-used is not measured
+  object_name: 'RSPARAM',
   object_type: 'PROG/PX',
 };
 void _programTextsCloud;
+const _programTextsModern: IAdtWhereUsedParamsOf = {
+  object_name: 'RSPARAM',
+  object_type: 'PROG/PX',
+};
+void _programTextsModern;
 const _classTextsOnPrem: IAdtWhereUsedParamsOf<'onprem'> = {
   object_name: 'ZCL_X',
   // @ts-expect-error "Where-Used List is not supported for Text Element: Class."
@@ -429,3 +440,42 @@ const _cloudActivation: IAdtGroupActivationReference<'cloud'> = {
   uri: '/sap/bc/adt/textelements/classes/zcl_x',
 };
 void _cloudActivation;
+
+// ── A function group's text elements are PROG/PX, under their own URI ─────
+
+// Measured on premise: the pair activates, and PROG/PX alone too; the URI
+// decides, the name may be the group's or SAPL{GROUP}.
+const _groupWithTexts: IAdtGroupActivationReference<'onprem'>[] = [
+  { name: 'ZFG', type: 'FUGR/F', uri: '/sap/bc/adt/functions/groups/zfg' },
+  {
+    name: 'ZFG',
+    type: 'PROG/PX',
+    uri: '/sap/bc/adt/textelements/functiongroups/zfg',
+  },
+];
+void _groupWithTexts;
+const _groupTextsAlone: IAdtGroupActivationReference<'onprem'> = {
+  name: 'SAPLZFG',
+  type: 'PROG/PX',
+  uri: '/sap/bc/adt/textelements/functiongroups/zfg',
+};
+void _groupTextsAlone;
+const _noGroupCode: IAdtGroupActivationReference<'onprem'> = {
+  name: 'ZFG',
+  // @ts-expect-error FUGR/PX is only the properties document's adtcore:type, no code of the tables
+  type: 'FUGR/PX',
+};
+void _noGroupCode;
+
+// ── The keys, closed where the type can say it ────────────────────────────
+
+const _headingKeys: readonly TextHeadingKey[] = TEXT_HEADING_KEYS;
+void _headingKeys;
+// @ts-expect-error SAP refuses any other heading key (406 SEDX_ADT/101)
+const _fifthColumn: TextHeadingKey = 'columnHeader_5';
+void _fifthColumn;
+const _limits: [3, 8] = [
+  TEXT_SYMBOL_KEY_LENGTH,
+  SELECTION_TEXT_NAME_MAX_LENGTH,
+];
+void _limits;

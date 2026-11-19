@@ -144,15 +144,16 @@ export interface IGetDiscoveryParams {
  *
  * - `CLAS/OCX`: not served, on premise and on the cloud — "Where-Used List is
  *   not supported for Text Element: Class." (measured on both);
- * - `PROG/PX`: served on premise — `/sap/bc/adt/textelements/programs/{name}`
- *   resolves to `PROG/PX`, and the scope offers `PROG/P` and `PROG/PS`
- *   (measured); a function group's text elements resolve to `PROG/PX` too
- *   (measured), so they are found through it. On the cloud not measured, so
- *   left out there.
+ * - `PROG/PX`: served on premise and on the cloud —
+ *   `/sap/bc/adt/textelements/programs/{name}` resolves to `PROG/PX` (on
+ *   premise the scope offers `PROG/P` and `PROG/PS`; on the cloud, for the
+ *   delivered `RSPARAM` and `%SCPRCPROF`, 200 with `globalType="PROG/PX"`);
+ *   a function group's text elements resolve to `PROG/PX` too (measured on
+ *   premise), so they are found through it.
  */
 interface ITextElementsWhereUsedRefused {
   readonly onprem: 'CLAS/OCX';
-  readonly cloud: 'CLAS/OCX' | 'PROG/PX';
+  readonly cloud: 'CLAS/OCX';
   readonly basis740: never;
 }
 
@@ -247,8 +248,8 @@ export type AdtGroupDeletionCode<V extends AdtVariant = AdtModernVariant> =
  * The codes where-used is asked of: every code of `V` but a function include,
  * whose group the where-used request has no field for, a message class
  * message, which has no address of its own, and the text elements' codes SAP
- * does not serve there ({@link ITextElementsWhereUsedRefused}: `CLAS/OCX`
- * everywhere, `PROG/PX` on the cloud, measured); and the utility codes
+ * does not serve there ({@link ITextElementsWhereUsedRefused}: `CLAS/OCX`,
+ * measured); and the utility codes
  * listing `whereUsed` (`VIEW/DV`).
  */
 export type AdtWhereUsedCode<V extends AdtVariant = AdtModernVariant> =
