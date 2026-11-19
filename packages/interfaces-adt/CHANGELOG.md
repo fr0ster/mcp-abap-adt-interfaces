@@ -32,8 +32,10 @@ the cloud writes. What it changes for a consumer is listed under Changed.
   property), an absent element is accepted (200); measured on both, Code
   `SDDIC_ADT_TTAB` (`tt:cond`) on both. SAP stores `value` alone
   (`move_adt_to_ddv`, Code on both). The contract keeps the element required.
-  The description is required on both systems (SWB_TOOL 019, now measured on
-  the cloud too).
+  29.0.0 said all four attributes
+  are required; measured: an absent element is accepted, an incomplete one is
+  refused. The description is required on both systems (SWB_TOOL 019, now
+  measured on the cloud too).
 
 ### Added
 
@@ -49,8 +51,14 @@ the cloud writes. What it changes for a consumer is listed under Changed.
   cloud only; no explicit `undefined` under `exactOptionalPropertyTypes`.
   `ITableSettingsPatchConfig<V>`, `IAdtTableSettingsPatchOptions`
   (`lockHandle` required, no `source`, no `ifMatch`) and
-  `IAdtTableSettingsPatchHeaders` (the media type alone: the implementation
-  sends the guarded PUT without a charset).
+  `IAdtTableSettingsPatchHeaders` (`accept` the literal
+  `TABLE_SETTINGS_MEDIA_TYPE`, no `contentType`: the implementation sends the
+  guarded PUT without a charset). A patch refuses an `areaKeyFields` change
+  whose resulting type is not `G`, before any PUT (SAP keeps the count only
+  for `G`, Code on both).
+- README and doc comment: "What the types cannot see" — a widened variant
+  or extra keys carried through a variable, union or spread pass the static
+  rules; `patchMetadata` writes back what it read.
 - README: judge a table's activation by its messages. With a stored data
   class SAP does not know (`ZZNOP`), activating the table answered
   `activationExecuted="true"` with type-`E` messages — on the cloud "Value
@@ -68,9 +76,15 @@ the cloud writes. What it changes for a consumer is listed under Changed.
     either kind compiles, so every value that compiled against 30.0.0 still
     does; with `'cloud'` a write without `isWritableByAMDP` no longer
     compiles — the point of the fix.
-  - **An implementation of `IAdtTableSettingsUpdatable` must accept the
-    field**: under the default variant its `config.settings` may carry
-    `isWritableByAMDP`, and on the cloud it should write it.
+  - **Source break: the default write type's `isWritableByAMDP` widened
+    from `?: never`.** Code typed for 30.0.0 that relies on it being
+    `undefined` — an `updateMetadata` implementation declaring
+    `config: { settings: ITableSettings & { isWritableByAMDP?: never } }`, or
+    a helper taking 30.0.0's `ITableSettingsUpdateConfig['settings']` and
+    passing it on as such — gets `TS2322` when handed the 30.1.0 default
+    type. What to do: take `ITableSettingsOf<V>` (or
+    `ITableSettingsUpdateConfig<V>`) for the variant served, and on the cloud
+    write the flag as given.
   - `ITableSettings` is unchanged; an exhaustive map over the keys of the
     settings a cloud write carries (`keyof ITableSettingsOf<'cloud'>`) has
     the new key `isWritableByAMDP`.
