@@ -12,8 +12,10 @@
  *
  * **Created with the table, activated with it.** SAP fills default settings
  * itself when a table is created (a read right after the create answers 200,
- * `version="new"`), and activating the table (`TABL/DT`) activates them. There
- * is no create, no delete and no activation of their own here.
+ * `version="new"`), and activating the table activates them: measured with
+ * the table's reference (`TABL/DT`) alone, on premise and on the cloud; an
+ * activation of `TABL/DTT` alone was never sent. There is no create, no
+ * delete and no activation of their own here.
  *
  * **An update replaces every setting: read, change, write back.** SAP writes
  * every field of DD09L from the document it is given (`CL_TABT_WB_PERSIST`,
@@ -169,7 +171,8 @@ export interface ITableSettingsConfig {
  *
  * `description` is required because SAP requires it: a write without
  * `adtcore:description` is refused, 400 "The description is missing"
- * (SWB_TOOL 019, measured on premise and on the cloud). It is the table's
+ * (SWB_TOOL 019, measured on premise only; the cloud write was sent with a
+ * description and never without one). It is the table's
  * short text, which a read of the settings answers as `adtcore:description`;
  * SAP does not change it through this resource.
  */
