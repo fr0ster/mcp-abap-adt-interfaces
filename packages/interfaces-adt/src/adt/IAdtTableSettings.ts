@@ -15,10 +15,10 @@
  * `version="new"`), and activating the table (`TABL/DT`) activates them. There
  * is no create, no delete and no activation of their own here.
  *
- * **A write is a replace.** SAP writes every field of DD09L from the document
- * it is given (`CL_TABT_WB_PERSIST`, `DDIF_TABT_PUT`); a field the document
- * leaves out is written as its initial value. This library chooses no value
- * for the caller: what is not stated in {@link ITableSettings} is not sent.
+ * **An update replaces every setting: read, change, write back.** SAP writes
+ * every field of DD09L from the document it is given (`CL_TABT_WB_PERSIST`,
+ * `DDIF_TABT_PUT`); a field the document leaves out is reset to its initial
+ * value. So {@link ITableSettings} requires every field the document carries.
  *
  * Types and constants only.
  */
@@ -100,35 +100,36 @@ export const TABLE_BUFFERING_TYPES = ['P', 'G', 'X'] as const;
 /** One of {@link TABLE_BUFFERING_TYPES}. */
 export type KnownTableBufferingType = (typeof TABLE_BUFFERING_TYPES)[number];
 
-/** The `ts:buffering` group. */
+/** The `ts:buffering` group: every element, as a write replaces them all. */
 export interface ITableBuffering {
   /** One of {@link TABLE_BUFFERING_ALLOWED}, or another the system knows. */
   readonly allowed: string;
   /**
-   * One of {@link TABLE_BUFFERING_TYPES}, or another the system knows.
-   * Absent: the element is not sent, and SAP writes no buffering type.
+   * One of {@link TABLE_BUFFERING_TYPES}, another the system knows, or `''`
+   * for no buffering type (what a read of an unbuffered table answers).
    */
-  readonly type?: string | undefined;
+  readonly type: string;
   /**
    * The number of key fields of a generic area (`SCHFELDANZ`); a count, so a
-   * number. SAP writes it only with type `G`.
+   * number. SAP writes it only with type `G`; a read answers `0` otherwise.
    */
-  readonly areaKeyFields?: number | undefined;
+  readonly areaKeyFields: number;
 }
 
 /**
- * What a write states, element by element, as the document names them
- * (transformation `SDDIC_ADT_TTAB`).
+ * Every setting a write carries, element by element, as the document names
+ * them (transformation `SDDIC_ADT_TTAB`).
  *
- * Data class, size category and buffering are required: they are what the
- * settings are written for, and with no value of its own chosen here, a
- * missing one would be written blank. The rest are optional, and an absent one
- * is not sent — SAP then writes its initial value. The value sets of those
- * are not measured, so they are strings.
+ * **An update replaces every setting: read, change, write back.** SAP writes
+ * every field of DD09L from the document it is given (`CL_TABT_WB_PERSIST`,
+ * `DDIF_TABT_PUT`), and a field the document leaves out is written as its
+ * initial value — reset, not kept. So every field the document carries is
+ * required: a caller reads the settings, changes what it means to change, and
+ * writes the whole set back. This library chooses no value for the caller.
  *
- * Not here: `supportsLoggingAssessment`, which SAP computes on every read, and
- * the cloud's `isWritableByAMDP`, which the on-premise transformation does not
- * know and no write has been measured with. Both are in what a read answers.
+ * `isWritableByAMDP` is the cloud's alone (the on-premise transformation does
+ * not know it): optional, and sent only when given. `supportsLoggingAssessment`
+ * is not here: SAP computes it on every read.
  */
 export interface ITableSettings {
   /**
@@ -140,15 +141,17 @@ export interface ITableSettings {
   readonly sizeCategory: string;
   readonly buffering: ITableBuffering;
   /** `ROWORCOLST`: `C` (column store) on the systems read. */
-  readonly storageType?: string | undefined;
-  /** `SHARINGTYPE`. */
-  readonly sharingType?: string | undefined;
-  /** `LOAD_UNIT`. */
-  readonly loadUnit?: string | undefined;
-  /** `UEBERSETZ`, sent as `ts:translation`'s `ts:value`. */
-  readonly translation?: string | undefined;
+  readonly storageType: string;
+  /** `SHARINGTYPE`; `''` on the systems read. */
+  readonly sharingType: string;
+  /** `LOAD_UNIT`; `''` on the systems read. */
+  readonly loadUnit: string;
+  /** `UEBERSETZ`, sent as `ts:translation`'s `ts:value`; `''` on the systems read. */
+  readonly translation: string;
   /** `PROTOKOLL`: log data changes. */
-  readonly loggingEnabled?: boolean | undefined;
+  readonly loggingEnabled: boolean;
+  /** The cloud's `ts:isWritableByAMDP`; absent, the element is not sent. */
+  readonly isWritableByAMDP?: boolean | undefined;
 }
 
 /**

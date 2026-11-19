@@ -3,9 +3,9 @@
 // A table's technical settings are their own contract: read through
 // `IAdtMetadataReadable`, locked through `IAdtLockable`, and written through
 // `IAdtTableSettingsUpdatable`, whose body is the config and never a
-// `source`. A write states what it sets: data class, size category and
-// buffering are required, a data class is any the system defines, and every
-// optional field takes `undefined`.
+// `source`. An update replaces every setting, so every field the document
+// carries is required; a code is any the system defines; the cloud's
+// `isWritableByAMDP` is optional and takes `undefined`.
 
 import type {
   IAdtLockable,
@@ -45,6 +45,11 @@ const settings: ITableSettings = {
   dataClassCategory: 'APPL1',
   sizeCategory: '1',
   buffering: { allowed: 'X', type: 'G', areaKeyFields: 1 },
+  storageType: 'C',
+  sharingType: '',
+  loadUnit: '',
+  translation: '',
+  loggingEnabled: false,
 };
 void handler.updateMetadata(
   {
@@ -66,16 +71,40 @@ void _noDescription;
 // @ts-expect-error the library chooses no data class for the caller
 const _noDataClass: ITableSettings = {
   sizeCategory: '0',
-  buffering: { allowed: 'N' },
+  buffering: { allowed: 'N', type: '', areaKeyFields: 0 },
+  storageType: 'C',
+  sharingType: '',
+  loadUnit: '',
+  translation: '',
+  loggingEnabled: false,
 };
 void _noDataClass;
+
+// A field left out would be reset by SAP, so leaving one out does not compile.
+// @ts-expect-error the storage type is part of the replace
+const _noStorageType: ITableSettings = {
+  dataClassCategory: 'APPL0',
+  sizeCategory: '0',
+  buffering: { allowed: 'N', type: '', areaKeyFields: 0 },
+  sharingType: '',
+  loadUnit: '',
+  translation: '',
+  loggingEnabled: false,
+};
+void _noStorageType;
+
+const _noBufferingType: ITableSettings = {
+  ...settings,
+  // @ts-expect-error the buffering type is part of the replace
+  buffering: { allowed: 'N', areaKeyFields: 0 },
+};
+void _noBufferingType;
 
 // A customer data class is a data class: the field is not limited to the
 // value help's six.
 const _customerDataClass: ITableSettings = {
+  ...settings,
   dataClassCategory: 'USER1',
-  sizeCategory: '0',
-  buffering: { allowed: 'N' },
 };
 void _customerDataClass;
 
@@ -87,26 +116,26 @@ void _knownIsAClass;
 // A size category and the buffering codes are not limited to SAP's standard
 // domain values either: the known ones are constants, the fields strings.
 const _otherCodes: ITableSettings = {
-  dataClassCategory: 'APPL0',
+  ...settings,
   sizeCategory: '10',
-  buffering: { allowed: 'Y', type: 'Z' },
+  buffering: { allowed: 'Y', type: 'Z', areaKeyFields: 0 },
 };
 void _otherCodes;
 const _knownSize: KnownTableSizeCategory = TABLE_SIZE_CATEGORIES[0];
 const _knownAllowed: KnownTableBufferingAllowed = TABLE_BUFFERING_ALLOWED[0];
 const _knownType: KnownTableBufferingType = TABLE_BUFFERING_TYPES[0];
 const _knownCodes: ITableSettings = {
+  ...settings,
   dataClassCategory: _known,
   sizeCategory: _knownSize,
-  buffering: { allowed: _knownAllowed, type: _knownType },
+  buffering: { allowed: _knownAllowed, type: _knownType, areaKeyFields: 0 },
 };
 void _knownCodes;
 
 const _numericSize: ITableSettings = {
-  dataClassCategory: 'APPL0',
+  ...settings,
   // @ts-expect-error a size category is a code, as the document carries it
   sizeCategory: 0,
-  buffering: { allowed: 'N' },
 };
 void _numericSize;
 
@@ -119,19 +148,12 @@ void handler.updateMetadata(
   withSource,
 );
 
-// ── Every optional field takes `undefined` ──────────────────────────────────
+// ── The cloud's `isWritableByAMDP` is optional and takes `undefined` ───────
 
-const _optional: ITableSettings = {
-  dataClassCategory: 'APPL0',
-  sizeCategory: '0',
-  buffering: { allowed: 'N', type: undefined, areaKeyFields: undefined },
-  storageType: undefined,
-  sharingType: undefined,
-  loadUnit: undefined,
-  translation: undefined,
-  loggingEnabled: undefined,
-};
-void _optional;
+const _cloud: ITableSettings = { ...settings, isWritableByAMDP: false };
+const _notGiven: ITableSettings = { ...settings, isWritableByAMDP: undefined };
+void _cloud;
+void _notGiven;
 
 const _options: IAdtTableSettingsUpdateOptions = {
   lockHandle: undefined,
