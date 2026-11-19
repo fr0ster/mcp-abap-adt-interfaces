@@ -23,7 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Every union that widens**, found by a compile-time probe of each export
   of 29.0.0 against 30.0.0 (every variant `onprem`, `cloud`, `basis740` and
-  `'onprem' | 'cloud'`; every operation). Nothing of `basis740` changed.
+  `'onprem' | 'cloud'`; every operation). No union of `basis740` widened; its
+  where-used parameters tighten as every variant's do (below).
   - The API names: `AdtApiName`, `keyof AdtApiTable<R>`, `AdtApi<V>`, and
     `AdtApiWith<V, Op>` / `AdtApiWithIn<T, Op>` for `Op` among `read`,
     `update`, `lock`, `unlock` — gain `textElements`; and with `AdtApiName`
@@ -61,8 +62,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       `PROG/PX`) needs the `container` when it is `PROG/PX` — narrow the code
       first, or build the `PROG/PX` case apart;
     - `interface X extends IGetWhereUsedParams` (the default, a union) no
-      longer compiles (`TS2312`): use a type alias with `&`, or extend a
-      single code's params (`IGetWhereUsedParams<'PROG/P'>` still does).
+      longer compiles (`TS2312`), nor does a generic
+      `interface X<C extends …> extends IGetWhereUsedParams<C>` (the type is
+      a conditional over `C`): use a type alias with `&`
+      (`type X<C extends …> = IGetWhereUsedParams<C> & { … }`), or extend a
+      single code's params (`IGetWhereUsedParams<'PROG/P'>` still does);
+    - a value of another code that carries a `container` of its own — say
+      `{ object_type: 'PROG/P', container: string }` built for a consumer's
+      own use — no longer passes as where-used parameters, on every variant
+      `basis740` included (whose where-used has no `PROG/PX` at all): drop
+      the field before passing it (`const { container, ...params } = value`);
+    - `object_type` and `container` are `readonly`, like the text elements'
+      `objectKind` and `part`: code that assigns them on a built value builds
+      a new one instead (`{ ...params, object_type: … }`, the container
+      stated with it).
   - **An explicit type argument that no longer fits.** `IGetWhereUsedParams`
     and `IGetWhereUsedScopeParams` constrain `C` to every code but
     `CLAS/OCX`, so `IGetWhereUsedParams<AdtTypeCode>` and
