@@ -451,7 +451,11 @@ export type IAdtTableSettingsPatchOptions<E extends IAdtError = IAdtError> =
 
 /**
  * The settings can be patched: the named settings changed, every other one
- * kept as it is.
+ * kept as it is — with one exception: when the resulting buffering type is
+ * not `G` (a type-only change from `G` to `P`, say), SAP clears the area-key
+ * count, since it writes `SCHFELDANZ` only for `G` (`move_adt_to_ddv`, Code
+ * on both systems). The patch does not block that change: the count means
+ * nothing for the other types.
  *
  * **Read, overlay, write the whole document.** SAP resets every setting a
  * write leaves out (`CL_TABT_WB_PERSIST->move_adt_to_ddv`, Code on both
