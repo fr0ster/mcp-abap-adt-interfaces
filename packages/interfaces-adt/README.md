@@ -711,6 +711,20 @@ mean the same. The CHANGELOG lists each type;
     `IGetWhereUsedParams['object_type']` and
     `IGetWhereUsedScopeParams['object_type']` do. `CLAS/OCX` is in none of
     them: SAP serves no where-used for it (measured).
+  - **An explicit type argument that no longer fits.** `IGetWhereUsedParams`
+    and `IGetWhereUsedScopeParams` constrain `C` to every code but
+    `CLAS/OCX`, so `IGetWhereUsedParams<AdtTypeCode>` and
+    `IGetWhereUsedScopeParams<AdtTypeCode>` (or with `| AdtGroupOnlyCode`)
+    stop compiling with `TS2344`: `AdtTypeCode` now holds `CLAS/OCX`. Drop
+    the argument and use the default (every code where-used is asked of),
+    use the variant's `IAdtWhereUsedParamsOf<V>` /
+    `IAdtWhereUsedScopeParamsOf<V>`, or pass
+    `Exclude<AdtTypeCode, 'CLAS/OCX'>`. These two are the only exported
+    generics where a type argument valid on 29.0.0 is refused on 30.0.0 —
+    found by instantiating every exported generic with its 29.0.0
+    constraints under 30.0.0's names (generics whose constraint names a
+    sibling parameter, such as `AdtCodeOfIn<Tables, V>`, take the caller's
+    own tables and were not instantiated).
   - References and answers: `IObjectReference['type']` (default
     `AdtTypeCode`), `IAdtCodedReference<AdtTypeCode>['type']` and
     `IAdtCodedReference<AdtCodeOf<V>>['type']`, and the known-code branch of
