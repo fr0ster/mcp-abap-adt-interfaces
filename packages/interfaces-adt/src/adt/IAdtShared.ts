@@ -143,8 +143,10 @@ export interface IGetDiscoveryParams {
  * referencing types for, it answers `200` with no result and "Where-Used List
  * is not supported for &1" (Code). So:
  *
- * - `CLAS/OCX`: not served, on premise and on the cloud — "Where-Used List is
- *   not supported for Text Element: Class." (measured on both);
+ * - `CLAS/OCX`: not served on the on-premise and cloud systems measured —
+ *   "Where-Used List is not supported for Text Element: Class." The answer
+ *   depends on the system's RIS metadata (Code), so another system could
+ *   differ;
  * - `PROG/PX`: served on premise and on the cloud —
  *   `/sap/bc/adt/textelements/programs/{name}` resolves to `PROG/PX` (on
  *   premise the scope offers `PROG/P` and `PROG/PS`; on the cloud, for the
