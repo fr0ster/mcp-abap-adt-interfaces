@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [30.1.1] - 2026-11-20
+
+Documentation only, no type change.
+
+### Changed
+
+- **The cloud `isWritableByAMDP` documents its activation rule.** On the
+  cloud `true` is accepted by the settings PUT, but activation then requires
+  buffering `N`, logging off and no replacement object; otherwise it answers
+  with message DT 771 "AMDP writes to table &1 not possible (&2)" (Code:
+  `CL_DDACT_TABL_CHECK_TCHSET_CL`; Measured on the cloud). On premise there
+  is no such check.
+
 ## [30.1.0] - 2026-11-19
 
 A design fix, released as a minor: the contract kept a field read-only that
