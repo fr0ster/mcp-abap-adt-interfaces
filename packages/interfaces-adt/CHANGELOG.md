@@ -18,7 +18,7 @@ Documentation only, no type change.
   buffering `N`, logging off and no replacement object; otherwise activation
   answers with message DT 771 "AMDP writes to table &1 not possible (&2)".
   Code (cloud): `RADTTCHK` FORM `chk_writable_amdp_usage` establishes all
-  three conditions. Measured (cloud, adt-clients live runs on 2026-11-20):
+  three conditions. Measured (cloud, adt-clients live runs on 2026-11-19):
   the PUT with the flag on was accepted, and activation answered HTTP 200
   with DT 771 in two separate runs, once with "(Logging activated)" and once
   with "(Buffering allowed)"; the replacement-object case is Code only. On

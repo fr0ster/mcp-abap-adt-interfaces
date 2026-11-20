@@ -214,7 +214,7 @@ export interface ITableSettings {
  *   `CL_DDACT_TABL_CHECK_TCHSET_CL`, local class `chk_writable_amdp_usage`,
  *   which goes to `RADTTCHK` FORM `chk_writable_amdp_usage`, and that FORM
  *   establishes all three conditions. Measured (cloud, adt-clients live runs
- *   on 2026-11-20): the PUT with the flag on was accepted, and activation
+ *   on 2026-11-19): the PUT with the flag on was accepted, and activation
  *   answered HTTP 200 with DT 771 in two separate runs, once with "(Logging
  *   activated)" and once with "(Buffering allowed)"; the replacement-object
  *   case is Code only.
