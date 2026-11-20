@@ -212,12 +212,16 @@ export interface ITableSettings {
  *   otherwise activation answers with message DT 771 "AMDP writes to table
  *   &1 not possible (&2)", once per condition that applies. Code (cloud):
  *   `CL_DDACT_TABL_CHECK_TCHSET_CL`, local class `chk_writable_amdp_usage`,
- *   which goes to `RADTTCHK` FORM `chk_writable_amdp_usage`. Measured
- *   (cloud): the PUT was accepted, and activation answered HTTP 200 carrying
- *   the E message.
+ *   which goes to `RADTTCHK` FORM `chk_writable_amdp_usage`, and that FORM
+ *   establishes all three conditions. Measured (cloud, adt-clients live runs
+ *   on 2026-11-20): the PUT with the flag on was accepted, and activation
+ *   answered HTTP 200 with DT 771 in two separate runs, once with "(Logging
+ *   activated)" and once with "(Buffering allowed)"; the replacement-object
+ *   case is Code only.
  * - **onprem: refused.** Neither the on-premise transformation nor its
- *   `move_adt_to_ddv` maps it (Code, on premise), and a read answers none. There
- *   is no DT 771 check either: message class DT has no 771 (Code).
+ *   `move_adt_to_ddv` maps it (Code, on premise), and a read answers none.
+ *   There is no DT 771 check either: message class DT has no 771, and the
+ *   on-premise `RADTTCHK` holds no AMDP check (Code, on premise).
  */
 export interface ITableSettingsByVariant {
   readonly onprem: { readonly isWritableByAMDP?: never };
