@@ -206,9 +206,18 @@ export interface ITableSettings {
  *   reads the element inside a `tt:cond` (Code, cloud). Measured on the cloud
  *   (2026-11-19): written `true`, read back `true`; a later PUT without it,
  *   read back `false`. A write without it would reset it, so it does not
- *   compile.
+ *   compile. `true` is accepted by the settings PUT, but activating the
+ *   table then requires buffering `N` (not allowed; "allowed but switched
+ *   off" counts as allowed), logging off and no replacement object —
+ *   otherwise activation answers with message DT 771 "AMDP writes to table
+ *   &1 not possible (&2)", once per condition that applies. Code (cloud):
+ *   `CL_DDACT_TABL_CHECK_TCHSET_CL`, local class `chk_writable_amdp_usage`,
+ *   which goes to `RADTTCHK` FORM `chk_writable_amdp_usage`. Measured
+ *   (cloud): the PUT was accepted, and activation answered HTTP 200 carrying
+ *   the E message.
  * - **onprem: refused.** Neither the on-premise transformation nor its
- *   `move_adt_to_ddv` maps it (Code, on premise), and a read answers none.
+ *   `move_adt_to_ddv` maps it (Code, on premise), and a read answers none. There
+ *   is no DT 771 check either: message class DT has no 771 (Code).
  */
 export interface ITableSettingsByVariant {
   readonly onprem: { readonly isWritableByAMDP?: never };
