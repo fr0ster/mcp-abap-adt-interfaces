@@ -13,12 +13,17 @@ Documentation only, no type change.
 
 ### Changed
 
-- **The cloud `isWritableByAMDP` documents its activation rule.** On the
-  cloud `true` is accepted by the settings PUT, but activation then requires
-  buffering `N`, logging off and no replacement object; otherwise it answers
-  with message DT 771 "AMDP writes to table &1 not possible (&2)" (Code:
-  `CL_DDACT_TABL_CHECK_TCHSET_CL`; Measured on the cloud). On premise there
-  is no such check.
+- **The cloud `isWritableByAMDP` documents its activation rule.** `true` is
+  accepted by the settings PUT, but activating the table then requires
+  buffering `N`, logging off and no replacement object; otherwise activation
+  answers with message DT 771 "AMDP writes to table &1 not possible (&2)".
+  Code (cloud): `RADTTCHK` FORM `chk_writable_amdp_usage` establishes all
+  three conditions. Measured (cloud, adt-clients live runs on 2026-11-20):
+  the PUT with the flag on was accepted, and activation answered HTTP 200
+  with DT 771 in two separate runs, once with "(Logging activated)" and once
+  with "(Buffering allowed)"; the replacement-object case is Code only. On
+  premise (Code): message class DT has no 771, and `RADTTCHK` holds no AMDP
+  check.
 
 ## [30.1.0] - 2026-11-19
 
