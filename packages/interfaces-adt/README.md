@@ -668,6 +668,16 @@ does not serve the collection, and its table has no entry.
   `ITableSettingsUpdateConfig<V>` / `IAdtTableSettingsUpdatable<T, V>` take
   the variant (default: a value of either kind). A cloud read
   (`ITableSettingsReadOf<'cloud'>`) is written back as it is.
+  **Activation rule (since 30.1.1):** `true` is accepted by the PUT, but
+  activating the table then requires buffering `N`, logging off and no
+  replacement object; otherwise activation answers with message DT 771
+  "AMDP writes to table &1 not possible (&2)". Code (cloud): `RADTTCHK` FORM
+  `chk_writable_amdp_usage` establishes all three conditions. Measured
+  (cloud, adt-clients live runs on 2026-11-20): the PUT with the flag on
+  was accepted, and activation answered HTTP 200 with DT 771 in two
+  separate runs, once with "(Logging activated)" and once with "(Buffering
+  allowed)"; the replacement-object case is Code only. On premise (Code):
+  message class DT has no 771, and `RADTTCHK` holds no AMDP check.
 - **Patch** with `IAdtTableSettingsPatchable<T, V>` (since 30.1.0, decision
   51): `patchMetadata` takes the table and `ITableSettingsChangesOf<V>` — at
   least one setting; `buffering` field by field, with `areaKeyFields` only
