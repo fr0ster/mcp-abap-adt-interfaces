@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [30.1.1] - 2026-11-20
+
+Documentation only, no type change.
+
+### Changed
+
+- **The cloud `isWritableByAMDP` documents its activation rule.** `true` is
+  accepted by the settings PUT, but activating the table then requires
+  buffering `N`, logging off and no replacement object; otherwise activation
+  answers with message DT 771 "AMDP writes to table &1 not possible (&2)".
+  Code (cloud): `RADTTCHK` FORM `chk_writable_amdp_usage` establishes all
+  three conditions. Measured (cloud, adt-clients live runs on 2026-11-19):
+  the PUT with the flag on was accepted, and activation answered HTTP 200
+  with DT 771 in two separate runs, once with "(Logging activated)" and once
+  with "(Buffering allowed)"; the replacement-object case is Code only. On
+  premise (Code): message class DT has no 771, and `RADTTCHK` holds no AMDP
+  check.
+
 ## [30.1.0] - 2026-11-19
 
 A design fix, released as a minor: the contract kept a field read-only that
