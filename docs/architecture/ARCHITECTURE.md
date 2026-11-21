@@ -178,6 +178,34 @@ and 88"; the count above is the compiler's, over every exported interface.) A lo
 all had that gap. `__typechecks__/errorStrategyOnEveryMember.ts` now fails to
 compile if a member answering an `IAdtResponse` stops taking `analyse`.
 
+### The facts members (interfaces-adt 30.2.0)
+
+The table above describes the wire contract, and every member follows it except
+the abapGit facts members. These are the key-based members, the new forms of
+`link` and `checkExternalRepo`, and `listReposQuiet`, one atom each
+(`IAdtAbapGitPullRepo<T, F>`, …). Their requests can carry a remote
+repository's credential, so neither axis is handed the wire answer:
+
+| axis | shape | is handed |
+|---|---|---|
+| error | `IAbapGitFactsAnalyse<F, E>` = `(verdict: IAbapGitStructuredError \| AdtNoFailure, answer?: IAbapGitFactsResponse<F>) => E \| AdtNoFailure` | the integer `status` and the route's facts `F`, never the document |
+| result | `IAbapGitFactsResultStrategy<T, F>` = `(answer: IAbapGitFactsResponse<F>) => T` | the same facts answer |
+
+`F` is what the implementation's reducer keeps from SAP's document, and `T` is
+what the caller reads. They are separate type parameters. The default failure is
+`IAbapGitStructuredError`: the status and the T100 key (`facts`), fixed words in
+`message`, no `response` and no `rfc`, and a `request` of method and path. A
+caller's own `E` must extend it.
+
+**The facts options do not come from `IAdtAnalyseOptions`.**
+`IAbapGitFactsOptions`, `IAbapGitNewFormOptions` and `IAbapGitQuietOptions`
+declare their own `analyse` as an `IAbapGitFactsAnalyse`. An `IAnalyse` does not
+fit them, and an `IResultStrategy` does not fit a facts reader, because the facts
+answer is not an `IAdtWireResponse`. Each atom has two overloads, for the
+caller's `E` or the default, and no wire-typed one. The atoms still take
+`analyse` with every call, so `errorStrategyOnEveryMember.ts` lists them. The
+legacy members of `IAdtAbapGitClient` keep the wire contract, deprecated.
+
 ### Where a strategy is supplied
 
 **Into the implementation, once** (decision 22). A member's result type is a type
