@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "composite": false,
+    "incremental": false,
+    "paths": {
+      "@mcp-abap-adt/interfaces-adt": ["."]
+    }
+  },
+  "include": [
+    "src/__typechecks__/abapGit.ts",
+    "src/__typechecks__/abapGitLegacyCalls.ts"
+  ],
+  "exclude": ["node_modules", "dist"]
+}
