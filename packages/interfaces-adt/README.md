@@ -54,7 +54,7 @@ npm install @mcp-abap-adt/interfaces-adt
 | `service/` | 1 | service definitions and bindings |
 | `shared/` | 1 | what more than one object type needs |
 
-Six directories, all ADT. `connection/` left for `interfaces-adt-connection` in 11.0.0. `sap/`, `auth/`, `token/`, `session/`, `serviceKey/`, `store/`, `validation/` and `Headers.ts` were here until 9.0.0 and are listed above under what left; `__typechecks__/` holds 47 files that compile shapes this contract must and must not accept, and ships in no tarball.
+Six directories, all ADT. `connection/` left for `interfaces-adt-connection` in 11.0.0. `sap/`, `auth/`, `token/`, `session/`, `serviceKey/`, `store/`, `validation/` and `Headers.ts` were here until 9.0.0 and are listed above under what left; `__typechecks__/` holds 47 files that compile shapes this contract must and must not accept, and ships in no tarball. Two of them, `abapGit.ts` and `abapGitLegacyCalls.ts`, import `@mcp-abap-adt/interfaces-adt` by name and resolve it through `dist/index.d.ts` (`tsconfig.typecheck-entry.json`), so a standalone `npm run test:check` needs `npm run build` first; the root `npm run check` and CI build first.
 
 The contract rules — what a member answers, how a strategy is supplied, how a contract is built — are in [`docs/architecture/ARCHITECTURE.md`](../../docs/architecture/ARCHITECTURE.md). Domain-by-domain documentation with examples used to sit in the facade's README; the facade is deleted, and each package documents its own contracts.
 
@@ -494,8 +494,11 @@ Every new member is addressed by what SAP gave the caller: a repository's
 **facts** contract. A result strategy and an analyser are given
 `IAbapGitFactsResponse<F>` (the integer `status` and the route's `facts`), never
 the wire document. The default error, `IAbapGitStructuredError`, carries
-`facts` (`status`, `messageClass?`, `messageNumber?`, `gitHttpStatus?`), fixed
-words in `message`, no `response`, `rfc`, `adtType`, `namespace` or `code`, and a `request` of method and path. A
+`facts` (`status`, `messageClass?`, `messageNumber?`, `gitHttpStatus?`), one of
+the fixed sentences of `ABAPGIT_ERROR_MESSAGES` in `message` (`refused`,
+`refusedWithMessage`, `gitHostRefused`, `noResponse`, `unreadableAnswer`,
+`judgedByAnalyser`; the type is `AbapGitErrorMessage`, and no other string
+compiles), no `response`, `rfc`, `adtType`, `namespace` or `code`, and a `request` of method and path. A
 credential is never part of either.
 
 ```ts

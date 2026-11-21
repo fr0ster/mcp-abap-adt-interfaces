@@ -22,11 +22,19 @@ under Changed.
 - **The facts exchange.** `IAbapGitFactsResponse<F>` (`status`, `facts`),
   `IAbapGitErrorFacts` (`status`, `messageClass?`, `messageNumber?`,
   `gitHttpStatus?`), `IAbapGitStructuredError` (an `IAdtError` with `facts`,
-  `response?: undefined`, `request?: { method; path }` and a fixed `message`),
+  `response?: undefined`, `request?: { method; path }` and a `message` that is one of
+  `ABAPGIT_ERROR_MESSAGES`),
   `IAbapGitFactsResultStrategy<T, F>` and `IAbapGitFactsAnalyse<F, E>`. A new
   form's result strategy and analyser are given the facts, never the wire
   document, so an `IResultStrategy` or an `IAnalyse` does not fit either of
   them.
+- **`ABAPGIT_ERROR_MESSAGES`**, a constant: one fixed sentence per case of a
+  facts error (`refused`, `refusedWithMessage`, `gitHostRefused`,
+  `noResponse`, `unreadableAnswer`, `judgedByAnalyser`), with
+  `AbapGitErrorCase` (its keys) and `AbapGitErrorMessage` (its sentences).
+  `IAbapGitStructuredError.message` is an `AbapGitErrorMessage`, so SAP's text
+  or any other string does not compile into it. Implementations build their
+  messages from this list.
 - **The options.** `IAbapGitFactsOptions<F, E>` (`analyse?`, `credentials?`),
   `IAbapGitNewFormOptions<F, E>` (`credentials: IAbapGitCredentials | null`,
   required, where `null` means an anonymous call) and `IAbapGitHeaderOptions`
