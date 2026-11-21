@@ -253,6 +253,12 @@ const newFormOptions = { headers, credentials };
 // @ts-expect-error both forms mixed, variables: legacy args, new-form options
 void both.link(legacyLinkArgs, newFormOptions);
 
+// Only `remoteUser?: never` refuses this one: an un-annotated variable is not
+// checked for excess properties, and every other field fits the new form.
+const mixedArgs = { ...newLinkArgs, remoteUser: 'u' };
+// @ts-expect-error both forms mixed, variables: new-form args with `remoteUser`
+void both.link(mixedArgs, newFormOptions);
+
 // @ts-expect-error `credentials: undefined` is not a new form — the field is required
 void both.link(newLinkArgs, { headers, credentials: undefined });
 
