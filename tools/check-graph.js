@@ -64,6 +64,14 @@ for (const dir of fs.readdirSync(packagesDir)) {
       }
       if (spec.startsWith('node:')) continue;
       const short = spec.replace('@mcp-abap-adt/', '');
+      // A type-check fixture may import its own package by name, to compile
+      // against the built entry as a consumer does. That is a self-reference,
+      // not a dependency edge, and `__typechecks__/` ships in no tarball.
+      if (
+        spec === manifest.name &&
+        file.startsWith(path.join(src, '__typechecks__') + path.sep)
+      )
+        continue;
       if (!ALLOWED[dir].includes(short))
         problems.push(`${rel}: imports ${spec}, not allowed for ${dir}`);
       else if (!declared.includes(spec))
