@@ -13,7 +13,21 @@
 import type {
   IAbapDebugger,
   IAbapUnitRunner,
+  IAdtAbapGitBranchInfo,
+  IAdtAbapGitCheckExternalRepoNewForm,
+  IAdtAbapGitCheckRepo,
   IAdtAbapGitClient,
+  IAdtAbapGitFile,
+  IAdtAbapGitLinkNewForm,
+  IAdtAbapGitListReposQuiet,
+  IAdtAbapGitModifiedObjects,
+  IAdtAbapGitPullRepo,
+  IAdtAbapGitPullRepoInDialog,
+  IAdtAbapGitPush,
+  IAdtAbapGitRunLog,
+  IAdtAbapGitStaging,
+  IAdtAbapGitStatus,
+  IAdtAbapGitSwitchBranch,
   IAdtActivatable,
   IAdtCheckable,
   IAdtCreatable,
@@ -123,6 +137,48 @@ type EveryMemberTakesAnalyse<I> = false extends {
 
 export type _IAdtAbapGitClient = Assert<
   EveryMemberTakesAnalyse<IAdtAbapGitClient<Probe, Probe, Probe, Probe>>
+>;
+export type _IAdtAbapGitListReposQuiet = Assert<
+  EveryMemberTakesAnalyse<IAdtAbapGitListReposQuiet<Probe, Probe>>
+>;
+export type _IAdtAbapGitLinkNewForm = Assert<
+  EveryMemberTakesAnalyse<IAdtAbapGitLinkNewForm<Probe, Probe>>
+>;
+export type _IAdtAbapGitCheckExternalRepoNewForm = Assert<
+  EveryMemberTakesAnalyse<IAdtAbapGitCheckExternalRepoNewForm<Probe, Probe>>
+>;
+export type _IAdtAbapGitPullRepo = Assert<
+  EveryMemberTakesAnalyse<IAdtAbapGitPullRepo<Probe, Probe>>
+>;
+export type _IAdtAbapGitPullRepoInDialog = Assert<
+  EveryMemberTakesAnalyse<IAdtAbapGitPullRepoInDialog<Probe, Probe>>
+>;
+export type _IAdtAbapGitBranchInfo = Assert<
+  EveryMemberTakesAnalyse<IAdtAbapGitBranchInfo<Probe, Probe>>
+>;
+export type _IAdtAbapGitModifiedObjects = Assert<
+  EveryMemberTakesAnalyse<IAdtAbapGitModifiedObjects<Probe, Probe>>
+>;
+export type _IAdtAbapGitStatus = Assert<
+  EveryMemberTakesAnalyse<IAdtAbapGitStatus<Probe, Probe>>
+>;
+export type _IAdtAbapGitStaging = Assert<
+  EveryMemberTakesAnalyse<IAdtAbapGitStaging<Probe, Probe>>
+>;
+export type _IAdtAbapGitCheckRepo = Assert<
+  EveryMemberTakesAnalyse<IAdtAbapGitCheckRepo<Probe, Probe>>
+>;
+export type _IAdtAbapGitRunLog = Assert<
+  EveryMemberTakesAnalyse<IAdtAbapGitRunLog<Probe, Probe>>
+>;
+export type _IAdtAbapGitPush = Assert<
+  EveryMemberTakesAnalyse<IAdtAbapGitPush<Probe, Probe>>
+>;
+export type _IAdtAbapGitFile = Assert<
+  EveryMemberTakesAnalyse<IAdtAbapGitFile<Probe, Probe>>
+>;
+export type _IAdtAbapGitSwitchBranch = Assert<
+  EveryMemberTakesAnalyse<IAdtAbapGitSwitchBranch<Probe, Probe>>
 >;
 export type _IAdtIncludeEnhancementHost = Assert<
   EveryMemberTakesAnalyse<IAdtIncludeEnhancementHost<Probe, Probe, Probe>>

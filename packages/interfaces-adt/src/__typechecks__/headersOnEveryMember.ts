@@ -27,7 +27,21 @@ import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type {
   IAbapDebugger,
   IAbapUnitRunner,
+  IAdtAbapGitBranchInfo,
+  IAdtAbapGitCheckExternalRepoNewForm,
+  IAdtAbapGitCheckRepo,
   IAdtAbapGitClient,
+  IAdtAbapGitFile,
+  IAdtAbapGitLinkNewForm,
+  IAdtAbapGitListReposQuiet,
+  IAdtAbapGitModifiedObjects,
+  IAdtAbapGitPullRepo,
+  IAdtAbapGitPullRepoInDialog,
+  IAdtAbapGitPush,
+  IAdtAbapGitRunLog,
+  IAdtAbapGitStaging,
+  IAdtAbapGitStatus,
+  IAdtAbapGitSwitchBranch,
   IAdtActivatable,
   IAdtCheckable,
   IAdtCreatable,
@@ -215,6 +229,60 @@ export type _HeadersIAdtAbapGitClient = Assert<
     never,
     'link' | 'pull' | 'checkExternalRepo'
   >
+>;
+export type _HeadersIAdtAbapGitListReposQuiet = Assert<
+  EveryMemberTakesHeaders<IAdtAbapGitListReposQuiet<Probe, Probe>>
+>;
+export type _HeadersIAdtAbapGitLinkNewForm = Assert<
+  EveryMemberTakesHeaders<IAdtAbapGitLinkNewForm<Probe, Probe>, never, 'link'>
+>;
+export type _HeadersIAdtAbapGitCheckExternalRepoNewForm = Assert<
+  EveryMemberTakesHeaders<
+    IAdtAbapGitCheckExternalRepoNewForm<Probe, Probe>,
+    never,
+    'checkExternalRepo'
+  >
+>;
+export type _HeadersIAdtAbapGitPullRepo = Assert<
+  EveryMemberTakesHeaders<IAdtAbapGitPullRepo<Probe, Probe>, never, 'pullRepo'>
+>;
+export type _HeadersIAdtAbapGitPullRepoInDialog = Assert<
+  EveryMemberTakesHeaders<
+    IAdtAbapGitPullRepoInDialog<Probe, Probe>,
+    never,
+    'pullRepoInDialog'
+  >
+>;
+export type _HeadersIAdtAbapGitBranchInfo = Assert<
+  EveryMemberTakesHeaders<
+    IAdtAbapGitBranchInfo<Probe, Probe>,
+    never,
+    'getBranchInfo'
+  >
+>;
+export type _HeadersIAdtAbapGitModifiedObjects = Assert<
+  EveryMemberTakesHeaders<IAdtAbapGitModifiedObjects<Probe, Probe>>
+>;
+export type _HeadersIAdtAbapGitStatus = Assert<
+  EveryMemberTakesHeaders<IAdtAbapGitStatus<Probe, Probe>>
+>;
+export type _HeadersIAdtAbapGitStaging = Assert<
+  EveryMemberTakesHeaders<IAdtAbapGitStaging<Probe, Probe>>
+>;
+export type _HeadersIAdtAbapGitCheckRepo = Assert<
+  EveryMemberTakesHeaders<IAdtAbapGitCheckRepo<Probe, Probe>>
+>;
+export type _HeadersIAdtAbapGitRunLog = Assert<
+  EveryMemberTakesHeaders<IAdtAbapGitRunLog<Probe, Probe>>
+>;
+export type _HeadersIAdtAbapGitPush = Assert<
+  EveryMemberTakesHeaders<IAdtAbapGitPush<Probe, Probe>>
+>;
+export type _HeadersIAdtAbapGitFile = Assert<
+  EveryMemberTakesHeaders<IAdtAbapGitFile<Probe, Probe>>
+>;
+export type _HeadersIAdtAbapGitSwitchBranch = Assert<
+  EveryMemberTakesHeaders<IAdtAbapGitSwitchBranch<Probe, Probe>>
 >;
 export type _HeadersIAdtIncludeEnhancementHost = Assert<
   EveryMemberTakesHeaders<IAdtIncludeEnhancementHost<Probe, Probe, Probe>>
