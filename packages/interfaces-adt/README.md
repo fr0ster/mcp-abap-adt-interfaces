@@ -13,6 +13,7 @@ ADT contracts: object operations, runtime analysis, execution, feeds and service
 - Since 15.1.0 the plain class and program run take `debuggee` (`IDebuggeeIds`): the terminal id and IDE id a terminal-mode listener catches the run by.
 - Since 23.1.0 the ABAP Unit run registry: `ABAP_UNIT_RUN_TYPES`, every `osl:object type` value a run may name, what a run of it runs and on what evidence; `AbapUnitRunObjectType` (its keys), `AbapUnitRunTarget` (an object or a package) and the generic runner contract `IAbapUnitRunner`. Additions only. See "The ABAP Unit run registry".
 - Since 30.0.0 the text elements of a program, a class or a function group — text symbols, selection texts, list and column headings — are their own contract (`/sap/bc/adt/textelements/…`, lock class `TEXT`): `IAdtTextElementsReadable` reads one part, `IAdtTextElementsUpdatable` writes one whole part from a typed document (`ITextSymbol`, `ISelectionText`, `ITextHeadings`), `ITextElementsResults`. The tables gain the API `textElements` (`PROG/PX`, `CLAS/OCX`, kind `text_elements`) on S/4HANA and ABAP cloud: a map over `AdtApiName`, `AdtTypeCode`, `AdtObjectKind`, `CodesOfMain<'PROG'>`, `CodesOfMain<'CLAS'>` or a union derived from the tables — the utility, group activation and where-used codes among them (`AdtUtilityCode`, `AdtGroupActivationCode`, `AdtWhereUsedCode`) — adds the members; the reason for the major. The typed `activateObjects` / `activateObjectsGroup` take the text elements' reference beside the object's. See "Text elements" and "Migrating to 30.0.0".
+- Since 30.2.0 the abapGit contracts have key-based members and facts forms: one atom per member (`IAdtAbapGitPullRepo`, `IAdtAbapGitRunLog`, `IAdtAbapGitPush`, … fourteen in all), each generic over its result `T` and its route's facts `F`, answering `IAbapGitStructuredError` by default (status and T100 key, never SAP's text); the new forms of `link` and `checkExternalRepo` take `credentials: IAbapGitCredentials | null`. The legacy members are deprecated and unchanged apart from `credentials?: never` on the options of `link`, `pull` and `checkExternalRepo`; the one edge case that no longer compiles is in the CHANGELOG. See "abapGit: key-based members and facts".
 - Since 30.1.0 a settings write is typed by the system kind: on the cloud it requires `isWritableByAMDP` (a cloud write without it reset it to `false`, measured; 30.0.0 refused it on a write), on premise it refuses it (nothing maps it there, Code). `IAdtTableSettingsPatchable.patchMetadata` reads, overlays `ITableSettingsChangesOf<V>` and writes the whole document with `If-Match` (decision 51). What it breaks is in the CHANGELOG. See "A table's technical settings".
 - Since 29.0.0 `ITableSettings.translation` is an `ITableTranslation`, the `ts:translation` element's four attributes, where 28.0.0 had a string: a `ts:translation` element written with an attribute missing is refused (400 `00/001`), and an absent element is accepted (both measured on both systems). See "Migrating to 29.0.0".
 - Since 28.0.0 a table's technical settings (`TABL/DTT`, `tableSettings` in the on-premise and cloud tables) are their own contract: `ITableSettingsConfig`, `ITableSettingsUpdateConfig` with the full `ITableSettings`, the write atom `IAdtTableSettingsUpdatable` and `ITableSettingsResults`. A map over `AdtApiName`, `AdtTypeCode`, `AdtObjectKind`, `CodesOfMain<'TABL'>` or a union derived from the tables (`AdtApi<V>`, `AdtTypeCodeOf<V>`, `AdtApiWith<V, Op>`, …) adds the new member — the reason for the major. See "A table's technical settings" and "Migrating to 28.0.0".
@@ -53,7 +54,7 @@ npm install @mcp-abap-adt/interfaces-adt
 | `service/` | 1 | service definitions and bindings |
 | `shared/` | 1 | what more than one object type needs |
 
-Six directories, all ADT. `connection/` left for `interfaces-adt-connection` in 11.0.0. `sap/`, `auth/`, `token/`, `session/`, `serviceKey/`, `store/`, `validation/` and `Headers.ts` were here until 9.0.0 and are listed above under what left; `__typechecks__/` holds 44 files that compile shapes this contract must and must not accept, and ships in no tarball.
+Six directories, all ADT. `connection/` left for `interfaces-adt-connection` in 11.0.0. `sap/`, `auth/`, `token/`, `session/`, `serviceKey/`, `store/`, `validation/` and `Headers.ts` were here until 9.0.0 and are listed above under what left; `__typechecks__/` holds 47 files that compile shapes this contract must and must not accept, and ships in no tarball.
 
 The contract rules — what a member answers, how a strategy is supplied, how a contract is built — are in [`docs/architecture/ARCHITECTURE.md`](../../docs/architecture/ARCHITECTURE.md). Domain-by-domain documentation with examples used to sit in the facade's README; the facade is deleted, and each package documents its own contracts.
 
@@ -425,7 +426,7 @@ Which request sets what was read from `@mcp-abap-adt/adt-clients`. For a chain,
 the main write counts (the message class message's create and update: the
 PUT). Where a member's implementations disagree, the majority decides.
 
-The members that take `headers`: `IAdtAbapGitClient`: `link`, `pull`, `checkExternalRepo`; `IAdtCreatable`: `create`; `IAdtUpdatable`: `update`; `IAdtMetadataUpdatable`: `updateMetadata`; `IAdtDeletable`: `delete`, `checkDeletion`; `IAdtCheckable`: `check`; `IAdtActivatable`: `activate`; `IFeatureToggleObject`: `checkState`; `IAdtTransportObjectActions`: `removeObject`, `addObject`, `createTask`, `changeTaskType`; `IAdtTransportMoveObjects`: `moveObjects`; `IAbapUnitRunner`: `runSync`; `IAdtWhereUsed`: `getWhereUsed`, `getWhereUsedScope`; `IAdtVirtualFolders`: `getVirtualFoldersContents`; `IAdtRepositoryStructure`: `fetchNodeStructure`; `IAdtGroupLifecycle`: `activateObjectsGroup`, `checkDeletionGroup`, `deleteObjectsGroup`; `IAdtObjectActivation`: `activateObjects`; `IAdtDataPreview`: `getSqlQuery`, `getTableContents`; `ITraceScheduling`: `scheduleTrace`; `IAbapDebugger`: `setBreakpoints`, `getChildVariables`, `getVariables`, `syncBreakpoints`, `setDebuggerSettings`; `IAmdpDebugger`: `getDataPreview`.
+The members that take `headers`: `IAdtAbapGitClient`: `link`, `pull`, `checkExternalRepo`; `IAdtAbapGitLinkNewForm`: `link`; `IAdtAbapGitCheckExternalRepoNewForm`: `checkExternalRepo`; `IAdtAbapGitPullRepo`: `pullRepo`; `IAdtAbapGitPullRepoInDialog`: `pullRepoInDialog`; `IAdtAbapGitBranchInfo`: `getBranchInfo`; `IAdtCreatable`: `create`; `IAdtUpdatable`: `update`; `IAdtMetadataUpdatable`: `updateMetadata`; `IAdtDeletable`: `delete`, `checkDeletion`; `IAdtCheckable`: `check`; `IAdtActivatable`: `activate`; `IFeatureToggleObject`: `checkState`; `IAdtTransportObjectActions`: `removeObject`, `addObject`, `createTask`, `changeTaskType`; `IAdtTransportMoveObjects`: `moveObjects`; `IAbapUnitRunner`: `runSync`; `IAdtWhereUsed`: `getWhereUsed`, `getWhereUsedScope`; `IAdtVirtualFolders`: `getVirtualFoldersContents`; `IAdtRepositoryStructure`: `fetchNodeStructure`; `IAdtGroupLifecycle`: `activateObjectsGroup`, `checkDeletionGroup`, `deleteObjectsGroup`; `IAdtObjectActivation`: `activateObjects`; `IAdtDataPreview`: `getSqlQuery`, `getTableContents`; `ITraceScheduling`: `scheduleTrace`; `IAbapDebugger`: `setBreakpoints`, `getChildVariables`, `getVariables`, `syncBreakpoints`, `setDebuggerSettings`; `IAmdpDebugger`: `getDataPreview`.
 
 The field is on each member's own options, not on `IAdtAnalyseOptions` or
 `IAdtOperationOptions`. `src/__typechecks__/headersOnEveryMember.ts` holds this
@@ -485,6 +486,82 @@ Each field is optional, `| undefined` for `exactOptionalPropertyTypes`, so an
 error or a result built for 27.2.0 still conforms.
 `src/__typechecks__/sessionError.ts` and `src/__typechecks__/sessionLost.ts`
 hold these shapes.
+
+## abapGit: key-based members and facts (30.2.0)
+
+Every new member is addressed by what SAP gave the caller: a repository's
+`key` from `listRepos`, or a remote `url`. Each one answers through the
+**facts** contract. A result strategy and an analyser are given
+`IAbapGitFactsResponse<F>` (the integer `status` and the route's `facts`), never
+the wire document. The default error, `IAbapGitStructuredError`, carries
+`facts` (`status`, `messageClass?`, `messageNumber?`, `gitHttpStatus?`), fixed
+words in `message`, no `response`, and a `request` of method and path. A
+credential is never part of either.
+
+```ts
+import type {
+  IAbapGitFactsAnalyse,
+  IAbapGitStructuredError,
+  IAdtAbapGitPullRepo,
+} from '@mcp-abap-adt/interfaces-adt';
+import { ADT_NO_FAILURE } from '@mcp-abap-adt/interfaces-adt';
+
+declare const git: IAdtAbapGitPullRepo<MyPull, PullFacts>;
+
+const answer = await git.pullRepo(
+  { key: repo.key, branchName: repo.branchName },
+  { headers },
+);
+if (!answer.ok) answer.getError().facts.messageClass; // IAbapGitStructuredError
+
+interface MyError extends IAbapGitStructuredError { readonly retry: boolean }
+const mine: IAbapGitFactsAnalyse<PullFacts, MyError> = (verdict, answer) =>
+  verdict === ADT_NO_FAILURE ? verdict : { ...verdict, retry: answer?.status === 409 };
+const judged = await git.pullRepo(args, { headers, analyse: mine });
+if (!judged.ok) judged.getError().retry; // MyError, no cast
+```
+
+**The atoms**, one per member, each `IAdtAbapGit…<T, F>`: `T` is the result
+the slot's reader gives the caller and `F` the facts the analyser sees. Each
+has exactly two overloads, for the caller's error subtype `E` or for the
+default, and no wire-typed one, so an `IAnalyse` or an `IResultStrategy` does
+not fit.
+
+| Atom | Member | Args | Options |
+|---|---|---|---|
+| `IAdtAbapGitListReposQuiet` | `listReposQuiet` | none | `IAbapGitFactsOptions`, optional |
+| `IAdtAbapGitLinkNewForm` | `link` | `IAbapGitLinkNewArgs` | `IAbapGitHeaderOptions & IAbapGitNewFormOptions` |
+| `IAdtAbapGitCheckExternalRepoNewForm` | `checkExternalRepo` | `IAbapGitExternalRepoArgs` | `IAbapGitHeaderOptions & IAbapGitNewFormOptions` |
+| `IAdtAbapGitPullRepo` | `pullRepo` | `IAbapGitPullRepoArgs` | `IAbapGitHeaderOptions & IAbapGitFactsOptions` |
+| `IAdtAbapGitPullRepoInDialog` | `pullRepoInDialog` | `IAbapGitPullRepoArgs` | `IAbapGitHeaderOptions & IAbapGitFactsOptions` |
+| `IAdtAbapGitBranchInfo` | `getBranchInfo` | `IAbapGitBranchInfoArgs` | `IAbapGitHeaderOptions & IAbapGitFactsOptions` |
+| `IAdtAbapGitModifiedObjects`, `IAdtAbapGitStatus`, `IAdtAbapGitStaging`, `IAdtAbapGitCheckRepo` | `getModifiedObjects`, `getStatus`, `getStaging`, `checkRepo` | `IAbapGitRepoKeyArgs` | `IAbapGitFactsOptions`, optional |
+| `IAdtAbapGitRunLog` | `getRunLog` | `IAbapGitRunLogArgs` | `IAbapGitFactsOptions`, optional |
+| `IAdtAbapGitPush` | `push` | `IAbapGitPushArgs` | `IAbapGitFactsOptions`, optional |
+| `IAdtAbapGitFile` | `getFile` | `IAbapGitFileArgs` | `IAbapGitFactsOptions`, optional |
+| `IAdtAbapGitSwitchBranch` | `switchBranch` | `IAbapGitSwitchBranchArgs` | `IAbapGitFactsOptions`, optional |
+
+The options do not extend `IAdtAnalyseOptions`, because their `analyse` is an
+`IAbapGitFactsAnalyse`. `IAbapGitFactsOptions` takes an optional `credentials`.
+`IAbapGitNewFormOptions` requires it: an `IAbapGitCredentials` (`user`,
+`password`; a token goes as the password), or `null` for an anonymous call.
+`undefined` is neither. A consumer composes its client from the atoms and, for
+the new forms, puts them beside the legacy client:
+`IAdtAbapGitClient<…> & IAdtAbapGitLinkNewForm<T, F> & …`.
+
+**The legacy members** of `IAdtAbapGitClient` keep their signatures, their
+wire-typed callbacks and their result types, and are deprecated:
+`getErrorLog` in favour of `getRunLog`, `pull` in favour of `pullRepo`, and the
+`remoteUser`/`remotePassword` forms of `link` and `checkExternalRepo` in favour
+of the new forms. The options of `link`, `pull` and `checkExternalRepo` carry
+`credentials?: never`, and the new args carry `remoteUser?: never` and
+`remotePassword?: never`, so the two forms cannot be mixed. Every call that
+compiled against 30.1.x still compiles, with one exception: an options
+**variable** with an extra, undeclared `credentials` property is now refused,
+or, when its value is a credential or `null` and the args fit, it selects the
+new form. `src/__typechecks__/abapGitLegacyCalls.ts` holds the legacy calls and
+the exception. `src/__typechecks__/abapGit.ts` holds the new forms and what
+they refuse.
 
 ## Text elements (30.0.0)
 
