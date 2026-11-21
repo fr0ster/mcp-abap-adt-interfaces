@@ -25,7 +25,9 @@ export interface IAbapRequestOptions {
   /**
    * `true` sends the request stateless on HTTP and RFC whatever the
    * connection's session mode, and wins over a caller's
-   * `x-sap-adt-sessiontype: stateful` header in any letter case.
+   * `x-sap-adt-sessiontype: stateful` header in any letter case. On the wire
+   * the connector strips that conflicting session header and the session's
+   * context cookie from the request.
    */
   stateless?: true | undefined;
 }
