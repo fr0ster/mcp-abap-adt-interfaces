@@ -235,6 +235,11 @@ export interface IAbapGitStructuredError extends IAdtError {
   readonly request?:
     | { readonly method: string; readonly path: string }
     | undefined;
+  /**
+   * Never present: `IAdtError.rfc` carries the RFC SDK's `key`, free text the
+   * SDK fills, and a facts error keeps the status and the T100 key only.
+   */
+  readonly rfc?: never;
 }
 
 /**
