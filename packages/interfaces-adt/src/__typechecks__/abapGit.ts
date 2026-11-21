@@ -338,3 +338,30 @@ declare const externalOnly: IAdtAbapGitCheckExternalRepoNewForm<
 void linkOnly.link(newLinkArgs, { headers });
 // @ts-expect-error the new `checkExternalRepo` without `credentials`
 void externalOnly.checkExternalRepo({ url: 'https://h/r' }, { headers });
+
+// --- Nothing outside the kept facts -----------------------------------------
+//
+// `adtType` and `namespace` are read out of SAP's document, and `code` is an
+// open string; none is a fact the structured error keeps, so none can be read
+// from it or built into it.
+// @ts-expect-error a facts error has no `adtType`
+void factsError.adtType?.length;
+// @ts-expect-error a facts error has no `namespace`
+void factsError.namespace?.length;
+// @ts-expect-error a facts error has no `code`
+void factsError.code?.length;
+const facts0 = {
+  origin: 'refusal' as const,
+  message: 'fixed words',
+  facts: { status: 400 },
+};
+const withAdtType = { ...facts0, adtType: 'ExceptionResourceNotFound' };
+const withNamespace = { ...facts0, namespace: 'com.sap.adt' };
+const withCode = { ...facts0, code: 'SAP text' };
+// @ts-expect-error a facts error cannot be built carrying `adtType`
+const _a: IAbapGitStructuredError = withAdtType;
+// @ts-expect-error a facts error cannot be built carrying `namespace`
+const _n: IAbapGitStructuredError = withNamespace;
+// @ts-expect-error a facts error cannot be built carrying `code`
+const _c: IAbapGitStructuredError = withCode;
+void [_a, _n, _c];
