@@ -495,7 +495,7 @@ Every new member is addressed by what SAP gave the caller: a repository's
 `IAbapGitFactsResponse<F>` (the integer `status` and the route's `facts`), never
 the wire document. The default error, `IAbapGitStructuredError`, carries
 `facts` (`status`, `messageClass?`, `messageNumber?`, `gitHttpStatus?`), fixed
-words in `message`, no `response`, no `rfc`, and a `request` of method and path. A
+words in `message`, no `response`, `rfc`, `adtType`, `namespace` or `code`, and a `request` of method and path. A
 credential is never part of either.
 
 ```ts

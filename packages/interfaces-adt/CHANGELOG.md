@@ -50,8 +50,10 @@ under Changed.
   `IAdtAbapGitStaging`, `IAdtAbapGitCheckRepo`, `IAdtAbapGitRunLog`,
   `IAdtAbapGitPush`, `IAdtAbapGitFile` and `IAdtAbapGitSwitchBranch`.
   `pullRepo`, `pullRepoInDialog`, `getBranchInfo` and both new forms require
-  `headers`. `IAbapGitStructuredError` carries no `rfc` (`rfc?: never`): the
-  RFC SDK's `key` is free text outside the kept facts.
+  `headers`. `IAbapGitStructuredError` carries no `rfc`, `adtType`, `namespace` or
+  `code` (each `?: never`): the RFC SDK's `key` is free text, `adtType` and
+  `namespace` are read out of SAP's document, and `code` is an open string,
+  so none of them is a kept fact.
 
 ### Changed
 
