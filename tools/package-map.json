@@ -1,4 +1,5 @@
 {
+  "ABAPGIT_ERROR_MESSAGES": "interfaces-adt",
   "ABAP_UNIT_RUN_TYPES": "interfaces-adt",
   "ADT_CONNECTION_CAUSES": "interfaces-adt",
   "ADT_NO_FAILURE": "interfaces-adt",
@@ -13,6 +14,8 @@
   "ADT_UTILITY_CODES_BASIS_740": "interfaces-adt",
   "ADT_UTILITY_CODES_CLOUD": "interfaces-adt",
   "ADT_UTILITY_CODES_ONPREM": "interfaces-adt",
+  "AbapGitErrorCase": "interfaces-adt",
+  "AbapGitErrorMessage": "interfaces-adt",
   "AdtListedSearchType": "interfaces-adt",
   "AdtMainType": "interfaces-adt",
   "AdtMainTypeOf": "interfaces-adt",
