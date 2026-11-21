@@ -211,6 +211,22 @@ void client.pull(pullArgs, optionsWithExtra);
 // @ts-expect-error and for `checkExternalRepo`
 void client.checkExternalRepo(externalArgs, optionsWithExtra);
 
+/**
+ * The same through each generic overload: an explicit error type leaves the
+ * plain overload out, so each guard is proved on its own.
+ */
+const analysedWithExtra = {
+  headers,
+  credentials: { token: 'secret' },
+  analyse: wireReading,
+};
+// @ts-expect-error the generic `link` refuses an undeclared `credentials`
+void client.link<IMyError>(linkArgs, analysedWithExtra);
+// @ts-expect-error the generic `pull` refuses it
+void client.pull<IMyError>(pullArgs, analysedWithExtra);
+// @ts-expect-error the generic `checkExternalRepo` refuses it
+void client.checkExternalRepo<IMyError>(externalArgs, analysedWithExtra);
+
 /** What an analyser answers is still a verdict, never `undefined`. */
 const _verdict: AdtNoFailure = ADT_NO_FAILURE;
 void _verdict;

@@ -9,6 +9,7 @@
 import type {
   IAbapGitLinkArgs,
   IAdtAbapGitClient,
+  IAdtError,
   IAdtHeaders,
   IAdtResponse,
 } from '../index';
@@ -301,3 +302,35 @@ void git.pullRepo({ key: 'K' }, { headers });
 
 // @ts-expect-error `listReposQuiet` sends no credential, so it takes none
 void git.listReposQuiet({ credentials });
+
+// --- No free text through `rfc` --------------------------------------------
+//
+// `IAdtError.rfc` carries the RFC SDK's `key`, free text the SDK fills. A
+// facts error keeps the status and the T100 key only, so it carries no `rfc`.
+declare const factsError: IAbapGitStructuredError;
+// @ts-expect-error a facts error has no `rfc` to read text from
+void factsError.rfc?.key;
+declare const sdkRfc: NonNullable<IAdtError['rfc']>;
+const withRfc = {
+  origin: 'connection' as const,
+  message: 'fixed words',
+  facts: { status: 0 },
+  rfc: sdkRfc,
+};
+// @ts-expect-error a facts error cannot be built carrying `rfc`
+const _withRfc: IAbapGitStructuredError = withRfc;
+void _withRfc;
+
+// --- `credentials` is required on the standalone new forms ------------------
+//
+// Without the legacy client beside them, no legacy overload can take a call
+// that leaves `credentials` out.
+declare const linkOnly: IAdtAbapGitLinkNewForm<RunView, RunFacts>;
+declare const externalOnly: IAdtAbapGitCheckExternalRepoNewForm<
+  RunView,
+  RunFacts
+>;
+// @ts-expect-error the new `link` without `credentials`
+void linkOnly.link(newLinkArgs, { headers });
+// @ts-expect-error the new `checkExternalRepo` without `credentials`
+void externalOnly.checkExternalRepo({ url: 'https://h/r' }, { headers });
