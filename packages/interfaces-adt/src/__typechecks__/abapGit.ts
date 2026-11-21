@@ -6,9 +6,12 @@
 // `IAbapGitPullResult` and the external-repo shapes left with the other result
 // types; what a consumer needs to *call* these members stayed.
 
-import type { IAbapGitLinkArgs, IAdtAbapGitClient } from '../adt/IAdtAbapGit';
-import type { IAdtHeaders } from '../adt/IAdtContentTypes';
-import type { IAdtResponse } from '../adt/IAdtResponse';
+import type {
+  IAbapGitLinkArgs,
+  IAdtAbapGitClient,
+  IAdtHeaders,
+  IAdtResponse,
+} from '../index';
 
 const headers: IAdtHeaders = {
   accept: 'application/xml',
@@ -70,3 +73,222 @@ const _link: IAbapGitLinkArgs = {} as IAbapGitLinkArgs;
 void _link;
 
 export type { MyClient, MyRepo };
+
+// ---------------------------------------------------------------------------
+// 30.2.0 — the key-based members and the facts forms.
+//
+// Each is its own atom, generic over the result its slot's reader gives (`T`)
+// and the facts its route's reducer gives (`F`) separately: the analyser sees
+// `F`, the caller reads `T`. None has a wire-typed overload — the analyser is
+// handed the facts, never the document — and the default error keeps `.facts`.
+
+import type {
+  IAbapGitCredentials,
+  IAbapGitFactsAnalyse,
+  IAbapGitFactsResponse,
+  IAbapGitFactsResultStrategy,
+  IAbapGitStructuredError,
+  IAdtAbapGitBranchInfo,
+  IAdtAbapGitCheckExternalRepoNewForm,
+  IAdtAbapGitCheckRepo,
+  IAdtAbapGitFile,
+  IAdtAbapGitLinkNewForm,
+  IAdtAbapGitListReposQuiet,
+  IAdtAbapGitModifiedObjects,
+  IAdtAbapGitPullRepo,
+  IAdtAbapGitPullRepoInDialog,
+  IAdtAbapGitPush,
+  IAdtAbapGitRunLog,
+  IAdtAbapGitStaging,
+  IAdtAbapGitStatus,
+  IAdtAbapGitSwitchBranch,
+  IAnalyse,
+  IResultStrategy,
+} from '../index';
+import { ADT_NO_FAILURE } from '../index';
+
+/** What a route's reducer gives (the analyser's view). */
+interface RunFacts {
+  readonly objects: readonly { readonly name: string }[];
+}
+/** What the slot's reader gives (the caller's view) — another type on purpose. */
+interface RunView {
+  readonly count: number;
+}
+
+/** The caller's own error subtype, carried through the generic overload. */
+interface IMyGitError extends IAbapGitStructuredError {
+  readonly mine: true;
+}
+const myAnalyse: IAbapGitFactsAnalyse<RunFacts, IMyGitError> = (
+  verdict,
+  answer,
+) =>
+  verdict === ADT_NO_FAILURE || answer?.facts.objects.length === 0
+    ? ADT_NO_FAILURE
+    : { ...verdict, mine: true };
+
+type NewClient = IAdtAbapGitListReposQuiet<RunView, RunFacts> &
+  IAdtAbapGitPullRepo<RunView, RunFacts> &
+  IAdtAbapGitPullRepoInDialog<RunView, RunFacts> &
+  IAdtAbapGitBranchInfo<RunView, RunFacts> &
+  IAdtAbapGitModifiedObjects<RunView, RunFacts> &
+  IAdtAbapGitStatus<RunView, RunFacts> &
+  IAdtAbapGitStaging<RunView, RunFacts> &
+  IAdtAbapGitCheckRepo<RunView, RunFacts> &
+  IAdtAbapGitRunLog<RunView, RunFacts> &
+  IAdtAbapGitPush<RunView, RunFacts> &
+  IAdtAbapGitFile<RunView, RunFacts> &
+  IAdtAbapGitSwitchBranch<RunView, RunFacts>;
+declare const git: NewClient;
+
+/** The legacy client and the new forms of `link` / `checkExternalRepo`, side by side. */
+type BothForms = IAdtAbapGitClient<MyRepo[], string, void, string> &
+  IAdtAbapGitLinkNewForm<RunView, RunFacts> &
+  IAdtAbapGitCheckExternalRepoNewForm<RunView, RunFacts>;
+declare const both: BothForms;
+
+const credentials: IAbapGitCredentials = { user: 'u', password: 'p' };
+const pullRepoArgs = { key: 'K', branchName: 'refs/heads/main' } as const;
+const newLinkArgs = {
+  package: 'ZPKG',
+  url: 'https://h/r',
+  branchName: 'refs/heads/main',
+} as const;
+
+async function inference(): Promise<void> {
+  // Error-subtype inference: `getError()` is the caller's type, no cast.
+  const run = await git.getRunLog(
+    { key: 'K', appLogKey: 'L' },
+    { analyse: myAnalyse },
+  );
+  if (!run.ok) {
+    const mine: true = run.getError().mine;
+    void mine;
+  } else {
+    const count: number = run.getResult().value.count;
+    void count;
+  }
+
+  const pulled = await git.pullRepo(pullRepoArgs, {
+    headers,
+    analyse: myAnalyse,
+  });
+  if (!pulled.ok) void (pulled.getError().mine satisfies true);
+
+  const pushed = await git.push(
+    {
+      key: 'K',
+      staged: [],
+      comment: {
+        text: 'commit',
+        author: { name: 'A', email: 'a@h' },
+        committer: { name: 'C', email: 'c@h' },
+      },
+    },
+    { analyse: myAnalyse },
+  );
+  if (!pushed.ok) void (pushed.getError().mine satisfies true);
+
+  const linked = await both.link(newLinkArgs, {
+    headers,
+    credentials,
+    analyse: myAnalyse,
+  });
+  if (!linked.ok) void (linked.getError().mine satisfies true);
+  else void (linked.getResult().value satisfies RunView);
+
+  // The no-analyser overload: the default error keeps its facts.
+  const quiet = await git.listReposQuiet();
+  if (!quiet.ok) {
+    const error: IAbapGitStructuredError = quiet.getError();
+    const status: number = error.facts.status;
+    const messageClass: string | undefined = error.facts.messageClass;
+    const path: string | undefined = error.request?.path;
+    void [status, messageClass, path];
+  }
+
+  // `null` is the anonymous new form; it answers the new form's `T`.
+  const anonymous = await both.checkExternalRepo(
+    { url: 'https://h/r' },
+    { headers, credentials: null },
+  );
+  if (anonymous.ok) void (anonymous.getResult().value satisfies RunView);
+
+  // The edge case's other half: an options variable whose `credentials` is a
+  // credential, with args that fit, selects the new form.
+  const variableOptions = { headers, credentials };
+  const selected = await both.link(newLinkArgs, variableOptions);
+  if (selected.ok) void (selected.getResult().value satisfies RunView);
+
+  // A key-based member without headers takes no options at all.
+  void git.getStatus({ key: 'K' });
+  void git.getFile({ key: 'K', filename: 'a.xml', version: 'remote' });
+  void git.switchBranch({ key: 'K', branch: 'main', create: false });
+  void git.getBranchInfo(
+    { url: 'https://h/r', branch: 'main', package: 'ZPKG' },
+    { headers, credentials },
+  );
+}
+void inference;
+
+/** A facts reader is handed the facts answer, not the wire document. */
+const reader: IAbapGitFactsResultStrategy<RunView, RunFacts> = (
+  answer: IAbapGitFactsResponse<RunFacts>,
+) => ({ count: answer.facts.objects.length });
+void reader;
+
+// --- What is refused -------------------------------------------------------
+
+// @ts-expect-error both forms mixed, literal: legacy args with a credential
+void both.link({ ...newLinkArgs, remoteUser: 'u' }, { headers, credentials });
+
+const legacyLinkArgs: IAbapGitLinkArgs = {
+  package: 'ZPKG',
+  url: 'https://h/r',
+  branchName: 'refs/heads/main',
+  remoteUser: 'u',
+};
+const newFormOptions = { headers, credentials };
+// @ts-expect-error both forms mixed, variables: legacy args, new-form options
+void both.link(legacyLinkArgs, newFormOptions);
+
+// @ts-expect-error `credentials: undefined` is not a new form — the field is required
+void both.link(newLinkArgs, { headers, credentials: undefined });
+
+const legacyExternalArgs = { url: 'https://h/r', remoteUser: 'u' };
+const anonymousOptions = { headers, credentials: null };
+// @ts-expect-error `credentials: null` on a legacy call
+void both.checkExternalRepo(legacyExternalArgs, anonymousOptions);
+
+const wireAnalyse: IAnalyse = (verdict) => verdict;
+// @ts-expect-error an `IAnalyse` (wire-reading) on `pullRepo`
+void git.pullRepo(pullRepoArgs, { headers, analyse: wireAnalyse });
+// @ts-expect-error an `IAnalyse` on `pullRepo`, through the generic overload
+void git.pullRepo<IMyGitError>(pullRepoArgs, { headers, analyse: wireAnalyse });
+
+const wireReader: IResultStrategy<RunView> = () => ({ count: 0 });
+// @ts-expect-error an `IResultStrategy` is not a facts reader
+const _asFacts: IAbapGitFactsResultStrategy<RunView, RunFacts> = wireReader;
+void _asFacts;
+
+// @ts-expect-error a missing `headers` on an H member
+void git.pullRepoInDialog(pullRepoArgs, {});
+// @ts-expect-error an H member takes its options
+void git.getBranchInfo({ url: 'https://h/r', branch: 'main', package: 'ZPKG' });
+
+void git.push({
+  key: 'K',
+  staged: [],
+  // @ts-expect-error `push` without `comment.committer`
+  comment: { text: 'commit', author: { name: 'A', email: 'a@h' } },
+});
+
+// @ts-expect-error `switchBranch` without `create`
+void git.switchBranch({ key: 'K', branch: 'main' });
+
+// @ts-expect-error `getFile` with `version: 'head'`
+void git.getFile({ key: 'K', filename: 'a.xml', version: 'head' });
+
+// @ts-expect-error `pullRepo` without `branchName`
+void git.pullRepo({ key: 'K' }, { headers });
