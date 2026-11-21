@@ -7,6 +7,69 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [30.2.0] - 2026-11-21
+
+The abapGit contracts: key-based members and the facts forms of `link` and
+`checkExternalRepo`. Additions only, plus `credentials?: never` on the legacy
+options. One edge case that compiled before no longer compiles; it is stated
+under Changed.
+
+### Added
+
+- **`IAbapGitCredentials`** (`{ readonly user; readonly password }`): a remote
+  repository's credential, given as `options.credentials` on the new forms and
+  never as an argument.
+- **The facts exchange.** `IAbapGitFactsResponse<F>` (`status`, `facts`),
+  `IAbapGitErrorFacts` (`status`, `messageClass?`, `messageNumber?`,
+  `gitHttpStatus?`), `IAbapGitStructuredError` (an `IAdtError` with `facts`,
+  `response?: undefined`, `request?: { method; path }` and a fixed `message`),
+  `IAbapGitFactsResultStrategy<T, F>` and `IAbapGitFactsAnalyse<F, E>`. A new
+  form's result strategy and analyser are given the facts, never the wire
+  document, so an `IResultStrategy` or an `IAnalyse` does not fit either of
+  them.
+- **The options.** `IAbapGitFactsOptions<F, E>` (`analyse?`, `credentials?`),
+  `IAbapGitNewFormOptions<F, E>` (`credentials: IAbapGitCredentials | null`,
+  required, where `null` means an anonymous call) and `IAbapGitHeaderOptions`
+  (`headers`, required). None of them extends `IAdtAnalyseOptions`.
+- **The args.** `IAbapGitRepoKeyArgs`, `IAbapGitLinkNewArgs` (`branchName`
+  required, `folderLogic?`, `remoteUser?: never`, `remotePassword?: never`),
+  `IAbapGitExternalRepoArgs`, `IAbapGitPullRepoArgs` (`branchName` required,
+  `selection?`), `IAbapGitPullSelection` and `IAbapGitModifiedObject`,
+  `IAbapGitRunLogArgs`, `IAbapGitStagedObject` and `IAbapGitStagedFile`,
+  `IAbapGitCommit` (text, author and committer, all required),
+  `IAbapGitPushArgs`, `IAbapGitFileArgs` (`version: 'local' | 'remote'`),
+  `IAbapGitBranchInfoArgs` and `IAbapGitSwitchBranchArgs` (`create` required).
+- **One atom per member**, each generic over its slot's result `T` and its
+  route's facts `F` separately, with two facts-typed overloads (the caller's
+  error subtype `E`, or the default `IAbapGitStructuredError`, which keeps
+  `.facts`) and no wire-typed one: `IAdtAbapGitListReposQuiet`,
+  `IAdtAbapGitLinkNewForm`, `IAdtAbapGitCheckExternalRepoNewForm`,
+  `IAdtAbapGitPullRepo`, `IAdtAbapGitPullRepoInDialog`,
+  `IAdtAbapGitBranchInfo`, `IAdtAbapGitModifiedObjects`, `IAdtAbapGitStatus`,
+  `IAdtAbapGitStaging`, `IAdtAbapGitCheckRepo`, `IAdtAbapGitRunLog`,
+  `IAdtAbapGitPush`, `IAdtAbapGitFile` and `IAdtAbapGitSwitchBranch`.
+  `pullRepo`, `pullRepoInDialog`, `getBranchInfo` and both new forms require
+  `headers`.
+
+### Changed
+
+- **The legacy members are deprecated.** `getErrorLog` is deprecated in favour
+  of `getRunLog`, `pull` in favour of `pullRepo`, and the
+  `remoteUser`/`remotePassword` forms of `link` and `checkExternalRepo` in
+  favour of their new forms. Their signatures, wire-typed callbacks and result
+  types stay as they were.
+- **`credentials?: never` on the legacy options.** The options of every
+  overload of `link`, `pull` and `checkExternalRepo` in `IAdtAbapGitClient` are
+  intersected with `{ readonly credentials?: never }`, so a legacy call and a
+  new form can never be mixed. **One edge case no longer compiles:** an
+  options *variable* with an extra, undeclared `credentials` property. A
+  variable is not checked for excess properties, so this compiled against
+  30.1.x. It is now refused, or, when its value is an `IAbapGitCredentials` or
+  `null` and the args fit, it selects the new form, which has a different
+  result type. This is a minor release because `credentials` was never a
+  declared field. Every other call that compiled before still compiles
+  (`src/__typechecks__/abapGitLegacyCalls.ts`).
+
 ## [30.1.1] - 2026-11-20
 
 Documentation only, no type change.
