@@ -529,7 +529,7 @@ not fit.
 
 | Atom | Member | Args | Options |
 |---|---|---|---|
-| `IAdtAbapGitListReposQuiet` | `listReposQuiet` | none | `IAbapGitFactsOptions`, optional |
+| `IAdtAbapGitListReposQuiet` | `listReposQuiet` | none | `IAbapGitQuietOptions` (no credential: `credentials?: never`), optional |
 | `IAdtAbapGitLinkNewForm` | `link` | `IAbapGitLinkNewArgs` | `IAbapGitHeaderOptions & IAbapGitNewFormOptions` |
 | `IAdtAbapGitCheckExternalRepoNewForm` | `checkExternalRepo` | `IAbapGitExternalRepoArgs` | `IAbapGitHeaderOptions & IAbapGitNewFormOptions` |
 | `IAdtAbapGitPullRepo` | `pullRepo` | `IAbapGitPullRepoArgs` | `IAbapGitHeaderOptions & IAbapGitFactsOptions` |
@@ -543,7 +543,7 @@ not fit.
 
 The options do not extend `IAdtAnalyseOptions`, because their `analyse` is an
 `IAbapGitFactsAnalyse`. `IAbapGitFactsOptions` takes an optional `credentials`.
-`IAbapGitNewFormOptions` requires it: an `IAbapGitCredentials` (`user`,
+`listReposQuiet` sends no credential, so its `IAbapGitQuietOptions` carry `credentials?: never`. `IAbapGitNewFormOptions` requires it: an `IAbapGitCredentials` (`user`,
 `password`; a token goes as the password), or `null` for an anonymous call.
 `undefined` is neither. A consumer composes its client from the atoms and, for
 the new forms, puts them beside the legacy client:

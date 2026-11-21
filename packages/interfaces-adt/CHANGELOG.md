@@ -30,7 +30,8 @@ under Changed.
 - **The options.** `IAbapGitFactsOptions<F, E>` (`analyse?`, `credentials?`),
   `IAbapGitNewFormOptions<F, E>` (`credentials: IAbapGitCredentials | null`,
   required, where `null` means an anonymous call) and `IAbapGitHeaderOptions`
-  (`headers`, required). None of them extends `IAdtAnalyseOptions`.
+  (`headers`, required). `IAbapGitQuietOptions`, for `listReposQuiet`, takes no
+  credential (`credentials?: never`). None of them extends `IAdtAnalyseOptions`.
 - **The args.** `IAbapGitRepoKeyArgs`, `IAbapGitLinkNewArgs` (`branchName`
   required, `folderLogic?`, `remoteUser?: never`, `remotePassword?: never`),
   `IAbapGitExternalRepoArgs`, `IAbapGitPullRepoArgs` (`branchName` required,
