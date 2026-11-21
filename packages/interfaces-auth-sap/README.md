@@ -1,4 +1,5 @@
 # @mcp-abap-adt/interfaces-auth-sap
+[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://stand-with-ukraine.pp.ua)
 
 The SAP and BTP half of authentication: SAP system configuration, the UAA client, XSUAA and certificate loading. Everything authentication means anywhere else is [`interfaces-auth`](../interfaces-auth); the destination and the stores that hold it are [`interfaces-auth-broker`](../interfaces-auth-broker).
 

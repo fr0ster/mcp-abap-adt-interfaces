@@ -1,4 +1,5 @@
 # @mcp-abap-adt/interfaces-adt-connection
+[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://stand-with-ukraine.pp.ua)
 
 The ABAP connection contract: what an ADT request is sent through, and what
 comes back off the wire. Types and two constants; no implementation.

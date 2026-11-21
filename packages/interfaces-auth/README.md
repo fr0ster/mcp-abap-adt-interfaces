@@ -1,4 +1,5 @@
 # @mcp-abap-adt/interfaces-auth
+[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://stand-with-ukraine.pp.ua)
 
 Authentication: credentials, OAuth grants, tokens and the contracts around them. Nothing SAP-specific — that is [`interfaces-auth-sap`](../interfaces-auth-sap).
 

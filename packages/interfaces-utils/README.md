@@ -1,4 +1,5 @@
 # @mcp-abap-adt/interfaces-utils
+[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://stand-with-ukraine.pp.ua)
 
 Logging contracts, and the shapes that belong to no one system, for the MCP ABAP ADT packages.
 

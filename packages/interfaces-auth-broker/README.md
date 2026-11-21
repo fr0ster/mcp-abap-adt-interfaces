@@ -1,4 +1,5 @@
 # @mcp-abap-adt/interfaces-auth-broker
+[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://stand-with-ukraine.pp.ua)
 
 The broker's port: what a destination states — its connection settings, how it
 renews its credential — and the stores that hold it. Types only; no

@@ -1,4 +1,5 @@
 # @mcp-abap-adt/interfaces-network
+[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://stand-with-ukraine.pp.ua)
 
 Transport contracts, generic HTTP and MCP header names and network error codes for the MCP ABAP ADT packages.
 

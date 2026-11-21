@@ -1,4 +1,5 @@
 # @mcp-abap-adt/interfaces-adt
+[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://stand-with-ukraine.pp.ua)
 
 ADT contracts: object operations, runtime analysis, execution, feeds and service bindings. The ABAP connection they are sent through is [`interfaces-adt-connection`](../interfaces-adt-connection).
 
