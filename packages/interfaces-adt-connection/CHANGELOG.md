@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.2.0] - 2026-11-21
+
+### Added
+
+- **Three request flags on `IAbapRequestOptions`**, each `true` or absent
+  (`?: true | undefined`):
+  - `noLog` keeps the request and its answer out of every log the connection
+    and the server's wrapper write;
+  - `noResend` makes the first failure the caller's answer: the CSRF recovery,
+    the resend after a credential renewal and the dead-pooled-socket resend are
+    gated, and a redirect from SAP's ADT endpoint is returned, not followed;
+  - `stateless` sends the request stateless on HTTP and RFC whatever the
+    connection's session mode, and wins over a `x-sap-adt-sessiontype:
+    stateful` header.
+
+  An existing caller compiles unchanged. A connection that does not know a
+  flag ignores it until it is updated to the version that honours it.
+
 ## [5.1.0] - 2026-11-14
 
 ### Added
