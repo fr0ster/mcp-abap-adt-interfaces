@@ -193,8 +193,9 @@ repository's credential, so neither axis is handed the wire answer:
 
 `F` is what the implementation's reducer keeps from SAP's document, and `T` is
 what the caller reads. They are separate type parameters. The default failure is
-`IAbapGitStructuredError`: the status and the T100 key (`facts`), fixed words in
-`message`, no `response`, `rfc`, `adtType`, `namespace` or `code`, and a `request` of method and path. A
+`IAbapGitStructuredError`: the status and the T100 key (`facts`), one of the fixed
+sentences of `ABAPGIT_ERROR_MESSAGES` in `message` (a closed union, so no other
+string compiles), no `response`, `rfc`, `adtType`, `namespace` or `code`, and a `request` of method and path. A
 caller's own `E` must extend it.
 
 **The facts options do not come from `IAdtAnalyseOptions`.**
