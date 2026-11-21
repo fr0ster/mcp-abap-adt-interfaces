@@ -1,4 +1,5 @@
 # mcp-abap-adt-interfaces
+[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://stand-with-ukraine.pp.ua)
 
 Contracts for the MCP ABAP ADT packages: types and constants, no implementations.
 

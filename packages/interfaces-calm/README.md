@@ -1,4 +1,5 @@
 # @mcp-abap-adt/interfaces-calm
+[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://stand-with-ukraine.pp.ua)
 
 Contracts for **SAP Cloud ALM** HTTP APIs. Types only — no implementation, no
 runtime dependency beyond the HTTP frame it borrows.
