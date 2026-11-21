@@ -82,6 +82,8 @@ export {
   ADT_UTILITY_CODES_ONPREM,
 } from './adt/AdtUtilityCodes';
 export type {
+  AbapGitErrorCase,
+  AbapGitErrorMessage,
   IAbapGitBranchInfoArgs,
   IAbapGitCommit,
   IAbapGitCredentials,
@@ -127,6 +129,7 @@ export type {
   IAdtAbapGitStatus,
   IAdtAbapGitSwitchBranch,
 } from './adt/IAdtAbapGit';
+export { ABAPGIT_ERROR_MESSAGES } from './adt/IAdtAbapGit';
 export type {
   IAccessControlConfig,
   IAccessControlResults,

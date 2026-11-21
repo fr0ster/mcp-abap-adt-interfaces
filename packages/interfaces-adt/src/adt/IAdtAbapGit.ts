@@ -219,15 +219,48 @@ export interface IAbapGitErrorFacts {
 }
 
 /**
+ * The fixed words of a facts error, one sentence per case. A facts error's
+ * `message` is one of these and nothing else, so SAP's text cannot reach it;
+ * what the case concerns is in `facts`.
+ *
+ * - `refused`: SAP answered with a status that is not a success, and its
+ *   document named no T100 message (`facts.status` alone).
+ * - `refusedWithMessage`: the same, with a T100 key (`facts.messageClass`,
+ *   `facts.messageNumber`).
+ * - `gitHostRefused`: SAP reported the git host's own refusal
+ *   (`facts.gitHttpStatus`).
+ * - `noResponse`: no answer arrived — the request reached no system.
+ * - `unreadableAnswer`: an answer arrived and could not be read as the route's
+ *   document.
+ * - `judgedByAnalyser`: the caller's analyser judged an answer a failure that
+ *   the default verdict accepted.
+ */
+export const ABAPGIT_ERROR_MESSAGES = {
+  refused: 'SAP refused the abapGit request.',
+  refusedWithMessage: 'SAP refused the abapGit request with a T100 message.',
+  gitHostRefused: 'The git host refused the request SAP sent to it.',
+  noResponse: 'The abapGit request received no answer.',
+  unreadableAnswer: 'The answer to the abapGit request could not be read.',
+  judgedByAnalyser: "The caller's analyser judged the answer a failure.",
+} as const;
+
+/** A case of {@link ABAPGIT_ERROR_MESSAGES}. */
+export type AbapGitErrorCase = keyof typeof ABAPGIT_ERROR_MESSAGES;
+
+/** One of the fixed sentences of {@link ABAPGIT_ERROR_MESSAGES}. */
+export type AbapGitErrorMessage =
+  (typeof ABAPGIT_ERROR_MESSAGES)[AbapGitErrorCase];
+
+/**
  * The failure every new form answers with by default.
  *
- * It carries facts, not text: `message` is fixed words of the implementation,
- * never what SAP said; `response` is always absent; `request` names the method
+ * It carries facts, not text: `message` is one of the fixed sentences of
+ * {@link ABAPGIT_ERROR_MESSAGES}, never what SAP said; `response` is always absent; `request` names the method
  * and the path without its query. Nothing in it can carry a credential.
  */
 export interface IAbapGitStructuredError extends IAdtError {
-  /** Fixed words of the implementation — never SAP's text. */
-  readonly message: string;
+  /** One of {@link ABAPGIT_ERROR_MESSAGES} — never SAP's text. */
+  readonly message: AbapGitErrorMessage;
   readonly facts: IAbapGitErrorFacts;
   /** Never present: the document stays with the implementation. */
   readonly response?: undefined;
