@@ -6,7 +6,12 @@
 // change: the options of `link`, `pull` and `checkExternalRepo` carry
 // `credentials?: never`, so a legacy call and a new form can never be mixed.
 // Everything a caller wrote against 30.1.x is here and must still compile —
-// through the package barrel, as a consumer imports it.
+// imported by the package's name, as a consumer imports it.
+//
+// **It compiles against the built package.** `tsconfig.typecheck-entry.json`
+// maps `@mcp-abap-adt/interfaces-adt` to this directory, so the name resolves
+// through the manifest's `types` to `dist/index.d.ts`: run it after
+// `npm run build` (`npm run test:check` runs both projects).
 //
 // The one stated exception is pinned at the end: an options *variable* that
 // carried an extra, undeclared `credentials` property compiled before (a
@@ -24,8 +29,8 @@ import type {
   IAdtResponse,
   IAnalyse,
   IResultStrategy,
-} from '../index';
-import { ADT_NO_FAILURE } from '../index';
+} from '@mcp-abap-adt/interfaces-adt';
+import { ADT_NO_FAILURE } from '@mcp-abap-adt/interfaces-adt';
 
 const headers: IAdtHeaders = {
   accept: 'application/xml',

@@ -5,6 +5,10 @@
 // the implementation's. `AbapGitStatus`, `IAbapGitRepoStatus`,
 // `IAbapGitPullResult` and the external-repo shapes left with the other result
 // types; what a consumer needs to *call* these members stayed.
+//
+// Imported by the package's name and compiled against the built package:
+// `tsconfig.typecheck-entry.json` resolves `@mcp-abap-adt/interfaces-adt`
+// through the manifest's `types` to `dist/index.d.ts`, after `npm run build`.
 
 import type {
   IAbapGitLinkArgs,
@@ -12,7 +16,7 @@ import type {
   IAdtError,
   IAdtHeaders,
   IAdtResponse,
-} from '../index';
+} from '@mcp-abap-adt/interfaces-adt';
 
 const headers: IAdtHeaders = {
   accept: 'application/xml',
@@ -105,8 +109,8 @@ import type {
   IAdtAbapGitSwitchBranch,
   IAnalyse,
   IResultStrategy,
-} from '../index';
-import { ADT_NO_FAILURE } from '../index';
+} from '@mcp-abap-adt/interfaces-adt';
+import { ADT_NO_FAILURE } from '@mcp-abap-adt/interfaces-adt';
 
 /** What a route's reducer gives (the analyser's view). */
 interface RunFacts {
