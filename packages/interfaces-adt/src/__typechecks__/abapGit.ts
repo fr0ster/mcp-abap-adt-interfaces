@@ -298,3 +298,6 @@ void git.getFile({ key: 'K', filename: 'a.xml', version: 'head' });
 
 // @ts-expect-error `pullRepo` without `branchName`
 void git.pullRepo({ key: 'K' }, { headers });
+
+// @ts-expect-error `listReposQuiet` sends no credential, so it takes none
+void git.listReposQuiet({ credentials });
