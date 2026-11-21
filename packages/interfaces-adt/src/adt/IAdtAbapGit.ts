@@ -229,7 +229,7 @@ export interface IAbapGitErrorFacts {
  *   `facts.messageNumber`).
  * - `gitHostRefused`: SAP reported the git host's own refusal
  *   (`facts.gitHttpStatus`).
- * - `noResponse`: no answer arrived — the request reached no system.
+ * - `noResponse`: no answer arrived.
  * - `unreadableAnswer`: an answer arrived and could not be read as the route's
  *   document.
  * - `judgedByAnalyser`: the caller's analyser judged an answer a failure that
