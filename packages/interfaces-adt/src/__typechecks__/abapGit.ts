@@ -88,6 +88,7 @@ export type { MyClient, MyRepo };
 // handed the facts, never the document — and the default error keeps `.facts`.
 
 import type {
+  AbapGitErrorCase,
   IAbapGitCredentials,
   IAbapGitFactsAnalyse,
   IAbapGitFactsResponse,
@@ -110,7 +111,10 @@ import type {
   IAnalyse,
   IResultStrategy,
 } from '@mcp-abap-adt/interfaces-adt';
-import { ADT_NO_FAILURE } from '@mcp-abap-adt/interfaces-adt';
+import {
+  ABAPGIT_ERROR_MESSAGES,
+  ADT_NO_FAILURE,
+} from '@mcp-abap-adt/interfaces-adt';
 
 /** What a route's reducer gives (the analyser's view). */
 interface RunFacts {
@@ -317,7 +321,7 @@ void factsError.rfc?.key;
 declare const sdkRfc: NonNullable<IAdtError['rfc']>;
 const withRfc = {
   origin: 'connection' as const,
-  message: 'fixed words',
+  message: ABAPGIT_ERROR_MESSAGES.refused,
   facts: { status: 0 },
   rfc: sdkRfc,
 };
@@ -352,7 +356,7 @@ void factsError.namespace?.length;
 void factsError.code?.length;
 const facts0 = {
   origin: 'refusal' as const,
-  message: 'fixed words',
+  message: ABAPGIT_ERROR_MESSAGES.refused,
   facts: { status: 400 },
 };
 const withAdtType = { ...facts0, adtType: 'ExceptionResourceNotFound' };
@@ -365,3 +369,31 @@ const _n: IAbapGitStructuredError = withNamespace;
 // @ts-expect-error a facts error cannot be built carrying `code`
 const _c: IAbapGitStructuredError = withCode;
 void [_a, _n, _c];
+
+// --- `message` is fixed words, a closed list --------------------------------
+//
+// One sentence per case, from `ABAPGIT_ERROR_MESSAGES`; SAP's text, or any
+// other string, does not compile into it.
+const asError = (
+  message: IAbapGitStructuredError['message'],
+): IAbapGitStructuredError => ({
+  origin: 'refusal',
+  message,
+  facts: { status: 400 },
+});
+void [
+  asError(ABAPGIT_ERROR_MESSAGES.refused),
+  asError(ABAPGIT_ERROR_MESSAGES.refusedWithMessage),
+  asError(ABAPGIT_ERROR_MESSAGES.gitHostRefused),
+  asError(ABAPGIT_ERROR_MESSAGES.noResponse),
+  asError(ABAPGIT_ERROR_MESSAGES.unreadableAnswer),
+  asError(ABAPGIT_ERROR_MESSAGES.judgedByAnalyser),
+];
+const everyCase = (c: AbapGitErrorCase): IAbapGitStructuredError['message'] =>
+  ABAPGIT_ERROR_MESSAGES[c];
+void everyCase;
+declare const sapText: string;
+// @ts-expect-error an arbitrary string is not one of the fixed messages
+void asError(sapText);
+// @ts-expect-error nor is a literal that is not on the list
+void asError('Repository not found');
