@@ -189,6 +189,7 @@
   "IAbapGitPullRepoArgs": "interfaces-adt",
   "IAbapGitPullSelection": "interfaces-adt",
   "IAbapGitPushArgs": "interfaces-adt",
+  "IAbapGitQuietOptions": "interfaces-adt",
   "IAbapGitRepoKeyArgs": "interfaces-adt",
   "IAbapGitRunLogArgs": "interfaces-adt",
   "IAbapGitStagedFile": "interfaces-adt",
