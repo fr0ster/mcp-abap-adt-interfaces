@@ -102,6 +102,7 @@ export type {
   IAbapGitPullRepoArgs,
   IAbapGitPullSelection,
   IAbapGitPushArgs,
+  IAbapGitQuietOptions,
   IAbapGitRepoKeyArgs,
   IAbapGitRunLogArgs,
   IAbapGitStagedFile,

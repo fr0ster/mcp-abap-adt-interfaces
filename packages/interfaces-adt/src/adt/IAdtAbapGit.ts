@@ -415,15 +415,26 @@ export interface IAbapGitSwitchBranchArgs {
 // subtype `E`, or the default `IAbapGitStructuredError` — and no wire-typed
 // one.
 
+/**
+ * The options of `listReposQuiet`: the facts options without a credential.
+ * The pre-read sends none, so `credentials?: never` refuses one.
+ */
+export type IAbapGitQuietOptions<
+  F,
+  E extends IAbapGitStructuredError = IAbapGitStructuredError,
+> = Omit<IAbapGitFactsOptions<F, E>, 'credentials'> & {
+  readonly credentials?: never;
+};
+
 /** `listReposQuiet` — the repository list, read without a credential. */
 export interface IAdtAbapGitListReposQuiet<T, F> {
   listReposQuiet<E extends IAbapGitStructuredError>(
-    options: IAbapGitFactsOptions<F, E> & {
+    options: IAbapGitQuietOptions<F, E> & {
       analyse: IAbapGitFactsAnalyse<F, E>;
     },
   ): Promise<IAdtResponse<T, E>>;
   listReposQuiet(
-    options?: IAbapGitFactsOptions<F>,
+    options?: IAbapGitQuietOptions<F>,
   ): Promise<IAdtResponse<T, IAbapGitStructuredError>>;
 }
 
