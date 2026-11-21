@@ -240,6 +240,12 @@ export interface IAbapGitStructuredError extends IAdtError {
    * SDK fills, and a facts error keeps the status and the T100 key only.
    */
   readonly rfc?: never;
+  /** Never present: `<type id>` is read out of SAP's document, not a kept fact. */
+  readonly adtType?: never;
+  /** Never present: `<namespace id>` is read out of SAP's document. */
+  readonly namespace?: never;
+  /** Never present: an open string, not a kept fact; `facts` carries the T100 key. */
+  readonly code?: never;
 }
 
 /**
