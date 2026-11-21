@@ -22,8 +22,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     connection's session mode, and wins over a `x-sap-adt-sessiontype:
     stateful` header.
 
-  An existing caller compiles unchanged. A connection that does not know a
-  flag ignores it until it is updated to the version that honours it.
+  A caller that sets none of these properties compiles unchanged. A request
+  variable that already carries one of them as `false` (`stateless: false`,
+  `noLog: false`, `noResend: false`) now fails with TS2322; this is still a
+  minor release, because these properties were never declared. A connection
+  that does not know a flag ignores it until it is updated to the version that
+  honours it.
 
 ## [5.1.0] - 2026-11-14
 
