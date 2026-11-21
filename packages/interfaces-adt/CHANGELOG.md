@@ -50,7 +50,8 @@ under Changed.
   `IAdtAbapGitStaging`, `IAdtAbapGitCheckRepo`, `IAdtAbapGitRunLog`,
   `IAdtAbapGitPush`, `IAdtAbapGitFile` and `IAdtAbapGitSwitchBranch`.
   `pullRepo`, `pullRepoInDialog`, `getBranchInfo` and both new forms require
-  `headers`.
+  `headers`. `IAbapGitStructuredError` carries no `rfc` (`rfc?: never`): the
+  RFC SDK's `key` is free text outside the kept facts.
 
 ### Changed
 

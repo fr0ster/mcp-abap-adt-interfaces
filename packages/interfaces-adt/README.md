@@ -495,7 +495,7 @@ Every new member is addressed by what SAP gave the caller: a repository's
 `IAbapGitFactsResponse<F>` (the integer `status` and the route's `facts`), never
 the wire document. The default error, `IAbapGitStructuredError`, carries
 `facts` (`status`, `messageClass?`, `messageNumber?`, `gitHttpStatus?`), fixed
-words in `message`, no `response`, and a `request` of method and path. A
+words in `message`, no `response`, no `rfc`, and a `request` of method and path. A
 credential is never part of either.
 
 ```ts
@@ -561,7 +561,8 @@ compiled against 30.1.x still compiles, with one exception: an options
 or, when its value is a credential or `null` and the args fit, it selects the
 new form. `src/__typechecks__/abapGitLegacyCalls.ts` holds the legacy calls and
 the exception. `src/__typechecks__/abapGit.ts` holds the new forms and what
-they refuse.
+they refuse. Both import `@mcp-abap-adt/interfaces-adt` by name and compile against the
+built package (`tsconfig.typecheck-entry.json`, run by `npm run test:check`).
 
 ## Text elements (30.0.0)
 
