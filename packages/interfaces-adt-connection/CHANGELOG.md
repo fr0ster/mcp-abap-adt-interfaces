@@ -17,8 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   only on a connector that supports it; a connection that does not know the flag
   ignores it until it is updated.
 
-  A caller that does not set the property compiles unchanged. A request
-  variable that already carries `rawText: false` now fails with TS2322; this is
+  What stays compatible: a caller that neither sets nor enumerates the property
+  compiles unchanged. Two source shapes now fail, as with any added optional
+  property: a request variable that already carries `rawText: false` (TS2322 on
+  assignment, TS2345 when passed to `makeAdtRequest`), and an exhaustive
+  `Record<keyof IAbapRequestOptions, …>` that omits `rawText` (TS2741). This is
   still a minor release, because the property was never declared.
 
 ## [5.2.0] - 2026-11-21
