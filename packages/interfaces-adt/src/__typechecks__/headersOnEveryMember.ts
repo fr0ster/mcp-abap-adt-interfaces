@@ -469,7 +469,7 @@ export type _HeadersISt05Trace = Assert<
   EveryMemberTakesHeaders<ISt05Trace<Probe, Probe>>
 >;
 export type _HeadersISystemMessages = Assert<
-  EveryMemberTakesHeaders<ISystemMessages<Probe, Probe>>
+  EveryMemberTakesHeaders<ISystemMessages<Probe>>
 >;
 export type _HeadersITraceListing = Assert<
   EveryMemberTakesHeaders<ITraceListing<ITraceEntry, Probe, Probe>>
