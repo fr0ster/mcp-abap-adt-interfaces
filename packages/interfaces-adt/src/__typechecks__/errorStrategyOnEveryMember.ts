@@ -318,7 +318,7 @@ export type _ISt05Trace = Assert<
   EveryMemberTakesAnalyse<ISt05Trace<Probe, Probe>>
 >;
 export type _ISystemMessages = Assert<
-  EveryMemberTakesAnalyse<ISystemMessages<Probe, Probe>>
+  EveryMemberTakesAnalyse<ISystemMessages<Probe>>
 >;
 export type _ITraceListing = Assert<
   EveryMemberTakesAnalyse<ITraceListing<ITraceEntry, Probe, Probe>>

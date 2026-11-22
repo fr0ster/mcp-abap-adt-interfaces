@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [31.0.0] - 2026-11-22
+
+`ISystemMessages` loses the member SAP never served. A major, since a member
+and a type parameter leave an exported interface.
+
+### Removed
+
+- **`ISystemMessages.getById` and the `TMessage` type parameter.** SAP's
+  handler serves the system messages collection only:
+  `CL_STSK_ADT_RES_APP` routes `/sap/bc/adt/runtime/systemmessages` to
+  `CL_STSK_ADT_RES_SYSTEM_MESSAGE->get_feed` and registers no per-message
+  resource, the same on premise and in the cloud (read 2026-11-22). A call to
+  `/systemmessages/<id>` therefore never answered a message.
+  `ISystemMessages<TList, TMessage>` is now `ISystemMessages<TList>`.
+
+### Migration
+
+- Replace `ISystemMessages<TList, TMessage>` with `ISystemMessages<TList>`.
+- A caller of `getById` reads the message from `list()`: each entry of the
+  feed carries the message's id, text, creation time and author.
+
 ## [30.2.0] - 2026-11-21
 
 The abapGit contracts: key-based members and the facts forms of `link` and

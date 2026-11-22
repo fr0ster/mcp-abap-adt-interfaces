@@ -80,7 +80,7 @@ void _ids;
  */
 declare const anyRuntime:
   | IRuntimeDumps<string, string>
-  | ISystemMessages<string, string>;
+  | ISystemMessages<string>;
 function _narrow(): string {
   return anyRuntime.kind === 'runtimeDumps' ? 'dumps' : 'messages';
 }
