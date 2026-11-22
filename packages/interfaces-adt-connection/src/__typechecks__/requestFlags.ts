@@ -10,12 +10,14 @@ export const _statelessTrue: IAbapRequestOptions = {
   ...base,
   stateless: true,
 };
+export const _rawTextTrue: IAbapRequestOptions = { ...base, rawText: true };
 export const _allFlagsAbsent: IAbapRequestOptions = { ...base };
 export const _allFlagsUndefined: IAbapRequestOptions = {
   ...base,
   noLog: undefined,
   noResend: undefined,
   stateless: undefined,
+  rawText: undefined,
 };
 
 // @ts-expect-error a flag is `true` or absent, never `false`
@@ -34,3 +36,8 @@ export const _noLogYes: IAbapRequestOptions = { ...base, noLog: 'yes' };
 export const _noResendYes: IAbapRequestOptions = { ...base, noResend: 'yes' };
 // @ts-expect-error a flag is `true`, not a string
 export const _statelessYes: IAbapRequestOptions = { ...base, stateless: 'yes' };
+
+// @ts-expect-error a flag is `true` or absent, never `false`
+export const _rawTextFalse: IAbapRequestOptions = { ...base, rawText: false };
+// @ts-expect-error a flag is `true`, not a string
+export const _rawTextYes: IAbapRequestOptions = { ...base, rawText: 'yes' };
