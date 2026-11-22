@@ -49,7 +49,7 @@ npm install @mcp-abap-adt/interfaces-adt
 | directory | files | what |
 |---|---|---|
 | `adt/` | 44 | the object contracts: capability atoms, the object types, the ADT type tables and their entry shape, `IAdtResponse`, `IAdtError`, the error codes, the transport request's object list |
-| `runtime/` | 14 | runtime analysis: the debuggers (`IAbapDebugger`, `IAmdpDebugger`) and `IMemorySnapshots`, `IProfiler`, the trace contracts (`ITraceListing`/`ITraceReading`, `ICrossTrace`, `ISt05Trace`), `IApplicationLog`, `IAtcLog` and the ATC run (`IAtcRunOptions`, `IAtcFindings`) and its results (`IAtcResultsReadable`), `IDdicActivation`, `IGatewayErrorLog`, `IRuntimeDumps`, `ISystemMessages` |
+| `runtime/` | 14 | runtime analysis: the debuggers (`IAbapDebugger`, `IAmdpDebugger`) and `IMemorySnapshots`, `IProfiler`, the trace contracts (`ITraceListing`/`ITraceReading`, `ICrossTrace`, `ISt05Trace`), `IApplicationLog`, `IAtcLog` and the ATC run (`IAtcRunOptions`, `IAtcFindings`) and its results (`IAtcResultsReadable`), `IDdicActivation`, `IGatewayErrorLog`, `IRuntimeDumps`, `ISystemMessages` (the collection only; see the 31.0.0 migration in the CHANGELOG) |
 | `execution/` | 3 | class and program execution, with profiling |
 | `feeds/` | 2 | the ADT feed contracts |
 | `service/` | 1 | service definitions and bindings |

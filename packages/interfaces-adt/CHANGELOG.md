@@ -24,9 +24,15 @@ and a type parameter leave an exported interface.
 
 ### Migration
 
-- Replace `ISystemMessages<TList, TMessage>` with `ISystemMessages<TList>`.
-- A caller of `getById` reads the message from `list()`: each entry of the
-  feed carries the message's id, text, creation time and author.
+- **Types.** Replace `ISystemMessages<TList, TMessage>` with
+  `ISystemMessages<TList>`.
+- **Implementers.** Remove `getById` from every class or object literal typed
+  as `ISystemMessages`.
+- **Callers of `getById`.** Call `list()`, check its response as any other
+  `IAdtResponse`, and find the message in the implementation's result by its
+  id. In SAP's feed the entry's id reads `uuid:<id>`. The feed holds only the
+  messages the system is showing now, so a message that has expired is absent:
+  treat "not found" as an answer, not an error.
 
 ## [30.2.0] - 2026-11-21
 
