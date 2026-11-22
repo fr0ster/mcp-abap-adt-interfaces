@@ -30,4 +30,10 @@ export interface IAbapRequestOptions {
    * context cookie from the request.
    */
   stateless?: true | undefined;
+  /**
+   * `true` hands the answer body to the caller as the exact text SAP sent,
+   * with no parsing (JSON or otherwise) and no transformation. It takes effect
+   * only on a connector that supports it.
+   */
+  rawText?: true | undefined;
 }
