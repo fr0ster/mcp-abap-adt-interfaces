@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.3.0] - 2026-11-22
+
+### Added
+
+- **`rawText` on `IAbapRequestOptions`**, `true` or absent (`?: true |
+  undefined`): the answer body reaches the caller as the exact text SAP sent,
+  with no parsing (JSON or otherwise) and no transformation. It takes effect
+  only on a connector that supports it; a connection that does not know the flag
+  ignores it until it is updated.
+
+  A caller that does not set the property compiles unchanged. A request
+  variable that already carries `rawText: false` now fails with TS2322; this is
+  still a minor release, because the property was never declared.
+
 ## [5.2.0] - 2026-11-21
 
 ### Added
