@@ -70,17 +70,39 @@ export type AdtObjectIdentity<
   [K in TRequired]-?: Exclude<TConfig[K], undefined>;
 };
 
-/** The write options a member may require: what it sends with the write. */
-export type AdtUpdateOptionKey = 'source' | 'lockHandle';
+/**
+ * The write options a member may require besides its lock handle: `source`,
+ * which a write sends only where its body is the caller's source or document.
+ * A write from a typed config (text elements, table settings, a message class
+ * message) sends none.
+ */
+export type AdtUpdateOptionKey = 'source';
 
 /**
  * The write options `TRequiredOptions` names, each a string that must be
- * given. `never` (the default) requires none: a member that locks for itself
- * when no handle is given, or writes nothing but the config, names neither.
+ * given. `never` (the default) requires none.
  */
 export type AdtRequiredUpdateOptions<
   TRequiredOptions extends AdtUpdateOptionKey,
 > = { readonly [K in TRequiredOptions]-?: string };
+
+/**
+ * A write under the caller's lock: the handle `lock` answered, required (C7 of
+ * adt-clients #304, 32.0.0). A member sends one request, so it never locks or
+ * unlocks for itself; the caller locks, writes and unlocks, each a member of
+ * its own.
+ */
+export interface IAdtLockedWrite {
+  readonly lockHandle: string;
+}
+
+/**
+ * A write that takes no lock at all — a service binding's publication job, a
+ * transport request's document. It refuses a lock handle rather than ignore one.
+ */
+export interface IAdtLockFreeWrite {
+  readonly lockHandle?: never;
+}
 
 /**
  * Bring an object into existence.
@@ -331,11 +353,12 @@ export interface IAdtMainProgramsReadable<
  * object's name, and anything else the write sends — a service binding's
  * publication names the protocol that selects its endpoint.
  *
- * **The options a write needs are named too.** `TRequiredOptions` lists the
- * {@link AdtUpdateOptionKey}s the member sends, each then a required string. A
- * member that writes under the caller's lock names `lockHandle`; one that locks
- * for itself when no handle is given does not, and its `lockHandle` stays
- * optional.
+ * **The lock handle is required** ({@link IAdtLockedWrite}). A write is one
+ * request under the caller's lock, and a member never locks or unlocks for
+ * itself. A write that takes no lock at all is {@link IAdtLockFreeUpdatable}.
+ *
+ * **`source` is required where the member sends it.** `TRequiredOptions` names
+ * it ({@link AdtUpdateOptionKey}); a write from a typed config names nothing.
  *
  * `update` writes the source, which is what makes the name mean the same thing
  * across the types that have one. A domain has no source to write; it composes
@@ -370,9 +393,7 @@ export interface IAdtUpdatable<
    * in the options, and how long a lock is held is a policy no library can
    * choose for every caller of a shared connection.
    *
-   * Where the implementation names `lockHandle` in `TRequiredOptions`, a call
-   * without one does not compile. Elsewhere it may be absent, and the
-   * implementation decides what that means (one that locks for itself does).
+   * A call without `lockHandle` does not compile. Locking is the caller's.
    *
    * @param config - the identity, with the keys this write needs (`TRequired`)
    * @param options - `source` for the body, `lockHandle` for
@@ -382,6 +403,7 @@ export interface IAdtUpdatable<
   update<E extends IAdtError>(
     config: AdtObjectIdentity<TConfig, TRequired>,
     options: { headers: IAdtHeaders } & IAdtUpdateOptions<E> &
+      IAdtLockedWrite &
       AdtRequiredUpdateOptions<TRequiredOptions> & {
         analyse: IAnalyse<E>;
       },
@@ -389,6 +411,7 @@ export interface IAdtUpdatable<
   update(
     config: AdtObjectIdentity<TConfig, TRequired>,
     options: { headers: IAdtHeaders } & IAdtUpdateOptions &
+      IAdtLockedWrite &
       AdtRequiredUpdateOptions<TRequiredOptions>,
   ): Promise<IAdtResponse<TUpdated>>;
 }
@@ -428,6 +451,7 @@ export interface IAdtMetadataUpdatable<
   updateMetadata<E extends IAdtError>(
     config: AdtObjectIdentity<TConfig, TRequired>,
     options: { headers: IAdtHeaders } & IAdtUpdateOptions<E> &
+      IAdtLockedWrite &
       AdtRequiredUpdateOptions<TRequiredOptions> & {
         analyse: IAnalyse<E>;
       },
@@ -435,6 +459,61 @@ export interface IAdtMetadataUpdatable<
   updateMetadata(
     config: AdtObjectIdentity<TConfig, TRequired>,
     options: { headers: IAdtHeaders } & IAdtUpdateOptions &
+      IAdtLockedWrite &
+      AdtRequiredUpdateOptions<TRequiredOptions>,
+  ): Promise<IAdtResponse<TMetadataUpdated>>;
+}
+
+/**
+ * A write that takes **no lock** — its own atom, so the locked write's
+ * `lockHandle` stays required (32.0.0).
+ *
+ * Two writes in ADT are of this kind: a service binding's publication job
+ * (`POST …/publishjobs`, which changes the binding's state) and a transport
+ * request's own document. Neither is preceded by a lock, so a lock handle is
+ * refused here rather than demanded or ignored.
+ */
+export interface IAdtLockFreeUpdatable<
+  TConfig,
+  TUpdated,
+  TRequired extends keyof TConfig,
+  TRequiredOptions extends AdtUpdateOptionKey = never,
+> {
+  update<E extends IAdtError>(
+    config: AdtObjectIdentity<TConfig, TRequired>,
+    options: { headers: IAdtHeaders } & IAdtUpdateOptions<E> &
+      IAdtLockFreeWrite &
+      AdtRequiredUpdateOptions<TRequiredOptions> & {
+        analyse: IAnalyse<E>;
+      },
+  ): Promise<IAdtResponse<TUpdated, E | IAdtError>>;
+  update(
+    config: AdtObjectIdentity<TConfig, TRequired>,
+    options: { headers: IAdtHeaders } & IAdtUpdateOptions &
+      IAdtLockFreeWrite &
+      AdtRequiredUpdateOptions<TRequiredOptions>,
+  ): Promise<IAdtResponse<TUpdated>>;
+}
+
+/** The document-write counterpart of {@link IAdtLockFreeUpdatable}. */
+export interface IAdtLockFreeMetadataUpdatable<
+  TConfig,
+  TMetadataUpdated,
+  TRequired extends keyof TConfig,
+  TRequiredOptions extends AdtUpdateOptionKey = never,
+> {
+  updateMetadata<E extends IAdtError>(
+    config: AdtObjectIdentity<TConfig, TRequired>,
+    options: { headers: IAdtHeaders } & IAdtUpdateOptions<E> &
+      IAdtLockFreeWrite &
+      AdtRequiredUpdateOptions<TRequiredOptions> & {
+        analyse: IAnalyse<E>;
+      },
+  ): Promise<IAdtResponse<TMetadataUpdated, E | IAdtError>>;
+  updateMetadata(
+    config: AdtObjectIdentity<TConfig, TRequired>,
+    options: { headers: IAdtHeaders } & IAdtUpdateOptions &
+      IAdtLockFreeWrite &
       AdtRequiredUpdateOptions<TRequiredOptions>,
   ): Promise<IAdtResponse<TMetadataUpdated>>;
 }

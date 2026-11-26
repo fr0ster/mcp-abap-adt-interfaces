@@ -157,6 +157,10 @@ export type {
   IAdtEnhancementHost,
   IAdtIncludeEnhancementHost,
   IAdtLockable,
+  IAdtLockedWrite,
+  IAdtLockFreeMetadataUpdatable,
+  IAdtLockFreeUpdatable,
+  IAdtLockFreeWrite,
   IAdtMainProgramsReadable,
   IAdtMetadataReadable,
   IAdtMetadataUpdatable,
@@ -224,10 +228,15 @@ export type {
 export type { IIncludeConfig, IIncludeResults } from './adt/IAdtInclude';
 export type { IInterfaceConfig, IInterfaceResults } from './adt/IAdtInterface';
 export type {
+  IAdtMessageClassMessageLockable,
+  IAdtMessageClassMessageWritable,
   IMessageClassConfig,
   IMessageClassMessageConfig,
+  IMessageClassMessageRemoval,
   IMessageClassMessageResults,
+  IMessageClassMessageWriteOptions,
   IMessageClassResults,
+  MessageClassMessageAddress,
 } from './adt/IAdtMessageClass';
 export type {
   IMetadataExtensionConfig,

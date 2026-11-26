@@ -80,31 +80,31 @@ declare const update: IAdtUpdatable<
   IProgramConfig,
   string,
   'programName',
-  'source' | 'lockHandle'
+  'source'
 >;
 void update.update(
   { programName: 'ZPROG' },
   { headers, source: 'REPORT zprog.', lockHandle: 'H' },
 );
-// @ts-expect-error a write that sends a lock handle needs one
+// @ts-expect-error every locked write needs its lock handle (C7)
 void update.update({ programName: 'ZPROG' }, { headers, source: 'REPORT z.' });
 // @ts-expect-error a write that sends a source needs one
 void update.update({ programName: 'ZPROG' }, { headers, lockHandle: 'H' });
-void update.update(
-  // @ts-expect-error a write names the object it writes
-  {},
-  { headers, source: 'REPORT zprog.', lockHandle: 'H' },
-);
+const _noName = {};
+// @ts-expect-error a write names the object it writes
+void update.update(_noName, { headers, source: 'x', lockHandle: 'H' });
 
-// A member that locks for itself when no handle is given names neither.
-declare const selfLocking: IAdtUpdatable<IProgramConfig, string, 'programName'>;
-void selfLocking.update({ programName: 'ZPROG' }, { headers });
+// A write from a typed config names no source, and still needs the lock.
+declare const typedWrite: IAdtUpdatable<IProgramConfig, string, 'programName'>;
+void typedWrite.update({ programName: 'ZPROG' }, { headers, lockHandle: 'H' });
+// @ts-expect-error no member locks for itself: the handle is the caller's
+void typedWrite.update({ programName: 'ZPROG' }, { headers });
 
 declare const metadata: IAdtMetadataUpdatable<
   IDomainConfig,
   string,
   'domainName',
-  'source' | 'lockHandle'
+  'source'
 >;
 void metadata.updateMetadata(
   { domainName: 'ZDOM' },

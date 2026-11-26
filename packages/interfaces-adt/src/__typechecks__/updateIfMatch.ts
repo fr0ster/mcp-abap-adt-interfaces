@@ -21,11 +21,20 @@ const _updatable: IAdtUpdatable<{ name: string }, string, 'name'> = {
 // An update takes the ETag of its read, and goes without one as before.
 void _updatable.update(
   { name: 'ZPROG' },
-  { headers, source: 'REPORT zprog.', ifMatch: '202611030852340001' },
+  {
+    headers,
+    source: 'REPORT zprog.',
+    lockHandle: 'H',
+    ifMatch: '202611030852340001',
+  },
 );
-void _updatable.update({ name: 'ZPROG' }, { headers, source: 'REPORT zprog.' });
+void _updatable.update(
+  { name: 'ZPROG' },
+  { headers, source: 'REPORT zprog.', lockHandle: 'H' },
+);
+const _numericEtag = { headers, lockHandle: 'H', ifMatch: 202611030852 };
 // @ts-expect-error the ETag is a string
-void _updatable.update({ name: 'ZPROG' }, { headers, ifMatch: 202611030852 });
+void _updatable.update({ name: 'ZPROG' }, _numericEtag);
 
 declare const _creatable: IAdtCreatable<{ name: string }, string>;
 // A create replaces no document, so it takes no ETag.

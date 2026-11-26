@@ -163,7 +163,7 @@ async function _theFailureIsTheCallers(): Promise<void> {
 
   const updated = await updatable.update(
     { name: 'ZCL_X' },
-    { headers, analyse: t100 },
+    { headers, lockHandle: 'H', analyse: t100 },
   );
   if (!updated.ok) {
     const error = updated.getError();

@@ -41,7 +41,10 @@ declare const deletion: ITraceDeletion;
 
 // Both headers today: the pair is required, beside the member's own options.
 void creator.create({ className: 'ZCL_X' }, { headers });
-void writer.update({ className: 'ZCL_X' }, { source: 'x', headers });
+void writer.update(
+  { className: 'ZCL_X' },
+  { source: 'x', lockHandle: 'H', headers },
+);
 void activator.activate({ className: 'ZCL_X' }, { headers });
 void preview.getSqlQuery({ sql_query: 'SELECT 1' }, { headers });
 

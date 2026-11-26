@@ -16,11 +16,12 @@ import type {
   IAdtActivatable,
   IAdtCreatable,
   IAdtDeletable,
+  IAdtLockFreeUpdatable,
   IAdtMetadataReadable,
   IAdtReadable,
   IAdtResponse,
-  IAdtUpdatable,
   IServiceBindingConfig,
+  IServiceBindingPublicationConfig,
 } from '../index';
 
 const headers: IAdtHeaders = {
@@ -58,7 +59,11 @@ type PublicationKeys =
 type WholeBinding = IAdtCreatable<IServiceBindingConfig, void> &
   IAdtReadable<IServiceBindingConfig, string, 'bindingName'> &
   IAdtMetadataReadable<IServiceBindingConfig, string, 'bindingName'> &
-  IAdtUpdatable<IServiceBindingConfig, void, PublicationKeys> &
+  IAdtLockFreeUpdatable<
+    IServiceBindingPublicationConfig,
+    void,
+    PublicationKeys
+  > &
   IAdtDeletable<IServiceBindingConfig, void, 'bindingName'> &
   IAdtActivatable<IServiceBindingConfig, string, 'bindingName'>;
 
@@ -66,7 +71,17 @@ declare const whole: WholeBinding;
 
 // @ts-expect-error the whole surface is not a wider write: a publication still
 // says which object, which state and which protocol
-void whole.update({});
+void whole.update({}, { headers });
+
+void whole.update(
+  {
+    bindingName: 'ZAC_SRVB01',
+    // @ts-expect-error `unchanged` is no publication: there is no request for it
+    desiredPublicationState: 'unchanged',
+    serviceType: 'odatav4',
+  },
+  { headers },
+);
 
 void whole.update(
   {
@@ -88,8 +103,8 @@ void whole.update(
  * demands — and the demand does not depend on how much of the object the caller
  * happens to hold.
  */
-type PublishingOnly = IAdtUpdatable<
-  IServiceBindingConfig,
+type PublishingOnly = IAdtLockFreeUpdatable<
+  IServiceBindingPublicationConfig,
   void,
   PublicationKeys
 >;
@@ -99,11 +114,12 @@ const _publisher: PublishingOnly = {
 };
 void _publisher;
 
-// @ts-expect-error a publication with no protocol has no endpoint to post to
-void _publisher.update({
+const _noProtocol = {
   bindingName: 'ZAC_SRVB01',
   desiredPublicationState: 'published',
-});
+} as const;
+// @ts-expect-error a publication with no protocol has no endpoint to post to
+void _publisher.update(_noProtocol, { headers });
 
 void _publisher.update(
   {

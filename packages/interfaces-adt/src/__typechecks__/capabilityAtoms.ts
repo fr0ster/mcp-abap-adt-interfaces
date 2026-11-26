@@ -13,6 +13,7 @@ import type {
   IAdtCreatable,
   IAdtDeletable,
   IAdtLockable,
+  IAdtLockFreeUpdatable,
   IAdtMetadataReadable,
   IAdtMetadataUpdatable,
   IAdtReadable,
@@ -180,7 +181,7 @@ interface PublicationConfig {
   serviceType: 'odatav2' | 'odatav4';
 }
 
-const _demandingUpdate: IAdtUpdatable<
+const _demandingUpdate: IAdtLockFreeUpdatable<
   PublicationConfig,
   void,
   'bindingName' | 'serviceType'
@@ -190,7 +191,14 @@ const _demandingUpdate: IAdtUpdatable<
 void _demandingUpdate;
 
 // @ts-expect-error the write names both as required
-void _demandingUpdate.update({ bindingName: 'ZAC_SRVB01' });
+void _demandingUpdate.update({ bindingName: 'ZAC_SRVB01' }, { headers });
+
+const _publication = {
+  bindingName: 'ZAC_SRVB01',
+  serviceType: 'odatav4',
+} as const;
+// @ts-expect-error a lock-free write refuses a lock handle
+void _demandingUpdate.update(_publication, { headers, lockHandle: 'H' });
 
 // And with both, it compiles.
 void _demandingUpdate.update(
@@ -257,10 +265,11 @@ interface ToggleShapes extends IFeatureToggleObjectResults {
 }
 declare const toggle: IFeatureToggleObject<ToggleShapes>;
 async function _eachAnswerIsItsOwn(): Promise<void> {
-  const on = await toggle.switchOn({}, { transportRequest: 'T' });
-  const state = await toggle.getRuntimeState({});
-  const checked = await toggle.checkState({}, undefined, { headers });
-  const source = await toggle.readSource({});
+  const id = { featureToggleName: 'ZFT' };
+  const on = await toggle.switchOn(id, { transportRequest: 'T' });
+  const state = await toggle.getRuntimeState(id);
+  const checked = await toggle.checkState(id, undefined, { headers });
+  const source = await toggle.readSource(id);
   if (on.ok) {
     const v: 'switched' = on.getResult().value;
     void v;
