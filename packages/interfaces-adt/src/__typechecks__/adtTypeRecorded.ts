@@ -600,7 +600,13 @@ type RecordedOnPremise = {
   messageClassMessage: {
     'MSAG/NN': {
       parent: null;
-      operations: 'create' | 'read' | 'readMetadata' | 'update' | 'delete';
+      operations:
+        | 'read'
+        | 'readMetadata'
+        | 'lockMessage'
+        | 'lockClassForMessage'
+        | 'update'
+        | 'unlockMessages';
     };
   };
   featureToggle: {
@@ -1012,7 +1018,13 @@ type RecordedBasis740 = {
   messageClassMessage: {
     'MSAG/NN': {
       parent: null;
-      operations: 'create' | 'read' | 'readMetadata' | 'update' | 'delete';
+      operations:
+        | 'read'
+        | 'readMetadata'
+        | 'lockMessage'
+        | 'lockClassForMessage'
+        | 'update'
+        | 'unlockMessages';
     };
   };
   localTestClass: {
