@@ -12,11 +12,13 @@
 //   (`IAdtError`, `IAbapGitStructuredError`) answers `IAdtResponse<…, E |
 //   <that constraint>>` in every `IAdtResponse` its return type names, and
 //   names at least one;
-// - its `E` has no default, and its options parameter requires `analyse`: a
-//   generic call cannot name the error type without the strategy;
+// - its `E` has no default, and its options parameter is required, admits no
+//   `undefined` and requires `analyse`: a generic call cannot name the error
+//   type without the strategy;
 // - and for every distinct generic signature the interface declares a plain
 //   one with the same leading parameters, counted one for one, so removing
-//   one plain overload of several is caught.
+//   one plain overload of several is caught; and a plain overload does not
+//   require `analyse`.
 const fs = require('node:fs');
 const path = require('node:path');
 const ts = require('typescript');
@@ -117,9 +119,18 @@ for (const file of tsFiles(SRC)) {
     if (ts.isInterfaceDeclaration(node)) {
       const members = node.members.filter(ts.isMethodSignature);
       // The plain counterpart of every distinct generic signature, by shape.
+      // A plain overload that requires `analyse` is no counterpart: a caller
+      // with no strategy could not call it.
       const plainShapes = new Map();
       for (const m of members) {
         if (!(m.typeParameters ?? []).some((tp) => isErrorParam(tp, sf))) {
+          const last = m.parameters[m.parameters.length - 1];
+          if (last?.type && requiresAnalyse(last.type, aliases)) {
+            problems.push(
+              `${where(m)} ${m.name.getText(sf)}: the plain overload requires \`analyse\``,
+            );
+            continue;
+          }
           const key = `${m.name.getText(sf)}(${shapeOf(m, sf)})`;
           plainShapes.set(key, (plainShapes.get(key) ?? 0) + 1);
         }
@@ -139,10 +150,22 @@ for (const file of tsFiles(SRC)) {
             );
           }
           const last = member.parameters[member.parameters.length - 1];
+          // Required, and not `undefined`: `options: X | undefined` would let
+          // a generic call leave the strategy out.
+          const admitsUndefined =
+            last?.type &&
+            ts.isUnionTypeNode(last.type) &&
+            last.type.types.some(
+              (t) =>
+                t.kind === ts.SyntaxKind.UndefinedKeyword ||
+                (ts.isLiteralTypeNode(t) &&
+                  t.literal.kind === ts.SyntaxKind.NullKeyword),
+            );
           if (
             !last ||
             last.questionToken ||
             !last.type ||
+            admitsUndefined ||
             !requiresAnalyse(last.type, aliases)
           ) {
             problems.push(
