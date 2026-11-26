@@ -10,8 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [32.0.0] - 2026-11-27
 
 The contracts say what their implementations need, so an implementation needs
-no cast (adt-clients #304). A major: atoms take a required type parameter, a
-generic answer widens, and two deprecated abapGit members leave.
+no cast (adt-clients #304), and every member sends one request: "one endpoint,
+one method" (C7). A major: atoms take a required type parameter, a write needs
+the caller's lock handle, a generic answer widens, a message's lock chain
+becomes the caller's, and two deprecated abapGit members leave.
 
 ### Changed
 
@@ -28,13 +30,24 @@ generic answer widens, and two deprecated abapGit members leave.
   `IAdtCheckable`, `IAdtActivatable`, `IAdtLockable`, `IAdtVersionable` and
   `IAdtTransportAware`. `IAdtDeletable` is now `<TConfig, TDeleted, TRequired,
   TChecked = string>`.
-- **The write atoms take the identity and name their options.**
+- **The write atoms take the identity, and the caller's lock handle.**
   `IAdtUpdatable<TConfig, TUpdated, TRequired, TRequiredOptions = never>` and
-  `IAdtMetadataUpdatable` likewise. `TRequiredOptions` (`AdtUpdateOptionKey`:
-  `'source' | 'lockHandle'`) makes those options required strings
-  (`AdtRequiredUpdateOptions`). A write that locks for itself names neither.
-- **A generic answer is `IAdtResponse<T, E | IAdtError>`**, on all 173 generic
-  overloads (`E | IAbapGitStructuredError` for the abapGit facts). With
+  `IAdtMetadataUpdatable` likewise. Both require `lockHandle`
+  (`IAdtLockedWrite`): a member never locks or unlocks for itself, so lock,
+  write and unlock are three calls the caller makes. `TRequiredOptions`
+  (`AdtUpdateOptionKey`: `'source'`) makes `source` a required string where the
+  member sends one (`AdtRequiredUpdateOptions`); a write from a typed config
+  names nothing.
+- **The feature toggle's members** (`switchOn`, `switchOff`,
+  `getRuntimeState`, `checkState`, `readSource`) take
+  `AdtObjectIdentity<IFeatureToggleConfig, 'featureToggleName'>`, on both
+  overloads.
+- **The eight transport operations** (`removeObject`, `addObject`,
+  `createTask`, `readActionLog`, `readObjects`, `changeTaskType`,
+  `sortAndCompress`, `moveObjects`) take the generic/plain overload pair. A
+  call naming `E` passes `analyse`; before, one defaulted `E` let it pass none.
+- **A generic answer is `IAdtResponse<T, E | IAdtError>`**, on every generic
+  overload (178, checked by `tools/check-error-union.js`) (`E | IAbapGitStructuredError` for the abapGit facts). With
   `analyse` given, the library still answers its own error in three cases: no
   answer came back and `analyse` cleared the verdict; a chain step answered
   without a strategy; a member a system does not serve refused without a
@@ -42,7 +55,21 @@ generic answer widens, and two deprecated abapGit members leave.
 
 ### Added
 
-- `AdtUpdateOptionKey` and `AdtRequiredUpdateOptions`.
+- `AdtUpdateOptionKey`, `AdtRequiredUpdateOptions`, `IAdtLockedWrite` and
+  `IAdtLockFreeWrite`.
+- **`IAdtLockFreeUpdatable` and `IAdtLockFreeMetadataUpdatable`**, the write
+  atoms for a write that takes no lock — a service binding's publication job
+  and a transport request's document. Their options refuse a `lockHandle`.
+- **A message class message's members, one request each:**
+  `IAdtMessageClassMessageLockable` (`lockMessage`, `lockClassForMessage`,
+  `unlockMessages`) and `IAdtMessageClassMessageWritable` (`write`, one PUT of
+  the class document with `classDocument`, `classLockHandle` and
+  `messageLockHandle`; `remove: true` removes the message), with
+  `IMessageClassMessageWriteOptions`, `IMessageClassMessageRemoval` and
+  `MessageClassMessageAddress`.
+- `tools/check-error-union.js` (`npm run check:errors`, in `check` and CI):
+  every generic member answers the library's error and has its plain
+  overload.
 
 ### Removed
 
@@ -55,8 +82,18 @@ generic answer widens, and two deprecated abapGit members leave.
 ### Migration
 
 - **Implementers** name the keys on every atom (`IAdtReadable<IProgramConfig,
-  T, 'programName'>`) and, on the write atoms, the options the member sends
-  (`IAdtUpdatable<IProgramConfig, T, 'programName', 'source' | 'lockHandle'>`).
+  T, 'programName'>`) and, on the write atoms, `'source'` where the member
+  sends one (`IAdtUpdatable<IProgramConfig, T, 'programName', 'source'>`). A
+  write that takes no lock moves to `IAdtLockFreeUpdatable` or
+  `IAdtLockFreeMetadataUpdatable` (the binding's publication keeps
+  `IServiceBindingPublicationConfig` as its config).
+- **Callers of a write** pass the `lockHandle` their `lock` answered, and
+  unlock afterwards. A message class message's write is composed by the
+  caller: `lockMessage` and `lockClassForMessage` on a stateful session (a 403
+  on the first means the class handle stands in; a 403 on the second means the
+  message class's own `lock`), read the class's working area, `write` on a
+  stateless session with both handles, then the class's `unlock` and
+  `unlockMessages` on the stateful session.
   A method that still takes `Partial<TConfig>` keeps compiling, but only a
   method typed with the identity reads the keys as `string`.
 - **Callers** pass every key and option an atom requires. A call without the
