@@ -224,11 +224,7 @@ type EveryMemberTakesHeaders<
   : true;
 
 export type _HeadersIAdtAbapGitClient = Assert<
-  EveryMemberTakesHeaders<
-    IAdtAbapGitClient<Probe, Probe, Probe, Probe>,
-    never,
-    'link' | 'pull' | 'checkExternalRepo'
-  >
+  EveryMemberTakesHeaders<IAdtAbapGitClient<Probe, Probe, Probe>, never, 'pull'>
 >;
 export type _HeadersIAdtAbapGitListReposQuiet = Assert<
   EveryMemberTakesHeaders<IAdtAbapGitListReposQuiet<Probe, Probe>>

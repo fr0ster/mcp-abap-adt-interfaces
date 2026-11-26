@@ -11,7 +11,6 @@
 // through the manifest's `types` to `dist/index.d.ts`, after `npm run build`.
 
 import type {
-  IAbapGitLinkArgs,
   IAdtAbapGitClient,
   IAdtError,
   IAdtHeaders,
@@ -33,7 +32,7 @@ interface MyRepo {
   key: string;
   branch: string;
 }
-type MyClient = IAdtAbapGitClient<MyRepo[], string[], void, string>;
+type MyClient = IAdtAbapGitClient<MyRepo[], string[], void>;
 
 /** One member alone, implemented by something that knows nothing of the rest. */
 const _client: Pick<MyClient, 'listRepos'> = {
@@ -73,9 +72,15 @@ void client.unlink({ package: 'ZPKG' });
 // @ts-expect-error getRepo left: it filtered listRepos, which is a reading
 void client.getRepo('ZPKG');
 
-/** Request arguments stayed: a caller cannot call without them. */
-const _link: IAbapGitLinkArgs = {} as IAbapGitLinkArgs;
-void _link;
+/**
+ * The old `link` and `checkExternalRepo` forms left in 32.0.0, with their
+ * argument types: the new forms ({@link IAdtAbapGitLinkNewForm},
+ * {@link IAdtAbapGitCheckExternalRepoNewForm}) are the only ones.
+ */
+// @ts-expect-error the old link form is gone
+void client.link({ package: 'ZPKG', url: 'https://h/r' }, { headers });
+// @ts-expect-error the old external-repo check is gone
+void client.checkExternalRepo({ url: 'https://h/r' }, { headers });
 
 export type { MyClient, MyRepo };
 
@@ -151,8 +156,8 @@ type NewClient = IAdtAbapGitListReposQuiet<RunView, RunFacts> &
   IAdtAbapGitSwitchBranch<RunView, RunFacts>;
 declare const git: NewClient;
 
-/** The legacy client and the new forms of `link` / `checkExternalRepo`, side by side. */
-type BothForms = IAdtAbapGitClient<MyRepo[], string, void, string> &
+/** The remaining legacy members and the forms of `link` / `checkExternalRepo`. */
+type BothForms = IAdtAbapGitClient<MyRepo[], string, void> &
   IAdtAbapGitLinkNewForm<RunView, RunFacts> &
   IAdtAbapGitCheckExternalRepoNewForm<RunView, RunFacts>;
 declare const both: BothForms;
@@ -266,7 +271,7 @@ void reader;
 // @ts-expect-error both forms mixed, literal: legacy args with a credential
 void both.link({ ...newLinkArgs, remoteUser: 'u' }, { headers, credentials });
 
-const legacyLinkArgs: IAbapGitLinkArgs = {
+const legacyLinkArgs = {
   package: 'ZPKG',
   url: 'https://h/r',
   branchName: 'refs/heads/main',
@@ -287,7 +292,7 @@ void both.link(newLinkArgs, { headers, credentials: undefined });
 
 const legacyExternalArgs = { url: 'https://h/r', remoteUser: 'u' };
 const anonymousOptions = { headers, credentials: null };
-// @ts-expect-error `credentials: null` on a legacy call
+// @ts-expect-error `remoteUser` is not a new-form argument
 void both.checkExternalRepo(legacyExternalArgs, anonymousOptions);
 
 const wireAnalyse: IAnalyse = (verdict) => verdict;

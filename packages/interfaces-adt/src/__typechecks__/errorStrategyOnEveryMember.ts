@@ -136,7 +136,7 @@ type EveryMemberTakesAnalyse<I> = false extends {
   : true;
 
 export type _IAdtAbapGitClient = Assert<
-  EveryMemberTakesAnalyse<IAdtAbapGitClient<Probe, Probe, Probe, Probe>>
+  EveryMemberTakesAnalyse<IAdtAbapGitClient<Probe, Probe, Probe>>
 >;
 export type _IAdtAbapGitListReposQuiet = Assert<
   EveryMemberTakesAnalyse<IAdtAbapGitListReposQuiet<Probe, Probe>>

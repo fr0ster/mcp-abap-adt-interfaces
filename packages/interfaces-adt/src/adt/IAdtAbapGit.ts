@@ -2,15 +2,6 @@ import type { IAdtHeaders } from './IAdtContentTypes';
 import type { IAdtAnalyseOptions, IAnalyse } from './IAdtObject';
 import type { AdtNoFailure, IAdtError, IAdtResponse } from './IAdtResponse';
 
-export interface IAbapGitLinkArgs {
-  package: string;
-  url: string;
-  branchName?: string;
-  remoteUser?: string;
-  remotePassword?: string;
-  transportRequest?: string;
-}
-
 /**
  * What starting a pull needs.
  *
@@ -47,12 +38,6 @@ export interface IAbapGitUnlinkArgs {
   transportRequest?: string;
 }
 
-export interface IAbapGitExternalRepoCredentials {
-  url: string;
-  remoteUser?: string;
-  remotePassword?: string;
-}
-
 export interface IAdtAbapGitClientOptions {
   contentTypeVersion?: 'v3' | 'v4';
 }
@@ -65,28 +50,13 @@ export interface IAdtAbapGitClientOptions {
  * do, and a "not found" the library composed from its own search. A caller
  * reads `listRepos` through the strategy of their choice and takes the entry
  * they want.
+ *
+ * **`link` and `checkExternalRepo` left in 32.0.0,** with the fourth type
+ * parameter (`TExternalRepo`). Their `remoteUser`/`remotePassword` forms were
+ * deprecated in 30.2.0; {@link IAdtAbapGitLinkNewForm} and
+ * {@link IAdtAbapGitCheckExternalRepoNewForm} are the forms that remain.
  */
-export interface IAdtAbapGitClient<TRepos, TErrorLog, TPull, TExternalRepo> {
-  /**
-   * @deprecated Since 30.2.0 — use the new form ({@link IAdtAbapGitLinkNewForm}:
-   * `credentials: IAbapGitCredentials | null`, no `remoteUser`/`remotePassword`).
-   * Its options carry `credentials?: never`, so the two forms never mix.
-   */
-  link<E extends IAdtError>(
-    args: IAbapGitLinkArgs,
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
-        analyse: IAnalyse<E>;
-      } & { readonly credentials?: never },
-  ): Promise<IAdtResponse<void, E | IAdtError>>;
-  /**
-   * @deprecated Since 30.2.0 — use the new form ({@link IAdtAbapGitLinkNewForm}).
-   */
-  link(
-    args: IAbapGitLinkArgs,
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions & {
-        readonly credentials?: never;
-      },
-  ): Promise<IAdtResponse<void>>;
+export interface IAdtAbapGitClient<TRepos, TErrorLog, TPull> {
   /**
    * Start a pull — one POST to `args.pullLink`.
    *
@@ -147,29 +117,6 @@ export interface IAdtAbapGitClient<TRepos, TErrorLog, TPull, TExternalRepo> {
     logLink: string,
     options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TErrorLog>>;
-  /**
-   * @deprecated Since 30.2.0 — use the new form
-   * ({@link IAdtAbapGitCheckExternalRepoNewForm}: `credentials:
-   * IAbapGitCredentials | null`). The `remoteUser`/`remotePassword` this form
-   * takes are written where SAP does not read them. Its options carry
-   * `credentials?: never`, so the two forms never mix.
-   */
-  checkExternalRepo<E extends IAdtError>(
-    args: IAbapGitExternalRepoCredentials,
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
-        analyse: IAnalyse<E>;
-      } & { readonly credentials?: never },
-  ): Promise<IAdtResponse<TExternalRepo, E | IAdtError>>;
-  /**
-   * @deprecated Since 30.2.0 — use the new form
-   * ({@link IAdtAbapGitCheckExternalRepoNewForm}).
-   */
-  checkExternalRepo(
-    args: IAbapGitExternalRepoCredentials,
-    options: { headers: IAdtHeaders } & IAdtAnalyseOptions & {
-        readonly credentials?: never;
-      },
-  ): Promise<IAdtResponse<TExternalRepo>>;
 }
 
 // ---------------------------------------------------------------------------
@@ -181,8 +128,9 @@ export interface IAdtAbapGitClient<TRepos, TErrorLog, TPull, TExternalRepo> {
 // document to named fields (`IAbapGitFactsResponse`), never the document
 // itself, and the default error carries the status and the T100 key only
 // (`IAbapGitStructuredError`), never SAP's text. A credential is never part of
-// either. The legacy members of `IAdtAbapGitClient` keep their wire-typed
-// contract, deprecated.
+// either. The legacy members left in `IAdtAbapGitClient` (`pull`, `unlink`,
+// `listRepos`, `getErrorLog`) keep their wire-typed contract, deprecated; its
+// `link` and `checkExternalRepo` left in 32.0.0.
 
 /**
  * A remote repository's credential, as SAP's abapGit takes it: a user and a
@@ -317,9 +265,10 @@ export type IAbapGitFactsOptions<
 
 /**
  * The options of the new form of `link` and `checkExternalRepo`:
- * `credentials` is required — a credential, or `null` for an anonymous call —
- * and is what selects the new form (the legacy options carry
- * `credentials?: never`). `undefined` is neither.
+ * `credentials` is required — a credential, or `null` for an anonymous call.
+ * `undefined` is neither. Since 32.0.0 these are the only forms of the two
+ * members: the old ones, deprecated since 30.2.0, left with their argument
+ * types.
  */
 export type IAbapGitNewFormOptions<
   F,
