@@ -47,7 +47,8 @@ becomes the caller's, and two deprecated abapGit members leave.
   `sortAndCompress`, `moveObjects`) take the generic/plain overload pair. A
   call naming `E` passes `analyse`; before, one defaulted `E` let it pass none.
 - **A generic answer is `IAdtResponse<T, E | IAdtError>`**, on every generic
-  overload (178, checked by `tools/check-error-union.js`) (`E | IAbapGitStructuredError` for the abapGit facts). With
+  overload (178, checked by `tools/check-error-union.js`: the union, the required
+  `analyse` and a plain twin per signature) (`E | IAbapGitStructuredError` for the abapGit facts). With
   `analyse` given, the library still answers its own error in three cases: no
   answer came back and `analyse` cleared the verdict; a chain step answered
   without a strategy; a member a system does not serve refused without a
@@ -62,11 +63,16 @@ becomes the caller's, and two deprecated abapGit members leave.
   and a transport request's document. Their options refuse a `lockHandle`.
 - **A message class message's members, one request each:**
   `IAdtMessageClassMessageLockable` (`lockMessage`, `lockClassForMessage`,
-  `unlockMessages`) and `IAdtMessageClassMessageWritable` (`write`, one PUT of
-  the class document with `classDocument`, `classLockHandle` and
-  `messageLockHandle`; `remove: true` removes the message), with
-  `IMessageClassMessageWriteOptions`, `IMessageClassMessageRemoval` and
-  `MessageClassMessageAddress`.
+  `unlockMessages`) and `IAdtMessageClassMessageUpdatable` (`update`, one PUT
+  of the class document with `classDocument`, `classLockHandle` and
+  `messageLockHandle`; an upsert requires `msgtext`, and `removeMessage: true`
+  removes the message from the document), with
+  `IMessageClassMessageUpdateOptions`, `IMessageClassMessageUpsert`,
+  `IMessageClassMessageRemoval`, `MessageClassMessageAddress` and
+  `MessageClassMessageUpsertKeys`. The variant tables list `lockMessage`,
+  `lockClassForMessage`, `update` and `unlockMessages` for `MSAG/NN` in place
+  of `create` and `delete`, and `AdtOperation` gains the three lock
+  operations.
 - `tools/check-error-union.js` (`npm run check:errors`, in `check` and CI):
   every generic member answers the library's error and has its plain
   overload.
@@ -88,12 +94,17 @@ becomes the caller's, and two deprecated abapGit members leave.
   `IAdtLockFreeMetadataUpdatable` (the binding's publication keeps
   `IServiceBindingPublicationConfig` as its config).
 - **Callers of a write** pass the `lockHandle` their `lock` answered, and
-  unlock afterwards. A message class message's write is composed by the
-  caller: `lockMessage` and `lockClassForMessage` on a stateful session (a 403
-  on the first means the class handle stands in; a 403 on the second means the
-  message class's own `lock`), read the class's working area, `write` on a
-  stateless session with both handles, then the class's `unlock` and
-  `unlockMessages` on the stateful session.
+  unlock afterwards. A message class message's `create`, `update` and
+  `delete` become the caller's composition: `lockMessage` and
+  `lockClassForMessage` on a stateful session, read the class's working area,
+  `update` on a stateless session with both handles (`removeMessage: true` to
+  delete), then the class's `unlock` and `unlockMessages` on the stateful
+  session. The library used to treat a 403 on `lockMessage` as "no message
+  lock" and a 403 on `lockClassForMessage` as "take the plain class lock", and
+  it did not tell those from another user's lock; the README's recipe says what
+  that means for a caller, and how to give the locks up on every way out.
+  Code that names `AdtApiWith<V, 'create'>` or `'delete'` no longer finds
+  `messageClassMessage` there.
   A method that still takes `Partial<TConfig>` keeps compiling, but only a
   method typed with the identity reads the keys as `string`.
 - **Callers** pass every key and option an atom requires. A call without the

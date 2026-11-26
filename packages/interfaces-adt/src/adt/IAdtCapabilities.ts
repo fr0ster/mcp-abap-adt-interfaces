@@ -365,11 +365,9 @@ export interface IAdtMainProgramsReadable<
  * {@link IAdtMetadataUpdatable} instead, and the member it offers says what it
  * writes.
  *
- * **One object is neither.** A service binding has no source and no document to
- * PUT: its `update` is a publication job, `POST …/publishjobs`, which changes
- * the object's state rather than its content. It is still `update` — writing an
- * object's state is what the member is for — but "the source and only the
- * source" would be a claim this atom cannot make for every implementation.
+ * **A service binding's publication is not this atom.** It is a job,
+ * `POST …/publishjobs`, that changes the binding's state and takes no lock, so
+ * since 32.0.0 it is {@link IAdtLockFreeUpdatable}.
  */
 export interface IAdtUpdatable<
   TConfig,
@@ -380,12 +378,9 @@ export interface IAdtUpdatable<
   /**
    * Write what the object has — **the write, and nothing around it.**
    *
-   * For the types that have a source, that is the source. A service binding has
-   * neither a source nor a document to PUT: its `update` is a publication job,
-   * `POST …/publishjobs`, which changes the object's state. Writing an object's
-   * state is what this member is for, so "writes the source" is a claim the
-   * hover text cannot make for every implementation — and the hover is where a
-   * consumer reads the contract.
+   * For the types that have a source, that is the source; for a type written
+   * from a typed config, its document. A service binding's publication job
+   * takes no lock, so it is {@link IAdtLockFreeUpdatable}, not this atom.
    *
    * This used to say "with full operation chain: lock, check(inactive),
    * update, unlock, check, activate (optional)". It is one request, and the

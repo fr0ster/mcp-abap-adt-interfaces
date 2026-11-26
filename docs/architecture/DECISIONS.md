@@ -3413,7 +3413,8 @@ to `E` at 37 sites.
   one endpoint, one method. In the owner's words: «Не мають на рівні
   adt-clients самі ставити локи як не передано локхендл, оце як раз порушення
   правила один метод один ендпойнт.» A member never locks or unlocks for
-  itself, a message class message's lock chain becomes the caller's, and the
+  itself, a message class message's lock chain becomes the caller's (its PUT is
+  the message's `update`, removal an option of it), and the
   two writes that take no lock (a binding's publication, a transport's
   document) get their own lock-free atoms. `TRequiredOptions` names `source`
   where a member sends one.

@@ -14,7 +14,7 @@ ADT contracts: object operations, runtime analysis, execution, feeds and service
 - Since 15.1.0 the plain class and program run take `debuggee` (`IDebuggeeIds`): the terminal id and IDE id a terminal-mode listener catches the run by.
 - Since 23.1.0 the ABAP Unit run registry: `ABAP_UNIT_RUN_TYPES`, every `osl:object type` value a run may name, what a run of it runs and on what evidence; `AbapUnitRunObjectType` (its keys), `AbapUnitRunTarget` (an object or a package) and the generic runner contract `IAbapUnitRunner`. Additions only. See "The ABAP Unit run registry".
 - Since 30.0.0 the text elements of a program, a class or a function group — text symbols, selection texts, list and column headings — are their own contract (`/sap/bc/adt/textelements/…`, lock class `TEXT`): `IAdtTextElementsReadable` reads one part, `IAdtTextElementsUpdatable` writes one whole part from a typed document (`ITextSymbol`, `ISelectionText`, `ITextHeadings`), `ITextElementsResults`. The tables gain the API `textElements` (`PROG/PX`, `CLAS/OCX`, kind `text_elements`) on S/4HANA and ABAP cloud: a map over `AdtApiName`, `AdtTypeCode`, `AdtObjectKind`, `CodesOfMain<'PROG'>`, `CodesOfMain<'CLAS'>` or a union derived from the tables — the utility, group activation and where-used codes among them (`AdtUtilityCode`, `AdtGroupActivationCode`, `AdtWhereUsedCode`) — adds the members; the reason for the major. The typed `activateObjects` / `activateObjectsGroup` take the text elements' reference beside the object's. See "Text elements" and "Migrating to 30.0.0".
-- Since 32.0.0 an identifying atom, and the write atoms, name the keys that address the object: `TRequired` (no default) — the object's own name, its parent where it has one, a field the member sends — each a `string`, never `undefined`. One endpoint, one method: a write requires the caller's `lockHandle` and never locks for itself; a write that takes no lock is `IAdtLockFreeUpdatable` / `IAdtLockFreeMetadataUpdatable`; a message class message's chain is the caller's (`IAdtMessageClassMessageLockable`, `IAdtMessageClassMessageWritable`). `source` is required where a member sends it (`TRequiredOptions`). Every generic overload answers `IAdtResponse<T, E | IAdtError>` (`E | IAbapGitStructuredError` for the abapGit facts), because the library may answer its own error with `analyse` given. The old `link` and `checkExternalRepo` forms of `IAdtAbapGitClient`, deprecated since 30.2.0, are removed with `IAbapGitLinkArgs`, `IAbapGitExternalRepoCredentials` and the client's fourth type parameter. See "The identity and the error type (32.0.0)" and "Migrating to 32.0.0".
+- Since 32.0.0 an identifying atom, and the write atoms, name the keys that address the object: `TRequired` (no default) — the object's own name, its parent where it has one, a field the member sends — each a `string`, never `undefined`. One endpoint, one method: a write requires the caller's `lockHandle` and never locks for itself; a write that takes no lock is `IAdtLockFreeUpdatable` / `IAdtLockFreeMetadataUpdatable`; a message class message's chain is the caller's (`IAdtMessageClassMessageLockable`, `IAdtMessageClassMessageUpdatable`). `source` is required where a member sends it (`TRequiredOptions`). Every generic overload answers `IAdtResponse<T, E | IAdtError>` (`E | IAbapGitStructuredError` for the abapGit facts), because the library may answer its own error with `analyse` given. The old `link` and `checkExternalRepo` forms of `IAdtAbapGitClient`, deprecated since 30.2.0, are removed with `IAbapGitLinkArgs`, `IAbapGitExternalRepoCredentials` and the client's fourth type parameter. See "The identity and the error type (32.0.0)" and "Migrating to 32.0.0".
 - Since 30.2.0 (the old `link` and `checkExternalRepo` forms deprecated here were removed in 32.0.0) the abapGit contracts have key-based members and facts forms: one atom per member (`IAdtAbapGitPullRepo`, `IAdtAbapGitRunLog`, `IAdtAbapGitPush`, … fourteen in all), each generic over its result `T` and its route's facts `F`, answering `IAbapGitStructuredError` by default (status and T100 key, never SAP's text); the new forms of `link` and `checkExternalRepo` take `credentials: IAbapGitCredentials | null`. The other legacy members (`pull`, `unlink`, `listRepos`, `getErrorLog`) are deprecated and unchanged apart from `credentials?: never` on the options of `pull`; the one edge case that no longer compiled in 30.2.0 is in the CHANGELOG. See "abapGit: key-based members and facts".
 - Since 30.1.0 a settings write is typed by the system kind: on the cloud it requires `isWritableByAMDP` (a cloud write without it reset it to `false`, measured; 30.0.0 refused it on a write), on premise it refuses it (nothing maps it there, Code). `IAdtTableSettingsPatchable.patchMetadata` reads, overlays `ITableSettingsChangesOf<V>` and writes the whole document with `If-Match` (decision 51). What it breaks is in the CHANGELOG. See "A table's technical settings".
 - Since 29.0.0 `ITableSettings.translation` is an `ITableTranslation`, the `ts:translation` element's four attributes, where 28.0.0 had a string: a `ts:translation` element written with an attribute missing is refused (400 `00/001`), and an absent element is accepted (both measured on both systems). See "Migrating to 29.0.0".
@@ -425,11 +425,12 @@ takes no `headers`. An existing single field, `IReadOptions.accept`, stays as
 it is. A member that takes `headers` carries no separate `accept` or
 `contentType` beside it.
 
-Which request sets what was read from `@mcp-abap-adt/adt-clients`. For a chain,
-the main write counts (the message class message's create and update: the
-PUT). Where a member's implementations disagree, the majority decides.
+Which request sets what was read from `@mcp-abap-adt/adt-clients`. Since
+32.0.0 every member sends one request, the message class message's `update`
+(the PUT) included. Where a member's implementations disagree, the majority
+decides.
 
-The members that take `headers`: `IAdtAbapGitClient`: `link`, `pull`, `checkExternalRepo`; `IAdtAbapGitLinkNewForm`: `link`; `IAdtAbapGitCheckExternalRepoNewForm`: `checkExternalRepo`; `IAdtAbapGitPullRepo`: `pullRepo`; `IAdtAbapGitPullRepoInDialog`: `pullRepoInDialog`; `IAdtAbapGitBranchInfo`: `getBranchInfo`; `IAdtCreatable`: `create`; `IAdtUpdatable`: `update`; `IAdtMetadataUpdatable`: `updateMetadata`; `IAdtDeletable`: `delete`, `checkDeletion`; `IAdtCheckable`: `check`; `IAdtActivatable`: `activate`; `IFeatureToggleObject`: `checkState`; `IAdtTransportObjectActions`: `removeObject`, `addObject`, `createTask`, `changeTaskType`; `IAdtTransportMoveObjects`: `moveObjects`; `IAbapUnitRunner`: `runSync`; `IAdtWhereUsed`: `getWhereUsed`, `getWhereUsedScope`; `IAdtVirtualFolders`: `getVirtualFoldersContents`; `IAdtRepositoryStructure`: `fetchNodeStructure`; `IAdtGroupLifecycle`: `activateObjectsGroup`, `checkDeletionGroup`, `deleteObjectsGroup`; `IAdtObjectActivation`: `activateObjects`; `IAdtDataPreview`: `getSqlQuery`, `getTableContents`; `ITraceScheduling`: `scheduleTrace`; `IAbapDebugger`: `setBreakpoints`, `getChildVariables`, `getVariables`, `syncBreakpoints`, `setDebuggerSettings`; `IAmdpDebugger`: `getDataPreview`.
+The members that take `headers`: `IAdtAbapGitClient`: `pull`; `IAdtAbapGitLinkNewForm`: `link`; `IAdtAbapGitCheckExternalRepoNewForm`: `checkExternalRepo`; `IAdtAbapGitPullRepo`: `pullRepo`; `IAdtAbapGitPullRepoInDialog`: `pullRepoInDialog`; `IAdtAbapGitBranchInfo`: `getBranchInfo`; `IAdtCreatable`: `create`; `IAdtUpdatable`: `update`; `IAdtMetadataUpdatable`: `updateMetadata`; `IAdtLockFreeUpdatable`: `update`; `IAdtLockFreeMetadataUpdatable`: `updateMetadata`; `IAdtMessageClassMessageUpdatable`: `update`; `IAdtDeletable`: `delete`, `checkDeletion`; `IAdtCheckable`: `check`; `IAdtActivatable`: `activate`; `IFeatureToggleObject`: `checkState`; `IAdtTransportObjectActions`: `removeObject`, `addObject`, `createTask`, `changeTaskType`; `IAdtTransportMoveObjects`: `moveObjects`; `IAbapUnitRunner`: `runSync`; `IAdtWhereUsed`: `getWhereUsed`, `getWhereUsedScope`; `IAdtVirtualFolders`: `getVirtualFoldersContents`; `IAdtRepositoryStructure`: `fetchNodeStructure`; `IAdtGroupLifecycle`: `activateObjectsGroup`, `checkDeletionGroup`, `deleteObjectsGroup`; `IAdtObjectActivation`: `activateObjects`; `IAdtDataPreview`: `getSqlQuery`, `getTableContents`; `ITraceScheduling`: `scheduleTrace`; `IAbapDebugger`: `setBreakpoints`, `getChildVariables`, `getVariables`, `syncBreakpoints`, `setDebuggerSettings`; `IAmdpDebugger`: `getDataPreview`.
 
 The field is on each member's own options, not on `IAdtAnalyseOptions` or
 `IAdtOperationOptions`. `src/__typechecks__/headersOnEveryMember.ts` holds this
@@ -877,19 +878,34 @@ type Publication = IAdtLockFreeUpdatable<
 
 **A message class message** is written through its class, and its chain is the
 caller's, one request per member (`IAdtMessageClassMessageLockable`,
-`IAdtMessageClassMessageWritable`):
+`IAdtMessageClassMessageUpdatable`):
 
-1. on a stateful session, `lockMessage`, then `lockClassForMessage`. A 403 on
-   `lockMessage` means the system grants only the class lock, and the class
-   handle stands in for the message's. A 403 on `lockClassForMessage` means the
-   plain class lock: the message class's own `lock`;
+1. on a stateful session, `lockMessage`, then `lockClassForMessage`;
 2. read the class's working-area document (the message's `read`, version
    `'workingArea'`);
-3. on a stateless session, `write` with `classDocument`, `classLockHandle` and
-   `messageLockHandle` (`remove: true` removes the message). The PUT carries
-   the handles, so it needs no lock session;
+3. on a stateless session, `update` with `classDocument`, `classLockHandle` and
+   `messageLockHandle` (`removeMessage: true` removes the message from the
+   document). The PUT carries the handles, so it needs no lock session;
 4. back on the stateful session, the class's `unlock` with the class handle,
    then `unlockMessages`.
+
+**What a 403 means here, and what the library did with it.** Until 32.0.0 the
+library treated every 403 on `lockMessage` as "no message lock is granted" and
+went on with the class handle in its place, and every 403 on
+`lockClassForMessage` as "take the plain class lock" (the message class's own
+`lock`). It did not tell apart a system that grants no message lock from
+another user holding the lock, and neither does this contract: whether SAP's
+two 403s differ is not measured. A caller that needs to tell them apart reads
+the refusal (its message and T100 key) before it falls back. A caller that
+falls back as the library did still meets another user's lock, because the
+class lock or the PUT is then refused.
+
+**Cleanup.** The locks are the caller's, and so is giving them up on every way
+out, as the library's own chain did. If `lockClassForMessage` (or the plain
+lock) fails after `lockMessage` succeeded, call `unlockMessages`. If the read
+or the `update` fails, unlock the class with its handle, then call
+`unlockMessages`, in that order, on the stateful session. An unlock that fails
+does not stop the other.
 
 **Every generic member has its plain overload.** The eight transport
 operations of `IAdtTransportObjectActions`, `IAdtTransportSortAndCompress` and
@@ -962,8 +978,8 @@ mean the same. The CHANGELOG lists each type;
 - **A message class message.** Its `create`, `update` and `delete`, which ran
   the lock chain themselves, give way to `IAdtMessageClassMessageLockable`
   (`lockMessage`, `lockClassForMessage`, `unlockMessages`) and
-  `IAdtMessageClassMessageWritable` (`write`, with `remove: true` for a
-  deletion). The caller composes the chain as "The identity and the error type"
+  `IAdtMessageClassMessageUpdatable` (`update`, with `removeMessage: true` to
+  remove the message from the document). The caller composes the chain as "The identity and the error type"
   describes, keeping the locks on the stateful session and the PUT stateless.
 - **The feature toggle's members** (`switchOn`, `switchOff`,
   `getRuntimeState`, `checkState`, `readSource`) require `featureToggleName`.
