@@ -127,7 +127,7 @@ export interface ITestRunInformation<TStatus, TResult> {
     runId: string,
     withLongPolling: boolean | undefined,
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TStatus, E>>;
+  ): Promise<IAdtResponse<TStatus, E | IAdtError>>;
   getStatus(
     runId: string,
     withLongPolling?: boolean,
@@ -139,7 +139,7 @@ export interface ITestRunInformation<TStatus, TResult> {
     runId: string,
     options: IUnitTestResultOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TResult, E>>;
+  ): Promise<IAdtResponse<TResult, E | IAdtError>>;
   getResult(
     runId: string,
     options?: IUnitTestResultOptions & IAdtAnalyseOptions,
@@ -181,7 +181,7 @@ export interface IAbapUnitRunner<TRun, TStatus, TResult>
     uris: readonly [string, ...string[]],
     options: { headers: IAdtHeaders } & IClassUnitTestRunOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TResult, E>>;
+  ): Promise<IAdtResponse<TResult, E | IAdtError>>;
   runSync(
     uris: readonly [string, ...string[]],
     options: { headers: IAdtHeaders } & IClassUnitTestRunOptions &
@@ -203,7 +203,7 @@ export interface ICdsTestDoubleCheckable<TResult> {
   checkCdsTestDoubles<E extends IAdtError>(
     cdsViewName: string,
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TResult, E>>;
+  ): Promise<IAdtResponse<TResult, E | IAdtError>>;
   checkCdsTestDoubles(
     cdsViewName: string,
     options?: IAdtAnalyseOptions,

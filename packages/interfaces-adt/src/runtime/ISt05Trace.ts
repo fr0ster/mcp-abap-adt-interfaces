@@ -7,10 +7,10 @@ export interface ISt05Trace<TState, TDirectory> {
 
   getState<E extends IAdtError>(
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TState, E>>;
+  ): Promise<IAdtResponse<TState, E | IAdtError>>;
   getState(options?: IAdtAnalyseOptions): Promise<IAdtResponse<TState>>;
   getDirectory<E extends IAdtError>(
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TDirectory, E>>;
+  ): Promise<IAdtResponse<TDirectory, E | IAdtError>>;
   getDirectory(options?: IAdtAnalyseOptions): Promise<IAdtResponse<TDirectory>>;
 }

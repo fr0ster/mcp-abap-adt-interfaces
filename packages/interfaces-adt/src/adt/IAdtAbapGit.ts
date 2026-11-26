@@ -77,7 +77,7 @@ export interface IAdtAbapGitClient<TRepos, TErrorLog, TPull, TExternalRepo> {
     options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
         analyse: IAnalyse<E>;
       } & { readonly credentials?: never },
-  ): Promise<IAdtResponse<void, E>>;
+  ): Promise<IAdtResponse<void, E | IAdtError>>;
   /**
    * @deprecated Since 30.2.0 — use the new form ({@link IAdtAbapGitLinkNewForm}).
    */
@@ -102,7 +102,7 @@ export interface IAdtAbapGitClient<TRepos, TErrorLog, TPull, TExternalRepo> {
     options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
         analyse: IAnalyse<E>;
       } & { readonly credentials?: never },
-  ): Promise<IAdtResponse<TPull, E>>;
+  ): Promise<IAdtResponse<TPull, E | IAdtError>>;
   /**
    * @deprecated Since 30.2.0 — use the key-based `pullRepo`
    * ({@link IAdtAbapGitPullRepo}).
@@ -116,14 +116,14 @@ export interface IAdtAbapGitClient<TRepos, TErrorLog, TPull, TExternalRepo> {
   unlink<E extends IAdtError>(
     args: IAbapGitUnlinkArgs,
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<void, E>>;
+  ): Promise<IAdtResponse<void, E | IAdtError>>;
   unlink(
     args: IAbapGitUnlinkArgs,
     options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<void>>;
   listRepos<E extends IAdtError>(
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TRepos, E>>;
+  ): Promise<IAdtResponse<TRepos, E | IAdtError>>;
   listRepos(options?: IAdtAnalyseOptions): Promise<IAdtResponse<TRepos>>;
   /**
    * The error log of a repository's last run — one GET to `logLink`.
@@ -139,7 +139,7 @@ export interface IAdtAbapGitClient<TRepos, TErrorLog, TPull, TExternalRepo> {
   getErrorLog<E extends IAdtError>(
     logLink: string,
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TErrorLog, E>>;
+  ): Promise<IAdtResponse<TErrorLog, E | IAdtError>>;
   /**
    * @deprecated Since 30.2.0 — use `getRunLog` ({@link IAdtAbapGitRunLog}).
    */
@@ -159,7 +159,7 @@ export interface IAdtAbapGitClient<TRepos, TErrorLog, TPull, TExternalRepo> {
     options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
         analyse: IAnalyse<E>;
       } & { readonly credentials?: never },
-  ): Promise<IAdtResponse<TExternalRepo, E>>;
+  ): Promise<IAdtResponse<TExternalRepo, E | IAdtError>>;
   /**
    * @deprecated Since 30.2.0 — use the new form
    * ({@link IAdtAbapGitCheckExternalRepoNewForm}).
@@ -476,7 +476,7 @@ export interface IAdtAbapGitListReposQuiet<T, F> {
     options: IAbapGitQuietOptions<F, E> & {
       analyse: IAbapGitFactsAnalyse<F, E>;
     },
-  ): Promise<IAdtResponse<T, E>>;
+  ): Promise<IAdtResponse<T, E | IAbapGitStructuredError>>;
   listReposQuiet(
     options?: IAbapGitQuietOptions<F>,
   ): Promise<IAdtResponse<T, IAbapGitStructuredError>>;
@@ -488,7 +488,7 @@ export interface IAdtAbapGitLinkNewForm<T, F> {
     args: IAbapGitLinkNewArgs,
     options: IAbapGitHeaderOptions &
       IAbapGitNewFormOptions<F, E> & { analyse: IAbapGitFactsAnalyse<F, E> },
-  ): Promise<IAdtResponse<T, E>>;
+  ): Promise<IAdtResponse<T, E | IAbapGitStructuredError>>;
   link(
     args: IAbapGitLinkNewArgs,
     options: IAbapGitHeaderOptions & IAbapGitNewFormOptions<F>,
@@ -501,7 +501,7 @@ export interface IAdtAbapGitCheckExternalRepoNewForm<T, F> {
     args: IAbapGitExternalRepoArgs,
     options: IAbapGitHeaderOptions &
       IAbapGitNewFormOptions<F, E> & { analyse: IAbapGitFactsAnalyse<F, E> },
-  ): Promise<IAdtResponse<T, E>>;
+  ): Promise<IAdtResponse<T, E | IAbapGitStructuredError>>;
   checkExternalRepo(
     args: IAbapGitExternalRepoArgs,
     options: IAbapGitHeaderOptions & IAbapGitNewFormOptions<F>,
@@ -514,7 +514,7 @@ export interface IAdtAbapGitPullRepo<T, F> {
     args: IAbapGitPullRepoArgs,
     options: IAbapGitHeaderOptions &
       IAbapGitFactsOptions<F, E> & { analyse: IAbapGitFactsAnalyse<F, E> },
-  ): Promise<IAdtResponse<T, E>>;
+  ): Promise<IAdtResponse<T, E | IAbapGitStructuredError>>;
   pullRepo(
     args: IAbapGitPullRepoArgs,
     options: IAbapGitHeaderOptions & IAbapGitFactsOptions<F>,
@@ -527,7 +527,7 @@ export interface IAdtAbapGitPullRepoInDialog<T, F> {
     args: IAbapGitPullRepoArgs,
     options: IAbapGitHeaderOptions &
       IAbapGitFactsOptions<F, E> & { analyse: IAbapGitFactsAnalyse<F, E> },
-  ): Promise<IAdtResponse<T, E>>;
+  ): Promise<IAdtResponse<T, E | IAbapGitStructuredError>>;
   pullRepoInDialog(
     args: IAbapGitPullRepoArgs,
     options: IAbapGitHeaderOptions & IAbapGitFactsOptions<F>,
@@ -540,7 +540,7 @@ export interface IAdtAbapGitBranchInfo<T, F> {
     args: IAbapGitBranchInfoArgs,
     options: IAbapGitHeaderOptions &
       IAbapGitFactsOptions<F, E> & { analyse: IAbapGitFactsAnalyse<F, E> },
-  ): Promise<IAdtResponse<T, E>>;
+  ): Promise<IAdtResponse<T, E | IAbapGitStructuredError>>;
   getBranchInfo(
     args: IAbapGitBranchInfoArgs,
     options: IAbapGitHeaderOptions & IAbapGitFactsOptions<F>,
@@ -554,7 +554,7 @@ export interface IAdtAbapGitModifiedObjects<T, F> {
     options: IAbapGitFactsOptions<F, E> & {
       analyse: IAbapGitFactsAnalyse<F, E>;
     },
-  ): Promise<IAdtResponse<T, E>>;
+  ): Promise<IAdtResponse<T, E | IAbapGitStructuredError>>;
   getModifiedObjects(
     args: IAbapGitRepoKeyArgs,
     options?: IAbapGitFactsOptions<F>,
@@ -568,7 +568,7 @@ export interface IAdtAbapGitStatus<T, F> {
     options: IAbapGitFactsOptions<F, E> & {
       analyse: IAbapGitFactsAnalyse<F, E>;
     },
-  ): Promise<IAdtResponse<T, E>>;
+  ): Promise<IAdtResponse<T, E | IAbapGitStructuredError>>;
   getStatus(
     args: IAbapGitRepoKeyArgs,
     options?: IAbapGitFactsOptions<F>,
@@ -582,7 +582,7 @@ export interface IAdtAbapGitStaging<T, F> {
     options: IAbapGitFactsOptions<F, E> & {
       analyse: IAbapGitFactsAnalyse<F, E>;
     },
-  ): Promise<IAdtResponse<T, E>>;
+  ): Promise<IAdtResponse<T, E | IAbapGitStructuredError>>;
   getStaging(
     args: IAbapGitRepoKeyArgs,
     options?: IAbapGitFactsOptions<F>,
@@ -596,7 +596,7 @@ export interface IAdtAbapGitCheckRepo<T, F> {
     options: IAbapGitFactsOptions<F, E> & {
       analyse: IAbapGitFactsAnalyse<F, E>;
     },
-  ): Promise<IAdtResponse<T, E>>;
+  ): Promise<IAdtResponse<T, E | IAbapGitStructuredError>>;
   checkRepo(
     args: IAbapGitRepoKeyArgs,
     options?: IAbapGitFactsOptions<F>,
@@ -610,7 +610,7 @@ export interface IAdtAbapGitRunLog<T, F> {
     options: IAbapGitFactsOptions<F, E> & {
       analyse: IAbapGitFactsAnalyse<F, E>;
     },
-  ): Promise<IAdtResponse<T, E>>;
+  ): Promise<IAdtResponse<T, E | IAbapGitStructuredError>>;
   getRunLog(
     args: IAbapGitRunLogArgs,
     options?: IAbapGitFactsOptions<F>,
@@ -624,7 +624,7 @@ export interface IAdtAbapGitPush<T, F> {
     options: IAbapGitFactsOptions<F, E> & {
       analyse: IAbapGitFactsAnalyse<F, E>;
     },
-  ): Promise<IAdtResponse<T, E>>;
+  ): Promise<IAdtResponse<T, E | IAbapGitStructuredError>>;
   push(
     args: IAbapGitPushArgs,
     options?: IAbapGitFactsOptions<F>,
@@ -638,7 +638,7 @@ export interface IAdtAbapGitFile<T, F> {
     options: IAbapGitFactsOptions<F, E> & {
       analyse: IAbapGitFactsAnalyse<F, E>;
     },
-  ): Promise<IAdtResponse<T, E>>;
+  ): Promise<IAdtResponse<T, E | IAbapGitStructuredError>>;
   getFile(
     args: IAbapGitFileArgs,
     options?: IAbapGitFactsOptions<F>,
@@ -652,7 +652,7 @@ export interface IAdtAbapGitSwitchBranch<T, F> {
     options: IAbapGitFactsOptions<F, E> & {
       analyse: IAbapGitFactsAnalyse<F, E>;
     },
-  ): Promise<IAdtResponse<T, E>>;
+  ): Promise<IAdtResponse<T, E | IAbapGitStructuredError>>;
   switchBranch(
     args: IAbapGitSwitchBranchArgs,
     options?: IAbapGitFactsOptions<F>,

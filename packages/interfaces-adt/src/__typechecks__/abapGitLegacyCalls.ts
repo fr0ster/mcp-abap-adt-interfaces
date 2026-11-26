@@ -90,10 +90,10 @@ const log1: Promise<IAdtResponse<string>> = client.getErrorLog(
   '/sap/bc/adt/abapgit/repos/K/log/1',
   { analyse: verdictOnly },
 );
-const log2: Promise<IAdtResponse<string, IMyError>> = client.getErrorLog(
-  '/sap/bc/adt/abapgit/repos/K/log/1',
-  { analyse: wireReading },
-);
+const log2: Promise<IAdtResponse<string, IMyError | IAdtError>> =
+  client.getErrorLog('/sap/bc/adt/abapgit/repos/K/log/1', {
+    analyse: wireReading,
+  });
 
 // `link`, the `remoteUser`/`remotePassword` form, literal and variable args.
 const link0: Promise<IAdtResponse<void>> = client.link(linkArgs, { headers });
@@ -101,10 +101,13 @@ const link1: Promise<IAdtResponse<void>> = client.link(
   { package: 'ZPKG', url: 'https://h/r', branchName: 'refs/heads/main' },
   { headers, analyse: verdictOnly },
 );
-const link2: Promise<IAdtResponse<void, IMyError>> = client.link(linkArgs, {
-  headers,
-  analyse: wireReading,
-});
+const link2: Promise<IAdtResponse<void, IMyError | IAdtError>> = client.link(
+  linkArgs,
+  {
+    headers,
+    analyse: wireReading,
+  },
+);
 
 // `pull` by its link.
 const pull0: Promise<IAdtResponse<string>> = client.pull(pullArgs, {
@@ -114,10 +117,13 @@ const pull1: Promise<IAdtResponse<string>> = client.pull(
   { ...pullArgs, branchName: 'refs/heads/main', remoteUser: 'u' },
   { headers, analyse: verdictOnly },
 );
-const pull2: Promise<IAdtResponse<string, IMyError>> = client.pull(pullArgs, {
-  headers,
-  analyse: wireReading,
-});
+const pull2: Promise<IAdtResponse<string, IMyError | IAdtError>> = client.pull(
+  pullArgs,
+  {
+    headers,
+    analyse: wireReading,
+  },
+);
 
 // `checkExternalRepo`, the legacy form.
 const ext0: Promise<IAdtResponse<string>> = client.checkExternalRepo(
@@ -128,17 +134,13 @@ const ext1: Promise<IAdtResponse<string>> = client.checkExternalRepo(
   { url: 'https://h/r' },
   { headers, analyse: verdictOnly },
 );
-const ext2: Promise<IAdtResponse<string, IMyError>> = client.checkExternalRepo(
-  externalArgs,
-  { headers, analyse: wireReading },
-);
+const ext2: Promise<IAdtResponse<string, IMyError | IAdtError>> =
+  client.checkExternalRepo(externalArgs, { headers, analyse: wireReading });
 
 // The members that did not change at all.
 const repos: Promise<IAdtResponse<MyRepo[]>> = client.listRepos();
-const unlinked: Promise<IAdtResponse<void, IMyError>> = client.unlink(
-  unlinkArgs,
-  { analyse: wireReading },
-);
+const unlinked: Promise<IAdtResponse<void, IMyError | IAdtError>> =
+  client.unlink(unlinkArgs, { analyse: wireReading });
 
 void [
   log0,

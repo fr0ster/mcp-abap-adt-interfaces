@@ -24,7 +24,7 @@ export interface IApplicationLog<TObject, TSource, TValidation> {
     objectName: string,
     options: IGetApplicationLogObjectOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TObject, E>>;
+  ): Promise<IAdtResponse<TObject, E | IAdtError>>;
   getObject(
     objectName: string,
     options?: IGetApplicationLogObjectOptions & IAdtAnalyseOptions,
@@ -33,7 +33,7 @@ export interface IApplicationLog<TObject, TSource, TValidation> {
     objectName: string,
     options: IGetApplicationLogSourceOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TSource, E>>;
+  ): Promise<IAdtResponse<TSource, E | IAdtError>>;
   getSource(
     objectName: string,
     options?: IGetApplicationLogSourceOptions & IAdtAnalyseOptions,
@@ -41,7 +41,7 @@ export interface IApplicationLog<TObject, TSource, TValidation> {
   validateName<E extends IAdtError>(
     objectName: string,
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TValidation, E>>;
+  ): Promise<IAdtResponse<TValidation, E | IAdtError>>;
   validateName(
     objectName: string,
     options?: IAdtAnalyseOptions,

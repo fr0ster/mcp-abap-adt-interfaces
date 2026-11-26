@@ -166,14 +166,20 @@ const newLinkArgs = {
 } as const;
 
 async function inference(): Promise<void> {
-  // Error-subtype inference: `getError()` is the caller's type, no cast.
+  // Error-subtype inference: `getError()` is the caller's type or, since
+  // 32.0.0, the library's own structured error, and the caller narrows.
   const run = await git.getRunLog(
     { key: 'K', appLogKey: 'L' },
     { analyse: myAnalyse },
   );
   if (!run.ok) {
-    const mine: true = run.getError().mine;
-    void mine;
+    const error = run.getError();
+    // @ts-expect-error the library's own structured error has no `mine`
+    void error.mine;
+    if ('mine' in error) {
+      const mine: true = error.mine;
+      void mine;
+    }
   } else {
     const count: number = run.getResult().value.count;
     void count;
@@ -183,7 +189,10 @@ async function inference(): Promise<void> {
     headers,
     analyse: myAnalyse,
   });
-  if (!pulled.ok) void (pulled.getError().mine satisfies true);
+  if (!pulled.ok) {
+    const error = pulled.getError();
+    if ('mine' in error) void (error.mine satisfies true);
+  }
 
   const pushed = await git.push(
     {
@@ -197,15 +206,20 @@ async function inference(): Promise<void> {
     },
     { analyse: myAnalyse },
   );
-  if (!pushed.ok) void (pushed.getError().mine satisfies true);
+  if (!pushed.ok) {
+    const error = pushed.getError();
+    if ('mine' in error) void (error.mine satisfies true);
+  }
 
   const linked = await both.link(newLinkArgs, {
     headers,
     credentials,
     analyse: myAnalyse,
   });
-  if (!linked.ok) void (linked.getError().mine satisfies true);
-  else void (linked.getResult().value satisfies RunView);
+  if (!linked.ok) {
+    const error = linked.getError();
+    if ('mine' in error) void (error.mine satisfies true);
+  } else void (linked.getResult().value satisfies RunView);
 
   // The no-analyser overload: the default error keeps its facts.
   const quiet = await git.listReposQuiet();

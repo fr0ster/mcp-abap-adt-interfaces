@@ -15,7 +15,7 @@ export interface ISystemMessages<TList> {
   list<E extends IAdtError>(
     options: IFeedQueryOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TList, E>>;
+  ): Promise<IAdtResponse<TList, E | IAdtError>>;
   list(
     options?: IFeedQueryOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TList>>;

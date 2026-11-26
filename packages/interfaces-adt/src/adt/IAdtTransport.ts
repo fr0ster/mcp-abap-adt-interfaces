@@ -142,7 +142,7 @@ export interface IAdtRequest<TList> {
   list<E extends IAdtError>(
     options: IListTransportsOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TList, E>>;
+  ): Promise<IAdtResponse<TList, E | IAdtError>>;
   list(
     options: IListTransportsOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TList>>;
@@ -160,7 +160,7 @@ export interface IAdtRequest<TList> {
 export interface IAdtTransportSearchConfigurations<TConfigurations> {
   searchConfigurations<E extends IAdtError>(
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TConfigurations, E>>;
+  ): Promise<IAdtResponse<TConfigurations, E | IAdtError>>;
   searchConfigurations(
     options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TConfigurations>>;
@@ -267,7 +267,7 @@ export interface IAdtTransportObjectActions<
     transportNumber: string,
     object: IAbapObjectEntry & { position: string },
     options: { headers: IAdtHeaders } & IAdtOperationOptions<E>,
-  ): Promise<IAdtResponse<TRemoved, E>>;
+  ): Promise<IAdtResponse<TRemoved, E | IAdtError>>;
   /**
    * Attach one object to a request or task.
    *
@@ -280,7 +280,7 @@ export interface IAdtTransportObjectActions<
     transportNumber: string,
     object: IAbapObjectEntry,
     options: { headers: IAdtHeaders } & IAdtOperationOptions<E>,
-  ): Promise<IAdtResponse<TAdded, E>>;
+  ): Promise<IAdtResponse<TAdded, E | IAdtError>>;
   /**
    * Create a task under a request.
    *
@@ -306,7 +306,7 @@ export interface IAdtTransportObjectActions<
       headers: IAdtHeaders;
       targetUser: string;
     } & IAdtOperationOptions<E>,
-  ): Promise<IAdtResponse<TTask, E>>;
+  ): Promise<IAdtResponse<TTask, E | IAdtError>>;
   /**
    * What has happened to this request: created, object added, object deleted,
    * owner changed — one entry per event.
@@ -314,7 +314,7 @@ export interface IAdtTransportObjectActions<
   readActionLog<E extends IAdtError = IAdtError>(
     transportNumber: string,
     options?: IAdtOperationOptions<E>,
-  ): Promise<IAdtResponse<TActionLog, E>>;
+  ): Promise<IAdtResponse<TActionLog, E | IAdtError>>;
   /**
    * The objects a request or task holds, each with the `tm:position` that
    * {@link IAdtTransportObjectActions.removeObject} needs.
@@ -343,7 +343,7 @@ export interface IAdtTransportObjectActions<
   readObjects<E extends IAdtError = IAdtError>(
     transportNumber: string,
     options?: IAdtOperationOptions<E>,
-  ): Promise<IAdtResponse<TObjects, E>>;
+  ): Promise<IAdtResponse<TObjects, E | IAdtError>>;
   /**
    * Give a task its type.
    *
@@ -367,7 +367,7 @@ export interface IAdtTransportObjectActions<
     taskNumber: string,
     type: AdtTaskType,
     options: { headers: IAdtHeaders } & IAdtOperationOptions<E>,
-  ): Promise<IAdtResponse<TTaskType, E>>;
+  ): Promise<IAdtResponse<TTaskType, E | IAdtError>>;
 }
 
 /**
@@ -396,7 +396,7 @@ export interface IAdtTransportSortAndCompress<TCompressed> {
   sortAndCompress<E extends IAdtError = IAdtError>(
     taskNumber: string,
     options?: IAdtOperationOptions<E>,
-  ): Promise<IAdtResponse<TCompressed, E>>;
+  ): Promise<IAdtResponse<TCompressed, E | IAdtError>>;
 }
 
 /**
@@ -422,7 +422,7 @@ export interface IAdtTransportMoveObjects<TMoved> {
     targetNumber: string,
     objects: readonly (IAbapObjectEntry & { position: string })[],
     options: { headers: IAdtHeaders } & IAdtOperationOptions<E>,
-  ): Promise<IAdtResponse<TMoved, E>>;
+  ): Promise<IAdtResponse<TMoved, E | IAdtError>>;
 }
 
 /**

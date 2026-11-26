@@ -14,7 +14,7 @@ export interface IDdicActivation<TGraph> {
   getGraph<E extends IAdtError>(
     options: IGetActivationGraphOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TGraph, E>>;
+  ): Promise<IAdtResponse<TGraph, E | IAdtError>>;
   getGraph(
     options?: IGetActivationGraphOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TGraph>>;

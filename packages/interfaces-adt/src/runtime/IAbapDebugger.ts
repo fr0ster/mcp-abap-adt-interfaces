@@ -219,7 +219,7 @@ export interface IAbapDebugger<
       E,
       { validationOnly?: boolean }
     >,
-  ): Promise<IAdtResponse<TBreakpoints, E>>;
+  ): Promise<IAdtResponse<TBreakpoints, E | IAdtError>>;
   setBreakpoints(
     identity: IDebuggerIdentity,
     breakpoints: readonly IDebuggerBreakpoint[],
@@ -232,7 +232,7 @@ export interface IAbapDebugger<
     identity: IDebuggerIdentity,
     breakpointId: string,
     options: WithAnalyse<E>,
-  ): Promise<IAdtResponse<TDone, E>>;
+  ): Promise<IAdtResponse<TDone, E | IAdtError>>;
   deleteBreakpoint(
     identity: IDebuggerIdentity,
     breakpointId: string,
@@ -246,7 +246,7 @@ export interface IAbapDebugger<
   listen<E extends IAdtError>(
     identity: IDebuggerIdentity,
     options: WithAnalyse<E, { holdSeconds?: number }>,
-  ): Promise<IAdtResponse<TListener, E>>;
+  ): Promise<IAdtResponse<TListener, E | IAdtError>>;
   listen(
     identity: IDebuggerIdentity,
     options?: WithoutAnalyse<{ holdSeconds?: number }>,
@@ -260,7 +260,7 @@ export interface IAbapDebugger<
   stopListener<E extends IAdtError>(
     identity: IDebuggerIdentity,
     options: WithAnalyse<E>,
-  ): Promise<IAdtResponse<TDone, E>>;
+  ): Promise<IAdtResponse<TDone, E | IAdtError>>;
   /**
    * Release the listener. This also deletes the identity key's breakpoints,
    * whether or not a listener was running (measured on premise (2026-10-11),
@@ -276,7 +276,7 @@ export interface IAbapDebugger<
     identity: IDebuggerIdentity,
     debuggeeId: string,
     options: WithAnalyse<E, IAttachOptions>,
-  ): Promise<IAdtResponse<TAttach, E>>;
+  ): Promise<IAdtResponse<TAttach, E | IAdtError>>;
   attach(
     identity: IDebuggerIdentity,
     debuggeeId: string,
@@ -285,14 +285,14 @@ export interface IAbapDebugger<
 
   getStack<E extends IAdtError>(
     options: WithAnalyse<E>,
-  ): Promise<IAdtResponse<TStack, E>>;
+  ): Promise<IAdtResponse<TStack, E | IAdtError>>;
   getStack(options?: WithoutAnalyse): Promise<IAdtResponse<TStack>>;
 
   /** The variables under each parent id: locals, globals, an object's attributes. */
   getChildVariables<E extends IAdtError>(
     parentIds: readonly string[],
     options: { headers: IAdtHeaders } & WithAnalyse<E>,
-  ): Promise<IAdtResponse<TVariables, E>>;
+  ): Promise<IAdtResponse<TVariables, E | IAdtError>>;
   getChildVariables(
     parentIds: readonly string[],
     options: { headers: IAdtHeaders } & WithoutAnalyse,
@@ -301,7 +301,7 @@ export interface IAbapDebugger<
   getVariables<E extends IAdtError>(
     variableIds: readonly string[],
     options: { headers: IAdtHeaders } & WithAnalyse<E>,
-  ): Promise<IAdtResponse<TVariables, E>>;
+  ): Promise<IAdtResponse<TVariables, E | IAdtError>>;
   getVariables(
     variableIds: readonly string[],
     options: { headers: IAdtHeaders } & WithoutAnalyse,
@@ -310,7 +310,7 @@ export interface IAbapDebugger<
   step<E extends IAdtError>(
     method: IDebuggerStepMethod,
     options: WithAnalyse<E>,
-  ): Promise<IAdtResponse<TStep, E>>;
+  ): Promise<IAdtResponse<TStep, E | IAdtError>>;
   step(
     method: IDebuggerStepMethod,
     options?: WithoutAnalyse,
@@ -321,7 +321,7 @@ export interface IAbapDebugger<
     method: IDebuggerStepToLineMethod,
     uri: string,
     options: WithAnalyse<E>,
-  ): Promise<IAdtResponse<TStep, E>>;
+  ): Promise<IAdtResponse<TStep, E | IAdtError>>;
   stepToLine(
     method: IDebuggerStepToLineMethod,
     uri: string,
@@ -332,7 +332,7 @@ export interface IAbapDebugger<
   setStackPosition<E extends IAdtError>(
     position: number,
     options: WithAnalyse<E>,
-  ): Promise<IAdtResponse<TDone, E>>;
+  ): Promise<IAdtResponse<TDone, E | IAdtError>>;
   setStackPosition(
     position: number,
     options?: WithoutAnalyse,
@@ -342,7 +342,7 @@ export interface IAbapDebugger<
     variableName: string,
     value: string,
     options: WithAnalyse<E>,
-  ): Promise<IAdtResponse<TVariables, E>>;
+  ): Promise<IAdtResponse<TVariables, E | IAdtError>>;
   setVariableValue(
     variableName: string,
     value: string,
@@ -356,7 +356,7 @@ export interface IAbapDebugger<
    */
   terminateDebuggee<E extends IAdtError>(
     options: WithAnalyse<E>,
-  ): Promise<IAdtResponse<TDone, E>>;
+  ): Promise<IAdtResponse<TDone, E | IAdtError>>;
   terminateDebuggee(options?: WithoutAnalyse): Promise<IAdtResponse<TDone>>;
 
   /**
@@ -371,7 +371,7 @@ export interface IAbapDebugger<
     identity: IDebuggerIdentity,
     sync: IDebuggerBreakpointSync,
     options: { headers: IAdtHeaders } & WithAnalyse<E>,
-  ): Promise<IAdtResponse<TBreakpoints, E>>;
+  ): Promise<IAdtResponse<TBreakpoints, E | IAdtError>>;
   syncBreakpoints(
     identity: IDebuggerIdentity,
     sync: IDebuggerBreakpointSync,
@@ -385,7 +385,7 @@ export interface IAbapDebugger<
   checkListener<E extends IAdtError>(
     identity: IDebuggerIdentity,
     options: WithAnalyse<E>,
-  ): Promise<IAdtResponse<TDone, E>>;
+  ): Promise<IAdtResponse<TDone, E | IAdtError>>;
   checkListener(
     identity: IDebuggerIdentity,
     options?: WithoutAnalyse,
@@ -400,7 +400,7 @@ export interface IAbapDebugger<
    */
   detachDebugger<E extends IAdtError>(
     options: WithAnalyse<E, { debuggeeId?: string }>,
-  ): Promise<IAdtResponse<TDone, E>>;
+  ): Promise<IAdtResponse<TDone, E | IAdtError>>;
   detachDebugger(
     options?: WithoutAnalyse<{ debuggeeId?: string }>,
   ): Promise<IAdtResponse<TDone>>;
@@ -410,7 +410,7 @@ export interface IAbapDebugger<
    */
   terminateDebugger<E extends IAdtError>(
     options: WithAnalyse<E>,
-  ): Promise<IAdtResponse<TDone, E>>;
+  ): Promise<IAdtResponse<TDone, E | IAdtError>>;
   terminateDebugger(options?: WithoutAnalyse): Promise<IAdtResponse<TDone>>;
 
   /**
@@ -421,7 +421,7 @@ export interface IAbapDebugger<
   setDebuggerSettings<E extends IAdtError>(
     settings: IDebuggerSettings,
     options: { headers: IAdtHeaders } & WithAnalyse<E>,
-  ): Promise<IAdtResponse<TSettings, E>>;
+  ): Promise<IAdtResponse<TSettings, E | IAdtError>>;
   setDebuggerSettings(
     settings: IDebuggerSettings,
     options: { headers: IAdtHeaders } & WithoutAnalyse,
@@ -430,7 +430,7 @@ export interface IAbapDebugger<
   createWatchpoint<E extends IAdtError>(
     variableName: string,
     options: WithAnalyse<E, { condition?: string }>,
-  ): Promise<IAdtResponse<TWatchpoints, E>>;
+  ): Promise<IAdtResponse<TWatchpoints, E | IAdtError>>;
   createWatchpoint(
     variableName: string,
     options?: WithoutAnalyse<{ condition?: string }>,
@@ -438,7 +438,7 @@ export interface IAbapDebugger<
 
   listWatchpoints<E extends IAdtError>(
     options: WithAnalyse<E>,
-  ): Promise<IAdtResponse<TWatchpoints, E>>;
+  ): Promise<IAdtResponse<TWatchpoints, E | IAdtError>>;
   listWatchpoints(
     options?: WithoutAnalyse,
   ): Promise<IAdtResponse<TWatchpoints>>;
@@ -446,7 +446,7 @@ export interface IAbapDebugger<
   deleteWatchpoint<E extends IAdtError>(
     watchpointId: string,
     options: WithAnalyse<E>,
-  ): Promise<IAdtResponse<TDone, E>>;
+  ): Promise<IAdtResponse<TDone, E | IAdtError>>;
   deleteWatchpoint(
     watchpointId: string,
     options?: WithoutAnalyse,
@@ -455,7 +455,7 @@ export interface IAbapDebugger<
   /** The debuggee's memory at the current stop. */
   getMemorySizes<E extends IAdtError>(
     options: WithAnalyse<E, { includeAbap?: boolean }>,
-  ): Promise<IAdtResponse<TMemory, E>>;
+  ): Promise<IAdtResponse<TMemory, E | IAdtError>>;
   getMemorySizes(
     options?: WithoutAnalyse<{ includeAbap?: boolean }>,
   ): Promise<IAdtResponse<TMemory>>;
@@ -467,7 +467,7 @@ export interface IAbapDebugger<
    */
   createMemorySnapshot<E extends IAdtError>(
     options: WithAnalyse<E>,
-  ): Promise<IAdtResponse<TMemory, E>>;
+  ): Promise<IAdtResponse<TMemory, E | IAdtError>>;
   createMemorySnapshot(
     options?: WithoutAnalyse,
   ): Promise<IAdtResponse<TMemory>>;

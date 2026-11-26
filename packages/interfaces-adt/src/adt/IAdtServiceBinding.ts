@@ -107,7 +107,7 @@ type WithoutAnalyse<O = unknown> = O & IAdtAnalyseOptions;
 export interface IAdtServiceBindingTypes<TTypes> {
   getServiceBindingTypes<E extends IAdtError>(
     options: WithAnalyse<E>,
-  ): Promise<IAdtResponse<TTypes, E>>;
+  ): Promise<IAdtResponse<TTypes, E | IAdtError>>;
   getServiceBindingTypes(
     options?: WithoutAnalyse,
   ): Promise<IAdtResponse<TTypes>>;
@@ -123,7 +123,7 @@ export interface IAdtServiceGroupReadable<TGroup> {
   getServiceGroup<E extends IAdtError>(
     params: IServiceGroupParams,
     options: WithAnalyse<E>,
-  ): Promise<IAdtResponse<TGroup, E>>;
+  ): Promise<IAdtResponse<TGroup, E | IAdtError>>;
   getServiceGroup(
     params: IServiceGroupParams,
     options?: WithoutAnalyse,

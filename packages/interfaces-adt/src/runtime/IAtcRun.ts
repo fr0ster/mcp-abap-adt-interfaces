@@ -145,7 +145,7 @@ export interface IAtcRunStatusReadable<TStatus> {
   getRunStatus<E extends IAdtError>(
     runId: string,
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TStatus, E>>;
+  ): Promise<IAdtResponse<TStatus, E | IAdtError>>;
   getRunStatus(
     runId: string,
     options?: IAdtAnalyseOptions,
@@ -163,7 +163,7 @@ export interface IAtcFindings<TFindings> {
   getFindings<E extends IAdtError>(
     worklistId: string,
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TFindings, E>>;
+  ): Promise<IAdtResponse<TFindings, E | IAdtError>>;
   getFindings(
     worklistId: string,
     options?: IAdtAnalyseOptions,
@@ -200,7 +200,7 @@ export interface IAtcResultsReadable<TResultList, TResult> {
   listResults<E extends IAdtError>(
     options: IAtcResultListOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TResultList, E>>;
+  ): Promise<IAdtResponse<TResultList, E | IAdtError>>;
   listResults(
     options: IAtcResultListOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TResultList>>;
@@ -208,7 +208,7 @@ export interface IAtcResultsReadable<TResultList, TResult> {
   getResult<E extends IAdtError>(
     displayId: string,
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TResult, E>>;
+  ): Promise<IAdtResponse<TResult, E | IAdtError>>;
   getResult(
     displayId: string,
     options?: IAdtAnalyseOptions,

@@ -37,8 +37,12 @@ type Equal<A, B> =
   (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
     ? true
     : false;
+// Since 32.0.0 the library's own error may come back beside the strategy's.
 export type _FailureTypeKept = Assert<
-  Equal<Awaited<typeof withStrategy>, IAdtResponse<string, IMyFailure>>
+  Equal<
+    Awaited<typeof withStrategy>,
+    IAdtResponse<string, IMyFailure | IAdtError>
+  >
 >;
 
 // @ts-expect-error preauditRequested is a boolean

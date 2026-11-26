@@ -135,7 +135,7 @@ export interface ITraceListing<
   list<E extends IAdtError>(
     options: ListingOwnOptions<TOptions> &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TList, E>>;
+  ): Promise<IAdtResponse<TList, E | IAdtError>>;
   list(
     options?: ListingOwnOptions<TOptions> & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TList>>;
@@ -159,7 +159,7 @@ export interface ITraceReading<
     view: K,
     options: ViewOwnOptions<TViews, K> &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<ViewResult<TViews, K>, E>>;
+  ): Promise<IAdtResponse<ViewResult<TViews, K>, E | IAdtError>>;
   read<K extends keyof TViews>(
     traceId: string,
     view: K,
@@ -226,7 +226,7 @@ export interface ITraceDeletion {
   delete<E extends IAdtError>(
     traceId: string,
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<void, E>>;
+  ): Promise<IAdtResponse<void, E | IAdtError>>;
   delete(
     traceId: string,
     options?: IAdtAnalyseOptions,

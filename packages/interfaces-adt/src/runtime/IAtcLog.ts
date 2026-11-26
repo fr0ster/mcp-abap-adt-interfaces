@@ -16,14 +16,14 @@ export interface IAtcLog<TCheckFailures, TExecutionLog> {
   getCheckFailureLogs<E extends IAdtError>(
     options: IGetCheckFailureLogsOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TCheckFailures, E>>;
+  ): Promise<IAdtResponse<TCheckFailures, E | IAdtError>>;
   getCheckFailureLogs(
     options?: IGetCheckFailureLogsOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TCheckFailures>>;
   getExecutionLog<E extends IAdtError>(
     executionId: string,
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TExecutionLog, E>>;
+  ): Promise<IAdtResponse<TExecutionLog, E | IAdtError>>;
   getExecutionLog(
     executionId: string,
     options?: IAdtAnalyseOptions,

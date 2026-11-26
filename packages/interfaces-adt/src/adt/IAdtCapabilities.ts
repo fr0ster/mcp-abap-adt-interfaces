@@ -125,7 +125,7 @@ export interface IAdtCreatable<TConfig, TCreated> {
     options: { headers: IAdtHeaders } & IAdtCreateOptions<E> & {
         analyse: IAnalyse<E>;
       },
-  ): Promise<IAdtResponse<TCreated, E>>;
+  ): Promise<IAdtResponse<TCreated, E | IAdtError>>;
   create(
     config: Omit<TConfig, 'source'> & { source?: never },
     options: { headers: IAdtHeaders } & IAdtCreateOptions,
@@ -169,7 +169,7 @@ export interface IAdtReadable<
     options: { withLongPolling?: boolean } & IAdtOperationOptions<E> & {
         analyse: IAnalyse<E>;
       },
-  ): Promise<IAdtResponse<TSource, E>>;
+  ): Promise<IAdtResponse<TSource, E | IAdtError>>;
   read(
     config: AdtObjectIdentity<TConfig, TRequired>,
     version?: AdtReadVersion,
@@ -204,7 +204,7 @@ export interface IAdtMetadataReadable<
       withLongPolling?: boolean;
       version?: AdtReadVersion;
     } & IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TMetadata, E>>;
+  ): Promise<IAdtResponse<TMetadata, E | IAdtError>>;
   readMetadata(
     config: AdtObjectIdentity<TConfig, TRequired>,
     options?: {
@@ -228,7 +228,7 @@ export interface IAdtEnhancementHost<
   readEnhancementElements<E extends IAdtError>(
     config: AdtObjectIdentity<TConfig, TRequired>,
     options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TElements, E>>;
+  ): Promise<IAdtResponse<TElements, E | IAdtError>>;
   readEnhancementElements(
     config: AdtObjectIdentity<TConfig, TRequired>,
     options?: IAdtOperationOptions,
@@ -240,7 +240,7 @@ export interface IAdtEnhancementHost<
   readEnhancementOptions<E extends IAdtError>(
     config: AdtObjectIdentity<TConfig, TRequired>,
     options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TOptions, E>>;
+  ): Promise<IAdtResponse<TOptions, E | IAdtError>>;
   readEnhancementOptions(
     config: AdtObjectIdentity<TConfig, TRequired>,
     options?: IAdtOperationOptions,
@@ -274,7 +274,7 @@ export interface IAdtIncludeEnhancementHost<
     options: { context?: string } & IAdtOperationOptions<E> & {
         analyse: IAnalyse<E>;
       },
-  ): Promise<IAdtResponse<TElements, E>>;
+  ): Promise<IAdtResponse<TElements, E | IAdtError>>;
   readEnhancementElements(
     config: AdtObjectIdentity<TConfig, TRequired>,
     options?: { context?: string } & IAdtOperationOptions,
@@ -289,7 +289,7 @@ export interface IAdtIncludeEnhancementHost<
     options: { context?: string } & IAdtOperationOptions<E> & {
         analyse: IAnalyse<E>;
       },
-  ): Promise<IAdtResponse<TOptions, E>>;
+  ): Promise<IAdtResponse<TOptions, E | IAdtError>>;
   readEnhancementOptions(
     config: AdtObjectIdentity<TConfig, TRequired>,
     options?: { context?: string } & IAdtOperationOptions,
@@ -314,7 +314,7 @@ export interface IAdtMainProgramsReadable<
   readMainPrograms<E extends IAdtError>(
     config: AdtObjectIdentity<TConfig, TRequired>,
     options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TPrograms, E>>;
+  ): Promise<IAdtResponse<TPrograms, E | IAdtError>>;
   readMainPrograms(
     config: AdtObjectIdentity<TConfig, TRequired>,
     options?: IAdtOperationOptions,
@@ -385,7 +385,7 @@ export interface IAdtUpdatable<
       AdtRequiredUpdateOptions<TRequiredOptions> & {
         analyse: IAnalyse<E>;
       },
-  ): Promise<IAdtResponse<TUpdated, E>>;
+  ): Promise<IAdtResponse<TUpdated, E | IAdtError>>;
   update(
     config: AdtObjectIdentity<TConfig, TRequired>,
     options: { headers: IAdtHeaders } & IAdtUpdateOptions &
@@ -431,7 +431,7 @@ export interface IAdtMetadataUpdatable<
       AdtRequiredUpdateOptions<TRequiredOptions> & {
         analyse: IAnalyse<E>;
       },
-  ): Promise<IAdtResponse<TMetadataUpdated, E>>;
+  ): Promise<IAdtResponse<TMetadataUpdated, E | IAdtError>>;
   updateMetadata(
     config: AdtObjectIdentity<TConfig, TRequired>,
     options: { headers: IAdtHeaders } & IAdtUpdateOptions &
@@ -467,7 +467,7 @@ export interface IAdtDeletable<
     options: { headers: IAdtHeaders } & IAdtOperationOptions<E> & {
         analyse: IAnalyse<E>;
       },
-  ): Promise<IAdtResponse<TDeleted, E>>;
+  ): Promise<IAdtResponse<TDeleted, E | IAdtError>>;
   delete(
     config: AdtObjectIdentity<TConfig, TRequired>,
     options: { headers: IAdtHeaders } & IAdtOperationOptions,
@@ -500,7 +500,7 @@ export interface IAdtDeletable<
     options: { headers: IAdtHeaders } & IAdtOperationOptions<E> & {
         analyse: IAnalyse<E>;
       },
-  ): Promise<IAdtResponse<TChecked, E>>;
+  ): Promise<IAdtResponse<TChecked, E | IAdtError>>;
   checkDeletion(
     config: AdtObjectIdentity<TConfig, TRequired>,
     options: { headers: IAdtHeaders } & IAdtOperationOptions,
@@ -520,7 +520,7 @@ export interface IAdtValidatable<
   validate<E extends IAdtError>(
     config: AdtObjectIdentity<TConfig, TRequired>,
     options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TValidated, E>>;
+  ): Promise<IAdtResponse<TValidated, E | IAdtError>>;
   validate(
     config: AdtObjectIdentity<TConfig, TRequired>,
     options?: IAdtOperationOptions,
@@ -544,7 +544,7 @@ export interface IAdtCheckable<
     options: { headers: IAdtHeaders } & IAdtOperationOptions<E> & {
         analyse: IAnalyse<E>;
       },
-  ): Promise<IAdtResponse<TChecked, E>>;
+  ): Promise<IAdtResponse<TChecked, E | IAdtError>>;
   check(
     config: AdtObjectIdentity<TConfig, TRequired>,
     status: string | undefined,
@@ -567,7 +567,7 @@ export interface IAdtActivatable<
     options: { headers: IAdtHeaders } & IAdtActivationOptions<E> & {
         analyse: IAnalyse<E>;
       },
-  ): Promise<IAdtResponse<TActivated, E>>;
+  ): Promise<IAdtResponse<TActivated, E | IAdtError>>;
   activate(
     config: AdtObjectIdentity<TConfig, TRequired>,
     options: { headers: IAdtHeaders } & IAdtActivationOptions,
@@ -589,7 +589,7 @@ export interface IAdtLockable<TConfig, TRequired extends keyof TConfig> {
   lock<E extends IAdtError>(
     config: AdtObjectIdentity<TConfig, TRequired>,
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<string, E>>;
+  ): Promise<IAdtResponse<string, E | IAdtError>>;
   lock(
     config: AdtObjectIdentity<TConfig, TRequired>,
     options?: IAdtAnalyseOptions,
@@ -608,7 +608,7 @@ export interface IAdtLockable<TConfig, TRequired extends keyof TConfig> {
     config: AdtObjectIdentity<TConfig, TRequired>,
     lockHandle: string,
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<void, E>>;
+  ): Promise<IAdtResponse<void, E | IAdtError>>;
   unlock(
     config: AdtObjectIdentity<TConfig, TRequired>,
     lockHandle: string,
@@ -636,7 +636,7 @@ export interface IAdtVersionable<
   getVersions<E extends IAdtError>(
     config: AdtObjectIdentity<TConfig, TRequired>,
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TVersions, E>>;
+  ): Promise<IAdtResponse<TVersions, E | IAdtError>>;
   getVersions(
     config: AdtObjectIdentity<TConfig, TRequired>,
     options?: IAdtAnalyseOptions,
@@ -652,7 +652,7 @@ export interface IAdtVersionable<
   getVersionSource<E extends IAdtError>(
     contentUri: string,
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TSource, E>>;
+  ): Promise<IAdtResponse<TSource, E | IAdtError>>;
   getVersionSource(
     contentUri: string,
     options?: IAdtAnalyseOptions,
@@ -693,7 +693,7 @@ export interface IAdtTransportAware<
     options: { withLongPolling?: boolean } & IAdtOperationOptions<E> & {
         analyse: IAnalyse<E>;
       },
-  ): Promise<IAdtResponse<TTransport, E>>;
+  ): Promise<IAdtResponse<TTransport, E | IAdtError>>;
   readTransport(
     config: AdtObjectIdentity<TConfig, TRequired>,
     options?: { withLongPolling?: boolean } & IAdtOperationOptions,
