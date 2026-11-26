@@ -49,6 +49,11 @@ jobs:
       - name: Import graph
         run: npm run check:graph
 
+      # Every generic member answers the library's error and has its plain
+      # overload (interfaces-adt 32.0.0).
+      - name: Error union
+        run: npm run check:errors
+
       # Packs every package and installs the tarballs into a fresh project.
       - name: Packed packages
         run: npm run check:packed
