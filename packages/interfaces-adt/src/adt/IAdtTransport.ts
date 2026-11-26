@@ -263,11 +263,18 @@ export interface IAdtTransportObjectActions<
    * {@link IAdtTransportObjectActions.readActionLog}, or a re-read of the
    * object list, is what confirms the removal happened.
    */
-  removeObject<E extends IAdtError = IAdtError>(
+  removeObject<E extends IAdtError>(
     transportNumber: string,
     object: IAbapObjectEntry & { position: string },
-    options: { headers: IAdtHeaders } & IAdtOperationOptions<E>,
+    options: { headers: IAdtHeaders } & IAdtOperationOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TRemoved, E | IAdtError>>;
+  removeObject(
+    transportNumber: string,
+    object: IAbapObjectEntry & { position: string },
+    options: { headers: IAdtHeaders } & IAdtOperationOptions,
+  ): Promise<IAdtResponse<TRemoved>>;
   /**
    * Attach one object to a request or task.
    *
@@ -276,11 +283,18 @@ export interface IAdtTransportObjectActions<
    * request-versus-task one. That refusal is the server's verdict to read,
    * not a state an implementation checks for first.
    */
-  addObject<E extends IAdtError = IAdtError>(
+  addObject<E extends IAdtError>(
     transportNumber: string,
     object: IAbapObjectEntry,
-    options: { headers: IAdtHeaders } & IAdtOperationOptions<E>,
+    options: { headers: IAdtHeaders } & IAdtOperationOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TAdded, E | IAdtError>>;
+  addObject(
+    transportNumber: string,
+    object: IAbapObjectEntry,
+    options: { headers: IAdtHeaders } & IAdtOperationOptions,
+  ): Promise<IAdtResponse<TAdded>>;
   /**
    * Create a task under a request.
    *
@@ -300,21 +314,32 @@ export interface IAdtTransportObjectActions<
    * who is authenticated, and finding out costs a second request — which is
    * what a member of this size does not do. So it is the caller's to name.
    */
-  createTask<E extends IAdtError = IAdtError>(
+  createTask<E extends IAdtError>(
     transportNumber: string,
     options: {
       headers: IAdtHeaders;
       targetUser: string;
-    } & IAdtOperationOptions<E>,
+    } & IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TTask, E | IAdtError>>;
+  createTask(
+    transportNumber: string,
+    options: {
+      headers: IAdtHeaders;
+      targetUser: string;
+    } & IAdtOperationOptions,
+  ): Promise<IAdtResponse<TTask>>;
   /**
    * What has happened to this request: created, object added, object deleted,
    * owner changed — one entry per event.
    */
-  readActionLog<E extends IAdtError = IAdtError>(
+  readActionLog<E extends IAdtError>(
     transportNumber: string,
-    options?: IAdtOperationOptions<E>,
+    options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TActionLog, E | IAdtError>>;
+  readActionLog(
+    transportNumber: string,
+    options?: IAdtOperationOptions,
+  ): Promise<IAdtResponse<TActionLog>>;
   /**
    * The objects a request or task holds, each with the `tm:position` that
    * {@link IAdtTransportObjectActions.removeObject} needs.
@@ -340,10 +365,14 @@ export interface IAdtTransportObjectActions<
    * What an implementation sends is its own business either way. This says
    * what must come back.
    */
-  readObjects<E extends IAdtError = IAdtError>(
+  readObjects<E extends IAdtError>(
     transportNumber: string,
-    options?: IAdtOperationOptions<E>,
+    options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TObjects, E | IAdtError>>;
+  readObjects(
+    transportNumber: string,
+    options?: IAdtOperationOptions,
+  ): Promise<IAdtResponse<TObjects>>;
   /**
    * Give a task its type.
    *
@@ -363,11 +392,18 @@ export interface IAdtTransportObjectActions<
    * listing offers the action. And like every action here, the answer says
    * the document was understood — a read is what shows the type.
    */
-  changeTaskType<E extends IAdtError = IAdtError>(
+  changeTaskType<E extends IAdtError>(
     taskNumber: string,
     type: AdtTaskType,
-    options: { headers: IAdtHeaders } & IAdtOperationOptions<E>,
+    options: { headers: IAdtHeaders } & IAdtOperationOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TTaskType, E | IAdtError>>;
+  changeTaskType(
+    taskNumber: string,
+    type: AdtTaskType,
+    options: { headers: IAdtHeaders } & IAdtOperationOptions,
+  ): Promise<IAdtResponse<TTaskType>>;
 }
 
 /**
@@ -393,10 +429,14 @@ export interface IAdtTransportObjectActions<
  * has the member.
  */
 export interface IAdtTransportSortAndCompress<TCompressed> {
-  sortAndCompress<E extends IAdtError = IAdtError>(
+  sortAndCompress<E extends IAdtError>(
     taskNumber: string,
-    options?: IAdtOperationOptions<E>,
+    options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TCompressed, E | IAdtError>>;
+  sortAndCompress(
+    taskNumber: string,
+    options?: IAdtOperationOptions,
+  ): Promise<IAdtResponse<TCompressed>>;
 }
 
 /**
@@ -417,12 +457,20 @@ export interface IAdtTransportSortAndCompress<TCompressed> {
  * implementation of `IAdtTransportObjectActions` breaks.
  */
 export interface IAdtTransportMoveObjects<TMoved> {
-  moveObjects<E extends IAdtError = IAdtError>(
+  moveObjects<E extends IAdtError>(
     sourceTask: string,
     targetNumber: string,
     objects: readonly (IAbapObjectEntry & { position: string })[],
-    options: { headers: IAdtHeaders } & IAdtOperationOptions<E>,
+    options: { headers: IAdtHeaders } & IAdtOperationOptions<E> & {
+        analyse: IAnalyse<E>;
+      },
   ): Promise<IAdtResponse<TMoved, E | IAdtError>>;
+  moveObjects(
+    sourceTask: string,
+    targetNumber: string,
+    objects: readonly (IAbapObjectEntry & { position: string })[],
+    options: { headers: IAdtHeaders } & IAdtOperationOptions,
+  ): Promise<IAdtResponse<TMoved>>;
 }
 
 /**
