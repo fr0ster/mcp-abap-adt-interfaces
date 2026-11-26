@@ -80,10 +80,13 @@ export interface IMessageClassMessageResults<
 // README's "The identity and the error type" holds the recipe with its
 // fallbacks and its cleanup:
 //
-// 1. on a stateful session: `lockMessage` (a 403 means the system grants only
-//    the class lock; then the class handle stands in for the message's), then
-//    `lockClassForMessage` (a 403 means the plain class lock, the message
-//    class's own `lock`);
+// 1. on a stateful session: `lockMessage`, then `lockClassForMessage`. On a
+//    403 the old code fell back, without telling why it was refused: after a
+//    refused `lockMessage` it used the class handle for the message's, and
+//    after a refused `lockClassForMessage` it took the plain class lock (the
+//    message class's own `lock`). A 403 may mean the system grants no such
+//    lock or that another user holds it; whether SAP's two answers differ is
+//    not measured, so the caller reads the refusal before it falls back;
 // 2. read the class's working-area document (the message's `read` with
 //    `'workingArea'`);
 // 3. on a stateless session: `update`, with both handles and that document —
@@ -98,8 +101,9 @@ export type MessageClassMessageAddress = 'className' | 'msgno';
 export interface IAdtMessageClassMessageLockable {
   /**
    * `POST …/messages/{no}?_action=LOCK_MSG` — the message's own lock. A 403
-   * is the answer: the system grants only the class lock, or another user
-   * holds this one.
+   * is the answer. It may mean the system grants no message lock or that
+   * another user holds this one; which is not measured (see the README's
+   * recipe).
    */
   lockMessage<E extends IAdtError>(
     config: AdtObjectIdentity<
@@ -118,8 +122,9 @@ export interface IAdtMessageClassMessageLockable {
 
   /**
    * `POST …/{class}?_action=LOCK&msgNo={no}&onSave=X` — the class lock taken
-   * for this message. A 403 is the answer; the plain class lock is the message
-   * class's own `lock`.
+   * for this message. A 403 is the answer, for a reason this contract does not
+   * know; the old code then took the plain class lock, the message class's own
+   * `lock`.
    */
   lockClassForMessage<E extends IAdtError>(
     config: AdtObjectIdentity<
@@ -169,8 +174,9 @@ export interface IMessageClassMessageUpdateOptions<
   /** The class lock's handle: `lockClassForMessage`, or the plain class lock. */
   readonly classLockHandle: string;
   /**
-   * The message lock's handle from `lockMessage`, or the class lock's handle
-   * where the system grants no message lock (see the README's recipe).
+   * The message lock's handle from `lockMessage`. Where `lockMessage` was
+   * refused and the caller falls back as the old code did, the class lock's
+   * handle (see the README's recipe).
    */
   readonly messageLockHandle: string;
   /** The ETag the read answered, sent as `If-Match`. */
