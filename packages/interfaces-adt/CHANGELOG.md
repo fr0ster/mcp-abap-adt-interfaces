@@ -7,6 +7,68 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [32.0.0] - 2026-11-27
+
+The contracts say what their implementations need, so an implementation needs
+no cast (adt-clients #304). A major: atoms take a required type parameter, a
+generic answer widens, and two deprecated abapGit members leave.
+
+### Changed
+
+- **`AdtObjectIdentity<TConfig, TRequired>` requires what addresses the
+  object.** `TRequired` replaces `TParent` and has no default: the object's own
+  name, its parent where it has one, and a field the member sends. A required
+  key is taken with `undefined` excluded (`source?: string | undefined` becomes
+  `source: string`). Before, the identity defaulted to `Partial<TConfig>`, so a
+  member could be called without the name it sends, and an implementation cast
+  it to `string`.
+- **Every identifying atom takes `TRequired`**: `IAdtReadable`,
+  `IAdtMetadataReadable`, `IAdtEnhancementHost`, `IAdtIncludeEnhancementHost`,
+  `IAdtMainProgramsReadable`, `IAdtDeletable`, `IAdtValidatable`,
+  `IAdtCheckable`, `IAdtActivatable`, `IAdtLockable`, `IAdtVersionable` and
+  `IAdtTransportAware`. `IAdtDeletable` is now `<TConfig, TDeleted, TRequired,
+  TChecked = string>`.
+- **The write atoms take the identity and name their options.**
+  `IAdtUpdatable<TConfig, TUpdated, TRequired, TRequiredOptions = never>` and
+  `IAdtMetadataUpdatable` likewise. `TRequiredOptions` (`AdtUpdateOptionKey`:
+  `'source' | 'lockHandle'`) makes those options required strings
+  (`AdtRequiredUpdateOptions`). A write that locks for itself names neither.
+- **A generic answer is `IAdtResponse<T, E | IAdtError>`**, on all 173 generic
+  overloads (`E | IAbapGitStructuredError` for the abapGit facts). With
+  `analyse` given, the library still answers its own error in three cases: no
+  answer came back and `analyse` cleared the verdict; a chain step answered
+  without a strategy; a member a system does not serve refused without a
+  request. The plain overloads are unchanged.
+
+### Added
+
+- `AdtUpdateOptionKey` and `AdtRequiredUpdateOptions`.
+
+### Removed
+
+- **`IAdtAbapGitClient.link` and `checkExternalRepo`, the
+  `remoteUser`/`remotePassword` forms** deprecated since 30.2.0, with
+  `IAbapGitLinkArgs`, `IAbapGitExternalRepoCredentials` and the client's fourth
+  type parameter, `TExternalRepo`. `IAdtAbapGitLinkNewForm` and
+  `IAdtAbapGitCheckExternalRepoNewForm` remain.
+
+### Migration
+
+- **Implementers** name the keys on every atom (`IAdtReadable<IProgramConfig,
+  T, 'programName'>`) and, on the write atoms, the options the member sends
+  (`IAdtUpdatable<IProgramConfig, T, 'programName', 'source' | 'lockHandle'>`).
+  A method that still takes `Partial<TConfig>` keeps compiling, but only a
+  method typed with the identity reads the keys as `string`.
+- **Callers** pass every key and option an atom requires. A call without the
+  object's name, or without a required `source` or `lockHandle`, no longer
+  compiles.
+- **Generic callers** narrow the error (`'mine' in error`) or type the answer
+  `IAdtResponse<T, E | IAdtError>`.
+- **abapGit**: call the new forms of `link` and `checkExternalRepo` with
+  `credentials: IAbapGitCredentials | null`, and give `IAdtAbapGitClient` three
+  type parameters.
+- The README's "Migrating to 32.0.0" lists the same steps per atom.
+
 ## [31.0.0] - 2026-11-22
 
 `ISystemMessages` loses the member SAP never served. A major, since a member
