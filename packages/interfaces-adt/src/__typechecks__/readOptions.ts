@@ -27,8 +27,8 @@ const _bogus: IReadOptions = { version: 'bogus' };
 void _bogus;
 
 // Every read contract takes the working area too.
-declare const source: IAdtReadable<{ name: string }, string>;
-declare const metadata: IAdtMetadataReadable<{ name: string }, string>;
+declare const source: IAdtReadable<{ name: string }, string, 'name'>;
+declare const metadata: IAdtMetadataReadable<{ name: string }, string, 'name'>;
 declare const access: IAdtObjectAccess<string, string, string>;
 void source.read({ name: 'X' }, 'workingArea');
 void metadata.readMetadata({ name: 'X' }, { version: 'workingArea' });

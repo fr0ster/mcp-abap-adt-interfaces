@@ -285,54 +285,68 @@ export type _HeadersIAdtAbapGitSwitchBranch = Assert<
   EveryMemberTakesHeaders<IAdtAbapGitSwitchBranch<Probe, Probe>>
 >;
 export type _HeadersIAdtIncludeEnhancementHost = Assert<
-  EveryMemberTakesHeaders<IAdtIncludeEnhancementHost<Probe, Probe, Probe>>
+  EveryMemberTakesHeaders<
+    IAdtIncludeEnhancementHost<Probe, Probe, Probe, keyof Probe>
+  >
 >;
 export type _HeadersIAdtEnhancementHost = Assert<
-  EveryMemberTakesHeaders<IAdtEnhancementHost<Probe, Probe, Probe>>
+  EveryMemberTakesHeaders<IAdtEnhancementHost<Probe, Probe, Probe, keyof Probe>>
 >;
 export type _HeadersIAdtCreatable = Assert<
   EveryMemberTakesHeaders<IAdtCreatable<Probe, Probe>, never, 'create'>
 >;
 export type _HeadersIAdtReadable = Assert<
-  EveryMemberTakesHeaders<IAdtReadable<Probe, Probe>>
+  EveryMemberTakesHeaders<IAdtReadable<Probe, Probe, keyof Probe>>
 >;
 export type _HeadersIAdtMetadataReadable = Assert<
-  EveryMemberTakesHeaders<IAdtMetadataReadable<Probe, Probe>>
+  EveryMemberTakesHeaders<IAdtMetadataReadable<Probe, Probe, keyof Probe>>
 >;
 export type _HeadersIAdtUpdatable = Assert<
-  EveryMemberTakesHeaders<IAdtUpdatable<Probe, Probe>, never, 'update'>
+  EveryMemberTakesHeaders<
+    IAdtUpdatable<Probe, Probe, keyof Probe>,
+    never,
+    'update'
+  >
 >;
 export type _HeadersIAdtMetadataUpdatable = Assert<
   EveryMemberTakesHeaders<
-    IAdtMetadataUpdatable<Probe, Probe>,
+    IAdtMetadataUpdatable<Probe, Probe, keyof Probe>,
     never,
     'updateMetadata'
   >
 >;
 export type _HeadersIAdtDeletable = Assert<
   EveryMemberTakesHeaders<
-    IAdtDeletable<Probe, Probe, Probe>,
+    IAdtDeletable<Probe, Probe, keyof Probe, Probe>,
     never,
     'delete' | 'checkDeletion'
   >
 >;
 export type _HeadersIAdtValidatable = Assert<
-  EveryMemberTakesHeaders<IAdtValidatable<Probe, Probe>>
+  EveryMemberTakesHeaders<IAdtValidatable<Probe, Probe, keyof Probe>>
 >;
 export type _HeadersIAdtCheckable = Assert<
-  EveryMemberTakesHeaders<IAdtCheckable<Probe, Probe>, never, 'check'>
+  EveryMemberTakesHeaders<
+    IAdtCheckable<Probe, Probe, keyof Probe>,
+    never,
+    'check'
+  >
 >;
 export type _HeadersIAdtActivatable = Assert<
-  EveryMemberTakesHeaders<IAdtActivatable<Probe, Probe>, never, 'activate'>
+  EveryMemberTakesHeaders<
+    IAdtActivatable<Probe, Probe, keyof Probe>,
+    never,
+    'activate'
+  >
 >;
 export type _HeadersIAdtLockable = Assert<
-  EveryMemberTakesHeaders<IAdtLockable<Probe>>
+  EveryMemberTakesHeaders<IAdtLockable<Probe, keyof Probe>>
 >;
 export type _HeadersIAdtVersionable = Assert<
-  EveryMemberTakesHeaders<IAdtVersionable<Probe, Probe, Probe>>
+  EveryMemberTakesHeaders<IAdtVersionable<Probe, Probe, Probe, keyof Probe>>
 >;
 export type _HeadersIAdtTransportAware = Assert<
-  EveryMemberTakesHeaders<IAdtTransportAware<Probe, Probe>>
+  EveryMemberTakesHeaders<IAdtTransportAware<Probe, Probe, keyof Probe>>
 >;
 export type _HeadersIFeatureToggleObject = Assert<
   EveryMemberTakesHeaders<

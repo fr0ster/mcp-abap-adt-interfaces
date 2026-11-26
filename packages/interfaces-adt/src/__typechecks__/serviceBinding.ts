@@ -35,19 +35,15 @@ const answered = <T>(value: T): IAdtResponse<T> => ({
 
 /**
  * The three fields a publication cannot proceed without: which object, which
- * state, and the protocol that selects the endpoint. Derived from the config
- * rather than duplicated, and named once — a binding's write demands this
- * whether the caller holds the whole surface or only the publishing half, and
- * spelling it twice is how the two drift apart. This is the same type
- * `@mcp-abap-adt/adt-clients` calls `IServiceBindingPublicationConfig`.
+ * state, and the protocol that selects the endpoint. Named once, as the write's
+ * required keys (`TRequired`, 32.0.0) — a binding's write demands them whether
+ * the caller holds the whole surface or only the publishing half, and spelling
+ * them twice is how the two drift apart.
  */
-type ServiceBindingPublication = Partial<IServiceBindingConfig> &
-  Required<
-    Pick<
-      IServiceBindingConfig,
-      'bindingName' | 'desiredPublicationState' | 'serviceType'
-    >
-  >;
+type PublicationKeys =
+  | 'bindingName'
+  | 'desiredPublicationState'
+  | 'serviceType';
 
 /**
  * What a caller who needs the whole surface writes — spelled from atoms, not
@@ -60,11 +56,11 @@ type ServiceBindingPublication = Partial<IServiceBindingConfig> &
  * everything.
  */
 type WholeBinding = IAdtCreatable<IServiceBindingConfig, void> &
-  IAdtReadable<IServiceBindingConfig, string> &
-  IAdtMetadataReadable<IServiceBindingConfig, string> &
-  IAdtUpdatable<ServiceBindingPublication, void> &
-  IAdtDeletable<IServiceBindingConfig, void> &
-  IAdtActivatable<IServiceBindingConfig, string>;
+  IAdtReadable<IServiceBindingConfig, string, 'bindingName'> &
+  IAdtMetadataReadable<IServiceBindingConfig, string, 'bindingName'> &
+  IAdtUpdatable<IServiceBindingConfig, void, PublicationKeys> &
+  IAdtDeletable<IServiceBindingConfig, void, 'bindingName'> &
+  IAdtActivatable<IServiceBindingConfig, string, 'bindingName'>;
 
 declare const whole: WholeBinding;
 
@@ -87,12 +83,16 @@ void whole.update(
  * publishes takes `IAdtUpdatable` and nothing else, and an implementation that
  * only publishes is a legitimate one.
  *
- * It takes the same {@link ServiceBindingPublication} the whole surface does,
+ * It takes the same {@link PublicationKeys} the whole surface does,
  * because since 37.0.0 the atom no longer flattens what an implementation
  * demands — and the demand does not depend on how much of the object the caller
  * happens to hold.
  */
-type PublishingOnly = IAdtUpdatable<ServiceBindingPublication, void>;
+type PublishingOnly = IAdtUpdatable<
+  IServiceBindingConfig,
+  void,
+  PublicationKeys
+>;
 
 const _publisher: PublishingOnly = {
   update: async () => answered(undefined),
@@ -131,9 +131,4 @@ async function _mineAnswers(): Promise<IBindingSummary | undefined> {
 }
 void _mineAnswers;
 
-export type {
-  WholeBinding,
-  PublishingOnly,
-  ServiceBindingPublication,
-  IBindingSummary,
-};
+export type { WholeBinding, PublishingOnly, PublicationKeys, IBindingSummary };

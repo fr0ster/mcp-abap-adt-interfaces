@@ -45,13 +45,13 @@ function answered<T, E extends IAdtError = IAdtError>(
 }
 
 // A handler that only updates satisfies IAdtUpdatable and nothing else.
-const _updateOnly: IAdtUpdatable<Partial<Config>, void> = {
+const _updateOnly: IAdtUpdatable<Config, void, 'name'> = {
   update: async () => answered(undefined),
 };
 void _updateOnly;
 
 // @ts-expect-error IAdtDeletable requires delete(); this object has none.
-const _updateOnlyAsDeletable: IAdtDeletable<Config, void> = _updateOnly;
+const _updateOnlyAsDeletable: IAdtDeletable<Config, void, 'name'> = _updateOnly;
 void _updateOnlyAsDeletable;
 
 // And the reverse.
@@ -59,17 +59,14 @@ void _updateOnlyAsDeletable;
 // anything created can be deleted, and what varies is whether it can be deleted
 // *now* — which only the server knows. So `IAdtDeletable` carries both, and an
 // implementation that offers one offers the other.
-const _deleteOnly: IAdtDeletable<Config, void, string> = {
+const _deleteOnly: IAdtDeletable<Config, void, 'name', string> = {
   delete: async () => answered(undefined),
   checkDeletion: async () => answered('<del:checkResponse/>'),
 };
 void _deleteOnly;
 
 // @ts-expect-error IAdtUpdatable requires update(); this object has none.
-const _deleteOnlyAsUpdatable: IAdtUpdatable<
-  Partial<Config>,
-  void
-> = _deleteOnly;
+const _deleteOnlyAsUpdatable: IAdtUpdatable<Config, void, 'name'> = _deleteOnly;
 void _deleteOnlyAsUpdatable;
 
 // The check answers its own value, not the deletion's. They read different
@@ -83,8 +80,8 @@ void _checkAnswersItsOwn;
 // and a read answering its source are different types, and the contract says so
 // rather than forcing one shape on both.
 const _both: IAdtCreatable<Config, string> &
-  IAdtReadable<Config, string> &
-  IAdtMetadataReadable<Config, string> = {
+  IAdtReadable<Config, string, 'name'> &
+  IAdtMetadataReadable<Config, string, 'name'> = {
   // Annotated, where before it was inferred: a member with two call signatures
   // gives an implementation no single one to be contextually typed from. That
   // is the cost of the overloads, and it is one type annotation.
@@ -115,7 +112,12 @@ interface MyVersion {
 }
 
 async function _readsThePromisedCode(
-  versionable: IAdtVersionable<{ className: string }, MyVersion[], string>,
+  versionable: IAdtVersionable<
+    { className: string },
+    MyVersion[],
+    string,
+    'className'
+  >,
 ): Promise<'unsupported' | 'other' | 'fine'> {
   const answer = await versionable.getVersions({ className: 'ZCL_X' });
   if (answer.ok) return 'fine';
@@ -128,7 +130,7 @@ void _readsThePromisedCode;
 
 /** A lock answers; it does not throw. */
 async function _lockAnswers(
-  lockable: IAdtLockable<{ className: string }>,
+  lockable: IAdtLockable<{ className: string }, 'className'>,
 ): Promise<string | undefined> {
   const answer = await lockable.lock({ className: 'ZCL_X' });
   return answer.ok ? answer.getResult().value : undefined;
@@ -137,55 +139,57 @@ void _lockAnswers;
 
 // A type that is only its own document. A domain has no source: it composes the
 // metadata atoms and nothing else, and the compiler holds it to exactly that.
-const _documentOnly: IAdtMetadataReadable<Config, string> &
-  IAdtMetadataUpdatable<Partial<Config>, void> = {
+const _documentOnly: IAdtMetadataReadable<Config, string, 'name'> &
+  IAdtMetadataUpdatable<Config, void, 'name'> = {
   readMetadata: async () => answered('<doma:domain/>'),
   updateMetadata: async () => answered(undefined),
 };
 void _documentOnly;
 
 // @ts-expect-error IAdtReadable requires read(); a document-only type has none.
-const _documentOnlyAsReadable: IAdtReadable<Config, string> = _documentOnly;
+const _documentOnlyAsReadable: IAdtReadable<Config, string, 'name'> =
+  _documentOnly;
 void _documentOnlyAsReadable;
 
 // @ts-expect-error IAdtUpdatable requires update(); a document-only type has none.
-const _documentOnlyAsUpdatable: IAdtUpdatable<
-  Partial<Config>,
-  void
-> = _documentOnly;
+const _documentOnlyAsUpdatable: IAdtUpdatable<Config, void, 'name'> =
+  _documentOnly;
 void _documentOnlyAsUpdatable;
 
 // And the reverse: reading a source is not reading a document. The two atoms
 // name two resources, so neither stands in for the other — which is the whole
 // of the split. Eight types were measured issuing the *same request* from
 // `read` and `readMetadata` while one atom demanded both.
-const _sourceOnly: IAdtReadable<Config, string> = {
+const _sourceOnly: IAdtReadable<Config, string, 'name'> = {
   read: async () => answered('CLASS zcl_x DEFINITION.'),
 };
 void _sourceOnly;
 
 // @ts-expect-error IAdtMetadataReadable requires readMetadata(); this has none.
-const _sourceOnlyAsMetadata: IAdtMetadataReadable<Config, string> = _sourceOnly;
+const _sourceOnlyAsMetadata: IAdtMetadataReadable<Config, string, 'name'> =
+  _sourceOnly;
 void _sourceOnlyAsMetadata;
 
 // **A write can demand what it needs, and the demand survives the atom.**
-// `IAdtUpdatable` used to wrap its config in `Partial`, which meant no
-// implementation could require a field: a service binding's publication needs
-// the protocol that selects its endpoint, and the call compiled without it and
-// threw before the wire. Held here because the property is about the atom, not
-// about bindings.
+// A service binding's publication needs the protocol that selects its endpoint.
+// Since 32.0.0 the write names the keys it needs in `TRequired`, as every
+// identifying atom does; the other fields stay optional. Held here because the
+// property is about the atom, not about bindings.
 interface PublicationConfig {
   bindingName: string;
   serviceType: 'odatav2' | 'odatav4';
 }
 
-const _demandingUpdate: IAdtUpdatable<PublicationConfig, void> = {
+const _demandingUpdate: IAdtUpdatable<
+  PublicationConfig,
+  void,
+  'bindingName' | 'serviceType'
+> = {
   update: async () => answered(undefined),
 };
 void _demandingUpdate;
 
-// @ts-expect-error the config says both are required, and the atom no longer
-// makes them optional on the implementation's behalf
+// @ts-expect-error the write names both as required
 void _demandingUpdate.update({ bindingName: 'ZAC_SRVB01' });
 
 // And with both, it compiles.

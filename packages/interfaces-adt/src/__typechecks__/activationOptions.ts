@@ -15,7 +15,7 @@ const headers: IAdtHeaders = {
   contentType: 'application/xml',
 };
 
-declare const _activatable: IAdtActivatable<{ name: string }, string>;
+declare const _activatable: IAdtActivatable<{ name: string }, string, 'name'>;
 const id = { name: 'ZCL_X' };
 
 // A caller asks for the activation without the preaudit, or leaves it out.
@@ -45,7 +45,7 @@ export type _FailureTypeKept = Assert<
 void _activatable.activate(id, { headers, preauditRequested: 'no' });
 
 // An implementer written against the narrower options still is one.
-const _narrow: IAdtActivatable<{ name: string }, string> = {
+const _narrow: IAdtActivatable<{ name: string }, string, 'name'> = {
   activate: async (
     config: { name: string },
     options: { headers: IAdtHeaders } & IAdtOperationOptions,

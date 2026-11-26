@@ -24,6 +24,11 @@
 // additive for the class that implements it — its `readMetadata` typed the
 // version `'active' | 'inactive'` and stopped compiling (TS2416) — so the
 // class below now takes `AdtReadVersion` where it reads.
+//
+// 32.0.0 added a third: an identifying atom, and the write atoms, name the keys
+// that address the object (`TRequired`, no default). The class below names
+// `'name'` in each `implements` clause. Its methods still take
+// `Partial<Config>`, and a wider parameter still implements the narrower one.
 
 import type {
   AdtReadVersion,
@@ -46,15 +51,15 @@ const ok = <T>(value: T): IAdtResponse<T> => ({
   getResult: () => ({ value }),
 });
 
-/** A class, written against 31.0.0, with no type parameter anywhere. */
+/** A class written against 31.0.0, with only its keys named since 32.0.0. */
 class WrittenBefore
   implements
     IAdtCreatable<Config, string>,
-    IAdtReadable<Config, string>,
-    IAdtMetadataReadable<Config, string>,
-    IAdtUpdatable<Partial<Config>, string>,
-    IAdtDeletable<Config, void, string>,
-    IAdtActivatable<Config, string>
+    IAdtReadable<Config, string, 'name'>,
+    IAdtMetadataReadable<Config, string, 'name'>,
+    IAdtUpdatable<Config, string, 'name'>,
+    IAdtDeletable<Config, void, 'name', string>,
+    IAdtActivatable<Config, string, 'name'>
 {
   async create(
     config: Config,

@@ -123,11 +123,11 @@ void richOptions;
  * example in the PR did not compile and the check said nothing. Caught in
  * review. The members are parameterised now, and this asks one of them.
  */
-declare const activatable: IAdtActivatable<{ name: string }, string>;
+declare const activatable: IAdtActivatable<{ name: string }, string, 'name'>;
 declare const creatable: IAdtCreatable<{ name: string }, string>;
-declare const updatable: IAdtUpdatable<{ name: string }, string>;
-declare const readable: IAdtReadable<{ name: string }, string> &
-  IAdtMetadataReadable<{ name: string }, string>;
+declare const updatable: IAdtUpdatable<{ name: string }, string, 'name'>;
+declare const readable: IAdtReadable<{ name: string }, string, 'name'> &
+  IAdtMetadataReadable<{ name: string }, string, 'name'>;
 
 /** Wrapped in a function: these are compile-only, and nothing here runs. */
 async function _theFailureIsTheCallers(): Promise<void> {

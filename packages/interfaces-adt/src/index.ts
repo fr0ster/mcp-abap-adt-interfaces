@@ -150,6 +150,8 @@ export type {
 export type { IBehaviorImplementationConfig } from './adt/IAdtBehaviorImplementation';
 export type {
   AdtObjectIdentity,
+  AdtRequiredUpdateOptions,
+  AdtUpdateOptionKey,
   IAdtActivatable,
   IAdtCheckable,
   IAdtCreatable,

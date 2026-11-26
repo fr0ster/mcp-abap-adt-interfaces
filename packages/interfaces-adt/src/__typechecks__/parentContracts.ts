@@ -4,9 +4,9 @@
 // the four local class includes, and a message class message is addressed
 // under its class. ADT addresses each under its parent, so a config or a
 // reference without the parent cannot be sent. The atoms that identify an
-// object take the parent's field as their last type parameter, `TParent`, and
-// take `AdtObjectIdentity<TConfig, TParent>`: every field optional except that
-// one. Left at `never`, the identity is `Partial<TConfig>` itself.
+// object take the keys that address it as `TRequired` (32.0.0: the object's
+// own name, and its parent where it has one) and take
+// `AdtObjectIdentity<TConfig, TRequired>`: every field optional except those.
 
 import type { AdtTypeCode } from '../adt/AdtTypeTables';
 import type {
@@ -27,44 +27,50 @@ type Equal<A, B> =
     ? true
     : false;
 
-type ReadConfig<T, P extends keyof T = never> = Parameters<
+type ReadConfig<T, P extends keyof T> = Parameters<
   IAdtReadable<T, string, P>['read']
 >[0];
-type LockConfig<T, P extends keyof T = never> = Parameters<
+type LockConfig<T, P extends keyof T> = Parameters<
   IAdtLockable<T, P>['lock']
 >[0];
-type DeleteConfig<T, P extends keyof T = never> = Parameters<
-  IAdtDeletable<T, string, string, P>['delete']
+type DeleteConfig<T, P extends keyof T> = Parameters<
+  IAdtDeletable<T, string, P, string>['delete']
 >[0];
 
-// ── An unmarked config is taken as it always was ────────────────────────────
+// ── The object's own name is always required ────────────────────────────────
 
-export type NeverIsPartial = [
-  Assert<Equal<AdtObjectIdentity<IClassConfig>, Partial<IClassConfig>>>,
-  Assert<Equal<AdtObjectIdentity<IClassConfig, never>, Partial<IClassConfig>>>,
-  Assert<Equal<ReadConfig<IClassConfig>, Partial<IClassConfig>>>,
+export type _Checks = [
   Assert<
-    Equal<ReadConfig<IFunctionModuleConfig>, Partial<IFunctionModuleConfig>>
+    Equal<
+      AdtObjectIdentity<IClassConfig, 'className'>,
+      Partial<Omit<IClassConfig, 'className'>> & { className: string }
+    >
   >,
 ];
 
-// Code generic in the config that passes `Partial<TConfig>` still compiles.
-export function _readGenerically<TConfig>(
-  readable: IAdtReadable<TConfig, string>,
-  config: Partial<TConfig>,
+// @ts-expect-error a read without the class's name addresses nothing (32.0.0)
+const _classByNothing: ReadConfig<IClassConfig, 'className'> = {};
+void _classByNothing;
+
+const _classByName: ReadConfig<IClassConfig, 'className'> = {
+  className: 'ZCL_X',
+};
+void _classByName;
+
+// Code generic in the config names the keys it needs.
+export function _readGenerically<TConfig, TName extends keyof TConfig>(
+  readable: IAdtReadable<TConfig, string, TName>,
+  config: AdtObjectIdentity<TConfig, TName>,
 ): void {
   void readable.read(config);
 }
-
-const _classByNothing: ReadConfig<IClassConfig> = {};
-void _classByNothing;
 
 // ── With its parent named, a function module needs its group ────────────────
 
 // @ts-expect-error a function module is addressed under its group
 const _moduleWithoutGroup: ReadConfig<
   IFunctionModuleConfig,
-  'functionGroupName'
+  'functionGroupName' | 'functionModuleName'
 > = {
   functionModuleName: 'Z_SOME_MODULE',
 };

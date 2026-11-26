@@ -11,7 +11,7 @@ const answered = <T>(value: T): IAdtResponse<T> => ({
 
 const headers = { accept: 'text/plain', contentType: 'text/plain' };
 
-const _updatable: IAdtUpdatable<{ name: string }, string> = {
+const _updatable: IAdtUpdatable<{ name: string }, string, 'name'> = {
   update: async (config: { name: string }, options: IAdtUpdateOptions) => {
     void config.name;
     return answered(options.ifMatch ?? '');
