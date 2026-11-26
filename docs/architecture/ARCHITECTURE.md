@@ -160,8 +160,11 @@ given when the implementation is constructed, and a member's result type is a ty
 parameter of its interface, so what an implementation answers is written in its
 type. The error strategy is given with the call: every member that answers an
 `IAdtResponse` takes `options` carrying `analyse` (`IAdtAnalyseOptions`), and the
-failure type it names flows into the answer — `IAdtResponse<TValue, E>`, inferred
-from the strategy passed.
+failure type it names flows into the answer, inferred from the strategy passed.
+Since interfaces-adt 32.0.0 that answer is `IAdtResponse<TValue, E | IAdtError>`:
+where no answer came back, a chain step had no strategy, or a member refused
+without a request, the error is the library's own, and the type says so
+(decision 52).
 
 An implementation given no `analyse` interprets nothing. It answers what the
 transport saw — a status that was not 2xx, a host that did not answer — and a
