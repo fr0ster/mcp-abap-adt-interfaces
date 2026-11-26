@@ -28,7 +28,7 @@ export interface IMessageClassMessageConfig {
   className: string;
   /** Message number (e.g. '001') */
   msgno: string;
-  /** Message text — required for create/update */
+  /** Message text — required for an upsert (`update` without `removeMessage`) */
   msgtext?: string | undefined;
   /** Whether the message is self-explanatory (mc:selfexplainatory attribute) */
   selfExplanatory?: boolean | undefined;
@@ -54,10 +54,10 @@ export interface IMessageClassResults {
  * What each member of the message-level handler answers.
  *
  * A message is written through its **parent class's** document: ADT has no
- * resource for one message, so a write PUTs the whole class with that message
+ * resource for one message, so an update PUTs the whole class with that message
  * added, changed (`written`) or removed (`deleted`), and answers what that PUT
- * answered. Since 32.0.0 the write is one member, {@link
- * IAdtMessageClassMessageWritable.write}, and the locks around it are the
+ * answered. Since 32.0.0 that PUT is one member, {@link
+ * IAdtMessageClassMessageUpdatable.update}, and the locks around it are the
  * caller's.
  */
 export interface IMessageClassMessageResults<
@@ -70,13 +70,15 @@ export interface IMessageClassMessageResults<
   readonly deleted: IResultStrategy<TDeleted>;
 }
 
-// ── A message's locks and its write, one request each (32.0.0) ────────────────
+// ── A message's locks and its update, one request each (32.0.0) ───────────────
 //
 // Until 32.0.0 an implementation's `create`, `update` and `delete` each ran a
 // chain of their own: read the class, lock the message, lock the class for the
 // message, PUT, unlock the class, unlock the message. A member sends one
 // request (C7 of adt-clients #304), so the chain is the caller's, composed from
-// these members and the message class's own `lock`, `read` and `unlock`:
+// these members and the message class's own `lock`, `read` and `unlock`. The
+// README's "The identity and the error type" holds the recipe with its
+// fallbacks and its cleanup:
 //
 // 1. on a stateful session: `lockMessage` (a 403 means the system grants only
 //    the class lock; then the class handle stands in for the message's), then
@@ -84,7 +86,7 @@ export interface IMessageClassMessageResults<
 //    class's own `lock`);
 // 2. read the class's working-area document (the message's `read` with
 //    `'workingArea'`);
-// 3. on a stateless session: `write`, with both handles and that document —
+// 3. on a stateless session: `update`, with both handles and that document —
 //    the PUT carries the handles, so it needs no lock session;
 // 4. back on the stateful session: the class's `unlock` with the class handle,
 //    then `unlockMessages`, in that order.
@@ -151,21 +153,24 @@ export interface IAdtMessageClassMessageLockable {
   ): Promise<IAdtResponse<void>>;
 }
 
-/** What a message write is given besides the message: the locks and the class. */
-export interface IMessageClassMessageWriteOptions<
+/**
+ * What a message's `update` is given besides the message: the locks and the
+ * class document it updates.
+ */
+export interface IMessageClassMessageUpdateOptions<
   E extends IAdtError = IAdtError,
 > extends IAdtAnalyseOptions<E> {
   readonly headers: IAdtHeaders;
   /**
    * The class's working-area document, as the caller read it under the locks.
-   * The write adds, changes or removes this message in it and PUTs the whole.
+   * The update adds, changes or removes this message in it and PUTs the whole.
    */
   readonly classDocument: string;
   /** The class lock's handle: `lockClassForMessage`, or the plain class lock. */
   readonly classLockHandle: string;
   /**
-   * The message lock's handle from `lockMessage`. Where `lockMessage` was
-   * refused, the class lock's handle stands in, as the save takes it.
+   * The message lock's handle from `lockMessage`, or the class lock's handle
+   * where the system grants no message lock (see the README's recipe).
    */
   readonly messageLockHandle: string;
   /** The ETag the read answered, sent as `If-Match`. */
@@ -173,40 +178,45 @@ export interface IMessageClassMessageWriteOptions<
   readonly timeout?: number | undefined;
 }
 
-/** A message removed from its class: its address alone. */
+/** The keys a message's upsert needs: its address and its text. */
+export type MessageClassMessageUpsertKeys =
+  | MessageClassMessageAddress
+  | 'msgtext';
+
+/** A message added or changed in its class: its address and its text. */
+export type IMessageClassMessageUpsert = AdtObjectIdentity<
+  IMessageClassMessageConfig,
+  MessageClassMessageUpsertKeys
+> & { readonly removeMessage?: never };
+
+/** A message removed from its class document: its address alone. */
 export interface IMessageClassMessageRemoval {
   readonly className: string;
   readonly msgno: string;
   readonly transportRequest?: string | undefined;
-  readonly remove: true;
+  readonly removeMessage: true;
 }
 
 /**
- * The message's write: one PUT of its class's document. An upsert takes the
- * message's fields and answers `written`; a removal (`remove: true`) answers
- * `deleted`.
+ * The message's `update`: one PUT of its class's document. An upsert takes
+ * the message's address and text and answers `written`; with `removeMessage:
+ * true` the message is removed from the document and the answer is `deleted`.
  */
-export interface IAdtMessageClassMessageWritable<TWritten, TDeleted> {
-  write<E extends IAdtError>(
-    config: AdtObjectIdentity<
-      IMessageClassMessageConfig,
-      MessageClassMessageAddress
-    > & { readonly remove?: never },
-    options: IMessageClassMessageWriteOptions<E> & { analyse: IAnalyse<E> },
+export interface IAdtMessageClassMessageUpdatable<TWritten, TDeleted> {
+  update<E extends IAdtError>(
+    config: IMessageClassMessageUpsert,
+    options: IMessageClassMessageUpdateOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TWritten, E | IAdtError>>;
-  write<E extends IAdtError>(
+  update<E extends IAdtError>(
     config: IMessageClassMessageRemoval,
-    options: IMessageClassMessageWriteOptions<E> & { analyse: IAnalyse<E> },
+    options: IMessageClassMessageUpdateOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<TDeleted, E | IAdtError>>;
-  write(
-    config: AdtObjectIdentity<
-      IMessageClassMessageConfig,
-      MessageClassMessageAddress
-    > & { readonly remove?: never },
-    options: IMessageClassMessageWriteOptions,
+  update(
+    config: IMessageClassMessageUpsert,
+    options: IMessageClassMessageUpdateOptions,
   ): Promise<IAdtResponse<TWritten>>;
-  write(
+  update(
     config: IMessageClassMessageRemoval,
-    options: IMessageClassMessageWriteOptions,
+    options: IMessageClassMessageUpdateOptions,
   ): Promise<IAdtResponse<TDeleted>>;
 }

@@ -34,8 +34,10 @@ import type {
 } from '../adt/IAdtFeatureToggle';
 import type {
   IAdtMessageClassMessageLockable,
-  IAdtMessageClassMessageWritable,
+  IAdtMessageClassMessageUpdatable,
   IMessageClassMessageConfig,
+  IMessageClassMessageRemoval,
+  IMessageClassMessageUpsert,
 } from '../adt/IAdtMessageClass';
 
 type Assert<T extends true> = T;
@@ -191,34 +193,86 @@ export type _MessageLocks = [
   Assert<BothConfigs<ML['unlockMessages'], MId>>,
 ];
 
-declare const messageWriter: IAdtMessageClassMessageWritable<'w', 'd'>;
-const writeOptions = {
+/** The parameter lists of a member with four call signatures, in order. */
+type Four<F> = F extends {
+  (...args: infer A1): unknown;
+  (...args: infer A2): unknown;
+  (...args: infer A3): unknown;
+  (...args: infer A4): unknown;
+}
+  ? [A1, A2, A3, A4]
+  : never;
+
+type MU4 = Four<IAdtMessageClassMessageUpdatable<'w', 'd'>['update']>;
+type UpsertId = AdtObjectIdentity<
+  IMessageClassMessageConfig,
+  'className' | 'msgno' | 'msgtext'
+>;
+/** Every option an update needs, a required string on the given overload. */
+type UpdateOptionsRequired<O> = [
+  RequiredString<O, 'classDocument' & keyof O>,
+  RequiredString<O, 'classLockHandle' & keyof O>,
+  RequiredString<O, 'messageLockHandle' & keyof O>,
+] extends [true, true, true]
+  ? true
+  : false;
+
+export type _MessageUpdateEveryOverload = [
+  // Overloads 1 and 3 upsert: address and text required; 2 and 4 remove.
+  Assert<Equal<MU4[0][0], IMessageClassMessageUpsert>>,
+  Assert<Equal<MU4[2][0], IMessageClassMessageUpsert>>,
+  Assert<Equal<MU4[1][0], IMessageClassMessageRemoval>>,
+  Assert<Equal<MU4[3][0], IMessageClassMessageRemoval>>,
+  Assert<RequiredString<UpsertId, 'className'>>,
+  Assert<RequiredString<UpsertId, 'msgno'>>,
+  Assert<RequiredString<UpsertId, 'msgtext'>>,
+  Assert<RequiredString<IMessageClassMessageRemoval, 'className'>>,
+  Assert<RequiredString<IMessageClassMessageRemoval, 'msgno'>>,
+  Assert<Equal<IMessageClassMessageRemoval['removeMessage'], true>>,
+  // Both handles and the document, on every one of the four.
+  Assert<UpdateOptionsRequired<MU4[0][1]>>,
+  Assert<UpdateOptionsRequired<MU4[1][1]>>,
+  Assert<UpdateOptionsRequired<MU4[2][1]>>,
+  Assert<UpdateOptionsRequired<MU4[3][1]>>,
+  // The two generic overloads require `analyse`.
+  Assert<
+    [RequiredKeys<MU4[0][1]>] extends [never]
+      ? false
+      : 'analyse' extends RequiredKeys<MU4[0][1]>
+        ? true
+        : false
+  >,
+  Assert<
+    [RequiredKeys<MU4[1][1]>] extends [never]
+      ? false
+      : 'analyse' extends RequiredKeys<MU4[1][1]>
+        ? true
+        : false
+  >,
+];
+
+declare const messageUpdater: IAdtMessageClassMessageUpdatable<'w', 'd'>;
+const updateOptions = {
   headers: { accept: 'a', contentType: 'c' },
   classDocument: '<mc:messageClass/>',
   classLockHandle: 'C',
   messageLockHandle: 'M',
 };
-export async function _messageWrite(): Promise<void> {
-  const upserted = await messageWriter.write(
+export async function _messageUpdate(): Promise<void> {
+  const upserted = await messageUpdater.update(
     { className: 'ZMSG', msgno: '001', msgtext: 'Text' },
-    writeOptions,
+    updateOptions,
   );
   if (upserted.ok) void (upserted.getResult().value satisfies 'w');
-  const removed = await messageWriter.write(
-    { className: 'ZMSG', msgno: '001', remove: true },
-    writeOptions,
+  const removed = await messageUpdater.update(
+    { className: 'ZMSG', msgno: '001', removeMessage: true },
+    updateOptions,
   );
   if (removed.ok) void (removed.getResult().value satisfies 'd');
-  const { classLockHandle: _c, ...withoutClassHandle } = writeOptions;
-  // @ts-expect-error the write takes both handles
-  await messageWriter.write({ className: 'Z', msgno: '1' }, withoutClassHandle);
-  const { messageLockHandle: _m, ...withoutMessageHandle } = writeOptions;
-  const message = { className: 'Z', msgno: '1' };
-  // @ts-expect-error the message handle too
-  await messageWriter.write(message, withoutMessageHandle);
-  const { classDocument: _d, ...withoutDocument } = writeOptions;
-  // @ts-expect-error and the class's document it writes into
-  await messageWriter.write({ className: 'Z', msgno: '1' }, withoutDocument);
-  // @ts-expect-error a message is addressed by its class and number
-  await messageWriter.write({ className: 'Z' }, writeOptions);
+  const noText = { className: 'Z', msgno: '1' };
+  // @ts-expect-error an upsert needs the message's text
+  await messageUpdater.update(noText, updateOptions);
+  const undefinedText = { className: 'Z', msgno: '1', msgtext: undefined };
+  // @ts-expect-error and not an `undefined` one
+  await messageUpdater.update(undefinedText, updateOptions);
 }

@@ -229,14 +229,16 @@ export type { IIncludeConfig, IIncludeResults } from './adt/IAdtInclude';
 export type { IInterfaceConfig, IInterfaceResults } from './adt/IAdtInterface';
 export type {
   IAdtMessageClassMessageLockable,
-  IAdtMessageClassMessageWritable,
+  IAdtMessageClassMessageUpdatable,
   IMessageClassConfig,
   IMessageClassMessageConfig,
   IMessageClassMessageRemoval,
   IMessageClassMessageResults,
-  IMessageClassMessageWriteOptions,
+  IMessageClassMessageUpdateOptions,
+  IMessageClassMessageUpsert,
   IMessageClassResults,
   MessageClassMessageAddress,
+  MessageClassMessageUpsertKeys,
 } from './adt/IAdtMessageClass';
 export type {
   IMetadataExtensionConfig,
