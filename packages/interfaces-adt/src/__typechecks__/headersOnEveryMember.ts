@@ -52,6 +52,10 @@ import type {
   IAdtGroupLifecycle,
   IAdtIncludeEnhancementHost,
   IAdtLockable,
+  IAdtLockFreeMetadataUpdatable,
+  IAdtLockFreeUpdatable,
+  IAdtMessageClassMessageLockable,
+  IAdtMessageClassMessageUpdatable,
   IAdtMetadataReadable,
   IAdtMetadataUpdatable,
   IAdtObjectAccess,
@@ -538,4 +542,29 @@ export type _HeadersIAdtServiceBindingTypes = Assert<
 >;
 export type _HeadersIAdtServiceGroupReadable = Assert<
   EveryMemberTakesHeaders<IAdtServiceGroupReadable<Probe>>
+>;
+
+export type _HeadersIAdtLockFreeUpdatable = Assert<
+  EveryMemberTakesHeaders<
+    IAdtLockFreeUpdatable<Probe, Probe, keyof Probe>,
+    never,
+    'update'
+  >
+>;
+export type _HeadersIAdtLockFreeMetadataUpdatable = Assert<
+  EveryMemberTakesHeaders<
+    IAdtLockFreeMetadataUpdatable<Probe, Probe, keyof Probe>,
+    never,
+    'updateMetadata'
+  >
+>;
+export type _HeadersIAdtMessageClassMessageLockable = Assert<
+  EveryMemberTakesHeaders<IAdtMessageClassMessageLockable>
+>;
+export type _HeadersIAdtMessageClassMessageUpdatable = Assert<
+  EveryMemberTakesHeaders<
+    IAdtMessageClassMessageUpdatable<Probe, Probe>,
+    never,
+    'update'
+  >
 >;
