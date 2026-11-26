@@ -19,8 +19,11 @@ import type {
 interface IClientContract {
   getClass(
     results: IClassResults,
-  ): IAdtReadable<IClassConfig, unknown> & IAdtLockable<IClassConfig>;
-  getProgram(results: IProgramResults): IAdtReadable<IProgramConfig, unknown>;
+  ): IAdtReadable<IClassConfig, unknown, 'className'> &
+    IAdtLockable<IClassConfig, 'className'>;
+  getProgram(
+    results: IProgramResults,
+  ): IAdtReadable<IProgramConfig, unknown, 'programName'>;
 }
 
 function answered<T, E extends IAdtError = IAdtError>(

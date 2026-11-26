@@ -10,7 +10,7 @@ export interface IGatewayErrorLog<TList, TError> {
   list<E extends IAdtError>(
     options: IFeedQueryOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TList, E>>;
+  ): Promise<IAdtResponse<TList, E | IAdtError>>;
   list(
     options?: IFeedQueryOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TList>>;
@@ -19,7 +19,7 @@ export interface IGatewayErrorLog<TList, TError> {
     errorType: string,
     errorId: string,
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TError, E>>;
+  ): Promise<IAdtResponse<TError, E | IAdtError>>;
   getById(
     errorType: string,
     errorId: string,

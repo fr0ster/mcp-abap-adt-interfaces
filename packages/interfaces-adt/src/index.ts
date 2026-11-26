@@ -89,14 +89,12 @@ export type {
   IAbapGitCredentials,
   IAbapGitErrorFacts,
   IAbapGitExternalRepoArgs,
-  IAbapGitExternalRepoCredentials,
   IAbapGitFactsAnalyse,
   IAbapGitFactsOptions,
   IAbapGitFactsResponse,
   IAbapGitFactsResultStrategy,
   IAbapGitFileArgs,
   IAbapGitHeaderOptions,
-  IAbapGitLinkArgs,
   IAbapGitLinkNewArgs,
   IAbapGitModifiedObject,
   IAbapGitNewFormOptions,
@@ -150,6 +148,8 @@ export type {
 export type { IBehaviorImplementationConfig } from './adt/IAdtBehaviorImplementation';
 export type {
   AdtObjectIdentity,
+  AdtRequiredUpdateOptions,
+  AdtUpdateOptionKey,
   IAdtActivatable,
   IAdtCheckable,
   IAdtCreatable,
@@ -157,6 +157,10 @@ export type {
   IAdtEnhancementHost,
   IAdtIncludeEnhancementHost,
   IAdtLockable,
+  IAdtLockedWrite,
+  IAdtLockFreeMetadataUpdatable,
+  IAdtLockFreeUpdatable,
+  IAdtLockFreeWrite,
   IAdtMainProgramsReadable,
   IAdtMetadataReadable,
   IAdtMetadataUpdatable,
@@ -224,10 +228,17 @@ export type {
 export type { IIncludeConfig, IIncludeResults } from './adt/IAdtInclude';
 export type { IInterfaceConfig, IInterfaceResults } from './adt/IAdtInterface';
 export type {
+  IAdtMessageClassMessageLockable,
+  IAdtMessageClassMessageUpdatable,
   IMessageClassConfig,
   IMessageClassMessageConfig,
+  IMessageClassMessageRemoval,
   IMessageClassMessageResults,
+  IMessageClassMessageUpdateOptions,
+  IMessageClassMessageUpsert,
   IMessageClassResults,
+  MessageClassMessageAddress,
+  MessageClassMessageUpsertKeys,
 } from './adt/IAdtMessageClass';
 export type {
   IMetadataExtensionConfig,

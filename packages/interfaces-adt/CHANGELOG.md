@@ -7,6 +7,116 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [32.0.0] - 2026-11-27
+
+The contracts say what their implementations need, so an implementation needs
+no cast (adt-clients #304), and every member sends one request: "one endpoint,
+one method" (C7). A major: atoms take a required type parameter, a write needs
+the caller's lock handle, a generic answer widens, a message's lock chain
+becomes the caller's, and two deprecated abapGit members leave.
+
+### Changed
+
+- **`AdtObjectIdentity<TConfig, TRequired>` requires what addresses the
+  object.** `TRequired` replaces `TParent` and has no default: the object's own
+  name, its parent where it has one, and a field the member sends. A required
+  key is taken with `undefined` excluded (`source?: string | undefined` becomes
+  `source: string`). Before, the identity defaulted to `Partial<TConfig>`, so a
+  member could be called without the name it sends, and an implementation cast
+  it to `string`.
+- **Every identifying atom takes `TRequired`**: `IAdtReadable`,
+  `IAdtMetadataReadable`, `IAdtEnhancementHost`, `IAdtIncludeEnhancementHost`,
+  `IAdtMainProgramsReadable`, `IAdtDeletable`, `IAdtValidatable`,
+  `IAdtCheckable`, `IAdtActivatable`, `IAdtLockable`, `IAdtVersionable` and
+  `IAdtTransportAware`. `IAdtDeletable` is now `<TConfig, TDeleted, TRequired,
+  TChecked = string>`.
+- **The write atoms take the identity, and the caller's lock handle.**
+  `IAdtUpdatable<TConfig, TUpdated, TRequired, TRequiredOptions = never>` and
+  `IAdtMetadataUpdatable` likewise. Both require `lockHandle`
+  (`IAdtLockedWrite`): a member never locks or unlocks for itself, so lock,
+  write and unlock are three calls the caller makes. `TRequiredOptions`
+  (`AdtUpdateOptionKey`: `'source'`) makes `source` a required string where the
+  member sends one (`AdtRequiredUpdateOptions`); a write from a typed config
+  names nothing.
+- **The feature toggle's members** (`switchOn`, `switchOff`,
+  `getRuntimeState`, `checkState`, `readSource`) take
+  `AdtObjectIdentity<IFeatureToggleConfig, 'featureToggleName'>`, on both
+  overloads.
+- **The eight transport operations** (`removeObject`, `addObject`,
+  `createTask`, `readActionLog`, `readObjects`, `changeTaskType`,
+  `sortAndCompress`, `moveObjects`) take the generic/plain overload pair. A
+  call naming `E` passes `analyse`; before, one defaulted `E` let it pass none.
+- **A generic answer is `IAdtResponse<T, E | IAdtError>`**, on every generic
+  overload (178, checked by `tools/check-error-union.js`: the union, the required
+  `analyse` and a plain twin per signature) (`E | IAbapGitStructuredError` for the abapGit facts). With
+  `analyse` given, the library still answers its own error in three cases: no
+  answer came back and `analyse` cleared the verdict; a chain step answered
+  without a strategy; a member a system does not serve refused without a
+  request. The plain overloads are unchanged.
+
+### Added
+
+- `AdtUpdateOptionKey`, `AdtRequiredUpdateOptions`, `IAdtLockedWrite` and
+  `IAdtLockFreeWrite`.
+- **`IAdtLockFreeUpdatable` and `IAdtLockFreeMetadataUpdatable`**, the write
+  atoms for a write that takes no lock — a service binding's publication job
+  and a transport request's document. Their options refuse a `lockHandle`.
+- **A message class message's members, one request each:**
+  `IAdtMessageClassMessageLockable` (`lockMessage`, `lockClassForMessage`,
+  `unlockMessages`) and `IAdtMessageClassMessageUpdatable` (`update`, one PUT
+  of the class document with `classDocument`, `classLockHandle` and
+  `messageLockHandle`; an upsert requires `msgtext`, and `removeMessage: true`
+  removes the message from the document), with
+  `IMessageClassMessageUpdateOptions`, `IMessageClassMessageUpsert`,
+  `IMessageClassMessageRemoval`, `MessageClassMessageAddress` and
+  `MessageClassMessageUpsertKeys`. The variant tables list `lockMessage`,
+  `lockClassForMessage`, `update` and `unlockMessages` for `MSAG/NN` in place
+  of `create` and `delete`, and `AdtOperation` gains the three lock
+  operations.
+- `tools/check-error-union.js` (`npm run check:errors`, in `check` and CI):
+  every generic member answers the library's error and has its plain
+  overload.
+
+### Removed
+
+- **`IAdtAbapGitClient.link` and `checkExternalRepo`, the
+  `remoteUser`/`remotePassword` forms** deprecated since 30.2.0, with
+  `IAbapGitLinkArgs`, `IAbapGitExternalRepoCredentials` and the client's fourth
+  type parameter, `TExternalRepo`. `IAdtAbapGitLinkNewForm` and
+  `IAdtAbapGitCheckExternalRepoNewForm` remain.
+
+### Migration
+
+- **Implementers** name the keys on every atom (`IAdtReadable<IProgramConfig,
+  T, 'programName'>`) and, on the write atoms, `'source'` where the member
+  sends one (`IAdtUpdatable<IProgramConfig, T, 'programName', 'source'>`). A
+  write that takes no lock moves to `IAdtLockFreeUpdatable` or
+  `IAdtLockFreeMetadataUpdatable` (the binding's publication keeps
+  `IServiceBindingPublicationConfig` as its config).
+- **Callers of a write** pass the `lockHandle` their `lock` answered, and
+  unlock afterwards. A message class message's `create`, `update` and
+  `delete` become the caller's composition: `lockMessage` and
+  `lockClassForMessage` on a stateful session, read the class's working area,
+  `update` on a stateless session with both handles (`removeMessage: true` to
+  delete), then the class's `unlock` and `unlockMessages` on the stateful
+  session. The library used to treat a 403 on `lockMessage` as "no message
+  lock" and a 403 on `lockClassForMessage` as "take the plain class lock", and
+  it did not tell those from another user's lock; the README's recipe says what
+  that means for a caller, and how to give the locks up on every way out.
+  Code that names `AdtApiWith<V, 'create'>` or `'delete'` no longer finds
+  `messageClassMessage` there.
+  A method that still takes `Partial<TConfig>` keeps compiling, but only a
+  method typed with the identity reads the keys as `string`.
+- **Callers** pass every key and option an atom requires. A call without the
+  object's name, or without a required `source` or `lockHandle`, no longer
+  compiles.
+- **Generic callers** narrow the error (`'mine' in error`) or type the answer
+  `IAdtResponse<T, E | IAdtError>`.
+- **abapGit**: call the new forms of `link` and `checkExternalRepo` with
+  `credentials: IAbapGitCredentials | null`, and give `IAdtAbapGitClient` three
+  type parameters.
+- The README's "Migrating to 32.0.0" lists the same steps per atom.
+
 ## [31.0.0] - 2026-11-22
 
 `ISystemMessages` loses the member SAP never served. A major, since a member

@@ -16,11 +16,12 @@ import type {
   IAdtActivatable,
   IAdtCreatable,
   IAdtDeletable,
+  IAdtLockFreeUpdatable,
   IAdtMetadataReadable,
   IAdtReadable,
   IAdtResponse,
-  IAdtUpdatable,
   IServiceBindingConfig,
+  IServiceBindingPublicationConfig,
 } from '../index';
 
 const headers: IAdtHeaders = {
@@ -35,19 +36,15 @@ const answered = <T>(value: T): IAdtResponse<T> => ({
 
 /**
  * The three fields a publication cannot proceed without: which object, which
- * state, and the protocol that selects the endpoint. Derived from the config
- * rather than duplicated, and named once — a binding's write demands this
- * whether the caller holds the whole surface or only the publishing half, and
- * spelling it twice is how the two drift apart. This is the same type
- * `@mcp-abap-adt/adt-clients` calls `IServiceBindingPublicationConfig`.
+ * state, and the protocol that selects the endpoint. Named once, as the write's
+ * required keys (`TRequired`, 32.0.0) — a binding's write demands them whether
+ * the caller holds the whole surface or only the publishing half, and spelling
+ * them twice is how the two drift apart.
  */
-type ServiceBindingPublication = Partial<IServiceBindingConfig> &
-  Required<
-    Pick<
-      IServiceBindingConfig,
-      'bindingName' | 'desiredPublicationState' | 'serviceType'
-    >
-  >;
+type PublicationKeys =
+  | 'bindingName'
+  | 'desiredPublicationState'
+  | 'serviceType';
 
 /**
  * What a caller who needs the whole surface writes — spelled from atoms, not
@@ -60,17 +57,31 @@ type ServiceBindingPublication = Partial<IServiceBindingConfig> &
  * everything.
  */
 type WholeBinding = IAdtCreatable<IServiceBindingConfig, void> &
-  IAdtReadable<IServiceBindingConfig, string> &
-  IAdtMetadataReadable<IServiceBindingConfig, string> &
-  IAdtUpdatable<ServiceBindingPublication, void> &
-  IAdtDeletable<IServiceBindingConfig, void> &
-  IAdtActivatable<IServiceBindingConfig, string>;
+  IAdtReadable<IServiceBindingConfig, string, 'bindingName'> &
+  IAdtMetadataReadable<IServiceBindingConfig, string, 'bindingName'> &
+  IAdtLockFreeUpdatable<
+    IServiceBindingPublicationConfig,
+    void,
+    PublicationKeys
+  > &
+  IAdtDeletable<IServiceBindingConfig, void, 'bindingName'> &
+  IAdtActivatable<IServiceBindingConfig, string, 'bindingName'>;
 
 declare const whole: WholeBinding;
 
 // @ts-expect-error the whole surface is not a wider write: a publication still
 // says which object, which state and which protocol
-void whole.update({});
+void whole.update({}, { headers });
+
+void whole.update(
+  {
+    bindingName: 'ZAC_SRVB01',
+    // @ts-expect-error `unchanged` is no publication: there is no request for it
+    desiredPublicationState: 'unchanged',
+    serviceType: 'odatav4',
+  },
+  { headers },
+);
 
 void whole.update(
   {
@@ -87,23 +98,28 @@ void whole.update(
  * publishes takes `IAdtUpdatable` and nothing else, and an implementation that
  * only publishes is a legitimate one.
  *
- * It takes the same {@link ServiceBindingPublication} the whole surface does,
+ * It takes the same {@link PublicationKeys} the whole surface does,
  * because since 37.0.0 the atom no longer flattens what an implementation
  * demands — and the demand does not depend on how much of the object the caller
  * happens to hold.
  */
-type PublishingOnly = IAdtUpdatable<ServiceBindingPublication, void>;
+type PublishingOnly = IAdtLockFreeUpdatable<
+  IServiceBindingPublicationConfig,
+  void,
+  PublicationKeys
+>;
 
 const _publisher: PublishingOnly = {
   update: async () => answered(undefined),
 };
 void _publisher;
 
-// @ts-expect-error a publication with no protocol has no endpoint to post to
-void _publisher.update({
+const _noProtocol = {
   bindingName: 'ZAC_SRVB01',
   desiredPublicationState: 'published',
-});
+} as const;
+// @ts-expect-error a publication with no protocol has no endpoint to post to
+void _publisher.update(_noProtocol, { headers });
 
 void _publisher.update(
   {
@@ -131,9 +147,4 @@ async function _mineAnswers(): Promise<IBindingSummary | undefined> {
 }
 void _mineAnswers;
 
-export type {
-  WholeBinding,
-  PublishingOnly,
-  ServiceBindingPublication,
-  IBindingSummary,
-};
+export type { WholeBinding, PublishingOnly, PublicationKeys, IBindingSummary };

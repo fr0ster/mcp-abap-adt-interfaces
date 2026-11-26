@@ -39,6 +39,10 @@ import type {
   IAdtGroupLifecycle,
   IAdtIncludeEnhancementHost,
   IAdtLockable,
+  IAdtLockFreeMetadataUpdatable,
+  IAdtLockFreeUpdatable,
+  IAdtMessageClassMessageLockable,
+  IAdtMessageClassMessageUpdatable,
   IAdtMetadataReadable,
   IAdtMetadataUpdatable,
   IAdtObjectAccess,
@@ -136,7 +140,7 @@ type EveryMemberTakesAnalyse<I> = false extends {
   : true;
 
 export type _IAdtAbapGitClient = Assert<
-  EveryMemberTakesAnalyse<IAdtAbapGitClient<Probe, Probe, Probe, Probe>>
+  EveryMemberTakesAnalyse<IAdtAbapGitClient<Probe, Probe, Probe>>
 >;
 export type _IAdtAbapGitListReposQuiet = Assert<
   EveryMemberTakesAnalyse<IAdtAbapGitListReposQuiet<Probe, Probe>>
@@ -181,46 +185,48 @@ export type _IAdtAbapGitSwitchBranch = Assert<
   EveryMemberTakesAnalyse<IAdtAbapGitSwitchBranch<Probe, Probe>>
 >;
 export type _IAdtIncludeEnhancementHost = Assert<
-  EveryMemberTakesAnalyse<IAdtIncludeEnhancementHost<Probe, Probe, Probe>>
+  EveryMemberTakesAnalyse<
+    IAdtIncludeEnhancementHost<Probe, Probe, Probe, keyof Probe>
+  >
 >;
 export type _IAdtEnhancementHost = Assert<
-  EveryMemberTakesAnalyse<IAdtEnhancementHost<Probe, Probe, Probe>>
+  EveryMemberTakesAnalyse<IAdtEnhancementHost<Probe, Probe, Probe, keyof Probe>>
 >;
 export type _IAdtCreatable = Assert<
   EveryMemberTakesAnalyse<IAdtCreatable<Probe, Probe>>
 >;
 export type _IAdtReadable = Assert<
-  EveryMemberTakesAnalyse<IAdtReadable<Probe, Probe>>
+  EveryMemberTakesAnalyse<IAdtReadable<Probe, Probe, keyof Probe>>
 >;
 export type _IAdtMetadataReadable = Assert<
-  EveryMemberTakesAnalyse<IAdtMetadataReadable<Probe, Probe>>
+  EveryMemberTakesAnalyse<IAdtMetadataReadable<Probe, Probe, keyof Probe>>
 >;
 export type _IAdtUpdatable = Assert<
-  EveryMemberTakesAnalyse<IAdtUpdatable<Probe, Probe>>
+  EveryMemberTakesAnalyse<IAdtUpdatable<Probe, Probe, keyof Probe>>
 >;
 export type _IAdtMetadataUpdatable = Assert<
-  EveryMemberTakesAnalyse<IAdtMetadataUpdatable<Probe, Probe>>
+  EveryMemberTakesAnalyse<IAdtMetadataUpdatable<Probe, Probe, keyof Probe>>
 >;
 export type _IAdtDeletable = Assert<
-  EveryMemberTakesAnalyse<IAdtDeletable<Probe, Probe, Probe>>
+  EveryMemberTakesAnalyse<IAdtDeletable<Probe, Probe, keyof Probe, Probe>>
 >;
 export type _IAdtValidatable = Assert<
-  EveryMemberTakesAnalyse<IAdtValidatable<Probe, Probe>>
+  EveryMemberTakesAnalyse<IAdtValidatable<Probe, Probe, keyof Probe>>
 >;
 export type _IAdtCheckable = Assert<
-  EveryMemberTakesAnalyse<IAdtCheckable<Probe, Probe>>
+  EveryMemberTakesAnalyse<IAdtCheckable<Probe, Probe, keyof Probe>>
 >;
 export type _IAdtActivatable = Assert<
-  EveryMemberTakesAnalyse<IAdtActivatable<Probe, Probe>>
+  EveryMemberTakesAnalyse<IAdtActivatable<Probe, Probe, keyof Probe>>
 >;
 export type _IAdtLockable = Assert<
-  EveryMemberTakesAnalyse<IAdtLockable<Probe>>
+  EveryMemberTakesAnalyse<IAdtLockable<Probe, keyof Probe>>
 >;
 export type _IAdtVersionable = Assert<
-  EveryMemberTakesAnalyse<IAdtVersionable<Probe, Probe, Probe>>
+  EveryMemberTakesAnalyse<IAdtVersionable<Probe, Probe, Probe, keyof Probe>>
 >;
 export type _IAdtTransportAware = Assert<
-  EveryMemberTakesAnalyse<IAdtTransportAware<Probe, Probe>>
+  EveryMemberTakesAnalyse<IAdtTransportAware<Probe, Probe, keyof Probe>>
 >;
 export type _IFeatureToggleObject = Assert<
   EveryMemberTakesAnalyse<IFeatureToggleObject<IFeatureToggleObjectResults>>
@@ -365,4 +371,19 @@ export type _IAdtServiceBindingTypes = Assert<
 >;
 export type _IAdtServiceGroupReadable = Assert<
   EveryMemberTakesAnalyse<IAdtServiceGroupReadable<Probe>>
+>;
+
+export type _IAdtLockFreeUpdatable = Assert<
+  EveryMemberTakesAnalyse<IAdtLockFreeUpdatable<Probe, Probe, keyof Probe>>
+>;
+export type _IAdtLockFreeMetadataUpdatable = Assert<
+  EveryMemberTakesAnalyse<
+    IAdtLockFreeMetadataUpdatable<Probe, Probe, keyof Probe>
+  >
+>;
+export type _IAdtMessageClassMessageLockable = Assert<
+  EveryMemberTakesAnalyse<IAdtMessageClassMessageLockable>
+>;
+export type _IAdtMessageClassMessageUpdatable = Assert<
+  EveryMemberTakesAnalyse<IAdtMessageClassMessageUpdatable<Probe, Probe>>
 >;

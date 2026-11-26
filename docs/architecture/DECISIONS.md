@@ -3390,6 +3390,46 @@ field is reset on SAP's side, not refused.
 document — a PUT that keeps the settings it does not name. Then the patch is
 one PUT of the changes, no read, and decisions 16 and 37 hold again.
 
+## 52. A contract says what its implementation needs
+
+**Decided 2026-11-26, in `interfaces-adt` 32.0.0**, for adt-clients #304
+(no casts in production code). It supersedes the `TParent` default of
+decision 47 and the "taken as given" config of the write atoms.
+
+**The problem.** The contracts promised less than the implementations need.
+The identity defaulted to `Partial<TConfig>`, so a member could be called
+without the name it sends, and adt-clients cast `config.programName` to
+`string` at 237 sites. The write options left `source` and `lockHandle`
+optional for members that always send them. The generic overloads promised
+`E` where the library answers its own error, and adt-clients cast that error
+to `E` at 37 sites.
+
+**The decision.**
+
+- `TRequired` replaces `TParent`, with no default, and lists every key that
+  addresses the object or that the member sends. A required key excludes
+  `undefined`.
+- The write atoms take the identity and require the caller's `lockHandle`:
+  one endpoint, one method. In the owner's words: «Не мають на рівні
+  adt-clients самі ставити локи як не передано локхендл, оце як раз порушення
+  правила один метод один ендпойнт.» A member never locks or unlocks for
+  itself, a message class message's lock chain becomes the caller's (its PUT is
+  the message's `update`, removal an option of it), and the
+  two writes that take no lock (a binding's publication, a transport's
+  document) get their own lock-free atoms. `TRequiredOptions` names `source`
+  where a member sends one.
+- Every generic overload answers `E | IAdtError`.
+- The abapGit forms deprecated in 30.2.0 leave, since only the overloads tied
+  their args to their options, and an implementation could not tell them apart
+  without a cast.
+
+**Against what.** Checking the fields at run time: the compiler can say it, and
+the owner's rule is that what typing can verify is verified statically.
+Calling `analyse` on the library's own paths to make an `E`: `analyse` may
+clear the verdict, and the library would then still need an `E` it cannot
+make. Keeping the casts as a named exception: refused by the owner, with no
+exception list.
+
 ## Open, and what would settle it
 
 Not decisions. These are questions this repository has met and deliberately left

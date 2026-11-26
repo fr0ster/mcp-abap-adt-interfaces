@@ -25,7 +25,7 @@ export interface IRuntimeDumps<TList, TDump> {
   list<E extends IAdtError>(
     options: IRuntimeDumpsListOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TList, E>>;
+  ): Promise<IAdtResponse<TList, E | IAdtError>>;
   list(
     options?: IRuntimeDumpsListOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TList>>;
@@ -34,7 +34,7 @@ export interface IRuntimeDumps<TList, TDump> {
     user: string | undefined,
     options: Omit<IRuntimeDumpsListOptions, 'query'> &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TList, E>>;
+  ): Promise<IAdtResponse<TList, E | IAdtError>>;
   listByUser(
     user?: string,
     options?: Omit<IRuntimeDumpsListOptions, 'query'> & IAdtAnalyseOptions,
@@ -43,7 +43,7 @@ export interface IRuntimeDumps<TList, TDump> {
     dumpId: string,
     options: IRuntimeDumpReadOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TDump, E>>;
+  ): Promise<IAdtResponse<TDump, E | IAdtError>>;
   getById(
     dumpId: string,
     options?: IRuntimeDumpReadOptions & IAdtAnalyseOptions,

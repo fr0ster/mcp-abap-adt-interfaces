@@ -15,7 +15,7 @@ const headers: IAdtHeaders = {
   contentType: 'application/xml',
 };
 
-declare const _activatable: IAdtActivatable<{ name: string }, string>;
+declare const _activatable: IAdtActivatable<{ name: string }, string, 'name'>;
 const id = { name: 'ZCL_X' };
 
 // A caller asks for the activation without the preaudit, or leaves it out.
@@ -37,15 +37,19 @@ type Equal<A, B> =
   (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
     ? true
     : false;
+// Since 32.0.0 the library's own error may come back beside the strategy's.
 export type _FailureTypeKept = Assert<
-  Equal<Awaited<typeof withStrategy>, IAdtResponse<string, IMyFailure>>
+  Equal<
+    Awaited<typeof withStrategy>,
+    IAdtResponse<string, IMyFailure | IAdtError>
+  >
 >;
 
 // @ts-expect-error preauditRequested is a boolean
 void _activatable.activate(id, { headers, preauditRequested: 'no' });
 
 // An implementer written against the narrower options still is one.
-const _narrow: IAdtActivatable<{ name: string }, string> = {
+const _narrow: IAdtActivatable<{ name: string }, string, 'name'> = {
   activate: async (
     config: { name: string },
     options: { headers: IAdtHeaders } & IAdtOperationOptions,

@@ -37,7 +37,7 @@ export interface IAdtRunnable<TTarget, TResult, TOptions = never> {
     target: TTarget,
     options: ([TOptions] extends [never] ? unknown : TOptions) &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TResult, E>>;
+  ): Promise<IAdtResponse<TResult, E | IAdtError>>;
   run(
     target: TTarget,
     options?: ([TOptions] extends [never] ? unknown : TOptions) &
@@ -63,7 +63,7 @@ export interface IRunnableWithProfiler<TTarget, TResult, TOptions> {
   runWithProfiler<E extends IAdtError>(
     target: TTarget,
     options: TOptions & IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TResult, E>>;
+  ): Promise<IAdtResponse<TResult, E | IAdtError>>;
   runWithProfiler(
     target: TTarget,
     options: TOptions & IAdtAnalyseOptions,
@@ -83,7 +83,7 @@ export interface IRunnableWithProfiling<TTarget, TResult, TOptions> {
   runWithProfiling<E extends IAdtError>(
     target: TTarget,
     options: TOptions & IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TResult, E>>;
+  ): Promise<IAdtResponse<TResult, E | IAdtError>>;
   runWithProfiling(
     target: TTarget,
     options?: TOptions & IAdtAnalyseOptions,

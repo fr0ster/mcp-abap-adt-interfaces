@@ -107,7 +107,7 @@ type WithoutAnalyse<O = unknown> = O & IAdtAnalyseOptions;
 export interface IAdtServiceBindingTypes<TTypes> {
   getServiceBindingTypes<E extends IAdtError>(
     options: WithAnalyse<E>,
-  ): Promise<IAdtResponse<TTypes, E>>;
+  ): Promise<IAdtResponse<TTypes, E | IAdtError>>;
   getServiceBindingTypes(
     options?: WithoutAnalyse,
   ): Promise<IAdtResponse<TTypes>>;
@@ -123,7 +123,7 @@ export interface IAdtServiceGroupReadable<TGroup> {
   getServiceGroup<E extends IAdtError>(
     params: IServiceGroupParams,
     options: WithAnalyse<E>,
-  ): Promise<IAdtResponse<TGroup, E>>;
+  ): Promise<IAdtResponse<TGroup, E | IAdtError>>;
   getServiceGroup(
     params: IServiceGroupParams,
     options?: WithoutAnalyse,
@@ -175,11 +175,11 @@ export interface IServiceResults {
  * What a caller must name to change a binding's publication, **in the signature
  * they call**.
  *
- * `Partial<IServiceBindingConfig>` is what `IAdtUpdatable` gives every other
- * type, and for a binding it is too loose in two ways a compiler could catch:
- * `serviceType` is optional there, and `desiredPublicationState` still admits
- * `'unchanged'`. Both compiled and then threw before reaching the wire, which
- * is a demand made where the caller cannot see it.
+ * The publication is a lock-free write (`IAdtLockFreeUpdatable`, 32.0.0) whose
+ * config is this type, with `bindingName`, `desiredPublicationState` and
+ * `serviceType` as its required keys. `IServiceBindingConfig` alone would be
+ * too loose in a way a compiler can catch: its `desiredPublicationState` admits
+ * `'unchanged'`, and there is no request that changes nothing.
  */
 export type IServiceBindingPublicationConfig =
   Partial<IServiceBindingConfig> & {

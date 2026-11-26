@@ -19,7 +19,7 @@ export interface IFeedRepository<
 > {
   list<E extends IAdtError>(
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TFeeds, E>>;
+  ): Promise<IAdtResponse<TFeeds, E | IAdtError>>;
   list(options?: IAdtAnalyseOptions): Promise<IAdtResponse<TFeeds>>;
   /**
    * Feed variants for a category.
@@ -39,7 +39,7 @@ export interface IFeedRepository<
   variants<E extends IAdtError>(
     category: string,
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TVariants, E>>;
+  ): Promise<IAdtResponse<TVariants, E | IAdtError>>;
   variants(
     category: string,
     options?: IAdtAnalyseOptions,
@@ -47,28 +47,28 @@ export interface IFeedRepository<
   dumps<E extends IAdtError>(
     options: IFeedQueryOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TEntries, E>>;
+  ): Promise<IAdtResponse<TEntries, E | IAdtError>>;
   dumps(
     options?: IFeedQueryOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TEntries>>;
   systemMessages<E extends IAdtError>(
     options: IFeedQueryOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TSystemMessages, E>>;
+  ): Promise<IAdtResponse<TSystemMessages, E | IAdtError>>;
   systemMessages(
     options?: IFeedQueryOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TSystemMessages>>;
   gatewayErrors<E extends IAdtError>(
     options: IFeedQueryOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TGatewayErrors, E>>;
+  ): Promise<IAdtResponse<TGatewayErrors, E | IAdtError>>;
   gatewayErrors(
     options?: IFeedQueryOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TGatewayErrors>>;
   gatewayErrorDetail<E extends IAdtError>(
     feedUrl: string,
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TGatewayErrorDetail, E>>;
+  ): Promise<IAdtResponse<TGatewayErrorDetail, E | IAdtError>>;
   gatewayErrorDetail(
     feedUrl: string,
     options?: IAdtAnalyseOptions,

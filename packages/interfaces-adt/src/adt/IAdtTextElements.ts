@@ -406,7 +406,7 @@ export interface IAdtTextElementsReadable<TSource> {
     config: ITextElementsPartConfig,
     version: TextElementsReadVersion | undefined,
     options: IAdtTextElementsReadOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TSource, E>>;
+  ): Promise<IAdtResponse<TSource, E | IAdtError>>;
   read(
     config: ITextElementsPartConfig,
     version?: TextElementsReadVersion,
@@ -442,7 +442,7 @@ export interface IAdtTextElementsUpdatable<TUpdated> {
     options: { headers: IAdtHeaders } & IAdtTextElementsUpdateOptions<E> & {
         analyse: IAnalyse<E>;
       },
-  ): Promise<IAdtResponse<TUpdated, E>>;
+  ): Promise<IAdtResponse<TUpdated, E | IAdtError>>;
   update(
     config: ITextElementsUpdateConfig,
     options: { headers: IAdtHeaders } & IAdtTextElementsUpdateOptions,

@@ -63,7 +63,7 @@ export interface IAmdpDebugger<TStarted, TEvents, TCommand, TPreview> {
   start<E extends IAdtError>(
     requestUser: string,
     options: WithAnalyse<E, IStartAmdpDebuggerOptions>,
-  ): Promise<IAdtResponse<TStarted, E>>;
+  ): Promise<IAdtResponse<TStarted, E | IAdtError>>;
   start(
     requestUser: string,
     options?: WithoutAnalyse<IStartAmdpDebuggerOptions>,
@@ -74,7 +74,7 @@ export interface IAmdpDebugger<TStarted, TEvents, TCommand, TPreview> {
     mainId: string,
     breakpoints: readonly IAmdpBreakpoint[],
     options: WithAnalyse<E>,
-  ): Promise<IAdtResponse<TCommand, E>>;
+  ): Promise<IAdtResponse<TCommand, E | IAdtError>>;
   syncBreakpoints(
     mainId: string,
     breakpoints: readonly IAmdpBreakpoint[],
@@ -85,7 +85,7 @@ export interface IAmdpDebugger<TStarted, TEvents, TCommand, TPreview> {
   getEvents<E extends IAdtError>(
     mainId: string,
     options: WithAnalyse<E>,
-  ): Promise<IAdtResponse<TEvents, E>>;
+  ): Promise<IAdtResponse<TEvents, E | IAdtError>>;
   getEvents(
     mainId: string,
     options?: WithoutAnalyse,
@@ -96,7 +96,7 @@ export interface IAmdpDebugger<TStarted, TEvents, TCommand, TPreview> {
     debuggeeId: string,
     step: IAmdpStepMethod,
     options: WithAnalyse<E>,
-  ): Promise<IAdtResponse<TCommand, E>>;
+  ): Promise<IAdtResponse<TCommand, E | IAdtError>>;
   step(
     mainId: string,
     debuggeeId: string,
@@ -109,7 +109,7 @@ export interface IAmdpDebugger<TStarted, TEvents, TCommand, TPreview> {
     mainId: string,
     debuggeeId: string,
     options: WithAnalyse<E>,
-  ): Promise<IAdtResponse<TCommand, E>>;
+  ): Promise<IAdtResponse<TCommand, E | IAdtError>>;
   deleteDebuggee(
     mainId: string,
     debuggeeId: string,
@@ -119,7 +119,7 @@ export interface IAmdpDebugger<TStarted, TEvents, TCommand, TPreview> {
   stop<E extends IAdtError>(
     mainId: string,
     options: WithAnalyse<E, { hardStop?: boolean }>,
-  ): Promise<IAdtResponse<TCommand, E>>;
+  ): Promise<IAdtResponse<TCommand, E | IAdtError>>;
   stop(
     mainId: string,
     options?: WithoutAnalyse<{ hardStop?: boolean }>,
@@ -131,7 +131,7 @@ export interface IAmdpDebugger<TStarted, TEvents, TCommand, TPreview> {
       E,
       IGetAmdpDataPreviewOptions
     >,
-  ): Promise<IAdtResponse<TPreview, E>>;
+  ): Promise<IAdtResponse<TPreview, E | IAdtError>>;
   getDataPreview(
     options: {
       headers: IAdtHeaders;

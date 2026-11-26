@@ -38,8 +38,12 @@ import {
   TABLE_SIZE_CATEGORIES,
 } from '../adt/IAdtTableSettings';
 
-declare const handler: IAdtMetadataReadable<ITableSettingsConfig, string> &
-  IAdtLockable<ITableSettingsConfig> &
+declare const handler: IAdtMetadataReadable<
+  ITableSettingsConfig,
+  string,
+  'tableName'
+> &
+  IAdtLockable<ITableSettingsConfig, 'tableName'> &
   IAdtTableSettingsUpdatable<string>;
 declare const headers: IAdtHeaders;
 

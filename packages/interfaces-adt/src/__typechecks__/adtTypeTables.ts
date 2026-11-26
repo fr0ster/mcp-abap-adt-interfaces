@@ -502,6 +502,8 @@ export type Basis740Refusals = [
         | 'localDefinitions'
         | 'localMacros'
         | 'request'
+        // A message is created by `update` on its class document (32.0.0).
+        | 'messageClassMessage'
       >
     >
   >,
@@ -526,7 +528,23 @@ export type Basis740Refusals = [
       | 'FUGR/FF'
       | 'DDLS/DF'
       | 'MSAG/N'
-      | 'MSAG/NN'
+    >
+  >,
+  // A message is removed by `update` on its class document, and is no
+  // `create` or `delete` of its own on any release (32.0.0).
+  Assert<
+    Equal<Extract<AdtApiWith<'onprem', 'create'>, 'messageClassMessage'>, never>
+  >,
+  Assert<
+    Equal<Extract<AdtApiWith<'cloud', 'create'>, 'messageClassMessage'>, never>
+  >,
+  Assert<
+    Equal<Extract<AdtApiWith<'cloud', 'delete'>, 'messageClassMessage'>, never>
+  >,
+  Assert<
+    Equal<
+      Extract<AdtApiWith<'cloud', 'lockMessage'>, 'messageClassMessage'>,
+      'messageClassMessage'
     >
   >,
 ];

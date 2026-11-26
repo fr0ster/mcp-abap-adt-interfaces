@@ -1,5 +1,12 @@
 // Compile-only assertions. If these stop compiling, the types regressed.
 //
+// **32.0.0 removed the old `link` and `checkExternalRepo` forms,** deprecated
+// since 30.2.0, with `IAbapGitLinkArgs` and `IAbapGitExternalRepoCredentials`
+// and the client's fourth type parameter. The calls below that use them are
+// refused; the other legacy members (`pull`, `unlink`, `listRepos`,
+// `getErrorLog`) still compile as before, with a generic answer typed
+// `E | IAdtError`.
+//
 // **30.2.0 is a minor, and that is a claim about callers' code.** The abapGit
 // contracts gained key-based members and the facts forms of `link` and
 // `checkExternalRepo`; the legacy members stayed, deprecated, with one additive
@@ -19,8 +26,6 @@
 
 import type {
   AdtNoFailure,
-  IAbapGitExternalRepoCredentials,
-  IAbapGitLinkArgs,
   IAbapGitPullArgs,
   IAbapGitUnlinkArgs,
   IAdtAbapGitClient,
@@ -49,7 +54,6 @@ const readLog: IResultStrategy<string> = (answer) => String(answer.data);
 type LegacyClient = IAdtAbapGitClient<
   ReturnType<typeof readRepos>,
   ReturnType<typeof readLog>,
-  string,
   string
 >;
 declare const client: LegacyClient;
@@ -66,7 +70,7 @@ const wireReading: IAnalyse<IMyError> = (verdict, answer) =>
     ? ADT_NO_FAILURE
     : { ...verdict, mine: true };
 
-const linkArgs: IAbapGitLinkArgs = {
+const linkArgs = {
   package: 'ZPKG',
   url: 'https://h/r',
   remoteUser: 'u',
@@ -76,7 +80,7 @@ const pullArgs: IAbapGitPullArgs = {
   package: 'ZPKG',
   pullLink: '/sap/bc/adt/abapgit/repos/K/pull',
 };
-const externalArgs: IAbapGitExternalRepoCredentials = {
+const externalArgs = {
   url: 'https://h/r',
   remoteUser: 'u',
 };
@@ -90,21 +94,16 @@ const log1: Promise<IAdtResponse<string>> = client.getErrorLog(
   '/sap/bc/adt/abapgit/repos/K/log/1',
   { analyse: verdictOnly },
 );
-const log2: Promise<IAdtResponse<string, IMyError>> = client.getErrorLog(
-  '/sap/bc/adt/abapgit/repos/K/log/1',
-  { analyse: wireReading },
-);
+const log2: Promise<IAdtResponse<string, IMyError | IAdtError>> =
+  client.getErrorLog('/sap/bc/adt/abapgit/repos/K/log/1', {
+    analyse: wireReading,
+  });
 
-// `link`, the `remoteUser`/`remotePassword` form, literal and variable args.
-const link0: Promise<IAdtResponse<void>> = client.link(linkArgs, { headers });
-const link1: Promise<IAdtResponse<void>> = client.link(
-  { package: 'ZPKG', url: 'https://h/r', branchName: 'refs/heads/main' },
-  { headers, analyse: verdictOnly },
-);
-const link2: Promise<IAdtResponse<void, IMyError>> = client.link(linkArgs, {
-  headers,
-  analyse: wireReading,
-});
+// `link`, the `remoteUser`/`remotePassword` form, is refused since 32.0.0.
+// @ts-expect-error the old link form is gone
+void client.link(linkArgs, { headers });
+// @ts-expect-error the old link form is gone, with or without an analyser
+void client.link(linkArgs, { headers, analyse: verdictOnly });
 
 // `pull` by its link.
 const pull0: Promise<IAdtResponse<string>> = client.pull(pullArgs, {
@@ -114,48 +113,24 @@ const pull1: Promise<IAdtResponse<string>> = client.pull(
   { ...pullArgs, branchName: 'refs/heads/main', remoteUser: 'u' },
   { headers, analyse: verdictOnly },
 );
-const pull2: Promise<IAdtResponse<string, IMyError>> = client.pull(pullArgs, {
-  headers,
-  analyse: wireReading,
-});
+const pull2: Promise<IAdtResponse<string, IMyError | IAdtError>> = client.pull(
+  pullArgs,
+  {
+    headers,
+    analyse: wireReading,
+  },
+);
 
-// `checkExternalRepo`, the legacy form.
-const ext0: Promise<IAdtResponse<string>> = client.checkExternalRepo(
-  externalArgs,
-  { headers },
-);
-const ext1: Promise<IAdtResponse<string>> = client.checkExternalRepo(
-  { url: 'https://h/r' },
-  { headers, analyse: verdictOnly },
-);
-const ext2: Promise<IAdtResponse<string, IMyError>> = client.checkExternalRepo(
-  externalArgs,
-  { headers, analyse: wireReading },
-);
+// `checkExternalRepo`, the legacy form, is refused since 32.0.0.
+// @ts-expect-error the old external-repo check is gone
+void client.checkExternalRepo(externalArgs, { headers });
 
 // The members that did not change at all.
 const repos: Promise<IAdtResponse<MyRepo[]>> = client.listRepos();
-const unlinked: Promise<IAdtResponse<void, IMyError>> = client.unlink(
-  unlinkArgs,
-  { analyse: wireReading },
-);
+const unlinked: Promise<IAdtResponse<void, IMyError | IAdtError>> =
+  client.unlink(unlinkArgs, { analyse: wireReading });
 
-void [
-  log0,
-  log1,
-  log2,
-  link0,
-  link1,
-  link2,
-  pull0,
-  pull1,
-  pull2,
-  ext0,
-  ext1,
-  ext2,
-  repos,
-  unlinked,
-];
+void [log0, log1, log2, pull0, pull1, pull2, repos, unlinked];
 
 /**
  * A four-parameter implementer written against 30.1.x: its `options`
@@ -166,15 +141,7 @@ const answered = <T>(value: T): IAdtResponse<T> => ({
   ok: true,
   getResult: () => ({ value }),
 });
-class WrittenBefore
-  implements IAdtAbapGitClient<MyRepo[], string, string, string>
-{
-  async link(
-    _args: IAbapGitLinkArgs,
-    _options: { headers: IAdtHeaders },
-  ): Promise<IAdtResponse<void>> {
-    return answered(undefined);
-  }
+class WrittenBefore implements IAdtAbapGitClient<MyRepo[], string, string> {
   async pull(
     _args: IAbapGitPullArgs,
     _options: { headers: IAdtHeaders },
@@ -188,12 +155,6 @@ class WrittenBefore
     return answered([]);
   }
   async getErrorLog(_logLink: string): Promise<IAdtResponse<string>> {
-    return answered('');
-  }
-  async checkExternalRepo(
-    _args: IAbapGitExternalRepoCredentials,
-    _options: { headers: IAdtHeaders },
-  ): Promise<IAdtResponse<string>> {
     return answered('');
   }
 }
@@ -210,11 +171,7 @@ const optionsWithExtra = {
   credentials: { token: 'secret' },
 };
 // @ts-expect-error an undeclared `credentials` on legacy options is refused since 30.2.0
-void client.link(linkArgs, optionsWithExtra);
-// @ts-expect-error the same for `pull`
 void client.pull(pullArgs, optionsWithExtra);
-// @ts-expect-error and for `checkExternalRepo`
-void client.checkExternalRepo(externalArgs, optionsWithExtra);
 
 /**
  * The same through each generic overload: an explicit error type leaves the
@@ -225,12 +182,8 @@ const analysedWithExtra = {
   credentials: { token: 'secret' },
   analyse: wireReading,
 };
-// @ts-expect-error the generic `link` refuses an undeclared `credentials`
-void client.link<IMyError>(linkArgs, analysedWithExtra);
 // @ts-expect-error the generic `pull` refuses it
 void client.pull<IMyError>(pullArgs, analysedWithExtra);
-// @ts-expect-error the generic `checkExternalRepo` refuses it
-void client.checkExternalRepo<IMyError>(externalArgs, analysedWithExtra);
 
 /** What an analyser answers is still a verdict, never `undefined`. */
 const _verdict: AdtNoFailure = ADT_NO_FAILURE;

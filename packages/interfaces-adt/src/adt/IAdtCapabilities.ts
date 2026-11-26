@@ -45,25 +45,64 @@ import type {
 import type { IAdtError, IAdtResponse } from './IAdtResponse';
 
 /**
- * What a member that *identifies* an object takes: the config with every
- * field optional except `TParent`, the field naming the parent the object is
- * addressed under. `read({ className })` has no business demanding a package,
- * and `read({ functionModuleName })` cannot address a module without its
- * group: ADT addresses it under `/functions/groups/{group}/fmodules/{module}`.
+ * What a member that *identifies* an object takes: the config with every field
+ * optional except `TRequired`, the keys that address the object. Those are the
+ * object's own name, the parent it is addressed under where it has one
+ * (`functionGroupName` for a function module, `className` for a local class
+ * include), and a field the member sends, such as a local include's `source` on
+ * `validate` and `check`. `read({ className })` has no business demanding a
+ * package, and `read({})` cannot address anything.
  *
- * `TParent` is the atom's last type parameter and defaults to `never`, and
- * then this is `Partial<TConfig>` itself — the same type, not one equivalent
- * to it — which is what these members took until 21.0.0. A contract whose API
- * has a parent in the tables names its field: `functionGroupName` for a
- * function module and a function include, `className` for a local class
- * include and a message class message.
+ * **A required key is a string, never `undefined`.** The keys are taken with
+ * `undefined` excluded, so `source?: string | undefined` becomes `source:
+ * string`. An implementation reads them without a check or a cast.
+ *
+ * `TRequired` has no default (32.0.0). Until then the atoms' last parameter was
+ * `TParent`, defaulting to `never`, and the identity was then `Partial<TConfig>`
+ * itself: a member could be called without the name it sends, and an
+ * implementation cast the name to `string` to send it. An atom is now named with
+ * the keys that address the object, or it does not compile.
  */
 export type AdtObjectIdentity<
   TConfig,
-  TParent extends keyof TConfig = never,
-> = [TParent] extends [never]
-  ? Partial<TConfig>
-  : Partial<Omit<TConfig, TParent>> & Required<Pick<TConfig, TParent>>;
+  TRequired extends keyof TConfig,
+> = Partial<Omit<TConfig, TRequired>> & {
+  [K in TRequired]-?: Exclude<TConfig[K], undefined>;
+};
+
+/**
+ * The write options a member may require besides its lock handle: `source`,
+ * which a write sends only where its body is the caller's source or document.
+ * A write from a typed config (text elements, table settings, a message class
+ * message) sends none.
+ */
+export type AdtUpdateOptionKey = 'source';
+
+/**
+ * The write options `TRequiredOptions` names, each a string that must be
+ * given. `never` (the default) requires none.
+ */
+export type AdtRequiredUpdateOptions<
+  TRequiredOptions extends AdtUpdateOptionKey,
+> = { readonly [K in TRequiredOptions]-?: string };
+
+/**
+ * A write under the caller's lock: the handle `lock` answered, required (C7 of
+ * adt-clients #304, 32.0.0). A member sends one request, so it never locks or
+ * unlocks for itself; the caller locks, writes and unlocks, each a member of
+ * its own.
+ */
+export interface IAdtLockedWrite {
+  readonly lockHandle: string;
+}
+
+/**
+ * A write that takes no lock at all — a service binding's publication job, a
+ * transport request's document. It refuses a lock handle rather than ignore one.
+ */
+export interface IAdtLockFreeWrite {
+  readonly lockHandle?: never;
+}
 
 /**
  * Bring an object into existence.
@@ -108,7 +147,7 @@ export interface IAdtCreatable<TConfig, TCreated> {
     options: { headers: IAdtHeaders } & IAdtCreateOptions<E> & {
         analyse: IAnalyse<E>;
       },
-  ): Promise<IAdtResponse<TCreated, E>>;
+  ): Promise<IAdtResponse<TCreated, E | IAdtError>>;
   create(
     config: Omit<TConfig, 'source'> & { source?: never },
     options: { headers: IAdtHeaders } & IAdtCreateOptions,
@@ -134,7 +173,7 @@ export interface IAdtCreatable<TConfig, TCreated> {
 export interface IAdtReadable<
   TConfig,
   TSource,
-  TParent extends keyof TConfig = never,
+  TRequired extends keyof TConfig,
 > {
   /**
    * Read the object's source.
@@ -147,14 +186,14 @@ export interface IAdtReadable<
    * @returns whatever this implementation's reading makes of the answer
    */
   read<E extends IAdtError>(
-    config: AdtObjectIdentity<TConfig, TParent>,
+    config: AdtObjectIdentity<TConfig, TRequired>,
     version: AdtReadVersion | undefined,
     options: { withLongPolling?: boolean } & IAdtOperationOptions<E> & {
         analyse: IAnalyse<E>;
       },
-  ): Promise<IAdtResponse<TSource, E>>;
+  ): Promise<IAdtResponse<TSource, E | IAdtError>>;
   read(
-    config: AdtObjectIdentity<TConfig, TParent>,
+    config: AdtObjectIdentity<TConfig, TRequired>,
     version?: AdtReadVersion,
     options?: { withLongPolling?: boolean } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TSource>>;
@@ -171,7 +210,7 @@ export interface IAdtReadable<
 export interface IAdtMetadataReadable<
   TConfig,
   TMetadata,
-  TParent extends keyof TConfig = never,
+  TRequired extends keyof TConfig,
 > {
   /**
    * Read the object's own document.
@@ -182,14 +221,14 @@ export interface IAdtMetadataReadable<
    * @returns whatever this implementation's reading makes of the answer
    */
   readMetadata<E extends IAdtError>(
-    config: AdtObjectIdentity<TConfig, TParent>,
+    config: AdtObjectIdentity<TConfig, TRequired>,
     options: {
       withLongPolling?: boolean;
       version?: AdtReadVersion;
     } & IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TMetadata, E>>;
+  ): Promise<IAdtResponse<TMetadata, E | IAdtError>>;
   readMetadata(
-    config: AdtObjectIdentity<TConfig, TParent>,
+    config: AdtObjectIdentity<TConfig, TRequired>,
     options?: {
       withLongPolling?: boolean;
       version?: AdtReadVersion;
@@ -202,18 +241,18 @@ export interface IAdtEnhancementHost<
   TConfig,
   TElements,
   TOptions,
-  TParent extends keyof TConfig = never,
+  TRequired extends keyof TConfig,
 > {
   /**
    * …/source/main/enhancements/elements — the enhancement implementations in
    * the object's source.
    */
   readEnhancementElements<E extends IAdtError>(
-    config: AdtObjectIdentity<TConfig, TParent>,
+    config: AdtObjectIdentity<TConfig, TRequired>,
     options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TElements, E>>;
+  ): Promise<IAdtResponse<TElements, E | IAdtError>>;
   readEnhancementElements(
-    config: AdtObjectIdentity<TConfig, TParent>,
+    config: AdtObjectIdentity<TConfig, TRequired>,
     options?: IAdtOperationOptions,
   ): Promise<IAdtResponse<TElements>>;
 
@@ -221,11 +260,11 @@ export interface IAdtEnhancementHost<
    * …/enhancements/options — the places in the object that can be enhanced.
    */
   readEnhancementOptions<E extends IAdtError>(
-    config: AdtObjectIdentity<TConfig, TParent>,
+    config: AdtObjectIdentity<TConfig, TRequired>,
     options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TOptions, E>>;
+  ): Promise<IAdtResponse<TOptions, E | IAdtError>>;
   readEnhancementOptions(
-    config: AdtObjectIdentity<TConfig, TParent>,
+    config: AdtObjectIdentity<TConfig, TRequired>,
     options?: IAdtOperationOptions,
   ): Promise<IAdtResponse<TOptions>>;
 }
@@ -244,7 +283,7 @@ export interface IAdtIncludeEnhancementHost<
   TConfig,
   TElements,
   TOptions,
-  TParent extends keyof TConfig = never,
+  TRequired extends keyof TConfig,
 > {
   /**
    * …/source/main/enhancements/elements — the enhancement implementations in
@@ -253,13 +292,13 @@ export interface IAdtIncludeEnhancementHost<
    * answered 400 ED/258 (E19, 2026-10-15).
    */
   readEnhancementElements<E extends IAdtError>(
-    config: AdtObjectIdentity<TConfig, TParent>,
+    config: AdtObjectIdentity<TConfig, TRequired>,
     options: { context?: string } & IAdtOperationOptions<E> & {
         analyse: IAnalyse<E>;
       },
-  ): Promise<IAdtResponse<TElements, E>>;
+  ): Promise<IAdtResponse<TElements, E | IAdtError>>;
   readEnhancementElements(
-    config: AdtObjectIdentity<TConfig, TParent>,
+    config: AdtObjectIdentity<TConfig, TRequired>,
     options?: { context?: string } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TElements>>;
 
@@ -268,13 +307,13 @@ export interface IAdtIncludeEnhancementHost<
    * `context` as for {@link IAdtIncludeEnhancementHost.readEnhancementElements}.
    */
   readEnhancementOptions<E extends IAdtError>(
-    config: AdtObjectIdentity<TConfig, TParent>,
+    config: AdtObjectIdentity<TConfig, TRequired>,
     options: { context?: string } & IAdtOperationOptions<E> & {
         analyse: IAnalyse<E>;
       },
-  ): Promise<IAdtResponse<TOptions, E>>;
+  ): Promise<IAdtResponse<TOptions, E | IAdtError>>;
   readEnhancementOptions(
-    config: AdtObjectIdentity<TConfig, TParent>,
+    config: AdtObjectIdentity<TConfig, TRequired>,
     options?: { context?: string } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TOptions>>;
 }
@@ -292,14 +331,14 @@ export interface IAdtIncludeEnhancementHost<
 export interface IAdtMainProgramsReadable<
   TConfig,
   TPrograms,
-  TParent extends keyof TConfig = never,
+  TRequired extends keyof TConfig,
 > {
   readMainPrograms<E extends IAdtError>(
-    config: AdtObjectIdentity<TConfig, TParent>,
+    config: AdtObjectIdentity<TConfig, TRequired>,
     options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TPrograms, E>>;
+  ): Promise<IAdtResponse<TPrograms, E | IAdtError>>;
   readMainPrograms(
-    config: AdtObjectIdentity<TConfig, TParent>,
+    config: AdtObjectIdentity<TConfig, TRequired>,
     options?: IAdtOperationOptions,
   ): Promise<IAdtResponse<TPrograms>>;
 }
@@ -307,37 +346,41 @@ export interface IAdtMainProgramsReadable<
 /**
  * The object's **source** can be written.
  *
- * **`TConfig` is taken as given, not wrapped in {@link AdtObjectIdentity}.** The
- * atoms that *identify* an object — `read`, `delete`, `activate`, `lock` and
- * the rest — wrap it, and are right to: `read({ className })` has no business demanding a
- * package. {@link IAdtCreatable} never did, because a create must say what to
- * make, and a write is no more an identifier than a create is. A service
- * binding's publication needs the protocol that selects its endpoint, and an
- * atom that decided optionality on the implementation's behalf made that
- * requirement unsayable. Implementations pass `Partial<IClassConfig>` where
- * everything really is optional, and their own shape where it is not.
+ * **The config is the identity, with the keys the write needs** (32.0.0). Until
+ * then `TConfig` was taken as given, and implementations passed
+ * `Partial<IClassConfig>`, so a write could be called without the name it
+ * writes. Now `TRequired` names the keys, as on every identifying atom: the
+ * object's name, and anything else the write sends — a service binding's
+ * publication names the protocol that selects its endpoint.
+ *
+ * **The lock handle is required** ({@link IAdtLockedWrite}). A write is one
+ * request under the caller's lock, and a member never locks or unlocks for
+ * itself. A write that takes no lock at all is {@link IAdtLockFreeUpdatable}.
+ *
+ * **`source` is required where the member sends it.** `TRequiredOptions` names
+ * it ({@link AdtUpdateOptionKey}); a write from a typed config names nothing.
  *
  * `update` writes the source, which is what makes the name mean the same thing
  * across the types that have one. A domain has no source to write; it composes
  * {@link IAdtMetadataUpdatable} instead, and the member it offers says what it
  * writes.
  *
- * **One object is neither.** A service binding has no source and no document to
- * PUT: its `update` is a publication job, `POST …/publishjobs`, which changes
- * the object's state rather than its content. It is still `update` — writing an
- * object's state is what the member is for — but "the source and only the
- * source" would be a claim this atom cannot make for every implementation.
+ * **A service binding's publication is not this atom.** It is a job,
+ * `POST …/publishjobs`, that changes the binding's state and takes no lock, so
+ * since 32.0.0 it is {@link IAdtLockFreeUpdatable}.
  */
-export interface IAdtUpdatable<TConfig, TUpdated> {
+export interface IAdtUpdatable<
+  TConfig,
+  TUpdated,
+  TRequired extends keyof TConfig,
+  TRequiredOptions extends AdtUpdateOptionKey = never,
+> {
   /**
    * Write what the object has — **the write, and nothing around it.**
    *
-   * For the types that have a source, that is the source. A service binding has
-   * neither a source nor a document to PUT: its `update` is a publication job,
-   * `POST …/publishjobs`, which changes the object's state. Writing an object's
-   * state is what this member is for, so "writes the source" is a claim the
-   * hover text cannot make for every implementation — and the hover is where a
-   * consumer reads the contract.
+   * For the types that have a source, that is the source; for a type written
+   * from a typed config, its document. A service binding's publication job
+   * takes no lock, so it is {@link IAdtLockFreeUpdatable}, not this atom.
    *
    * This used to say "with full operation chain: lock, check(inactive),
    * update, unlock, check, activate (optional)". It is one request, and the
@@ -345,24 +388,26 @@ export interface IAdtUpdatable<TConfig, TUpdated> {
    * in the options, and how long a lock is held is a policy no library can
    * choose for every caller of a shared connection.
    *
-   * Sending no lock handle is not refused here. ADT judges that, and answers it.
+   * A call without `lockHandle` does not compile. Locking is the caller's.
    *
-   * @param config - taken as given, so an implementation that needs a field can
-   *                 require it — a publication needs the protocol that selects
-   *                 its endpoint
+   * @param config - the identity, with the keys this write needs (`TRequired`)
    * @param options - `source` for the body, `lockHandle` for
    *                  the lock the caller took, `analyse` for the verdict
    * @returns whatever this implementation’s reading makes of the answer
    */
   update<E extends IAdtError>(
-    config: TConfig,
-    options: { headers: IAdtHeaders } & IAdtUpdateOptions<E> & {
+    config: AdtObjectIdentity<TConfig, TRequired>,
+    options: { headers: IAdtHeaders } & IAdtUpdateOptions<E> &
+      IAdtLockedWrite &
+      AdtRequiredUpdateOptions<TRequiredOptions> & {
         analyse: IAnalyse<E>;
       },
-  ): Promise<IAdtResponse<TUpdated, E>>;
+  ): Promise<IAdtResponse<TUpdated, E | IAdtError>>;
   update(
-    config: TConfig,
-    options: { headers: IAdtHeaders } & IAdtUpdateOptions,
+    config: AdtObjectIdentity<TConfig, TRequired>,
+    options: { headers: IAdtHeaders } & IAdtUpdateOptions &
+      IAdtLockedWrite &
+      AdtRequiredUpdateOptions<TRequiredOptions>,
   ): Promise<IAdtResponse<TUpdated>>;
 }
 
@@ -380,7 +425,12 @@ export interface IAdtUpdatable<TConfig, TUpdated> {
  * the resource it addresses, so a caller never has to know which kind of object
  * it is holding to know what `update` will write.
  */
-export interface IAdtMetadataUpdatable<TConfig, TMetadataUpdated> {
+export interface IAdtMetadataUpdatable<
+  TConfig,
+  TMetadataUpdated,
+  TRequired extends keyof TConfig,
+  TRequiredOptions extends AdtUpdateOptionKey = never,
+> {
   /**
    * Write the object's own document.
    *
@@ -394,22 +444,80 @@ export interface IAdtMetadataUpdatable<TConfig, TMetadataUpdated> {
    * @returns whatever this implementation's reading makes of the answer
    */
   updateMetadata<E extends IAdtError>(
-    config: TConfig,
-    options: { headers: IAdtHeaders } & IAdtUpdateOptions<E> & {
+    config: AdtObjectIdentity<TConfig, TRequired>,
+    options: { headers: IAdtHeaders } & IAdtUpdateOptions<E> &
+      IAdtLockedWrite &
+      AdtRequiredUpdateOptions<TRequiredOptions> & {
         analyse: IAnalyse<E>;
       },
-  ): Promise<IAdtResponse<TMetadataUpdated, E>>;
+  ): Promise<IAdtResponse<TMetadataUpdated, E | IAdtError>>;
   updateMetadata(
-    config: TConfig,
-    options: { headers: IAdtHeaders } & IAdtUpdateOptions,
+    config: AdtObjectIdentity<TConfig, TRequired>,
+    options: { headers: IAdtHeaders } & IAdtUpdateOptions &
+      IAdtLockedWrite &
+      AdtRequiredUpdateOptions<TRequiredOptions>,
+  ): Promise<IAdtResponse<TMetadataUpdated>>;
+}
+
+/**
+ * A write that takes **no lock** — its own atom, so the locked write's
+ * `lockHandle` stays required (32.0.0).
+ *
+ * Two writes in ADT are of this kind: a service binding's publication job
+ * (`POST …/publishjobs`, which changes the binding's state) and a transport
+ * request's own document. Neither is preceded by a lock, so a lock handle is
+ * refused here rather than demanded or ignored.
+ */
+export interface IAdtLockFreeUpdatable<
+  TConfig,
+  TUpdated,
+  TRequired extends keyof TConfig,
+  TRequiredOptions extends AdtUpdateOptionKey = never,
+> {
+  update<E extends IAdtError>(
+    config: AdtObjectIdentity<TConfig, TRequired>,
+    options: { headers: IAdtHeaders } & IAdtUpdateOptions<E> &
+      IAdtLockFreeWrite &
+      AdtRequiredUpdateOptions<TRequiredOptions> & {
+        analyse: IAnalyse<E>;
+      },
+  ): Promise<IAdtResponse<TUpdated, E | IAdtError>>;
+  update(
+    config: AdtObjectIdentity<TConfig, TRequired>,
+    options: { headers: IAdtHeaders } & IAdtUpdateOptions &
+      IAdtLockFreeWrite &
+      AdtRequiredUpdateOptions<TRequiredOptions>,
+  ): Promise<IAdtResponse<TUpdated>>;
+}
+
+/** The document-write counterpart of {@link IAdtLockFreeUpdatable}. */
+export interface IAdtLockFreeMetadataUpdatable<
+  TConfig,
+  TMetadataUpdated,
+  TRequired extends keyof TConfig,
+  TRequiredOptions extends AdtUpdateOptionKey = never,
+> {
+  updateMetadata<E extends IAdtError>(
+    config: AdtObjectIdentity<TConfig, TRequired>,
+    options: { headers: IAdtHeaders } & IAdtUpdateOptions<E> &
+      IAdtLockFreeWrite &
+      AdtRequiredUpdateOptions<TRequiredOptions> & {
+        analyse: IAnalyse<E>;
+      },
+  ): Promise<IAdtResponse<TMetadataUpdated, E | IAdtError>>;
+  updateMetadata(
+    config: AdtObjectIdentity<TConfig, TRequired>,
+    options: { headers: IAdtHeaders } & IAdtUpdateOptions &
+      IAdtLockFreeWrite &
+      AdtRequiredUpdateOptions<TRequiredOptions>,
   ): Promise<IAdtResponse<TMetadataUpdated>>;
 }
 
 export interface IAdtDeletable<
   TConfig,
   TDeleted,
+  TRequired extends keyof TConfig,
   TChecked = string,
-  TParent extends keyof TConfig = never,
 > {
   /**
    * Delete the object. One request, and it is the deletion.
@@ -429,13 +537,13 @@ export interface IAdtDeletable<
    * @returns whatever this implementation's reading makes of the answer
    */
   delete<E extends IAdtError>(
-    config: AdtObjectIdentity<TConfig, TParent>,
+    config: AdtObjectIdentity<TConfig, TRequired>,
     options: { headers: IAdtHeaders } & IAdtOperationOptions<E> & {
         analyse: IAnalyse<E>;
       },
-  ): Promise<IAdtResponse<TDeleted, E>>;
+  ): Promise<IAdtResponse<TDeleted, E | IAdtError>>;
   delete(
-    config: AdtObjectIdentity<TConfig, TParent>,
+    config: AdtObjectIdentity<TConfig, TRequired>,
     options: { headers: IAdtHeaders } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TDeleted>>;
 
@@ -462,13 +570,13 @@ export interface IAdtDeletable<
    * @returns whatever this implementation's reading makes of the answer
    */
   checkDeletion<E extends IAdtError>(
-    config: AdtObjectIdentity<TConfig, TParent>,
+    config: AdtObjectIdentity<TConfig, TRequired>,
     options: { headers: IAdtHeaders } & IAdtOperationOptions<E> & {
         analyse: IAnalyse<E>;
       },
-  ): Promise<IAdtResponse<TChecked, E>>;
+  ): Promise<IAdtResponse<TChecked, E | IAdtError>>;
   checkDeletion(
-    config: AdtObjectIdentity<TConfig, TParent>,
+    config: AdtObjectIdentity<TConfig, TRequired>,
     options: { headers: IAdtHeaders } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TChecked>>;
 }
@@ -476,7 +584,7 @@ export interface IAdtDeletable<
 export interface IAdtValidatable<
   TConfig,
   TValidated,
-  TParent extends keyof TConfig = never,
+  TRequired extends keyof TConfig,
 > {
   /**
    * Validate object configuration before creation
@@ -484,11 +592,11 @@ export interface IAdtValidatable<
    * @returns State with validation result
    */
   validate<E extends IAdtError>(
-    config: AdtObjectIdentity<TConfig, TParent>,
+    config: AdtObjectIdentity<TConfig, TRequired>,
     options: IAdtOperationOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TValidated, E>>;
+  ): Promise<IAdtResponse<TValidated, E | IAdtError>>;
   validate(
-    config: AdtObjectIdentity<TConfig, TParent>,
+    config: AdtObjectIdentity<TConfig, TRequired>,
     options?: IAdtOperationOptions,
   ): Promise<IAdtResponse<TValidated>>;
 }
@@ -496,7 +604,7 @@ export interface IAdtValidatable<
 export interface IAdtCheckable<
   TConfig,
   TChecked,
-  TParent extends keyof TConfig = never,
+  TRequired extends keyof TConfig,
 > {
   /**
    * Check object (syntax, consistency, etc.)
@@ -505,14 +613,14 @@ export interface IAdtCheckable<
    * @returns State with check result
    */
   check<E extends IAdtError>(
-    config: AdtObjectIdentity<TConfig, TParent>,
+    config: AdtObjectIdentity<TConfig, TRequired>,
     status: string | undefined,
     options: { headers: IAdtHeaders } & IAdtOperationOptions<E> & {
         analyse: IAnalyse<E>;
       },
-  ): Promise<IAdtResponse<TChecked, E>>;
+  ): Promise<IAdtResponse<TChecked, E | IAdtError>>;
   check(
-    config: AdtObjectIdentity<TConfig, TParent>,
+    config: AdtObjectIdentity<TConfig, TRequired>,
     status: string | undefined,
     options: { headers: IAdtHeaders } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TChecked>>;
@@ -521,7 +629,7 @@ export interface IAdtCheckable<
 export interface IAdtActivatable<
   TConfig,
   TActivated,
-  TParent extends keyof TConfig = never,
+  TRequired extends keyof TConfig,
 > {
   /**
    * Activate object
@@ -529,18 +637,18 @@ export interface IAdtActivatable<
    * @returns State with activation result
    */
   activate<E extends IAdtError>(
-    config: AdtObjectIdentity<TConfig, TParent>,
+    config: AdtObjectIdentity<TConfig, TRequired>,
     options: { headers: IAdtHeaders } & IAdtActivationOptions<E> & {
         analyse: IAnalyse<E>;
       },
-  ): Promise<IAdtResponse<TActivated, E>>;
+  ): Promise<IAdtResponse<TActivated, E | IAdtError>>;
   activate(
-    config: AdtObjectIdentity<TConfig, TParent>,
+    config: AdtObjectIdentity<TConfig, TRequired>,
     options: { headers: IAdtHeaders } & IAdtActivationOptions,
   ): Promise<IAdtResponse<TActivated>>;
 }
 
-export interface IAdtLockable<TConfig, TParent extends keyof TConfig = never> {
+export interface IAdtLockable<TConfig, TRequired extends keyof TConfig> {
   /**
    * Lock object for modification
    * Sets connection to stateful mode before locking.
@@ -553,11 +661,11 @@ export interface IAdtLockable<TConfig, TParent extends keyof TConfig = never> {
    * one operation seen from two ends.
    */
   lock<E extends IAdtError>(
-    config: AdtObjectIdentity<TConfig, TParent>,
+    config: AdtObjectIdentity<TConfig, TRequired>,
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<string, E>>;
+  ): Promise<IAdtResponse<string, E | IAdtError>>;
   lock(
-    config: AdtObjectIdentity<TConfig, TParent>,
+    config: AdtObjectIdentity<TConfig, TRequired>,
     options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<string>>;
 
@@ -571,12 +679,12 @@ export interface IAdtLockable<TConfig, TParent extends keyof TConfig = never> {
    * @returns nothing to read, and the answer says whether it happened
    */
   unlock<E extends IAdtError>(
-    config: AdtObjectIdentity<TConfig, TParent>,
+    config: AdtObjectIdentity<TConfig, TRequired>,
     lockHandle: string,
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<void, E>>;
+  ): Promise<IAdtResponse<void, E | IAdtError>>;
   unlock(
-    config: AdtObjectIdentity<TConfig, TParent>,
+    config: AdtObjectIdentity<TConfig, TRequired>,
     lockHandle: string,
     options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<void>>;
@@ -586,7 +694,7 @@ export interface IAdtVersionable<
   TConfig,
   TVersions,
   TSource,
-  TParent extends keyof TConfig = never,
+  TRequired extends keyof TConfig,
 > {
   /**
    * List the version history of this object's source. Identity is passed per
@@ -600,11 +708,11 @@ export interface IAdtVersionable<
    * in the return type.
    */
   getVersions<E extends IAdtError>(
-    config: AdtObjectIdentity<TConfig, TParent>,
+    config: AdtObjectIdentity<TConfig, TRequired>,
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TVersions, E>>;
+  ): Promise<IAdtResponse<TVersions, E | IAdtError>>;
   getVersions(
-    config: AdtObjectIdentity<TConfig, TParent>,
+    config: AdtObjectIdentity<TConfig, TRequired>,
     options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TVersions>>;
 
@@ -618,7 +726,7 @@ export interface IAdtVersionable<
   getVersionSource<E extends IAdtError>(
     contentUri: string,
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TSource, E>>;
+  ): Promise<IAdtResponse<TSource, E | IAdtError>>;
   getVersionSource(
     contentUri: string,
     options?: IAdtAnalyseOptions,
@@ -644,7 +752,7 @@ export interface IAdtVersionable<
 export interface IAdtTransportAware<
   TConfig,
   TTransport,
-  TParent extends keyof TConfig = never,
+  TRequired extends keyof TConfig,
 > {
   /**
    * Read transport request information for the object
@@ -655,13 +763,13 @@ export interface IAdtTransportAware<
    * @returns State with transport result
    */
   readTransport<E extends IAdtError>(
-    config: AdtObjectIdentity<TConfig, TParent>,
+    config: AdtObjectIdentity<TConfig, TRequired>,
     options: { withLongPolling?: boolean } & IAdtOperationOptions<E> & {
         analyse: IAnalyse<E>;
       },
-  ): Promise<IAdtResponse<TTransport, E>>;
+  ): Promise<IAdtResponse<TTransport, E | IAdtError>>;
   readTransport(
-    config: AdtObjectIdentity<TConfig, TParent>,
+    config: AdtObjectIdentity<TConfig, TRequired>,
     options?: { withLongPolling?: boolean } & IAdtOperationOptions,
   ): Promise<IAdtResponse<TTransport>>;
 }

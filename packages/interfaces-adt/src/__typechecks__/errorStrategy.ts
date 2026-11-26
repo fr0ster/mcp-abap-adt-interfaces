@@ -123,11 +123,11 @@ void richOptions;
  * example in the PR did not compile and the check said nothing. Caught in
  * review. The members are parameterised now, and this asks one of them.
  */
-declare const activatable: IAdtActivatable<{ name: string }, string>;
+declare const activatable: IAdtActivatable<{ name: string }, string, 'name'>;
 declare const creatable: IAdtCreatable<{ name: string }, string>;
-declare const updatable: IAdtUpdatable<{ name: string }, string>;
-declare const readable: IAdtReadable<{ name: string }, string> &
-  IAdtMetadataReadable<{ name: string }, string>;
+declare const updatable: IAdtUpdatable<{ name: string }, string, 'name'>;
+declare const readable: IAdtReadable<{ name: string }, string, 'name'> &
+  IAdtMetadataReadable<{ name: string }, string, 'name'>;
 
 /** Wrapped in a function: these are compile-only, and nothing here runs. */
 async function _theFailureIsTheCallers(): Promise<void> {
@@ -136,11 +136,18 @@ async function _theFailureIsTheCallers(): Promise<void> {
     { headers, analyse: t100 },
   );
   if (!activated.ok) {
-    // No cast, no guard: `E` was inferred from the strategy handed to the call.
-    const key: { msgid: string; msgno: string } = activated.getError().t100;
-    void key;
-    // The contract's own fields are still there — this extends, never replaces.
-    const origin: 'connection' | 'refusal' = activated.getError().origin;
+    // `E` was inferred from the strategy handed to the call. Since 32.0.0 the
+    // answer is `E | IAdtError`: the library answers its own error where no
+    // answer came back, so the caller narrows before reading its own field.
+    const error = activated.getError();
+    // @ts-expect-error the library's own error has no `t100`
+    void error.t100;
+    if ('t100' in error) {
+      const key: { msgid: string; msgno: string } = error.t100;
+      void key;
+    }
+    // The contract's own fields are there either way.
+    const origin: 'connection' | 'refusal' = error.origin;
     void origin;
   }
 
@@ -149,18 +156,27 @@ async function _theFailureIsTheCallers(): Promise<void> {
     { name: 'ZCL_X' },
     { headers, analyse: t100 },
   );
-  if (!created.ok) void created.getError().t100;
+  if (!created.ok) {
+    const error = created.getError();
+    if ('t100' in error) void error.t100;
+  }
 
   const updated = await updatable.update(
     { name: 'ZCL_X' },
-    { headers, analyse: t100 },
+    { headers, lockHandle: 'H', analyse: t100 },
   );
-  if (!updated.ok) void updated.getError().t100;
+  if (!updated.ok) {
+    const error = updated.getError();
+    if ('t100' in error) void error.t100;
+  }
 
   const read = await readable.read({ name: 'ZCL_X' }, 'active', {
     analyse: t100,
   });
-  if (!read.ok) void read.getError().t100;
+  if (!read.ok) {
+    const error = read.getError();
+    if ('t100' in error) void error.t100;
+  }
 
   // And a member called without a strategy answers the plain contract, which is
   // what keeps every existing call site compiling.
@@ -210,6 +226,9 @@ async function _aTypeArgumentWithoutAStrategy(): Promise<void> {
     { name: 'ZCL_X' },
     { headers, analyse: t100 },
   );
-  if (!honest.ok) void honest.getError().t100;
+  if (!honest.ok) {
+    const error = honest.getError();
+    if ('t100' in error) void error.t100;
+  }
 }
 void _aTypeArgumentWithoutAStrategy;

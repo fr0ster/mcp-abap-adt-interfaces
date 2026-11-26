@@ -11,7 +11,6 @@
 // through the manifest's `types` to `dist/index.d.ts`, after `npm run build`.
 
 import type {
-  IAbapGitLinkArgs,
   IAdtAbapGitClient,
   IAdtError,
   IAdtHeaders,
@@ -33,7 +32,7 @@ interface MyRepo {
   key: string;
   branch: string;
 }
-type MyClient = IAdtAbapGitClient<MyRepo[], string[], void, string>;
+type MyClient = IAdtAbapGitClient<MyRepo[], string[], void>;
 
 /** One member alone, implemented by something that knows nothing of the rest. */
 const _client: Pick<MyClient, 'listRepos'> = {
@@ -73,9 +72,15 @@ void client.unlink({ package: 'ZPKG' });
 // @ts-expect-error getRepo left: it filtered listRepos, which is a reading
 void client.getRepo('ZPKG');
 
-/** Request arguments stayed: a caller cannot call without them. */
-const _link: IAbapGitLinkArgs = {} as IAbapGitLinkArgs;
-void _link;
+/**
+ * The old `link` and `checkExternalRepo` forms left in 32.0.0, with their
+ * argument types: the new forms ({@link IAdtAbapGitLinkNewForm},
+ * {@link IAdtAbapGitCheckExternalRepoNewForm}) are the only ones.
+ */
+// @ts-expect-error the old link form is gone
+void client.link({ package: 'ZPKG', url: 'https://h/r' }, { headers });
+// @ts-expect-error the old external-repo check is gone
+void client.checkExternalRepo({ url: 'https://h/r' }, { headers });
 
 export type { MyClient, MyRepo };
 
@@ -151,8 +156,8 @@ type NewClient = IAdtAbapGitListReposQuiet<RunView, RunFacts> &
   IAdtAbapGitSwitchBranch<RunView, RunFacts>;
 declare const git: NewClient;
 
-/** The legacy client and the new forms of `link` / `checkExternalRepo`, side by side. */
-type BothForms = IAdtAbapGitClient<MyRepo[], string, void, string> &
+/** The remaining legacy members and the forms of `link` / `checkExternalRepo`. */
+type BothForms = IAdtAbapGitClient<MyRepo[], string, void> &
   IAdtAbapGitLinkNewForm<RunView, RunFacts> &
   IAdtAbapGitCheckExternalRepoNewForm<RunView, RunFacts>;
 declare const both: BothForms;
@@ -166,14 +171,20 @@ const newLinkArgs = {
 } as const;
 
 async function inference(): Promise<void> {
-  // Error-subtype inference: `getError()` is the caller's type, no cast.
+  // Error-subtype inference: `getError()` is the caller's type or, since
+  // 32.0.0, the library's own structured error, and the caller narrows.
   const run = await git.getRunLog(
     { key: 'K', appLogKey: 'L' },
     { analyse: myAnalyse },
   );
   if (!run.ok) {
-    const mine: true = run.getError().mine;
-    void mine;
+    const error = run.getError();
+    // @ts-expect-error the library's own structured error has no `mine`
+    void error.mine;
+    if ('mine' in error) {
+      const mine: true = error.mine;
+      void mine;
+    }
   } else {
     const count: number = run.getResult().value.count;
     void count;
@@ -183,7 +194,10 @@ async function inference(): Promise<void> {
     headers,
     analyse: myAnalyse,
   });
-  if (!pulled.ok) void (pulled.getError().mine satisfies true);
+  if (!pulled.ok) {
+    const error = pulled.getError();
+    if ('mine' in error) void (error.mine satisfies true);
+  }
 
   const pushed = await git.push(
     {
@@ -197,15 +211,20 @@ async function inference(): Promise<void> {
     },
     { analyse: myAnalyse },
   );
-  if (!pushed.ok) void (pushed.getError().mine satisfies true);
+  if (!pushed.ok) {
+    const error = pushed.getError();
+    if ('mine' in error) void (error.mine satisfies true);
+  }
 
   const linked = await both.link(newLinkArgs, {
     headers,
     credentials,
     analyse: myAnalyse,
   });
-  if (!linked.ok) void (linked.getError().mine satisfies true);
-  else void (linked.getResult().value satisfies RunView);
+  if (!linked.ok) {
+    const error = linked.getError();
+    if ('mine' in error) void (error.mine satisfies true);
+  } else void (linked.getResult().value satisfies RunView);
 
   // The no-analyser overload: the default error keeps its facts.
   const quiet = await git.listReposQuiet();
@@ -252,7 +271,7 @@ void reader;
 // @ts-expect-error both forms mixed, literal: legacy args with a credential
 void both.link({ ...newLinkArgs, remoteUser: 'u' }, { headers, credentials });
 
-const legacyLinkArgs: IAbapGitLinkArgs = {
+const legacyLinkArgs = {
   package: 'ZPKG',
   url: 'https://h/r',
   branchName: 'refs/heads/main',
@@ -273,7 +292,7 @@ void both.link(newLinkArgs, { headers, credentials: undefined });
 
 const legacyExternalArgs = { url: 'https://h/r', remoteUser: 'u' };
 const anonymousOptions = { headers, credentials: null };
-// @ts-expect-error `credentials: null` on a legacy call
+// @ts-expect-error `remoteUser` is not a new-form argument
 void both.checkExternalRepo(legacyExternalArgs, anonymousOptions);
 
 const wireAnalyse: IAnalyse = (verdict) => verdict;

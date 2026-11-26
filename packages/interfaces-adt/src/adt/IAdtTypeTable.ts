@@ -70,6 +70,7 @@ export type AdtApiName =
  * | `update` | `update` |
  * | `updateMetadata` | `updateMetadata` |
  * | `lock`, `unlock` | `lock`, `unlock` |
+ * | `lockMessage`, `lockClassForMessage`, `unlockMessages` | a message class message's own locks (32.0.0) |
  * | `activate` | `activate` |
  * | `check` | `check` |
  * | `validate` | `validate` |
@@ -100,6 +101,9 @@ export type AdtOperation =
   | 'updateMetadata'
   | 'lock'
   | 'unlock'
+  | 'lockMessage'
+  | 'lockClassForMessage'
+  | 'unlockMessages'
   | 'activate'
   | 'check'
   | 'validate'

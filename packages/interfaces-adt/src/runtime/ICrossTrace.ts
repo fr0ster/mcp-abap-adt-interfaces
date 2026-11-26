@@ -31,7 +31,7 @@ export interface ICrossTrace<R extends ICrossTraceResults> {
   list<E extends IAdtError>(
     options: IListCrossTracesOptions &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<R['list'], E>>;
+  ): Promise<IAdtResponse<R['list'], E | IAdtError>>;
   list(
     options?: IListCrossTracesOptions & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<R['list']>>;
@@ -40,7 +40,7 @@ export interface ICrossTrace<R extends ICrossTraceResults> {
     traceId: string,
     includeSensitiveData: boolean | undefined,
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<R['trace'], E>>;
+  ): Promise<IAdtResponse<R['trace'], E | IAdtError>>;
   getById(
     traceId: string,
     includeSensitiveData?: boolean,
@@ -49,7 +49,7 @@ export interface ICrossTrace<R extends ICrossTraceResults> {
   getRecords<E extends IAdtError>(
     traceId: string,
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<R['records'], E>>;
+  ): Promise<IAdtResponse<R['records'], E | IAdtError>>;
   getRecords(
     traceId: string,
     options?: IAdtAnalyseOptions,
@@ -58,7 +58,7 @@ export interface ICrossTrace<R extends ICrossTraceResults> {
     traceId: string,
     recordNumber: number,
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<R['recordContent'], E>>;
+  ): Promise<IAdtResponse<R['recordContent'], E | IAdtError>>;
   getRecordContent(
     traceId: string,
     recordNumber: number,
@@ -66,7 +66,7 @@ export interface ICrossTrace<R extends ICrossTraceResults> {
   ): Promise<IAdtResponse<R['recordContent']>>;
   getActivations<E extends IAdtError>(
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<R['activations'], E>>;
+  ): Promise<IAdtResponse<R['activations'], E | IAdtError>>;
   getActivations(
     options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<R['activations']>>;

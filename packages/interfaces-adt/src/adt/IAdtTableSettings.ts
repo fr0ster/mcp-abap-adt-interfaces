@@ -339,7 +339,7 @@ export interface IAdtTableSettingsUpdatable<
     options: { headers: IAdtHeaders } & IAdtTableSettingsUpdateOptions<E> & {
         analyse: IAnalyse<E>;
       },
-  ): Promise<IAdtResponse<TMetadataUpdated, E>>;
+  ): Promise<IAdtResponse<TMetadataUpdated, E | IAdtError>>;
   updateMetadata(
     config: ITableSettingsUpdateConfig<V>,
     options: { headers: IAdtHeaders } & IAdtTableSettingsUpdateOptions,
@@ -516,7 +516,7 @@ export interface IAdtTableSettingsPatchable<
     } & IAdtTableSettingsPatchOptions<E> & {
         analyse: IAnalyse<E>;
       },
-  ): Promise<IAdtResponse<TMetadataUpdated, E>>;
+  ): Promise<IAdtResponse<TMetadataUpdated, E | IAdtError>>;
   patchMetadata(
     config: ITableSettingsPatchConfig<V>,
     options: {

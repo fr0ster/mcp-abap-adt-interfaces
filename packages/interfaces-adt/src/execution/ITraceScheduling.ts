@@ -32,11 +32,11 @@ export interface ITraceScheduling<TTypes, TRequests, TScheduled> {
   /** What may be traced. The cloud flow reads these before choosing. */
   listObjectTypes<E extends IAdtError>(
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TTypes, E>>;
+  ): Promise<IAdtResponse<TTypes, E | IAdtError>>;
   listObjectTypes(options?: IAdtAnalyseOptions): Promise<IAdtResponse<TTypes>>;
   listProcessTypes<E extends IAdtError>(
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TTypes, E>>;
+  ): Promise<IAdtResponse<TTypes, E | IAdtError>>;
   listProcessTypes(options?: IAdtAnalyseOptions): Promise<IAdtResponse<TTypes>>;
 
   /**
@@ -49,14 +49,14 @@ export interface ITraceScheduling<TTypes, TRequests, TScheduled> {
    */
   listRequests<E extends IAdtError>(
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TRequests, E>>;
+  ): Promise<IAdtResponse<TRequests, E | IAdtError>>;
   listRequests(options?: IAdtAnalyseOptions): Promise<IAdtResponse<TRequests>>;
 
   /** The same schedule, read through the server's second, URI-keyed flavour. */
   getRequestsByUri<E extends IAdtError>(
     uri: string,
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TRequests, E>>;
+  ): Promise<IAdtResponse<TRequests, E | IAdtError>>;
   getRequestsByUri(
     uri: string,
     options?: IAdtAnalyseOptions,
@@ -71,7 +71,7 @@ export interface ITraceScheduling<TTypes, TRequests, TScheduled> {
   scheduleTrace<E extends IAdtError>(
     options: { headers: IAdtHeaders } & IProfilerTraceParameters &
       IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
-  ): Promise<IAdtResponse<TScheduled, E>>;
+  ): Promise<IAdtResponse<TScheduled, E | IAdtError>>;
   scheduleTrace(
     options: { headers: IAdtHeaders } & IProfilerTraceParameters &
       IAdtAnalyseOptions,
