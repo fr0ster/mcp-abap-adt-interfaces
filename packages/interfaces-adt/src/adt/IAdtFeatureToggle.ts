@@ -3,6 +3,7 @@
  */
 
 import type { AdtReadVersion } from '../shared/IReadOptions';
+import type { AdtObjectIdentity } from './IAdtCapabilities';
 import type { IAdtHeaders } from './IAdtContentTypes';
 import type { IAdtAnalyseOptions, IAnalyse } from './IAdtObject';
 import type { IAdtError, IAdtResponse, IResultStrategy } from './IAdtResponse';
@@ -98,57 +99,57 @@ export interface IFeatureToggleObjectResults {
 
 export interface IFeatureToggleObject<R extends IFeatureToggleObjectResults> {
   switchOn<E extends IAdtError>(
-    config: Partial<IFeatureToggleConfig>,
+    config: AdtObjectIdentity<IFeatureToggleConfig, 'featureToggleName'>,
     opts: { transportRequest: string; userSpecific?: boolean },
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<R['switched'], E | IAdtError>>;
   switchOn(
-    config: Partial<IFeatureToggleConfig>,
+    config: AdtObjectIdentity<IFeatureToggleConfig, 'featureToggleName'>,
     opts: { transportRequest: string; userSpecific?: boolean },
     options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<R['switched']>>;
 
   switchOff<E extends IAdtError>(
-    config: Partial<IFeatureToggleConfig>,
+    config: AdtObjectIdentity<IFeatureToggleConfig, 'featureToggleName'>,
     opts: { transportRequest: string; userSpecific?: boolean },
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<R['switched'], E | IAdtError>>;
 
   switchOff(
-    config: Partial<IFeatureToggleConfig>,
+    config: AdtObjectIdentity<IFeatureToggleConfig, 'featureToggleName'>,
     opts: { transportRequest: string; userSpecific?: boolean },
     options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<R['switched']>>;
 
   getRuntimeState<E extends IAdtError>(
-    config: Partial<IFeatureToggleConfig>,
+    config: AdtObjectIdentity<IFeatureToggleConfig, 'featureToggleName'>,
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<R['runtimeState'], E | IAdtError>>;
   getRuntimeState(
-    config: Partial<IFeatureToggleConfig>,
+    config: AdtObjectIdentity<IFeatureToggleConfig, 'featureToggleName'>,
     options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<R['runtimeState']>>;
 
   checkState<E extends IAdtError>(
-    config: Partial<IFeatureToggleConfig>,
+    config: AdtObjectIdentity<IFeatureToggleConfig, 'featureToggleName'>,
     opts: { userSpecific?: boolean } | undefined,
     options: { headers: IAdtHeaders } & IAdtAnalyseOptions<E> & {
         analyse: IAnalyse<E>;
       },
   ): Promise<IAdtResponse<R['checkState'], E | IAdtError>>;
   checkState(
-    config: Partial<IFeatureToggleConfig>,
+    config: AdtObjectIdentity<IFeatureToggleConfig, 'featureToggleName'>,
     opts: { userSpecific?: boolean } | undefined,
     options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<R['checkState']>>;
 
   readSource<E extends IAdtError>(
-    config: Partial<IFeatureToggleConfig>,
+    config: AdtObjectIdentity<IFeatureToggleConfig, 'featureToggleName'>,
     version: AdtReadVersion | undefined,
     options: IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
   ): Promise<IAdtResponse<R['source'], E | IAdtError>>;
   readSource(
-    config: Partial<IFeatureToggleConfig>,
+    config: AdtObjectIdentity<IFeatureToggleConfig, 'featureToggleName'>,
     version?: AdtReadVersion,
     options?: IAdtAnalyseOptions,
   ): Promise<IAdtResponse<R['source']>>;
