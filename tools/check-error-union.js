@@ -9,12 +9,14 @@
 // TypeScript compiler API and no pattern over text:
 //
 // - a member whose type parameter `E` is constrained to an error type
-//   (`IAdtError`, `IAbapGitStructuredError`) must answer `IAdtResponse<…, E |
-//   <that constraint>>` wherever its return type names `IAdtResponse<…, E>`;
-// - its `E` has no default: a defaulted `E` lets a caller name the error type
-//   and pass no `analyse`;
-// - and the interface declares a plain overload of the same name, with no
-//   error type parameter.
+//   (`IAdtError`, `IAbapGitStructuredError`) answers `IAdtResponse<…, E |
+//   <that constraint>>` in every `IAdtResponse` its return type names, and
+//   names at least one;
+// - its `E` has no default, and its options parameter requires `analyse`: a
+//   generic call cannot name the error type without the strategy;
+// - and for every distinct generic signature the interface declares a plain
+//   one with the same leading parameters, counted one for one, so removing
+//   one plain overload of several is caught.
 const fs = require('node:fs');
 const path = require('node:path');
 const ts = require('typescript');
@@ -39,6 +41,63 @@ function unionWith(type, name, constraint, sf) {
 
 const problems = [];
 let checked = 0;
+
+const isErrorParam = (tp, sf) =>
+  Boolean(
+    tp.constraint &&
+      ts.isTypeReferenceNode(tp.constraint) &&
+      ERROR_TYPES.has(tp.constraint.typeName.getText(sf)),
+  );
+
+/**
+ * What tells two overloads of one member apart: every parameter but the last
+ * (the options, which differ by design between the pair), by type text.
+ */
+const shapeOf = (member, sf) =>
+  member.parameters
+    .slice(0, -1)
+    .map((p) => {
+      // `x?: T` and `x: T | undefined` are one shape: a plain overload makes
+      // optional what its generic twin must name.
+      if (!p.type) return '?';
+      const types = ts.isUnionTypeNode(p.type) ? p.type.types : [p.type];
+      return types
+        .filter((t) => t.kind !== ts.SyntaxKind.UndefinedKeyword)
+        .map((t) => t.getText(sf))
+        .join(' | ');
+    })
+    .join(' , ');
+
+/**
+ * Whether a type requires `analyse`: a property `analyse` with no `?`, in the
+ * type itself or in a type alias of the same file it refers to (the runtime
+ * contracts write `WithAnalyse<E, O>`).
+ */
+function requiresAnalyse(type, aliases, seen = new Set()) {
+  let found = false;
+  const walk = (t) => {
+    if (ts.isTypeReferenceNode(t) && ts.isIdentifier(t.typeName)) {
+      const alias = aliases.get(t.typeName.text);
+      if (alias && !seen.has(alias)) {
+        seen.add(alias);
+        if (requiresAnalyse(alias.type, aliases, seen)) found = true;
+      }
+    }
+    if (
+      ts.isPropertySignature(t) &&
+      t.name &&
+      ts.isIdentifier(t.name) &&
+      t.name.text === 'analyse' &&
+      !t.questionToken
+    ) {
+      found = true;
+    }
+    ts.forEachChild(t, walk);
+  };
+  walk(type);
+  return found;
+}
+
 for (const file of tsFiles(SRC)) {
   const sf = ts.createSourceFile(
     file,
@@ -48,60 +107,78 @@ for (const file of tsFiles(SRC)) {
   );
   const where = (node) =>
     `${path.relative(path.join(__dirname, '..'), file)}:${sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1}`;
+  const aliases = new Map();
+  for (const statement of sf.statements) {
+    if (ts.isTypeAliasDeclaration(statement)) {
+      aliases.set(statement.name.text, statement);
+    }
+  }
   const visit = (node) => {
     if (ts.isInterfaceDeclaration(node)) {
       const members = node.members.filter(ts.isMethodSignature);
+      // The plain counterpart of every distinct generic signature, by shape.
+      const plainShapes = new Map();
+      for (const m of members) {
+        if (!(m.typeParameters ?? []).some((tp) => isErrorParam(tp, sf))) {
+          const key = `${m.name.getText(sf)}(${shapeOf(m, sf)})`;
+          plainShapes.set(key, (plainShapes.get(key) ?? 0) + 1);
+        }
+      }
       for (const member of members) {
-        const errorParams = (member.typeParameters ?? []).filter(
-          (tp) =>
-            tp.constraint &&
-            ts.isTypeReferenceNode(tp.constraint) &&
-            ERROR_TYPES.has(tp.constraint.typeName.getText(sf)),
+        const errorParams = (member.typeParameters ?? []).filter((tp) =>
+          isErrorParam(tp, sf),
         );
         for (const tp of errorParams) {
           checked += 1;
+          const label = member.name.getText(sf);
           const name = tp.name.text;
           const constraint = tp.constraint.getText(sf);
           if (tp.default) {
             problems.push(
-              `${where(member)} ${member.name.getText(sf)}: \`${name}\` has a default, so a generic call needs no \`analyse\``,
+              `${where(member)} ${label}: \`${name}\` has a default, so a generic call needs no \`analyse\``,
             );
           }
-          const isErrorParam = (tp) =>
-            tp.constraint &&
-            ts.isTypeReferenceNode(tp.constraint) &&
-            ERROR_TYPES.has(tp.constraint.typeName.getText(sf));
-          const plain = members.some(
-            (other) =>
-              other !== member &&
-              other.name.getText(sf) === member.name.getText(sf) &&
-              !(other.typeParameters ?? []).some(isErrorParam),
-          );
-          if (!plain) {
+          const last = member.parameters[member.parameters.length - 1];
+          if (
+            !last ||
+            last.questionToken ||
+            !last.type ||
+            !requiresAnalyse(last.type, aliases)
+          ) {
             problems.push(
-              `${where(member)} ${member.name.getText(sf)}: no plain overload beside the generic one`,
+              `${where(member)} ${label}: the generic overload does not require \`analyse\``,
             );
           }
+          const key = `${label}(${shapeOf(member, sf)})`;
+          const left = plainShapes.get(key) ?? 0;
+          if (left === 0) {
+            problems.push(
+              `${where(member)} ${label}: no plain overload of the same parameters beside the generic one`,
+            );
+          } else {
+            plainShapes.set(key, left - 1);
+          }
+          let answers = 0;
           const inspect = (t) => {
             if (
               ts.isTypeReferenceNode(t) &&
-              t.typeName.getText(sf) === 'IAdtResponse' &&
-              t.typeArguments?.length === 2
+              t.typeName.getText(sf) === 'IAdtResponse'
             ) {
-              const error = t.typeArguments[1];
-              const mentions =
-                error.getText(sf) === name ||
-                (ts.isUnionTypeNode(error) &&
-                  error.types.some((x) => x.getText(sf) === name));
-              if (mentions && !unionWith(error, name, constraint, sf)) {
+              answers += 1;
+              const error = t.typeArguments?.[1];
+              if (!(error && unionWith(error, name, constraint, sf)))
                 problems.push(
-                  `${where(t)} ${member.name.getText(sf)}: answers \`${error.getText(sf)}\`, not \`${name} | ${constraint}\``,
+                  `${where(t)} ${label}: answers \`${t.getText(sf)}\`, not one whose error is \`${name} | ${constraint}\``,
                 );
-              }
             }
             ts.forEachChild(t, inspect);
           };
           if (member.type) inspect(member.type);
+          if (answers === 0) {
+            problems.push(
+              `${where(member)} ${label}: the generic overload answers no \`IAdtResponse\``,
+            );
+          }
         }
       }
     }
