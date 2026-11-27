@@ -14,6 +14,7 @@ ADT contracts: object operations, runtime analysis, execution, feeds and service
 - Since 15.1.0 the plain class and program run take `debuggee` (`IDebuggeeIds`): the terminal id and IDE id a terminal-mode listener catches the run by.
 - Since 23.1.0 the ABAP Unit run registry: `ABAP_UNIT_RUN_TYPES`, every `osl:object type` value a run may name, what a run of it runs and on what evidence; `AbapUnitRunObjectType` (its keys), `AbapUnitRunTarget` (an object or a package) and the generic runner contract `IAbapUnitRunner`. Additions only. See "The ABAP Unit run registry".
 - Since 30.0.0 the text elements of a program, a class or a function group — text symbols, selection texts, list and column headings — are their own contract (`/sap/bc/adt/textelements/…`, lock class `TEXT`): `IAdtTextElementsReadable` reads one part, `IAdtTextElementsUpdatable` writes one whole part from a typed document (`ITextSymbol`, `ISelectionText`, `ITextHeadings`), `ITextElementsResults`. The tables gain the API `textElements` (`PROG/PX`, `CLAS/OCX`, kind `text_elements`) on S/4HANA and ABAP cloud: a map over `AdtApiName`, `AdtTypeCode`, `AdtObjectKind`, `CodesOfMain<'PROG'>`, `CodesOfMain<'CLAS'>` or a union derived from the tables — the utility, group activation and where-used codes among them (`AdtUtilityCode`, `AdtGroupActivationCode`, `AdtWhereUsedCode`) — adds the members; the reason for the major. The typed `activateObjects` / `activateObjectsGroup` take the text elements' reference beside the object's. See "Text elements" and "Migrating to 30.0.0".
+- Since 33.0.0 a field the create's request reads is required in the config: `description` on the behaviour definition's, function group's, function module's, interface's, metadata extension's and structure's, and the service binding's `description`, `serviceName`, `serviceDefinitionName`, `serviceVersion` and `bindingVariant`. A member that only addresses the object still takes the name alone. See "Migrating to 33.0.0".
 - Since 32.0.0 an identifying atom, and the write atoms, name the keys that address the object: `TRequired` (no default) — the object's own name, its parent where it has one, a field the member sends — each a `string`, never `undefined`. One endpoint, one method: a write requires the caller's `lockHandle` and never locks for itself; a write that takes no lock is `IAdtLockFreeUpdatable` / `IAdtLockFreeMetadataUpdatable`; a message class message's chain is the caller's (`IAdtMessageClassMessageLockable`, `IAdtMessageClassMessageUpdatable`). `source` is required where a member sends it (`TRequiredOptions`). Every generic overload answers `IAdtResponse<T, E | IAdtError>` (`E | IAbapGitStructuredError` for the abapGit facts), because the library may answer its own error with `analyse` given. The old `link` and `checkExternalRepo` forms of `IAdtAbapGitClient`, deprecated since 30.2.0, are removed with `IAbapGitLinkArgs`, `IAbapGitExternalRepoCredentials` and the client's fourth type parameter. See "The identity and the error type (32.0.0)" and "Migrating to 32.0.0".
 - Since 30.2.0 (the old `link` and `checkExternalRepo` forms deprecated here were removed in 32.0.0) the abapGit contracts have key-based members and facts forms: one atom per member (`IAdtAbapGitPullRepo`, `IAdtAbapGitRunLog`, `IAdtAbapGitPush`, … fourteen in all), each generic over its result `T` and its route's facts `F`, answering `IAbapGitStructuredError` by default (status and T100 key, never SAP's text); the new forms of `link` and `checkExternalRepo` take `credentials: IAbapGitCredentials | null`. The other legacy members (`pull`, `unlink`, `listRepos`, `getErrorLog`) are deprecated and unchanged apart from `credentials?: never` on the options of `pull`; the one edge case that no longer compiled in 30.2.0 is in the CHANGELOG. See "abapGit: key-based members and facts".
 - Since 30.1.0 a settings write is typed by the system kind: on the cloud it requires `isWritableByAMDP` (a cloud write without it reset it to `false`, measured; 30.0.0 refused it on a write), on premise it refuses it (nothing maps it there, Code). `IAdtTableSettingsPatchable.patchMetadata` reads, overlays `ITableSettingsChangesOf<V>` and writes the whole document with `If-Match` (decision 51). What it breaks is in the CHANGELOG. See "A table's technical settings".
@@ -951,6 +952,31 @@ options, `IClassUnitTestRunOptions` with `IUnitTestScope`,
 with no spread to leave the key out. An absent field and an `undefined` one
 mean the same. The CHANGELOG lists each type;
 `src/__typechecks__/explicitUndefined.ts` holds the shapes.
+
+## Migrating to 33.0.0
+
+- **A create names every field its request reads.** A config literal of
+  `IBehaviorDefinitionConfig`, `IFunctionGroupConfig`, `IFunctionModuleConfig`,
+  `IInterfaceConfig`, `IMetadataExtensionConfig` or `IStructureConfig` gives a
+  `description`; one of `IServiceBindingConfig` gives `description`,
+  `serviceName`, `serviceDefinitionName`, `serviceVersion` and
+  `bindingVariant`. A value that held them as `string | undefined` decides
+  first, where the create is called, what an absent one means:
+
+  ```ts
+  const config: IInterfaceConfig = {
+    interfaceName: 'ZIF_DEMO',
+    packageName: '$TMP',
+    description: description ?? 'ZIF_DEMO', // was description?: string
+  };
+  ```
+
+  Without one the create failed at run time before; it does not compile now.
+- **A type built on these configs** that spreads them into a partial
+  (`Partial<IInterfaceConfig>`, `AdtObjectIdentity<…>`) is unchanged; one that
+  declared a full config without the fields adds them.
+- **An implementation** that typed its create parameter as the config gets the
+  fields as `string`; a non-null check or a default it kept for them can go.
 
 ## Migrating to 32.0.0
 
