@@ -24,7 +24,8 @@ export interface IFunctionModuleConfig {
   functionGroupName: string; // Required
   functionModuleName: string; // Required
   transportRequest?: string | undefined; // Only optional parameter
-  description?: string | undefined; // Required for create/validate operations, optional for others
+  /** Read by the create's request (33.0.0: required, #304); optional where a member addresses the object. */
+  description: string;
   source?: string | undefined; // Required for create/update operations, optional for others
   masterSystem?: string | undefined; // SAP system ID (three characters) — required on on-premise
   responsible?: string | undefined; // User responsible for the object

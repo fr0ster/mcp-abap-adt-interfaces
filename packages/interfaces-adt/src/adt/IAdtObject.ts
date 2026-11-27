@@ -120,8 +120,15 @@ export const AdtObjectErrorCodes = {
  *   headers,
  *   analyse: t100,
  * });
- * if (!answer.ok) answer.getError().t100;   // typed, no cast
+ * if (!answer.ok) {
+ *   const failure = answer.getError(); // IT100Failure | IAdtError
+ *   if ('t100' in failure) failure.t100; // narrowed, no cast
+ * }
  * ```
+ *
+ * The generic answer is `E | IAdtError` (32.0.0): where no answer came back
+ * and `analyse` cleared the verdict, the library's own verdict stands, so a
+ * caller narrows before reading its own fields.
  *
  * The verdict handed in stays `IAdtError`: it is the library's own, built before
  * any strategy is consulted. Only what comes back is the caller's.
