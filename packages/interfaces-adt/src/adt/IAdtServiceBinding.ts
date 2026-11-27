@@ -71,11 +71,13 @@ export interface ICreateServiceBindingParams {
 export interface IServiceBindingConfig {
   bindingName: string;
   packageName?: string | undefined;
-  description?: string | undefined;
-  serviceDefinitionName?: string | undefined;
-  serviceName?: string | undefined;
-  serviceVersion?: string | undefined;
-  bindingVariant?: ServiceBindingVariant | undefined;
+  // Read by the create's request (33.0.0: required, #304); optional where a
+  // member addresses the binding.
+  description: string;
+  serviceDefinitionName: string;
+  serviceName: string;
+  serviceVersion: string;
+  bindingVariant: ServiceBindingVariant;
   masterLanguage?: string | undefined;
   masterSystem?: string | undefined;
   responsible?: string | undefined;

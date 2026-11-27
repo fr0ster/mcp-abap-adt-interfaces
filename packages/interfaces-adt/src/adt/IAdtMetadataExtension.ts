@@ -10,7 +10,8 @@ import type { IResultStrategy } from './IAdtResponse';
 // Note: packageName and description are required for create/validate operations (validated in builder methods)
 export interface IMetadataExtensionConfig {
   name: string; // Required
-  description?: string | undefined; // Required for create/validate operations, optional for others
+  /** Read by the create's request (33.0.0: required, #304); optional where a member addresses the object. */
+  description: string;
   packageName?: string | undefined; // Required for create/validate operations, optional for others
   transportRequest?: string | undefined; // Only optional parameter
   source?: string | undefined;

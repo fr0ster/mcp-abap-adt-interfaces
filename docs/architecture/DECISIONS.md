@@ -1870,6 +1870,8 @@ const answer = await client.getClass().activate(config, {
 if (!answer.ok) answer.getError().t100;   // typed, no cast
 ```
 
+> From 32.0.0 the generic answer is `E | IAdtError` (the library's own verdict stands where no answer came back), so this line no longer compiles; narrow first: `if (!answer.ok) { const f = answer.getError(); if ('t100' in f) f.t100; }` (corrected in 33.0.0's `IAdtObject` example).
+
 **The asymmetry that stays.** The verdict handed *in* is `IAdtError` — the
 library's own, built before any strategy is consulted. Only what comes back is
 the caller's. A strategy cannot be handed a failure of a type it invented,

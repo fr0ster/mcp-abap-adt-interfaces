@@ -7,6 +7,11 @@
 // the same. Each field below is declared `?: T | undefined`, and each block
 // passes `undefined` to every optional field of one type: a field narrowed back
 // to `?: T` stops compiling here.
+//
+// A field the create's request reads is required since 33.0.0 (#304) and is
+// not listed: the description of seven configs, and the service binding's
+// service name, service definition, version and variant
+// (`requiredCreateFields33.ts`).
 
 import type { IAccessControlConfig } from '../adt/IAdtAccessControl';
 import type { IAppendStructureConfig } from '../adt/IAdtAppendStructure';
@@ -145,7 +150,6 @@ const _IBehaviorDefinitionConfig: Pick<
   | 'masterLanguage'
   | 'packageName'
   | 'transportRequest'
-  | 'description'
   | 'implementationType'
   | 'rootEntity'
   | 'source'
@@ -153,7 +157,6 @@ const _IBehaviorDefinitionConfig: Pick<
   masterLanguage: undefined,
   packageName: undefined,
   transportRequest: undefined,
-  description: undefined,
   implementationType: undefined,
   rootEntity: undefined,
   source: undefined,
@@ -346,14 +349,12 @@ const _IFunctionGroupConfig: Pick<
   | 'masterLanguage'
   | 'packageName'
   | 'transportRequest'
-  | 'description'
   | 'masterSystem'
   | 'responsible'
 > = {
   masterLanguage: undefined,
   packageName: undefined,
   transportRequest: undefined,
-  description: undefined,
   masterSystem: undefined,
   responsible: undefined,
 };
@@ -365,10 +366,9 @@ const _IFunctionIncludeConfig: Pick<
 void _IFunctionIncludeConfig;
 const _IFunctionModuleConfig: Pick<
   IFunctionModuleConfig,
-  'transportRequest' | 'description' | 'source' | 'masterSystem' | 'responsible'
+  'transportRequest' | 'source' | 'masterSystem' | 'responsible'
 > = {
   transportRequest: undefined,
-  description: undefined,
   source: undefined,
   masterSystem: undefined,
   responsible: undefined,
@@ -393,16 +393,11 @@ const _IIncludeConfig: Pick<
 void _IIncludeConfig;
 const _IInterfaceConfig: Pick<
   IInterfaceConfig,
-  | 'masterLanguage'
-  | 'packageName'
-  | 'transportRequest'
-  | 'description'
-  | 'source'
+  'masterLanguage' | 'packageName' | 'transportRequest' | 'source'
 > = {
   masterLanguage: undefined,
   packageName: undefined,
   transportRequest: undefined,
-  description: undefined,
   source: undefined,
 };
 void _IInterfaceConfig;
@@ -428,7 +423,6 @@ const _IMessageClassMessageConfig: Pick<
 void _IMessageClassMessageConfig;
 const _IMetadataExtensionConfig: Pick<
   IMetadataExtensionConfig,
-  | 'description'
   | 'packageName'
   | 'transportRequest'
   | 'source'
@@ -436,7 +430,6 @@ const _IMetadataExtensionConfig: Pick<
   | 'masterSystem'
   | 'responsible'
 > = {
-  description: undefined,
   packageName: undefined,
   transportRequest: undefined,
   source: undefined,
@@ -546,11 +539,6 @@ void _IScalarFunctionImplementationConfig;
 const _IServiceBindingConfig: Pick<
   IServiceBindingConfig,
   | 'packageName'
-  | 'description'
-  | 'serviceDefinitionName'
-  | 'serviceName'
-  | 'serviceVersion'
-  | 'bindingVariant'
   | 'masterLanguage'
   | 'masterSystem'
   | 'responsible'
@@ -559,11 +547,6 @@ const _IServiceBindingConfig: Pick<
   | 'transportRequest'
 > = {
   packageName: undefined,
-  description: undefined,
-  serviceDefinitionName: undefined,
-  serviceName: undefined,
-  serviceVersion: undefined,
-  bindingVariant: undefined,
   masterLanguage: undefined,
   masterSystem: undefined,
   responsible: undefined,
@@ -604,16 +587,11 @@ const _IGetVirtualFoldersContentsParams: Pick<
 void _IGetVirtualFoldersContentsParams;
 const _IStructureConfig: Pick<
   IStructureConfig,
-  | 'masterLanguage'
-  | 'packageName'
-  | 'transportRequest'
-  | 'description'
-  | 'source'
+  'masterLanguage' | 'packageName' | 'transportRequest' | 'source'
 > = {
   masterLanguage: undefined,
   packageName: undefined,
   transportRequest: undefined,
-  description: undefined,
   source: undefined,
 };
 void _IStructureConfig;

@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [33.0.0] - 2026-11-27
+
+A field the create's request always reads is required in the config, so a
+create without it no longer compiles where it failed at run time in the
+implementation (adt-clients #304). A major: seven config types and the
+service binding's change.
+
+### Changed
+
+- **`description` is required** on `IBehaviorDefinitionConfig`,
+  `IFunctionGroupConfig`, `IFunctionModuleConfig`, `IInterfaceConfig`,
+  `IMetadataExtensionConfig` and `IStructureConfig`: their creates send it, and
+  an absent one was a `TypeError` in the implementation's request builder.
+- **`IServiceBindingConfig` requires `description`, `serviceName`,
+  `serviceDefinitionName`, `serviceVersion` and `bindingVariant`**, the fields
+  the binding's create reads.
+- A member that only addresses the object still takes the name alone:
+  `AdtObjectIdentity` leaves a field it does not name optional. That field is
+  `?: string` now, not `?: string | undefined`, so under
+  `exactOptionalPropertyTypes` an explicit `undefined` for it is refused
+  (TS2375); leave the key out.
+- `IEnhancementConfig.enhancementType` was required already. Whether a member
+  that addresses an enhancement names its type is the implementer's
+  `TRequired` (adt-clients 48.0.0 names it on `readMetadata`, whose Accept is
+  the type's).
+
+### Fixed
+
+- **The `IAnalyse` example in `IAdtObject` compiles.** It read
+  `answer.getError().t100` directly, which stopped compiling in 32.0.0 when the
+  generic answer became `E | IAdtError`; it narrows with `'t100' in failure`
+  first. Pinned by `docExamples33.ts`. The README's examples already narrowed.
+
+### Checks
+
+- `requiredCreateFields33.ts`: a create without each field is refused, on both
+  the plain and the generic (`analyse`) overload; the eleven assertions of the
+  new fields were unused against 32.0.0 (the enhancement's type was already
+  required there, and its assertion already held), and each field made
+  optional again turns its own check red.
+- `explicitUndefined.ts` no longer lists the required fields.
+
 ## [32.0.0] - 2026-11-27
 
 The contracts say what their implementations need, so an implementation needs
