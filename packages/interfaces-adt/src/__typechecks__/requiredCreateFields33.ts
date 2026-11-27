@@ -18,10 +18,13 @@ import type { IFunctionGroupConfig } from '../adt/IAdtFunctionGroup';
 import type { IFunctionModuleConfig } from '../adt/IAdtFunctionModule';
 import type { IInterfaceConfig } from '../adt/IAdtInterface';
 import type { IMetadataExtensionConfig } from '../adt/IAdtMetadataExtension';
+import type { IAnalyse } from '../adt/IAdtObject';
+import type { IAdtError } from '../adt/IAdtResponse';
 import type { IServiceBindingConfig } from '../adt/IAdtServiceBinding';
 import type { IStructureConfig } from '../adt/IAdtStructure';
 
 declare const headers: IAdtHeaders;
+declare const analyse: IAnalyse<IAdtError>;
 const options = { headers };
 
 declare const bdef: IAdtCreatable<IBehaviorDefinitionConfig, unknown>;
@@ -78,6 +81,38 @@ export async function requiredCreateFields(): Promise<void> {
   const { bindingVariant: _b, ...noVariant } = binding;
   // @ts-expect-error the variant is read by the create
   await srvb.create(noVariant, options);
+
+  // The generic overload refuses the same: its config is the plain one's.
+  const judged = { headers, analyse };
+  // @ts-expect-error the description is read by the create
+  await bdef.create({ name: 'ZB' }, judged);
+  // @ts-expect-error the description is read by the create
+  await fugr.create({ functionGroupName: 'ZG' }, judged);
+  // @ts-expect-error the description is read by the create
+  await func.create(module, judged);
+  // @ts-expect-error the description is read by the create
+  await intf.create({ interfaceName: 'ZI' }, judged);
+  // @ts-expect-error the description is read by the create
+  await ddlx.create({ name: 'ZX' }, judged);
+  // @ts-expect-error the description is read by the create
+  await stru.create({ structureName: 'ZS' }, judged);
+  // @ts-expect-error the description is read by the create
+  await srvb.create(noDescription, judged);
+  // @ts-expect-error the service name is read by the create
+  await srvb.create(noName, judged);
+  // @ts-expect-error the service definition is read by the create
+  await srvb.create(noDefinition, judged);
+  // @ts-expect-error the service version is read by the create
+  await srvb.create(noVersion, judged);
+  // @ts-expect-error the variant is read by the create
+  await srvb.create(noVariant, judged);
+  await srvb.create(binding, judged);
+
+  // An explicit `undefined` for a field the identity leaves optional is
+  // refused under exactOptionalPropertyTypes since 33.0.0 (README, migration).
+  // @ts-expect-error description is `?: string`, not `?: string | undefined`
+  const _explicit: Partial<IInterfaceConfig> = { description: undefined };
+  void _explicit;
 
   // @ts-expect-error the enhancement type is read by the create (already in 32)
   await enho.create({ enhancementName: 'ZE' }, options);

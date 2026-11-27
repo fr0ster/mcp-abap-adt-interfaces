@@ -23,9 +23,11 @@ service binding's change.
 - **`IServiceBindingConfig` requires `description`, `serviceName`,
   `serviceDefinitionName`, `serviceVersion` and `bindingVariant`**, the fields
   the binding's create reads.
-- Every member that only addresses the object is unchanged: `AdtObjectIdentity`
-  leaves a field it does not name optional, so a read, a lock or a delete still
-  takes the name alone.
+- A member that only addresses the object still takes the name alone:
+  `AdtObjectIdentity` leaves a field it does not name optional. That field is
+  `?: string` now, not `?: string | undefined`, so under
+  `exactOptionalPropertyTypes` an explicit `undefined` for it is refused
+  (TS2375); leave the key out.
 - `IEnhancementConfig.enhancementType` was required already. Whether a member
   that addresses an enhancement names its type is the implementer's
   `TRequired` (adt-clients 48.0.0 names it on `readMetadata`, whose Accept is
@@ -40,8 +42,10 @@ service binding's change.
 
 ### Checks
 
-- `requiredCreateFields33.ts`: a create without each field is refused; every
-  `@ts-expect-error` there was unused against 32.0.0, and each field made
+- `requiredCreateFields33.ts`: a create without each field is refused, on both
+  the plain and the generic (`analyse`) overload; the eleven assertions of the
+  new fields were unused against 32.0.0 (the enhancement's type was already
+  required there, and its assertion already held), and each field made
   optional again turns its own check red.
 - `explicitUndefined.ts` no longer lists the required fields.
 

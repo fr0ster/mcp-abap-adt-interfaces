@@ -972,9 +972,22 @@ mean the same. The CHANGELOG lists each type;
   ```
 
   Without one the create failed at run time before; it does not compile now.
-- **A type built on these configs** that spreads them into a partial
-  (`Partial<IInterfaceConfig>`, `AdtObjectIdentity<…>`) is unchanged; one that
-  declared a full config without the fields adds them.
+- **A partial of these configs** (`Partial<IInterfaceConfig>`,
+  `AdtObjectIdentity<…>` without the field among its keys) still lets the field
+  be left out, but no longer takes an explicit `undefined` for it under
+  `exactOptionalPropertyTypes`: `Partial` of `description: string` is
+  `description?: string`, where 32's `description?: string | undefined` took
+  `description: undefined` (TS2375 in 33). Leave the key out instead of
+  writing `undefined`:
+
+  ```ts
+  const identity: Partial<IInterfaceConfig> = {
+    interfaceName: 'ZIF_DEMO',
+    ...(description === undefined ? {} : { description }),
+  };
+  ```
+
+  A type that declared a full config without the fields adds them.
 - **An implementation** that typed its create parameter as the config gets the
   fields as `string`; a non-null check or a default it kept for them can go.
 
