@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Type groups (`TYPE/DG`), for adt-clients #305. Additive: a new API name, its
+config and results, one new atom and the two rows.
+
+### Added
+
+- **`typeGroup`** in `AdtApiName`, with `ITypeGroupConfig` and
+  `ITypeGroupResults` (`validation`, `created`, `metadata`, `source`,
+  `updated`, `activation`, `deletion`, `versions`, `versionSource`).
+- **`IAdtLockedDeletable`**: a `delete` under the caller's lock
+  (`IAdtLockedWrite`), with no deletion check beside it — a type group is
+  deleted by lock, `DELETE ?lockHandle`, unlock.
+- **The rows.** `ADT_TYPES_ONPREM.typeGroup` (`TYPE/DG`, `nameMaxLength` 5):
+  `validate`, `create`, `read`, `source`, `readMetadata`, `update`, `lock`,
+  `unlock`, `activate`, `versions`, `delete`, each measured served on S/4HANA
+  2025. `ADT_TYPES_CLOUD.typeGroup`: `validate`, `read`, `source`,
+  `readMetadata`, `versions` — the create answered `403` `S_DEVELOP`, an
+  authorization refusal that decides nothing, so no write is listed.
+
 ## [33.0.0] - 2026-11-27
 
 A field the create's request always reads is required in the config, so a
