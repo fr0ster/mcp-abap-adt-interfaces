@@ -275,6 +275,29 @@ both takes typed references and the 21.0.0 `IObjectReference[]` alike.
 posts to `/sap/bc/adt/repository/typestructure`; its reading is
 `IUtilResults.typeStructure`, optional so a 21.0.0 set is still one.
 
+## Type groups
+
+`typeGroup` is the API for type groups (`TYPE/DG`, kind `type_group`, collection
+`/sap/bc/adt/ddic/typegroups`, names of at most 5 characters), configured by
+`ITypeGroupConfig` and read through `ITypeGroupResults`.
+
+- **On premise** the row lists `validate`, `create`, `read`, `source`,
+  `readMetadata`, `update`, `lock`, `unlock`, `activate`, `versions` and
+  `delete`, each measured served on S/4HANA 2025.
+- **On ABAP cloud** it lists `validate`, `read`, `source`, `readMetadata` and
+  `versions`: the create answered an authorization refusal, which decides
+  nothing, so no write could be measured and none is listed.
+
+**A type group is deleted under the caller's lock**, by a `DELETE` on its own
+address, and offers no deletion check. Its delete is the atom
+`IAdtLockedDeletable`: `delete` alone, with the `lockHandle` the caller's `lock`
+answered required by type, as on every locked write (`IAdtLockedWrite`).
+
+```ts
+type TypeGroupDelete = IAdtLockedDeletable<ITypeGroupConfig, string, 'typeGroupName'>;
+// delete({ typeGroupName }, { headers }) does not compile: no lockHandle
+```
+
 ## The ABAP Unit run registry
 
 `ABAP_UNIT_RUN_TYPES` (`adt/AbapUnitRunTypes.ts`, since 23.1.0) holds every
@@ -431,7 +454,7 @@ Which request sets what was read from `@mcp-abap-adt/adt-clients`. Since
 (the PUT) included. Where a member's implementations disagree, the majority
 decides.
 
-The members that take `headers`: `IAdtAbapGitClient`: `pull`; `IAdtAbapGitLinkNewForm`: `link`; `IAdtAbapGitCheckExternalRepoNewForm`: `checkExternalRepo`; `IAdtAbapGitPullRepo`: `pullRepo`; `IAdtAbapGitPullRepoInDialog`: `pullRepoInDialog`; `IAdtAbapGitBranchInfo`: `getBranchInfo`; `IAdtCreatable`: `create`; `IAdtUpdatable`: `update`; `IAdtMetadataUpdatable`: `updateMetadata`; `IAdtLockFreeUpdatable`: `update`; `IAdtLockFreeMetadataUpdatable`: `updateMetadata`; `IAdtMessageClassMessageUpdatable`: `update`; `IAdtDeletable`: `delete`, `checkDeletion`; `IAdtCheckable`: `check`; `IAdtActivatable`: `activate`; `IFeatureToggleObject`: `checkState`; `IAdtTransportObjectActions`: `removeObject`, `addObject`, `createTask`, `changeTaskType`; `IAdtTransportMoveObjects`: `moveObjects`; `IAbapUnitRunner`: `runSync`; `IAdtWhereUsed`: `getWhereUsed`, `getWhereUsedScope`; `IAdtVirtualFolders`: `getVirtualFoldersContents`; `IAdtRepositoryStructure`: `fetchNodeStructure`; `IAdtGroupLifecycle`: `activateObjectsGroup`, `checkDeletionGroup`, `deleteObjectsGroup`; `IAdtObjectActivation`: `activateObjects`; `IAdtDataPreview`: `getSqlQuery`, `getTableContents`; `ITraceScheduling`: `scheduleTrace`; `IAbapDebugger`: `setBreakpoints`, `getChildVariables`, `getVariables`, `syncBreakpoints`, `setDebuggerSettings`; `IAmdpDebugger`: `getDataPreview`.
+The members that take `headers`: `IAdtAbapGitClient`: `pull`; `IAdtAbapGitLinkNewForm`: `link`; `IAdtAbapGitCheckExternalRepoNewForm`: `checkExternalRepo`; `IAdtAbapGitPullRepo`: `pullRepo`; `IAdtAbapGitPullRepoInDialog`: `pullRepoInDialog`; `IAdtAbapGitBranchInfo`: `getBranchInfo`; `IAdtCreatable`: `create`; `IAdtUpdatable`: `update`; `IAdtMetadataUpdatable`: `updateMetadata`; `IAdtLockFreeUpdatable`: `update`; `IAdtLockFreeMetadataUpdatable`: `updateMetadata`; `IAdtMessageClassMessageUpdatable`: `update`; `IAdtDeletable`: `delete`, `checkDeletion`; `IAdtLockedDeletable`: `delete`; `IAdtCheckable`: `check`; `IAdtActivatable`: `activate`; `IFeatureToggleObject`: `checkState`; `IAdtTransportObjectActions`: `removeObject`, `addObject`, `createTask`, `changeTaskType`; `IAdtTransportMoveObjects`: `moveObjects`; `IAbapUnitRunner`: `runSync`; `IAdtWhereUsed`: `getWhereUsed`, `getWhereUsedScope`; `IAdtVirtualFolders`: `getVirtualFoldersContents`; `IAdtRepositoryStructure`: `fetchNodeStructure`; `IAdtGroupLifecycle`: `activateObjectsGroup`, `checkDeletionGroup`, `deleteObjectsGroup`; `IAdtObjectActivation`: `activateObjects`; `IAdtDataPreview`: `getSqlQuery`, `getTableContents`; `ITraceScheduling`: `scheduleTrace`; `IAbapDebugger`: `setBreakpoints`, `getChildVariables`, `getVariables`, `syncBreakpoints`, `setDebuggerSettings`; `IAmdpDebugger`: `getDataPreview`.
 
 The field is on each member's own options, not on `IAdtAnalyseOptions` or
 `IAdtOperationOptions`. `src/__typechecks__/headersOnEveryMember.ts` holds this
