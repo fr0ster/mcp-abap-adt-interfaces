@@ -6,6 +6,12 @@ on:
       - master
   pull_request:
 
+# A newer push to a pull request cancels that PR's older, now obsolete run;
+# pushes to a branch (the default one above all) never cancel each other.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   check:
     runs-on: ubuntu-latest
