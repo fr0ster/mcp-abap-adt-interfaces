@@ -684,6 +684,16 @@ export interface IUtilResults {
    * member that wants its reading injected requires it.
    */
   readonly typeStructure?: IResultStrategy<unknown>;
+  /**
+   * What `<object uri>/objectstructure` answers ({@link IAdtObjectOutlineReadable}).
+   * Optional, so a set written before it still is one.
+   */
+  readonly objectOutline?: IResultStrategy<unknown>;
+  /**
+   * What `POST /navigation/target` answers ({@link IAdtNavigationTargetReadable}).
+   * Optional, so a set written before it still is one.
+   */
+  readonly navigationTarget?: IResultStrategy<unknown>;
   /** An object's source — `<objectUri>/source/main`. */
   readonly source: IResultStrategy<unknown>;
   /** An object's metadata document, without its source. */
@@ -720,6 +730,81 @@ export interface IAdtTypeStructure<TTypeStructure> {
   getTypeStructure(
     options: { headers: IAdtHeaders } & IAdtAnalyseOptions,
   ): Promise<IAdtResponse<TTypeStructure>>;
+}
+
+/**
+ * The kinds SAP serves an outline (`<object uri>/objectstructure`) for:
+ * class, interface, program, include and function group. Measured on premise
+ * and on ABAP cloud; the program on premise only, the cloud has none. A
+ * function module answers `404`.
+ */
+export type AdtOutlineCode =
+  | 'CLAS/OC'
+  | 'INTF/OI'
+  | 'PROG/P'
+  | 'PROG/I'
+  | 'FUGR/F';
+
+/** What {@link IAdtObjectOutlineReadable.getObjectOutline} takes beside the object. */
+export interface IAdtObjectOutlineOptions {
+  /** Sent as `version`; SAP changes only the answer's `xml:base` with it (measured). */
+  version?: AdtReadVersion | undefined;
+  /** The Accept to send; `application/vnd.sap.adt.objectstructure.v2+xml` is the one every kind answers. */
+  accept?: string | undefined;
+}
+
+/**
+ * `GET <object uri>/objectstructure` — an object's outline, the structure
+ * Eclipse's Outline view reads: its components, each with its kind, name and
+ * the links to where it is defined and implemented. One request. Its reading
+ * is `IUtilResults.objectOutline`.
+ *
+ * **Its own atom**, like {@link IAdtTypeStructure}: adding it to a composite
+ * would make every implementation of that composite stop compiling over a
+ * member it never claimed.
+ */
+export interface IAdtObjectOutlineReadable<TOutline> {
+  getObjectOutline<E extends IAdtError>(
+    objectType: AdtOutlineCode,
+    objectName: string,
+    options: IAdtObjectOutlineOptions &
+      IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TOutline, E | IAdtError>>;
+  getObjectOutline(
+    objectType: AdtOutlineCode,
+    objectName: string,
+    options?: IAdtObjectOutlineOptions & IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<TOutline>>;
+}
+
+/**
+ * The parameters of the discovery template
+ * `/sap/bc/adt/navigation/target{?uri,filter,fullname}`, besides `uri`, and
+ * the caller's Accept.
+ */
+export interface IAdtNavigationTargetOptions {
+  filter?: string | undefined;
+  fullname?: string | undefined;
+  accept?: string | undefined;
+}
+
+/**
+ * `POST /sap/bc/adt/navigation/target?uri=…` — where a reference leads: SAP
+ * answers an `adtcore:objectReference` whose `uri` names the include and the
+ * position (`#start=l,c`). It resolves an outline's name fragment
+ * (`#type=…;name=…`) to its start line. One request, no body. Its reading is
+ * `IUtilResults.navigationTarget`.
+ */
+export interface IAdtNavigationTargetReadable<TTarget> {
+  getNavigationTarget<E extends IAdtError>(
+    uri: string,
+    options: IAdtNavigationTargetOptions &
+      IAdtAnalyseOptions<E> & { analyse: IAnalyse<E> },
+  ): Promise<IAdtResponse<TTarget, E | IAdtError>>;
+  getNavigationTarget(
+    uri: string,
+    options?: IAdtNavigationTargetOptions & IAdtAnalyseOptions,
+  ): Promise<IAdtResponse<TTarget>>;
 }
 
 /**

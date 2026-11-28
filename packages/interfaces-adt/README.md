@@ -275,6 +275,12 @@ both takes typed references and the 21.0.0 `IObjectReference[]` alike.
 posts to `/sap/bc/adt/repository/typestructure`; its reading is
 `IUtilResults.typeStructure`, optional so a 21.0.0 set is still one.
 
+**The outline and navigation.** `IAdtObjectOutlineReadable.getObjectOutline(type, name, options)`
+reads `<object uri>/objectstructure` for an `AdtOutlineCode`;
+`IAdtNavigationTargetReadable.getNavigationTarget(uri, options)` posts to
+`/sap/bc/adt/navigation/target` and answers where a reference leads. Each is its own atom; their
+readings are the optional `IUtilResults.objectOutline` and `IUtilResults.navigationTarget`.
+
 ## The ABAP Unit run registry
 
 `ABAP_UNIT_RUN_TYPES` (`adt/AbapUnitRunTypes.ts`, since 23.1.0) holds every

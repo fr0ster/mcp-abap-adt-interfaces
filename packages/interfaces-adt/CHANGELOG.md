@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`IAdtObjectOutlineReadable<TOutline>`** — `getObjectOutline(objectType, objectName, options)`,
+  one `GET <object uri>/objectstructure`, with `AdtOutlineCode` (`CLAS/OC`, `INTF/OI`, `PROG/P`,
+  `PROG/I`, `FUGR/F`) and `IAdtObjectOutlineOptions` (`version`, `accept`). adt-clients'
+  `AdtUtils.getObjectOutline` had no atom until now.
+- **`IAdtNavigationTargetReadable<TTarget>`** — `getNavigationTarget(uri, options)`, one
+  `POST /sap/bc/adt/navigation/target`, with `IAdtNavigationTargetOptions` (the discovery
+  template's `filter` and `fullname`, and `accept`). It resolves an outline's name fragment to
+  its start (fr0ster/mcp-abap-adt#401).
+- **`IUtilResults.objectOutline`** and **`IUtilResults.navigationTarget`**, both optional, so a
+  result set written before them still is one.
+
 ## [33.0.0] - 2026-11-27
 
 A field the create's request always reads is required in the config, so a
