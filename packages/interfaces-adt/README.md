@@ -17,7 +17,7 @@ ADT contracts: object operations, runtime analysis, execution, feeds and service
 - Since 33.0.0 a field the create's request reads is required in the config: `description` on the behaviour definition's, function group's, function module's, interface's, metadata extension's and structure's, and the service binding's `description`, `serviceName`, `serviceDefinitionName`, `serviceVersion` and `bindingVariant`. A member that only addresses the object still takes the name alone. See "Migrating to 33.0.0".
 - Since 32.0.0 an identifying atom, and the write atoms, name the keys that address the object: `TRequired` (no default) — the object's own name, its parent where it has one, a field the member sends — each a `string`, never `undefined`. One endpoint, one method: a write requires the caller's `lockHandle` and never locks for itself; a write that takes no lock is `IAdtLockFreeUpdatable` / `IAdtLockFreeMetadataUpdatable`; a message class message's chain is the caller's (`IAdtMessageClassMessageLockable`, `IAdtMessageClassMessageUpdatable`). `source` is required where a member sends it (`TRequiredOptions`). Every generic overload answers `IAdtResponse<T, E | IAdtError>` (`E | IAbapGitStructuredError` for the abapGit facts), because the library may answer its own error with `analyse` given. The old `link` and `checkExternalRepo` forms of `IAdtAbapGitClient`, deprecated since 30.2.0, are removed with `IAbapGitLinkArgs`, `IAbapGitExternalRepoCredentials` and the client's fourth type parameter. See "The identity and the error type (32.0.0)" and "Migrating to 32.0.0".
 - Since 30.2.0 (the old `link` and `checkExternalRepo` forms deprecated here were removed in 32.0.0) the abapGit contracts have key-based members and facts forms: one atom per member (`IAdtAbapGitPullRepo`, `IAdtAbapGitRunLog`, `IAdtAbapGitPush`, … fourteen in all), each generic over its result `T` and its route's facts `F`, answering `IAbapGitStructuredError` by default (status and T100 key, never SAP's text); the new forms of `link` and `checkExternalRepo` take `credentials: IAbapGitCredentials | null`. The other legacy members (`pull`, `unlink`, `listRepos`, `getErrorLog`) are deprecated and unchanged apart from `credentials?: never` on the options of `pull`; the one edge case that no longer compiled in 30.2.0 is in the CHANGELOG. See "abapGit: key-based members and facts".
-- Since 30.1.0 a settings write is typed by the system kind: on the cloud it requires `isWritableByAMDP` (a cloud write without it reset it to `false`, measured; 30.0.0 refused it on a write), on premise it refuses it (nothing maps it there, Code). `IAdtTableSettingsPatchable.patchMetadata` reads, overlays `ITableSettingsChangesOf<V>` and writes the whole document with `If-Match` (decision 51). What it breaks is in the CHANGELOG. See "A table's technical settings".
+- Since 30.1.0 a settings write is typed by the system kind: on the cloud it requires `isWritableByAMDP` (a cloud write without it reset it to `false`, measured; 30.0.0 refused it on a write), on premise it refuses it (nothing maps it there, Code). A change of some settings is the caller's read, overlay of `ITableSettingsChangesOf<V>` and write with `If-Match` (decision 53; the one-member patch of 30.1.0 is gone). What it breaks is in the CHANGELOG. See "A table's technical settings".
 - Since 29.0.0 `ITableSettings.translation` is an `ITableTranslation`, the `ts:translation` element's four attributes, where 28.0.0 had a string: a `ts:translation` element written with an attribute missing is refused (400 `00/001`), and an absent element is accepted (both measured on both systems). See "Migrating to 29.0.0".
 - Since 28.0.0 a table's technical settings (`TABL/DTT`, `tableSettings` in the on-premise and cloud tables) are their own contract: `ITableSettingsConfig`, `ITableSettingsUpdateConfig` with the full `ITableSettings`, the write atom `IAdtTableSettingsUpdatable` and `ITableSettingsResults`. A map over `AdtApiName`, `AdtTypeCode`, `AdtObjectKind`, `CodesOfMain<'TABL'>` or a union derived from the tables (`AdtApi<V>`, `AdtTypeCodeOf<V>`, `AdtApiWith<V, Op>`, …) adds the new member — the reason for the major. See "A table's technical settings" and "Migrating to 28.0.0".
 - Since 27.0.0 `IUtilResults` requires `objectActivation`, the reading of the new atom `IAdtObjectActivation` (`activateObjects`, the synchronous `POST /activation` for several objects); `activate` takes `IAdtActivationOptions` (`preauditRequested`); and `IAnalyse` takes an optional third parameter, `IAdtAnalyseContext`. See "Activation" and "Migrating to 27.0.0".
@@ -421,13 +421,13 @@ Three members activate, one endpoint each:
 
 The two group members take the same references (`IAdtGroupActivationReference<V>`
 for the typed atoms). Which endpoint a system offers is in its discovery; the
-caller reads it and picks the member. Each member sends one request, with one
-exception: when `activate` or `activateObjects` is answered `chkl:messages`
-with `activationExecuted="false"` and no message, it reads
-`GET /activation/inactiveobjects` once more and hands that answer to the
-reading (`IAdtAnalyseContext`, below). `activateObjectsGroup` reads nothing
-more: on the runs path that read, after `getActivationResults`, is the
-caller's, which holds the references the run was started with.
+caller reads it and picks the member. Each member sends one request, whatever
+it answers. When `activate` or `activateObjects` is answered with a checklist
+that does not state its outcome (`activationExecuted="false"` and no message,
+or no `activationExecuted` and warnings alone), the caller reads
+`GET /activation/inactiveobjects` and hands that answer to its reading
+(`IAdtAnalyseContext`, below); on the runs path that read, after
+`getActivationResults`, is the caller's too.
 
 **The preaudit.** `activate` takes `IAdtActivationOptions`
 (`src/adt/IAdtObject.ts`): `IAdtOperationOptions` with `preauditRequested`,
@@ -440,8 +440,8 @@ next call.
 **The facts beside the answer.** `IAnalyse` takes an optional third parameter,
 `IAdtAnalyseContext`. Its `activation` carries the uris the activation request
 named and the answer to one `GET /activation/inactiveobjects`, for an answer
-that does not tell by itself whether the objects were activated. Only an
-activating member fills it, and only when it read that list. A reading of two
+that does not tell by itself whether the objects were activated. No member
+fills it: the caller that read the list hands it. A reading of two
 parameters ignores it. `src/__typechecks__/activationOptions.ts`,
 `analyseContext.ts` and `objectActivation.ts` hold these shapes.
 
@@ -799,34 +799,32 @@ does not serve the collection, and its table has no entry.
   separate runs, once with "(Logging activated)" and once with "(Buffering
   allowed)"; the replacement-object case is Code only. On premise (Code):
   message class DT has no 771, and `RADTTCHK` holds no AMDP check.
-- **Patch** with `IAdtTableSettingsPatchable<T, V>` (since 30.1.0, decision
-  51): `patchMetadata` takes the table and `ITableSettingsChangesOf<V>` — at
-  least one setting; `buffering` field by field, with `areaKeyFields` only
-  beside type `G` or with the type kept — and then refused before any PUT
-  when the type read is not `G`; `translation` by its `value`, the one
-  attribute SAP stores; `isWritableByAMDP` on the cloud only — and, under the
-  caller's `lockHandle`, reads the working area with its ETag, overlays the
-  changes, and writes the whole document with `If-Match`. Every setting not
-  named keeps the value read — with one exception: when the resulting
-  buffering type is not `G` (a type-only change from `G` to `P`, say), SAP
-  clears the area-key count, since it writes `SCHFELDANZ` only for `G`
-  (`move_adt_to_ddv`, Code on both). The patch does not block that change:
-  the count means nothing for the other types. Its headers name the media type alone
-  (`IAdtTableSettingsPatchHeaders`): the implementation sends the PUT's
-  `Content-Type` without a charset (`headers.accept` is the literal
-  `TABLE_SETTINGS_MEDIA_TYPE`), so no caller's charset reaches the guarded
-  write.
+- **A change of some settings** is the caller's sequence below with
+  `ITableSettingsChangesOf<V>` as what it changes — at least one setting;
+  `buffering` field by field, with `areaKeyFields` only beside type `G` or
+  with the type kept (and then refused before any PUT when the type read is
+  not `G`); `translation` by its `value`, the one attribute SAP stores;
+  `isWritableByAMDP` on the cloud only — overlaid on the settings read, and
+  the whole document written back (decision 53). Every setting not named keeps
+  the value read — with one exception: when the resulting buffering type is
+  not `G` (a type-only change from `G` to `P`, say), SAP clears the area-key
+  count, since it writes `SCHFELDANZ` only for `G` (`move_adt_to_ddv`, Code on
+  both). The guarded PUT goes without a charset in its `Content-Type`
+  (`TABLE_SETTINGS_MEDIA_TYPE`; with `; charset=utf-8` beside a fresh
+  `If-Match` SAP answered `412` `SADT_RESOURCE/043`, measured on both).
 - **What the types cannot see.** The per-kind rules are TypeScript's
   structural checks. A caller who widens the variant (a cloud writer used as
   `IAdtTableSettingsUpdatable<T>`, a generic forwarding the default) or
   carries extra keys through a variable, a union or a spread passes values
   the rules would refuse as literals. A shipped implementation writes only
-  what SAP persists, and `patchMetadata` is the safe path: it writes back
-  what it read.
+  what SAP persists; writing back what was read, under the lock, is the safe
+  path.
 - **The sequence is the caller's, and its order keeps a concurrent edit:**
   1. `lock` (stateful) — the settings' own lock;
-  2. `readMetadata` under the lock — what the settings are now, after any edit
-     made before the lock was taken;
+  2. `readMetadata` of the working area (`version: 'inactive'`) under the
+     lock — what the settings are now, after any edit made before the lock was
+     taken. **A read without an ETag means no write:** the PUT cannot be
+     guarded, so stop here (and unlock);
   3. change what you mean to change in what was read;
   4. `updateMetadata` with the lock handle (and `transportRequest` as
      `corrNr`), passing the read's ETag as `ifMatch`
