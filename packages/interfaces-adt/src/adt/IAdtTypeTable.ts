@@ -69,8 +69,8 @@ export type AdtApiName =
  * |---|---|
  * | `create` | `create` |
  * | `read` | `read` |
- * | `source` | the object has a source the library reads: `read`, or a feature toggle's `readSource`. {@link AdtSourceTypeCode} is drawn from it |
- * | `readMetadata` | `readMetadata` |
+ * | `source` | the object has a source the library reads: `read`, a feature toggle's `readSource`, or a definition read's `getSource` (application log, job catalog, job template). {@link AdtSourceTypeCode} is drawn from it |
+ * | `readMetadata` | `readMetadata`, or a definition read's `getObject` (application log, job catalog, job template: the object document) |
  * | `update` | `update` |
  * | `updateMetadata` | `updateMetadata` |
  * | `lock`, `unlock` | `lock`, `unlock` |
