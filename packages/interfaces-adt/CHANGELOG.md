@@ -32,6 +32,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   or `format` is fixed: what a `version` selects is unverified (fr0ster/mcp-abap-adt#404).
 - **`accept`** on `IGetApplicationLogObjectOptions` and `IGetApplicationLogSourceOptions`: the
   Accept of that one request.
+- **Three APIs in `ADT_TYPES_ONPREM` and `ADT_TYPES_CLOUD`** (not in `ADT_TYPES_BASIS_740`), and
+  in `AdtApiName`: `applicationLog` (`APLO/TYP`, name up to 20), `applicationJobCatalog` (`SAJC`,
+  40) and `applicationJobTemplate` (`SAJT`, 40), each `source` and `readMetadata` only, from the
+  recorded typestructure of both releases (`OBJNAME_MAXLENGTH`). The recorded 7.40
+  typestructure lists none of them. An exhaustive map over `AdtApiName`, `AdtTypeCode`,
+  `AdtMainType` or `AdtObjectKind` gains three members.
 
 ## [33.0.0] - 2026-11-27
 
