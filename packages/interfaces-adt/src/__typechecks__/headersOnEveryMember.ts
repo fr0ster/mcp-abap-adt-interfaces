@@ -26,6 +26,7 @@
 import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type {
   IAbapDebugger,
+  IAbapKeywordDocumentation,
   IAbapUnitRunner,
   IAdtAbapGitBranchInfo,
   IAdtAbapGitCheckExternalRepoNewForm,
@@ -81,6 +82,8 @@ import type {
   IAdtVirtualFolders,
   IAdtWhereUsed,
   IAmdpDebugger,
+  IApplicationJobCatalog,
+  IApplicationJobTemplate,
   IApplicationLog,
   IAtcFindings,
   IAtcLog,
@@ -465,6 +468,15 @@ export type _HeadersIFeedRepository = Assert<
 >;
 export type _HeadersIApplicationLog = Assert<
   EveryMemberTakesHeaders<IApplicationLog<Probe, Probe, Probe>>
+>;
+export type _HeadersIApplicationJobCatalog = Assert<
+  EveryMemberTakesHeaders<IApplicationJobCatalog<Probe, Probe>>
+>;
+export type _HeadersIApplicationJobTemplate = Assert<
+  EveryMemberTakesHeaders<IApplicationJobTemplate<Probe, Probe>>
+>;
+export type _HeadersIAbapKeywordDocumentation = Assert<
+  EveryMemberTakesHeaders<IAbapKeywordDocumentation<Probe, Probe, Probe>>
 >;
 export type _HeadersIAtcLog = Assert<
   EveryMemberTakesHeaders<IAtcLog<Probe, Probe>>
