@@ -8,12 +8,16 @@ export interface IGetApplicationLogObjectOptions {
   version?: AdtReadVersion;
   accessMode?: string;
   action?: string;
+  /** The Accept of this one request; absent, the implementation sends its own default. */
+  accept?: string | undefined;
 }
 
 export interface IGetApplicationLogSourceOptions {
   corrNr?: string;
   lockHandle?: string;
   version?: AdtReadVersion;
+  /** The Accept of this one request; absent, the implementation sends its own default. */
+  accept?: string | undefined;
 }
 
 export interface IApplicationLog<TObject, TSource, TValidation> {
