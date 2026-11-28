@@ -157,6 +157,7 @@ export type {
   IAdtEnhancementHost,
   IAdtIncludeEnhancementHost,
   IAdtLockable,
+  IAdtLockedDeletable,
   IAdtLockedWrite,
   IAdtLockFreeMetadataUpdatable,
   IAdtLockFreeUpdatable,
@@ -417,6 +418,10 @@ export {
   TRANSPORT_SEARCH_CONFIGURATIONS_URL,
 } from './adt/IAdtTransport';
 export type {
+  ITypeGroupConfig,
+  ITypeGroupResults,
+} from './adt/IAdtTypeGroup';
+export type {
   AdtApiEntry,
   AdtApiName,
   AdtApiTable,
@@ -444,12 +449,17 @@ export type {
   IUnitTestScope,
 } from './adt/IAdtUnitTest';
 export type {
+  AdtOutlineCode,
   IAdtDataPreview,
   IAdtDiscovery,
   IAdtGroupLifecycle,
   IAdtInformationSystem,
+  IAdtNavigationTargetOptions,
+  IAdtNavigationTargetReadable,
   IAdtObjectAccess,
   IAdtObjectActivation,
+  IAdtObjectOutlineOptions,
+  IAdtObjectOutlineReadable,
   IAdtObjectProperties,
   IAdtObjectSearch,
   IAdtRepositoryStructure,

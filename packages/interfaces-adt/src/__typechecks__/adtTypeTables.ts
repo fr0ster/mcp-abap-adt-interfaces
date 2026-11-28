@@ -329,6 +329,7 @@ type NewerApis =
   | 'scalarFunction'
   | 'scalarFunctionImplementation'
   | 'transformation'
+  | 'typeGroup'
   | 'messageClass'
   | 'messageClassMessage'
   | 'featureToggle'
@@ -374,6 +375,7 @@ type NewerCodes =
   | 'PROG/PX'
   | 'CLAS/OCX'
   | 'TTYP/DA'
+  | 'TYPE/DG'
   | 'DOMA/DD'
   | 'DTEL/DE'
   | 'DCLS/DL'
@@ -433,6 +435,7 @@ export type Projections = [
       | 'DSFD/SCF'
       | 'DSFI/SFI'
       | 'XSLT/VT'
+      | 'TYPE/DG'
       | 'FTG2/FT'
       | 'ENHO/XHH'
     >
@@ -454,6 +457,7 @@ export type Projections = [
       | 'text_elements'
       | 'structure'
       | 'table_type'
+      | 'type_group'
       | 'domain'
       | 'data_element'
       | 'access_control'
@@ -603,6 +607,7 @@ export type NewerShapes = [
         | 'TABL/DTT'
         | 'PROG/PX'
         | 'CLAS/OCX'
+        | 'TYPE/DG'
       >
     >
   >,

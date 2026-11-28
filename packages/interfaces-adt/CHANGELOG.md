@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+The outline and navigation atoms, and type groups (`TYPE/DG`, for adt-clients
+#305): a new API name, its config and results, one new atom and the two rows.
+
+### Breaking
+
+- **Widened unions.** `AdtApiName` gains `'typeGroup'`, `AdtTypeCode` gains
+  `'TYPE/DG'`, `AdtObjectKind` gains `'type_group'`, and so do the unions
+  derived from the tables (`AdtApi`, `AdtTypeCodeOf`, `AdtTypeCodeWith`,
+  `AdtSourceTypeCode`, `AdtMainType` with `'TYPE'`, …). An exhaustive switch or
+  a map keyed by one of them stops compiling. **Migration:** add a case (or a
+  key) for `typeGroup` / `'TYPE/DG'` / `'type_group'` / `'TYPE'`.
+
+### Added
+
+- **`IAdtObjectOutlineReadable<TOutline>`** — `getObjectOutline(objectType, objectName, options)`,
+  one `GET <object uri>/objectstructure`, with `AdtOutlineCode` (`CLAS/OC`, `INTF/OI`, `PROG/P`,
+  `PROG/I`, `FUGR/F`) and `IAdtObjectOutlineOptions` (`version`, `accept`). adt-clients'
+  `AdtUtils.getObjectOutline` had no atom until now.
+- **`IAdtNavigationTargetReadable<TTarget>`** — `getNavigationTarget(uri, options)`, one
+  `POST /sap/bc/adt/navigation/target`, with `IAdtNavigationTargetOptions` (the discovery
+  template's `filter` and `fullname`, and `accept`). It resolves an outline's name fragment to
+  its start (fr0ster/mcp-abap-adt#401).
+- **`IUtilResults.objectOutline`** and **`IUtilResults.navigationTarget`**, both optional, so a
+  result set written before them still is one.
+- **`typeGroup`** in `AdtApiName`, with `ITypeGroupConfig` and
+  `ITypeGroupResults` (`validation`, `created`, `metadata`, `source`,
+  `updated`, `activation`, `deletion`, `versions`, `versionSource`).
+- **`IAdtLockedDeletable`**: a `delete` under the caller's lock
+  (`IAdtLockedWrite`), with no deletion check beside it — a type group is
+  deleted by lock, `DELETE ?lockHandle`, unlock.
+- **The rows.** `ADT_TYPES_ONPREM.typeGroup` (`TYPE/DG`, `nameMaxLength` 5):
+  `validate`, `create`, `read`, `source`, `readMetadata`, `update`, `lock`,
+  `unlock`, `activate`, `versions`, `delete`, each measured served on S/4HANA
+  2025. `ADT_TYPES_CLOUD.typeGroup`: `validate`, `read`, `source`,
+  `readMetadata`, `versions` — the create answered `403` `S_DEVELOP`, an
+  authorization refusal that decides nothing, so no write is listed.
+
 One member, one endpoint, one request (adt-clients 49.0.0, C7): the table
 settings patch that read and wrote in one member is gone, and no activation
 member reads the inactive list any more. A major: four exported types are
