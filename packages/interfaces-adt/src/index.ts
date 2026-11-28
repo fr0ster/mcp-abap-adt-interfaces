@@ -506,12 +506,24 @@ export type {
   IDebuggerStepToLineMethod,
 } from './runtime/IAbapDebugger';
 export type {
+  IAbapKeywordDocumentation,
+  IKeywordDocumentationOptions,
+  IKeywordDocumentationPositionParams,
+  IKeywordDocumentationQueryParams,
+  IKeywordDocumentationTopicParams,
+} from './runtime/IAbapKeywordDocumentation';
+export type {
   IAmdpBreakpoint,
   IAmdpDebugger,
   IAmdpStepMethod,
   IGetAmdpDataPreviewOptions,
   IStartAmdpDebuggerOptions,
 } from './runtime/IAmdpDebugger';
+export type {
+  IApplicationJobCatalog,
+  IApplicationJobTemplate,
+  IGetApplicationJobOptions,
+} from './runtime/IApplicationJob';
 export type {
   IApplicationLog,
   IGetApplicationLogObjectOptions,
