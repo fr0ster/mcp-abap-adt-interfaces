@@ -45,6 +45,7 @@ export type AdtApiName =
   | 'scalarFunction'
   | 'scalarFunctionImplementation'
   | 'transformation'
+  | 'typeGroup'
   | 'messageClass'
   | 'messageClassMessage'
   | 'featureToggle'
