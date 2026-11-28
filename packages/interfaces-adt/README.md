@@ -787,8 +787,10 @@ does not serve the collection, and its table has no entry.
   path.
 - **The sequence is the caller's, and its order keeps a concurrent edit:**
   1. `lock` (stateful) — the settings' own lock;
-  2. `readMetadata` under the lock — what the settings are now, after any edit
-     made before the lock was taken;
+  2. `readMetadata` of the working area (`version: 'inactive'`) under the
+     lock — what the settings are now, after any edit made before the lock was
+     taken. **A read without an ETag means no write:** the PUT cannot be
+     guarded, so stop here (and unlock);
   3. change what you mean to change in what was read;
   4. `updateMetadata` with the lock handle (and `transportRequest` as
      `corrNr`), passing the read's ETag as `ifMatch`

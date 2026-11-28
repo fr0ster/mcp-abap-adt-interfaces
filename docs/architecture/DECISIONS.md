@@ -3453,9 +3453,12 @@ of `ITableSettingsChangesOf<V>` on what was read (adt-clients ships a pure
 one, `patchTableSettings`, which sends no request), and
 `IAdtTableSettingsUpdatable.updateMetadata` of the whole document with the
 read's ETag as `ifMatch`. Decision 51's argument still holds, and it is now
-the caller's: the read is made under the lock, right before the PUT, and its
-ETag guards the PUT, so a stale base cannot reset what another session
-changed. `ITableSettingsChangesOf<V>` and `TABLE_SETTINGS_MEDIA_TYPE` stay.
+the caller's: the read of the working area (`version: 'inactive'`) is made
+under the lock, right before the PUT, a read without an ETag means no write,
+and the read's ETag goes with the PUT as `If-Match`. That is meant to keep a
+stale base from resetting what another session changed; whether SAP refuses a
+stale ETag on this resource is **not measured** (only a fresh ETag was:
+`200`). `ITableSettingsChangesOf<V>` and `TABLE_SETTINGS_MEDIA_TYPE` stay.
 
 **Against.** Keeping decision 51's member: two requests behind one member, the
 exception the owner's rule does not admit.
