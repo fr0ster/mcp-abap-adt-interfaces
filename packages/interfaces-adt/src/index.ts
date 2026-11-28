@@ -157,6 +157,7 @@ export type {
   IAdtEnhancementHost,
   IAdtIncludeEnhancementHost,
   IAdtLockable,
+  IAdtLockedDeletable,
   IAdtLockedWrite,
   IAdtLockFreeMetadataUpdatable,
   IAdtLockFreeUpdatable,

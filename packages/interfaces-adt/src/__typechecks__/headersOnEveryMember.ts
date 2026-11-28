@@ -52,6 +52,7 @@ import type {
   IAdtGroupLifecycle,
   IAdtIncludeEnhancementHost,
   IAdtLockable,
+  IAdtLockedDeletable,
   IAdtLockFreeMetadataUpdatable,
   IAdtLockFreeUpdatable,
   IAdtMessageClassMessageLockable,
@@ -320,6 +321,13 @@ export type _HeadersIAdtDeletable = Assert<
     IAdtDeletable<Probe, Probe, keyof Probe, Probe>,
     never,
     'delete' | 'checkDeletion'
+  >
+>;
+export type _HeadersIAdtLockedDeletable = Assert<
+  EveryMemberTakesHeaders<
+    IAdtLockedDeletable<Probe, Probe, keyof Probe>,
+    never,
+    'delete'
   >
 >;
 export type _HeadersIAdtValidatable = Assert<

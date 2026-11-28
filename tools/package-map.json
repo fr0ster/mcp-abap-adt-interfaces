@@ -241,6 +241,7 @@
   "IAdtCreateOptions": "interfaces-adt",
   "IAdtDataPreview": "interfaces-adt",
   "IAdtDeletable": "interfaces-adt",
+  "IAdtLockedDeletable": "interfaces-adt",
   "IAdtDiscovery": "interfaces-adt",
   "IAdtEnhancementHost": "interfaces-adt",
   "IAdtGroupActivationReference": "interfaces-adt",
