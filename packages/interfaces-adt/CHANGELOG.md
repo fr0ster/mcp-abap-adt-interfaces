@@ -7,8 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-The outline and navigation atoms, and type groups (`TYPE/DG`, for adt-clients
-#305): a new API name, its config and results, one new atom and the two rows.
+## [34.0.0] - 2026-11-28
+
+The outline and navigation atoms (for mcp-abap-adt #401), type groups (`TYPE/DG`,
+for adt-clients #305), and the C7 split (adt-clients 49): a new API name, its
+config and results, new atoms, the type-group rows, and the table-settings patch
+contract removed. Breaking for an exhaustive consumer and for a caller of
+`patchMetadata`; see Breaking, Removed and Migration below.
 
 ### Breaking
 
