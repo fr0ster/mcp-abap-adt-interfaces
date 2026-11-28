@@ -3361,6 +3361,9 @@ builder.
 
 ## 51. A table settings patch reads and writes in one member
 
+**Superseded by decision 53** (the owner's rule: one member, one endpoint, one
+request). Kept as it was decided.
+
 **Decided 2026-11-19, in `interfaces-adt` 30.1.0.** An exception to
 decisions 16 (one endpoint, one member) and 37 (a member does not look up
 what the caller can pass), for one member.
@@ -3431,6 +3434,35 @@ Calling `analyse` on the library's own paths to make an `E`: `analyse` may
 clear the verdict, and the library would then still need an `E` it cannot
 make. Keeping the casts as a named exception: refused by the owner, with no
 exception list.
+
+## 53. A table settings change is the caller's read, patch and write
+
+**Decided 2026-11-28, for adt-clients 49.0.0 (C7).** It supersedes decision
+51.
+
+**The problem.** Decision 51 let one member, `patchMetadata`, send two
+requests — the read and the guarded PUT — so that the read would be fresh for
+its own PUT. The owner's rule is one member, one endpoint, one request, and
+the owner approved the split.
+
+**Decided.** `IAdtTableSettingsPatchable`, `ITableSettingsPatchConfig`,
+`IAdtTableSettingsPatchHeaders` and `IAdtTableSettingsPatchOptions` are
+removed. A change of some settings is the caller's three calls under the
+settings' lock: `readMetadata` of the working area with its ETag, an overlay
+of `ITableSettingsChangesOf<V>` on what was read (adt-clients ships a pure
+one, `patchTableSettings`, which sends no request), and
+`IAdtTableSettingsUpdatable.updateMetadata` of the whole document with the
+read's ETag as `ifMatch`. Decision 51's argument still holds, and it is now
+the caller's: the read is made under the lock, right before the PUT, and its
+ETag guards the PUT, so a stale base cannot reset what another session
+changed. `ITableSettingsChangesOf<V>` and `TABLE_SETTINGS_MEDIA_TYPE` stay.
+
+**Against.** Keeping decision 51's member: two requests behind one member, the
+exception the owner's rule does not admit.
+
+**What would change it.** Decision 51's condition: SAP accepting a partial
+settings document, a PUT that keeps the settings it does not name. Then a
+change is one PUT of the changes, and no read is needed.
 
 ## Open, and what would settle it
 

@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+One member, one endpoint, one request (adt-clients 49.0.0, C7): the table
+settings patch that read and wrote in one member is gone, and no activation
+member reads the inactive list any more. A major: four exported types are
+removed.
+
+### Removed
+
+- **`IAdtTableSettingsPatchable`** (`patchMetadata`), with
+  **`ITableSettingsPatchConfig`**, **`IAdtTableSettingsPatchHeaders`** and
+  **`IAdtTableSettingsPatchOptions`** (decision 53, superseding decision 51).
+  `ITableSettingsChangesOf<V>`, `ITableSettingsChanges` and
+  `TABLE_SETTINGS_MEDIA_TYPE` stay.
+
+### Changed
+
+- **`IAdtAnalyseContext.activation`** is filled by no member: the caller that
+  read the inactive list after an activation hands it to its `analyse`
+  itself. The type is unchanged; its documentation, the
+  `IAdtObjectActivation` JSDoc and the README's "Activation" say so.
+
+### Migration
+
+- A `patchMetadata` call is three calls under the settings' lock:
+  `readMetadata` of the working area (`version: 'inactive'`) with its ETag,
+  an overlay of the changes on what was read (adt-clients 49.0.0:
+  `patchTableSettings`, no request), and `updateMetadata` of the whole
+  document with `ifMatch` set to the read's ETag, its `Content-Type` without a
+  charset. A read without an ETag means no write.
+- An implementation of `IAdtTableSettingsPatchable` drops `patchMetadata`.
+- A reading that relied on `context.activation` from a member gets it from its
+  own caller, who reads `GET /sap/bc/adt/activation/inactiveobjects` after a
+  checklist that does not state its outcome.
+
 ## [33.0.0] - 2026-11-27
 
 A field the create's request always reads is required in the config, so a
