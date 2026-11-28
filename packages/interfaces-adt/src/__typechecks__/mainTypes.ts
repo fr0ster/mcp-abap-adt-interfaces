@@ -90,6 +90,7 @@ type ModernMains =
   | 'SRVD'
   | 'TABL'
   | 'TTYP'
+  | 'TYPE'
   | 'XSLT';
 
 export type RecordedMains = [

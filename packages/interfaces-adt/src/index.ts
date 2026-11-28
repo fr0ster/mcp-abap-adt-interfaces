@@ -157,6 +157,7 @@ export type {
   IAdtEnhancementHost,
   IAdtIncludeEnhancementHost,
   IAdtLockable,
+  IAdtLockedDeletable,
   IAdtLockedWrite,
   IAdtLockFreeMetadataUpdatable,
   IAdtLockFreeUpdatable,
@@ -328,9 +329,6 @@ export type {
 } from './adt/IAdtStructure';
 export type { ITableConfig, ITableResults } from './adt/IAdtTable';
 export type {
-  IAdtTableSettingsPatchable,
-  IAdtTableSettingsPatchHeaders,
-  IAdtTableSettingsPatchOptions,
   IAdtTableSettingsUpdatable,
   IAdtTableSettingsUpdateOptions,
   ITableBuffering,
@@ -341,7 +339,6 @@ export type {
   ITableSettingsChangesOf,
   ITableSettingsConfig,
   ITableSettingsOf,
-  ITableSettingsPatchConfig,
   ITableSettingsRead,
   ITableSettingsReadOf,
   ITableSettingsResults,
@@ -420,6 +417,10 @@ export {
   ADT_TASK_TYPE,
   TRANSPORT_SEARCH_CONFIGURATIONS_URL,
 } from './adt/IAdtTransport';
+export type {
+  ITypeGroupConfig,
+  ITypeGroupResults,
+} from './adt/IAdtTypeGroup';
 export type {
   AdtApiEntry,
   AdtApiName,

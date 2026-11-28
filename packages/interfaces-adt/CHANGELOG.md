@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+The outline and navigation atoms, and type groups (`TYPE/DG`, for adt-clients
+#305): a new API name, its config and results, one new atom and the two rows.
+The support-read contracts (fr0ster/mcp-abap-adt#404): the application job
+definitions, the ABAP keyword documentation, and three API names with their rows.
+
+### Breaking
+
+- **Widened unions.** `AdtApiName` gains `'typeGroup'`, `AdtTypeCode` gains
+  `'TYPE/DG'`, `AdtObjectKind` gains `'type_group'`, and so do the unions
+  derived from the tables (`AdtApi`, `AdtTypeCodeOf`, `AdtTypeCodeWith`,
+  `AdtSourceTypeCode`, `AdtMainType` with `'TYPE'`, …). An exhaustive switch or
+  a map keyed by one of them stops compiling. **Migration:** add a case (or a
+  key) for `typeGroup` / `'TYPE/DG'` / `'type_group'` / `'TYPE'`.
+- **Widened again by the support reads** (fr0ster/mcp-abap-adt#404): `AdtApiName` gains
+  `'applicationLog'`, `'applicationJobCatalog'` and `'applicationJobTemplate'`, `AdtTypeCode`
+  `'APLO/TYP'`, `'SAJC'` and `'SAJT'`, `AdtObjectKind` `'application_log'`,
+  `'application_job_catalog'` and `'application_job_template'`, and `AdtMainType` `'APLO'`,
+  `'SAJC'` and `'SAJT'`, with the unions derived from the tables. **Migration:** add a case (or
+  a key) for each.
+
 ### Added
 
 - **`IAdtObjectOutlineReadable<TOutline>`** — `getObjectOutline(objectType, objectName, options)`,
@@ -19,6 +39,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   its start (fr0ster/mcp-abap-adt#401).
 - **`IUtilResults.objectOutline`** and **`IUtilResults.navigationTarget`**, both optional, so a
   result set written before them still is one.
+- **`typeGroup`** in `AdtApiName`, with `ITypeGroupConfig` and
+  `ITypeGroupResults` (`validation`, `created`, `metadata`, `source`,
+  `updated`, `activation`, `deletion`, `versions`, `versionSource`).
+- **`IAdtLockedDeletable`**: a `delete` under the caller's lock
+  (`IAdtLockedWrite`), with no deletion check beside it — a type group is
+  deleted by lock, `DELETE ?lockHandle`, unlock.
+- **The rows.** `ADT_TYPES_ONPREM.typeGroup` (`TYPE/DG`, `nameMaxLength` 5):
+  `validate`, `create`, `read`, `source`, `readMetadata`, `update`, `lock`,
+  `unlock`, `activate`, `versions`, `delete`, each measured served on S/4HANA
+  2025. `ADT_TYPES_CLOUD.typeGroup`: `validate`, `read`, `source`,
+  `readMetadata`, `versions` — the create answered `403` `S_DEVELOP`, an
+  authorization refusal that decides nothing, so no write is listed.
 - **`IApplicationJobCatalog<TObject, TSource>`** and **`IApplicationJobTemplate<TObject, TSource>`**
   (`runtime/IApplicationJob.ts`) — the definition reads of an application job catalog (`SAJC`)
   and template (`SAJT`): `getObject(name, options)` (the ADT object document) and
@@ -36,8 +68,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   in `AdtApiName`: `applicationLog` (`APLO/TYP`, name up to 20), `applicationJobCatalog` (`SAJC`,
   40) and `applicationJobTemplate` (`SAJT`, 40), each `source` and `readMetadata` only, from the
   recorded typestructure of both releases (`OBJNAME_MAXLENGTH`). The recorded 7.40
-  typestructure lists none of them. An exhaustive map over `AdtApiName`, `AdtTypeCode`,
-  `AdtMainType` or `AdtObjectKind` gains three members.
+  typestructure lists none of them.
+
+One member, one endpoint, one request (adt-clients 49.0.0, C7): the table
+settings patch that read and wrote in one member is gone, and no activation
+member reads the inactive list any more. A major: four exported types are
+removed.
+
+### Removed
+
+- **`IAdtTableSettingsPatchable`** (`patchMetadata`), with
+  **`ITableSettingsPatchConfig`**, **`IAdtTableSettingsPatchHeaders`** and
+  **`IAdtTableSettingsPatchOptions`** (decision 53, superseding decision 51).
+  `ITableSettingsChangesOf<V>`, `ITableSettingsChanges` and
+  `TABLE_SETTINGS_MEDIA_TYPE` stay.
+
+### Changed
+
+- **`IAdtAnalyseContext.activation`** is filled by no member: the caller that
+  read the inactive list after an activation hands it to its `analyse`
+  itself. The type is unchanged; its documentation, the
+  `IAdtObjectActivation` JSDoc and the README's "Activation" say so.
+
+### Migration
+
+- A `patchMetadata` call is three calls under the settings' lock:
+  `readMetadata` of the working area (`version: 'inactive'`) with its ETag,
+  an overlay of the changes on what was read (adt-clients 49.0.0:
+  `patchTableSettings`, no request), and `updateMetadata` of the whole
+  document with `ifMatch` set to the read's ETag, its `Content-Type` without a
+  charset. A read without an ETag means no write.
+- An implementation of `IAdtTableSettingsPatchable` drops `patchMetadata`.
+- A reading that relied on `context.activation` from a member gets it from its
+  own caller, who reads `GET /sap/bc/adt/activation/inactiveobjects` after a
+  checklist that does not state its outcome.
 
 ## [33.0.0] - 2026-11-27
 

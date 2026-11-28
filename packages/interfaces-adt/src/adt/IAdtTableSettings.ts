@@ -22,8 +22,12 @@
  * (`CL_TABT_WB_PERSIST->move_adt_to_ddv`, then `DDIF_TABT_PUT`; Code on both
  * systems, measured on both, 2026-11-19); a field the document leaves out is
  * reset to its initial value. So {@link ITableSettings} requires every field
- * the document carries, and {@link IAdtTableSettingsPatchable} reads,
- * overlays and writes the whole document.
+ * the document carries, and a change of some settings is the caller's three
+ * calls under the lock — the read, the overlay of {@link ITableSettingsChangesOf}
+ * on it, and the write of the whole document with the read's ETag as
+ * `If-Match` (decision 53; its `Content-Type` without a charset: with
+ * `; charset=utf-8` beside a fresh `If-Match` SAP answered `412`
+ * `SADT_RESOURCE/043`, without it `200`, measured on both).
  *
  * Types and constants only.
  */
@@ -358,9 +362,10 @@ type AtLeastOne<T> = {
  * kept. So `areaKeyFields` goes only with type `G`, or with no type (the type
  * read is kept); `{ type: 'P', areaKeyFields: 1 }` and a `string` type that is
  * not the literal `'G'` with it do not compile. With the type kept, the
- * resulting type is the one read: `patchMetadata` refuses an `areaKeyFields`
- * change whose resulting type (the read merged with the changes) is not `G`,
- * before any PUT — a check on what SAP answered, not on the caller's types.
+ * resulting type is the one read: an `areaKeyFields` change whose resulting
+ * type (the read merged with the changes) is not `G` is refused by the
+ * overlay before any PUT — a check on what SAP answered, not on the caller's
+ * types.
  */
 export type ITableBufferingChange =
   | AtLeastOne<{
@@ -407,8 +412,9 @@ type TableSettingsChangeFields<W extends AdtModernVariant> = {
  * What a patch changes on variant `V`: at least one setting — `{}`,
  * `{ buffering: {} }` and `{ translation: {} }` do not compile. Every setting
  * not named keeps the value read, with one exception SAP makes: when the
- * resulting buffering type is not `G`, SAP clears the area-key count (see
- * {@link IAdtTableSettingsPatchable}). The fields are optional without
+ * resulting buffering type is not `G`, SAP clears the area-key count (it
+ * writes `SCHFELDANZ` only for `G`, `move_adt_to_ddv`, Code on both systems).
+ * The fields are optional without
  * `| undefined`: under `exactOptionalPropertyTypes` an explicit `undefined`
  * does not compile; an implementation treats a field set to `undefined` by a
  * caller without that flag as not named (the value read is kept).
@@ -424,111 +430,16 @@ export type ITableSettingsChangesOf<
 export type ITableSettingsChanges = ITableSettingsChangesOf;
 
 /**
- * What a patch takes: the table, and the settings to change. The description
- * is the one read; every setting not named keeps the value read, except the
- * area-key count when the resulting buffering type is not `G` (see
- * {@link IAdtTableSettingsPatchable}).
- */
-export interface ITableSettingsPatchConfig<
-  V extends AdtModernVariant = AdtModernVariant,
-> extends ITableSettingsConfig {
-  changes: ITableSettingsChangesOf<V>;
-}
-
-/**
  * The settings document's media type, without a charset — the v2 a read is
  * answered with (a v1 `Accept` was answered `406`, measured on both).
  */
 export const TABLE_SETTINGS_MEDIA_TYPE =
   'application/vnd.sap.adt.table.settings.v2+xml';
 
-/**
- * The media type a patch reads and writes with: exactly
- * {@link TABLE_SETTINGS_MEDIA_TYPE}, a literal, so a value with a charset does
- * not compile. It is the read's `Accept`, and the guarded PUT's `Accept` and
- * `Content-Type` — sent without a charset (with `; charset=utf-8` beside a
- * fresh `If-Match` SAP answered `412` `SADT_RESOURCE/043`; without it `200`;
- * measured on both).
- */
-export interface IAdtTableSettingsPatchHeaders {
-  readonly accept: typeof TABLE_SETTINGS_MEDIA_TYPE;
-  readonly contentType?: never;
-}
-
-/**
- * The options of a patch: those of a write, with the lock handle required and
- * neither a `source` nor an `ifMatch` — the patch sends the ETag it read.
- */
-export type IAdtTableSettingsPatchOptions<E extends IAdtError = IAdtError> =
-  Omit<IAdtUpdateOptions<E>, 'source' | 'lockHandle' | 'ifMatch'> & {
-    source?: never;
-    ifMatch?: never;
-    lockHandle: string;
-  };
-
-/**
- * The settings can be patched: the named settings changed, every other one
- * kept as it is — with one exception: when the resulting buffering type is
- * not `G` (a type-only change from `G` to `P`, say), SAP clears the area-key
- * count, since it writes `SCHFELDANZ` only for `G` (`move_adt_to_ddv`, Code
- * on both systems). The patch does not block that change: the count means
- * nothing for the other types.
- *
- * **Read, overlay, write the whole document.** SAP resets every setting a
- * write leaves out (`CL_TABT_WB_PERSIST->move_adt_to_ddv`, Code on both
- * systems; measured on both, 2026-11-19), so a patch cannot send the changes
- * alone. Under the caller's lock it reads the settings' working area
- * (`version: 'inactive'`) with its ETag, overlays `changes` on the settings
- * read (`buffering` field by field, `translation` by its `value`), and writes
- * the whole document back — the description read, on the cloud
- * `isWritableByAMDP` as read unless changed — guarded by `If-Match` with the
- * ETag read, its `Content-Type` without a charset
- * ({@link IAdtTableSettingsPatchHeaders}). A read with no ETag is a refusal
- * and nothing is written; a refused read or write is answered as SAP
- * answered it; nothing is retried. Whether SAP refuses a stale ETag here is
- * not measured.
- *
- * Two requests in one member: decision 51.
- *
- * **What the types cannot see.** The per-kind rules are TypeScript's
- * structural checks: a caller who widens the variant (a cloud writer used as
- * `IAdtTableSettingsUpdatable<T>`, a generic that forwards the default), or
- * carries extra keys through a variable, a union or a spread, passes values
- * the rules would refuse as literals. A shipped implementation writes only
- * what SAP persists, and `patchMetadata` is the safe path: it writes back
- * what it read.
- */
-export interface IAdtTableSettingsPatchable<
-  TMetadataUpdated,
-  V extends AdtModernVariant = AdtModernVariant,
-> {
-  /**
-   * Patch the settings under the caller's lock (`options.lockHandle`).
-   *
-   * @returns whatever this implementation's reading makes of the write's
-   *          answer — SAP answers 200 with the inactive document — or the
-   *          read's failure, when the read failed
-   */
-  patchMetadata<E extends IAdtError>(
-    config: ITableSettingsPatchConfig<V>,
-    options: {
-      headers: IAdtTableSettingsPatchHeaders;
-    } & IAdtTableSettingsPatchOptions<E> & {
-        analyse: IAnalyse<E>;
-      },
-  ): Promise<IAdtResponse<TMetadataUpdated, E | IAdtError>>;
-  patchMetadata(
-    config: ITableSettingsPatchConfig<V>,
-    options: {
-      headers: IAdtTableSettingsPatchHeaders;
-    } & IAdtTableSettingsPatchOptions,
-  ): Promise<IAdtResponse<TMetadataUpdated>>;
-}
-
 /** One strategy per member of a table settings implementation. See `IClassResults`. */
 export interface ITableSettingsResults {
   /** The settings document a read answers. */
   readonly metadata: IResultStrategy<unknown>;
-  /** What a write, or a patch's write, answers: the settings document, inactive. */
+  /** What a write answers: the settings document, inactive. */
   readonly metadataUpdated: IResultStrategy<unknown>;
 }

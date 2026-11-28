@@ -31,6 +31,7 @@ const _kindByCode: { readonly [C in AdtTypeCode]: AdtObjectKind } = {
   'CLAS/OCX': 'text_elements',
   'TABL/DS': 'structure',
   'TTYP/DA': 'table_type',
+  'TYPE/DG': 'type_group',
   'DOMA/DD': 'domain',
   'DTEL/DE': 'data_element',
   'DCLS/DL': 'access_control',

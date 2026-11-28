@@ -140,15 +140,16 @@ export type IAnalyse<E extends IAdtError = IAdtError> = (
 ) => E | AdtNoFailure;
 
 /**
- * Facts beside the answer that a member hands to {@link IAnalyse}, when the
- * answer alone cannot be judged. A reading of two parameters ignores them and
- * stays an {@link IAnalyse}.
+ * Facts beside the answer, handed to {@link IAnalyse} by whoever read them,
+ * when the answer alone cannot be judged. A reading of two parameters ignores
+ * them and stays an {@link IAnalyse}.
  */
 export interface IAdtAnalyseContext {
   /**
-   * **Only a member that activates fills it**, and only when it read the list
-   * of inactive objects after the activation's answer; every other member, and
-   * an activation that read nothing more, leaves it absent.
+   * **No member fills it** (adt-clients 49.0.0): an activation member sends
+   * the activation alone. A caller that reads the list of inactive objects
+   * after an activation whose checklist does not state its outcome hands it
+   * to its `analyse` itself, with the uris the activation named.
    */
   readonly activation?: {
     /** The uris of the references the activation request sent. */

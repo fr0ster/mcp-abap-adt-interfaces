@@ -15,13 +15,11 @@ import type { IAdtHeaders } from '../adt/IAdtContentTypes';
 import type { IAnalyse } from '../adt/IAdtObject';
 import type { IAdtError } from '../adt/IAdtResponse';
 import {
-  type IAdtTableSettingsPatchable,
-  type IAdtTableSettingsPatchHeaders,
-  type IAdtTableSettingsPatchOptions,
   type IAdtTableSettingsUpdatable,
   type IAdtTableSettingsUpdateOptions,
   type ITableSettings,
   type ITableSettingsChanges,
+  type ITableSettingsChangesOf,
   type ITableSettingsConfig,
   type ITableSettingsOf,
   type ITableSettingsRead,
@@ -299,50 +297,11 @@ const _onPremiseRead: ITableSettingsRead = {
 };
 void _onPremiseRead;
 
-// ── A patch: at least one setting, translation by value, the ETag its own ───
+// ── A change set: at least one setting, translation by value ───────────────
+//
+// What a caller overlays on the read before the write (decision 53): the
+// read, the overlay and the write are the caller's three calls.
 
-const patchHeaders = {
-  accept: 'application/vnd.sap.adt.table.settings.v2+xml',
-} as const;
-const _withCharset: IAdtTableSettingsPatchHeaders = {
-  // @ts-expect-error the media type exactly, no charset
-  accept: 'application/vnd.sap.adt.table.settings.v2+xml; charset=utf-8',
-};
-void _withCharset;
-const _fromConstant: IAdtTableSettingsPatchHeaders = {
-  accept: TABLE_SETTINGS_MEDIA_TYPE,
-};
-void _fromConstant;
-declare const anyAccept: string;
-const _anyAccept: IAdtTableSettingsPatchHeaders = {
-  // @ts-expect-error a string that may carry a charset is not the media type
-  accept: anyAccept,
-};
-void _anyAccept;
-declare const cloudPatcher: IAdtTableSettingsPatchable<string, 'cloud'>;
-declare const onPremisePatcher: IAdtTableSettingsPatchable<string, 'onprem'>;
-void cloudPatcher.patchMetadata(
-  { tableName: 'ZTABLE', changes: { dataClassCategory: 'APPL1' } },
-  { headers: patchHeaders, lockHandle: 'HANDLE' },
-);
-void cloudPatcher.patchMetadata(
-  {
-    tableName: 'ZTABLE',
-    transportRequest: 'E19K900001',
-    changes: { buffering: { allowed: 'X' }, isWritableByAMDP: true },
-  },
-  { headers: patchHeaders, lockHandle: 'HANDLE' },
-);
-void onPremisePatcher.patchMetadata(
-  // @ts-expect-error on premise a patch does not name isWritableByAMDP
-  { tableName: 'ZTABLE', changes: { isWritableByAMDP: true } },
-  { headers: patchHeaders, lockHandle: 'HANDLE' },
-);
-void onPremisePatcher.patchMetadata(
-  { tableName: 'ZTABLE', changes: { loggingEnabled: true } },
-  // @ts-expect-error the patch sends the media type without a charset: no Content-Type of the caller's
-  { headers, lockHandle: 'HANDLE' },
-);
 // @ts-expect-error a patch changes at least one setting
 const _noChanges: ITableSettingsChanges = {};
 void _noChanges;
@@ -397,31 +356,19 @@ const _wrongCount: ITableSettingsChanges = {
   buffering: { areaKeyFields: '1' },
 };
 void _wrongCount;
-void cloudPatcher.patchMetadata(
-  { tableName: 'ZTABLE', changes: { loggingEnabled: true } },
-  // @ts-expect-error a patch needs the settings' lock handle
-  { headers: patchHeaders },
-);
-void cloudPatcher.patchMetadata(
-  { tableName: 'ZTABLE', changes: { loggingEnabled: true } },
-  // @ts-expect-error the patch sends the ETag it read: no ifMatch of the caller's
-  { headers: patchHeaders, lockHandle: 'HANDLE', ifMatch: '"e"' },
-);
-declare const patchWithSource: {
-  headers: IAdtTableSettingsPatchHeaders;
-  lockHandle: string;
-  source: string;
+// The settings' media type, a literal without a charset.
+const _mediaType: 'application/vnd.sap.adt.table.settings.v2+xml' =
+  TABLE_SETTINGS_MEDIA_TYPE;
+void _mediaType;
+const _cloudFlag: ITableSettingsChangesOf<'cloud'> = {
+  isWritableByAMDP: true,
 };
-void cloudPatcher.patchMetadata(
-  { tableName: 'ZTABLE', changes: { loggingEnabled: true } },
-  // @ts-expect-error no second channel for the body
-  patchWithSource,
-);
-const _patchOptions: IAdtTableSettingsPatchOptions = {
-  lockHandle: 'HANDLE',
-  timeout: undefined,
+void _cloudFlag;
+const _onPremiseFlag: ITableSettingsChangesOf<'onprem'> = {
+  // @ts-expect-error on premise a change does not name isWritableByAMDP
+  isWritableByAMDP: true,
 };
-void _patchOptions;
+void _onPremiseFlag;
 
 const _options: IAdtTableSettingsUpdateOptions = {
   lockHandle: 'HANDLE',

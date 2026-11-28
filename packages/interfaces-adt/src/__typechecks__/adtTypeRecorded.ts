@@ -562,6 +562,23 @@ type RecordedOnPremise = {
         | 'transport';
     };
   };
+  typeGroup: {
+    'TYPE/DG': {
+      parent: null;
+      operations:
+        | 'validate'
+        | 'create'
+        | 'read'
+        | 'source'
+        | 'readMetadata'
+        | 'update'
+        | 'lock'
+        | 'unlock'
+        | 'activate'
+        | 'versions'
+        | 'delete';
+    };
+  };
   transformation: {
     'XSLT/VT': {
       parent: null;
@@ -811,7 +828,23 @@ type RecordedOnPremise = {
 // (`403`), so nothing that changes one is listed.
 type Flat<T> = { [K in keyof T]: T[K] };
 type RecordedCloud = Flat<
-  Omit<RecordedOnPremise, 'program' | 'include' | 'featureToggle'> & {
+  Omit<
+    RecordedOnPremise,
+    'program' | 'include' | 'featureToggle' | 'typeGroup'
+  > & {
+    // A type group: only what was measured served; the create answered an
+    // authorization refusal (403 S_DEVELOP), so no write could be measured.
+    typeGroup: {
+      'TYPE/DG': {
+        parent: null;
+        operations:
+          | 'validate'
+          | 'read'
+          | 'source'
+          | 'readMetadata'
+          | 'versions';
+      };
+    };
     featureToggle: {
       'FTG2/FT': {
         parent: null;
@@ -1119,7 +1152,7 @@ export type RecordedTables = [
 
 // Cloud is on-premise but for the evidence it cites, one name length, the
 // program, the include and the feature toggle.
-type Shared<T> = Omit<T, 'program' | 'include' | 'featureToggle'>;
+type Shared<T> = Omit<T, 'program' | 'include' | 'featureToggle' | 'typeGroup'>;
 export type CloudIsOnPremise = [
   Assert<
     Equal<

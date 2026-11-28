@@ -464,6 +464,32 @@ export const ADT_TYPES_ONPREM = {
       },
     },
   },
+  // Each operation measured served on S/4HANA 2025 (the type-group-cycle and type-group-reads corpus cases).
+  typeGroup: {
+    kind: 'type_group',
+    collection: '/sap/bc/adt/ddic/typegroups',
+    codes: {
+      'TYPE/DG': {
+        main: 'TYPE',
+        parent: null,
+        nameMaxLength: 5,
+        operations: [
+          'validate',
+          'create',
+          'read',
+          'source',
+          'readMetadata',
+          'update',
+          'lock',
+          'unlock',
+          'activate',
+          'versions',
+          'delete',
+        ],
+        evidence: 'system-description-s4-2025--07-typestructure',
+      },
+    },
+  },
   domain: {
     kind: 'domain',
     collection: '/sap/bc/adt/ddic/domains',
@@ -1519,6 +1545,20 @@ export const ADT_TYPES_CLOUD = {
           'delete',
           'transport',
         ],
+        evidence: 'system-description-abap-cloud--07-typestructure',
+      },
+    },
+  },
+  // Only what was measured served: the create answered an authorization refusal (403 S_DEVELOP), which decides nothing, so no write could be measured.
+  typeGroup: {
+    kind: 'type_group',
+    collection: '/sap/bc/adt/ddic/typegroups',
+    codes: {
+      'TYPE/DG': {
+        main: 'TYPE',
+        parent: null,
+        nameMaxLength: 5,
+        operations: ['validate', 'read', 'source', 'readMetadata', 'versions'],
         evidence: 'system-description-abap-cloud--07-typestructure',
       },
     },
