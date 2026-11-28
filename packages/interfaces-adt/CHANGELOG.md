@@ -19,6 +19,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   its start (fr0ster/mcp-abap-adt#401).
 - **`IUtilResults.objectOutline`** and **`IUtilResults.navigationTarget`**, both optional, so a
   result set written before them still is one.
+- **`IApplicationJobCatalog<TObject, TSource>`** and **`IApplicationJobTemplate<TObject, TSource>`**
+  (`runtime/IApplicationJob.ts`) — the definition reads of an application job catalog (`SAJC`)
+  and template (`SAJT`): `getObject(name, options)` (the ADT object document) and
+  `getSource(name, options)` (`/source/main`), one `GET` each, with `IGetApplicationJobOptions`
+  (`version`, `accept`). Definitions, not job runs or job logs (fr0ster/mcp-abap-adt#404).
+- **`IAbapKeywordDocumentation<TQuery, TTopic, TPosition>`** (`runtime/IAbapKeywordDocumentation.ts`)
+  — the ABAP keyword documentation, `/sap/bc/adt/docu/abap/langu`, one member per form:
+  `query` (`query=`), `topic` (`object=`, the form the documentation's own links use; no
+  discovery template announces it) and `position` (`uri=`), each with `language`, `version` and
+  `format` sent as given, and `IKeywordDocumentationOptions` (`accept`). No value of `version`
+  or `format` is fixed: what a `version` selects is unverified (fr0ster/mcp-abap-adt#404).
+- **`accept`** on `IGetApplicationLogObjectOptions` and `IGetApplicationLogSourceOptions`: the
+  Accept of that one request.
 
 ## [33.0.0] - 2026-11-27
 
