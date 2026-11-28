@@ -277,6 +277,11 @@ posts to `/sap/bc/adt/repository/typestructure`; its reading is
 
 ## Type groups
 
+> **Breaking for an exhaustive consumer.** `AdtApiName` (`'typeGroup'`),
+> `AdtTypeCode` (`'TYPE/DG'`), `AdtObjectKind` (`'type_group'`), `AdtMainType`
+> (`'TYPE'`) and the unions derived from the tables widen. Migration: add a case
+> or a key for each in an exhaustive switch or map.
+
 `typeGroup` is the API for type groups (`TYPE/DG`, kind `type_group`, collection
 `/sap/bc/adt/ddic/typegroups`, names of at most 5 characters), configured by
 `ITypeGroupConfig` and read through `ITypeGroupResults`.

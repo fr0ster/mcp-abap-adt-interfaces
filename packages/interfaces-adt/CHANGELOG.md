@@ -7,8 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Type groups (`TYPE/DG`), for adt-clients #305. Additive: a new API name, its
-config and results, one new atom and the two rows.
+Type groups (`TYPE/DG`), for adt-clients #305: a new API name, its config and
+results, one new atom and the two rows.
+
+### Breaking
+
+- **Widened unions.** `AdtApiName` gains `'typeGroup'`, `AdtTypeCode` gains
+  `'TYPE/DG'`, `AdtObjectKind` gains `'type_group'`, and so do the unions
+  derived from the tables (`AdtApi`, `AdtTypeCodeOf`, `AdtTypeCodeWith`,
+  `AdtSourceTypeCode`, `AdtMainType` with `'TYPE'`, …). An exhaustive switch or
+  a map keyed by one of them stops compiling. **Migration:** add a case (or a
+  key) for `typeGroup` / `'TYPE/DG'` / `'type_group'` / `'TYPE'`.
 
 ### Added
 
