@@ -14,6 +14,7 @@ ADT contracts: object operations, runtime analysis, execution, feeds and service
 - Since 15.1.0 the plain class and program run take `debuggee` (`IDebuggeeIds`): the terminal id and IDE id a terminal-mode listener catches the run by.
 - Since 23.1.0 the ABAP Unit run registry: `ABAP_UNIT_RUN_TYPES`, every `osl:object type` value a run may name, what a run of it runs and on what evidence; `AbapUnitRunObjectType` (its keys), `AbapUnitRunTarget` (an object or a package) and the generic runner contract `IAbapUnitRunner`. Additions only. See "The ABAP Unit run registry".
 - Since 30.0.0 the text elements of a program, a class or a function group — text symbols, selection texts, list and column headings — are their own contract (`/sap/bc/adt/textelements/…`, lock class `TEXT`): `IAdtTextElementsReadable` reads one part, `IAdtTextElementsUpdatable` writes one whole part from a typed document (`ITextSymbol`, `ISelectionText`, `ITextHeadings`), `ITextElementsResults`. The tables gain the API `textElements` (`PROG/PX`, `CLAS/OCX`, kind `text_elements`) on S/4HANA and ABAP cloud: a map over `AdtApiName`, `AdtTypeCode`, `AdtObjectKind`, `CodesOfMain<'PROG'>`, `CodesOfMain<'CLAS'>` or a union derived from the tables — the utility, group activation and where-used codes among them (`AdtUtilityCode`, `AdtGroupActivationCode`, `AdtWhereUsedCode`) — adds the members; the reason for the major. The typed `activateObjects` / `activateObjectsGroup` take the text elements' reference beside the object's. See "Text elements" and "Migrating to 30.0.0".
+- Since 34.0.0 type groups are an API (`typeGroup`, `TYPE/DG`, kind `type_group`, main type `TYPE`) with `ITypeGroupConfig`, `ITypeGroupResults` and the locked delete `IAdtLockedDeletable`; a map or exhaustive switch over `AdtApiName`, `AdtTypeCode`, `AdtObjectKind`, `AdtMainType` or a union derived from the tables adds the members. The outline and navigation atoms are new (`IAdtObjectOutlineReadable`, `IAdtNavigationTargetReadable`, with the optional `IUtilResults.objectOutline` and `IUtilResults.navigationTarget`). One member, one request: `IAdtTableSettingsPatchable` (`patchMetadata`) and its config, headers and options types are removed — a change of some settings is the caller's read, overlay and write — and `IAdtAnalyseContext.activation` is filled by the caller, never by a member. See "Type groups", "Activation", "A table's technical settings" and "Migrating to 34.0.0".
 - Since 33.0.0 a field the create's request reads is required in the config: `description` on the behaviour definition's, function group's, function module's, interface's, metadata extension's and structure's, and the service binding's `description`, `serviceName`, `serviceDefinitionName`, `serviceVersion` and `bindingVariant`. A member that only addresses the object still takes the name alone. See "Migrating to 33.0.0".
 - Since 32.0.0 an identifying atom, and the write atoms, name the keys that address the object: `TRequired` (no default) — the object's own name, its parent where it has one, a field the member sends — each a `string`, never `undefined`. One endpoint, one method: a write requires the caller's `lockHandle` and never locks for itself; a write that takes no lock is `IAdtLockFreeUpdatable` / `IAdtLockFreeMetadataUpdatable`; a message class message's chain is the caller's (`IAdtMessageClassMessageLockable`, `IAdtMessageClassMessageUpdatable`). `source` is required where a member sends it (`TRequiredOptions`). Every generic overload answers `IAdtResponse<T, E | IAdtError>` (`E | IAbapGitStructuredError` for the abapGit facts), because the library may answer its own error with `analyse` given. The old `link` and `checkExternalRepo` forms of `IAdtAbapGitClient`, deprecated since 30.2.0, are removed with `IAbapGitLinkArgs`, `IAbapGitExternalRepoCredentials` and the client's fourth type parameter. See "The identity and the error type (32.0.0)" and "Migrating to 32.0.0".
 - Since 30.2.0 (the old `link` and `checkExternalRepo` forms deprecated here were removed in 32.0.0) the abapGit contracts have key-based members and facts forms: one atom per member (`IAdtAbapGitPullRepo`, `IAdtAbapGitRunLog`, `IAdtAbapGitPush`, … fourteen in all), each generic over its result `T` and its route's facts `F`, answering `IAbapGitStructuredError` by default (status and T100 key, never SAP's text); the new forms of `link` and `checkExternalRepo` take `credentials: IAbapGitCredentials | null`. The other legacy members (`pull`, `unlink`, `listRepos`, `getErrorLog`) are deprecated and unchanged apart from `credentials?: never` on the options of `pull`; the one edge case that no longer compiled in 30.2.0 is in the CHANGELOG. See "abapGit: key-based members and facts".
@@ -984,6 +985,41 @@ options, `IClassUnitTestRunOptions` with `IUnitTestScope`,
 with no spread to leave the key out. An absent field and an `undefined` one
 mean the same. The CHANGELOG lists each type;
 `src/__typechecks__/explicitUndefined.ts` holds the shapes.
+
+## Migrating to 34.0.0
+
+- **The widened unions.** `AdtApiName` gains `'typeGroup'`, `AdtTypeCode`
+  `'TYPE/DG'`, `AdtObjectKind` `'type_group'` and `AdtMainType` `'TYPE'`, and
+  so do the unions derived from the tables (`AdtApi`, `AdtTypeCodeOf`,
+  `AdtTypeCodeWith`, `AdtSourceTypeCode`, …). An exhaustive switch or a map
+  keyed by one of them adds a case or a key for each:
+
+  ```ts
+  const label: Record<AdtApiName, string> = {
+    // …
+    typeGroup: 'Type group', // new in 34.0.0
+  };
+  ```
+
+- **`patchMetadata` is gone.** `IAdtTableSettingsPatchable`,
+  `ITableSettingsPatchConfig`, `IAdtTableSettingsPatchHeaders` and
+  `IAdtTableSettingsPatchOptions` are removed; `ITableSettingsChangesOf<V>`,
+  `ITableSettingsChanges` and `TABLE_SETTINGS_MEDIA_TYPE` stay. A call of it
+  becomes three calls under the settings' own lock: `readMetadata` of the
+  working area (`version: 'inactive'`) with its ETag — no ETag, no write —, the
+  overlay of the changes on what was read (adt-clients 49.0.0:
+  `patchTableSettings`, no request), and `updateMetadata` of the whole document
+  with `ifMatch` set to the read's ETag and `TABLE_SETTINGS_MEDIA_TYPE`, with no
+  charset, as its `Content-Type`. The full sequence is in "A table's technical
+  settings". An implementation of `IAdtTableSettingsPatchable` drops the
+  member.
+- **The activation context is the caller's.** `IAdtAnalyseContext` is
+  unchanged, but no member fills `activation` any more. A reading that relied
+  on it gets it from its own caller, who, after `activate` or
+  `activateObjects` answered a checklist that does not state its outcome,
+  reads `GET /sap/bc/adt/activation/inactiveobjects` and hands the uris and
+  that answer to its `analyse`. A reading of two parameters is unaffected. See
+  "Activation".
 
 ## Migrating to 33.0.0
 

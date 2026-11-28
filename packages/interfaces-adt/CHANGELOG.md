@@ -7,10 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-The outline and navigation atoms, and type groups (`TYPE/DG`, for adt-clients
-#305): a new API name, its config and results, one new atom and the two rows.
 The support-read contracts (fr0ster/mcp-abap-adt#404): the application job
-definitions, the ABAP keyword documentation, and three API names with their rows.
+definitions, the ABAP keyword documentation, and three API names with their
+rows. Breaking for an exhaustive consumer; see Breaking below.
+
+### Breaking
+
+- **Widened unions.** `AdtApiName` gains `'applicationLog'`, `'applicationJobCatalog'` and
+  `'applicationJobTemplate'`, `AdtTypeCode` gains `'APLO/TYP'`, `'SAJC'` and `'SAJT'`,
+  `AdtObjectKind` gains `'application_log'`, `'application_job_catalog'` and
+  `'application_job_template'`, and so do the unions derived from the tables (`AdtApi`,
+  `AdtTypeCodeOf`, `AdtTypeCodeWith`, `AdtSourceTypeCode`, `AdtMainType` with `'APLO'`, `'SAJC'`
+  and `'SAJT'`, …). An exhaustive switch or a map keyed by one of them stops compiling.
+  **Migration:** add a case (or a key) for each.
+
+### Added
+
+- **`IApplicationJobCatalog<TObject, TSource>`** and **`IApplicationJobTemplate<TObject, TSource>`**
+  (`runtime/IApplicationJob.ts`) — the definition reads of an application job catalog (`SAJC`)
+  and template (`SAJT`): `getObject(name, options)` (the ADT object document) and
+  `getSource(name, options)` (`/source/main`), one `GET` each, with `IGetApplicationJobOptions`
+  (`version`, `accept`). Definitions, not job runs or job logs.
+- **`IAbapKeywordDocumentation<TQuery, TTopic, TPosition>`** (`runtime/IAbapKeywordDocumentation.ts`)
+  — the ABAP keyword documentation, `/sap/bc/adt/docu/abap/langu`, one member per form:
+  `query` (`query=`), `topic` (`object=`, the form the documentation's own links use; no
+  discovery template announces it) and `position` (`uri=`), each with `language`, `version` and
+  `format` sent as given, and `IKeywordDocumentationOptions` (`accept`). No value of `version`
+  or `format` is fixed: what a `version` selects is unverified.
+- **`accept`** on `IGetApplicationLogObjectOptions` and `IGetApplicationLogSourceOptions`: the
+  Accept of that one request.
+- **The rows.** `applicationLog` (`APLO/TYP`, `nameMaxLength` 20), `applicationJobCatalog`
+  (`SAJC`, 40) and `applicationJobTemplate` (`SAJT`, 40) in `ADT_TYPES_ONPREM` and
+  `ADT_TYPES_CLOUD`, each `source` and `readMetadata` only, from the recorded typestructure of
+  both releases (`OBJNAME_MAXLENGTH`). The recorded 7.40 typestructure lists none of them, so
+  `ADT_TYPES_BASIS_740` has no row.
+
+## [34.0.0] - 2026-11-28
+
+The outline and navigation atoms (for mcp-abap-adt #401), type groups (`TYPE/DG`,
+for adt-clients #305), and the C7 split (adt-clients 49): a new API name, its
+config and results, new atoms, the type-group rows, and the table-settings patch
+contract removed. Breaking for an exhaustive consumer and for a caller of
+`patchMetadata`; see Breaking, Removed and Migration below.
 
 ### Breaking
 
@@ -20,12 +58,6 @@ definitions, the ABAP keyword documentation, and three API names with their rows
   `AdtSourceTypeCode`, `AdtMainType` with `'TYPE'`, …). An exhaustive switch or
   a map keyed by one of them stops compiling. **Migration:** add a case (or a
   key) for `typeGroup` / `'TYPE/DG'` / `'type_group'` / `'TYPE'`.
-- **Widened again by the support reads** (fr0ster/mcp-abap-adt#404): `AdtApiName` gains
-  `'applicationLog'`, `'applicationJobCatalog'` and `'applicationJobTemplate'`, `AdtTypeCode`
-  `'APLO/TYP'`, `'SAJC'` and `'SAJT'`, `AdtObjectKind` `'application_log'`,
-  `'application_job_catalog'` and `'application_job_template'`, and `AdtMainType` `'APLO'`,
-  `'SAJC'` and `'SAJT'`, with the unions derived from the tables. **Migration:** add a case (or
-  a key) for each.
 
 ### Added
 
@@ -51,24 +83,6 @@ definitions, the ABAP keyword documentation, and three API names with their rows
   2025. `ADT_TYPES_CLOUD.typeGroup`: `validate`, `read`, `source`,
   `readMetadata`, `versions` — the create answered `403` `S_DEVELOP`, an
   authorization refusal that decides nothing, so no write is listed.
-- **`IApplicationJobCatalog<TObject, TSource>`** and **`IApplicationJobTemplate<TObject, TSource>`**
-  (`runtime/IApplicationJob.ts`) — the definition reads of an application job catalog (`SAJC`)
-  and template (`SAJT`): `getObject(name, options)` (the ADT object document) and
-  `getSource(name, options)` (`/source/main`), one `GET` each, with `IGetApplicationJobOptions`
-  (`version`, `accept`). Definitions, not job runs or job logs (fr0ster/mcp-abap-adt#404).
-- **`IAbapKeywordDocumentation<TQuery, TTopic, TPosition>`** (`runtime/IAbapKeywordDocumentation.ts`)
-  — the ABAP keyword documentation, `/sap/bc/adt/docu/abap/langu`, one member per form:
-  `query` (`query=`), `topic` (`object=`, the form the documentation's own links use; no
-  discovery template announces it) and `position` (`uri=`), each with `language`, `version` and
-  `format` sent as given, and `IKeywordDocumentationOptions` (`accept`). No value of `version`
-  or `format` is fixed: what a `version` selects is unverified (fr0ster/mcp-abap-adt#404).
-- **`accept`** on `IGetApplicationLogObjectOptions` and `IGetApplicationLogSourceOptions`: the
-  Accept of that one request.
-- **Three APIs in `ADT_TYPES_ONPREM` and `ADT_TYPES_CLOUD`** (not in `ADT_TYPES_BASIS_740`), and
-  in `AdtApiName`: `applicationLog` (`APLO/TYP`, name up to 20), `applicationJobCatalog` (`SAJC`,
-  40) and `applicationJobTemplate` (`SAJT`, 40), each `source` and `readMetadata` only, from the
-  recorded typestructure of both releases (`OBJNAME_MAXLENGTH`). The recorded 7.40
-  typestructure lists none of them.
 
 One member, one endpoint, one request (adt-clients 49.0.0, C7): the table
 settings patch that read and wrote in one member is gone, and no activation
