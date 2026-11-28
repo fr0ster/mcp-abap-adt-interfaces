@@ -333,6 +333,9 @@ type NewerApis =
   | 'messageClass'
   | 'messageClassMessage'
   | 'featureToggle'
+  | 'applicationLog'
+  | 'applicationJobCatalog'
+  | 'applicationJobTemplate'
   | 'authorizationField'
   | 'enhancement'
   | 'localTestClass'
@@ -389,6 +392,9 @@ type NewerCodes =
   | 'MSAG/N'
   | 'MSAG/NN'
   | 'FTG2/FT'
+  | 'APLO/TYP'
+  | 'SAJC'
+  | 'SAJT'
   | 'AUTH'
   | 'ENHO/XHH'
   | 'ENHO/XHB'
@@ -437,6 +443,9 @@ export type Projections = [
       | 'XSLT/VT'
       | 'TYPE/DG'
       | 'FTG2/FT'
+      | 'APLO/TYP'
+      | 'SAJC'
+      | 'SAJT'
       | 'ENHO/XHH'
     >
   >,
@@ -471,6 +480,9 @@ export type Projections = [
       | 'message_class'
       | 'message_class_message'
       | 'feature_toggle'
+      | 'application_log'
+      | 'application_job_catalog'
+      | 'application_job_template'
       | 'authorization_field'
       | 'enhancement'
       | 'local_test_class'
@@ -566,7 +578,8 @@ export type NewerShapes = [
     >
   >,
   // `getEnhancement()` reads source for `ENHO/XHH` alone: `read` and `update`
-  // throw before any request for the other two.
+  // throw before any request for the other two. The three definition APIs
+  // (application log, job catalog, job template) read source and metadata only.
   Assert<
     Equal<
       AdtTypeCodeWith<'onprem', 'read'>,
@@ -581,6 +594,9 @@ export type NewerShapes = [
         | 'AUTH'
         | 'ENHO/XHB'
         | 'ENHS/XSB'
+        | 'APLO/TYP'
+        | 'SAJC'
+        | 'SAJT'
       >
     >
   >,
@@ -591,8 +607,8 @@ export type NewerShapes = [
     >
   >,
   // A program include, a function include, an authorization field, a feature
-  // toggle, the two message class APIs, a table's settings and the text
-  // elements have no transport read.
+  // toggle, the two message class APIs, a table's settings, the text elements
+  // and the three definition APIs have no transport read.
   Assert<
     Equal<
       AdtTypeCodeWith<'onprem', 'transport'>,
@@ -607,6 +623,9 @@ export type NewerShapes = [
         | 'TABL/DTT'
         | 'PROG/PX'
         | 'CLAS/OCX'
+        | 'APLO/TYP'
+        | 'SAJC'
+        | 'SAJT'
         | 'TYPE/DG'
       >
     >

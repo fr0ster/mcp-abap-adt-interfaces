@@ -12,6 +12,7 @@
 
 import type {
   IAbapDebugger,
+  IAbapKeywordDocumentation,
   IAbapUnitRunner,
   IAdtAbapGitBranchInfo,
   IAdtAbapGitCheckExternalRepoNewForm,
@@ -69,6 +70,8 @@ import type {
   IAdtVirtualFolders,
   IAdtWhereUsed,
   IAmdpDebugger,
+  IApplicationJobCatalog,
+  IApplicationJobTemplate,
   IApplicationLog,
   IAtcFindings,
   IAtcLog,
@@ -304,6 +307,15 @@ export type _IFeedRepository = Assert<
 >;
 export type _IApplicationLog = Assert<
   EveryMemberTakesAnalyse<IApplicationLog<Probe, Probe, Probe>>
+>;
+export type _IApplicationJobCatalog = Assert<
+  EveryMemberTakesAnalyse<IApplicationJobCatalog<Probe, Probe>>
+>;
+export type _IApplicationJobTemplate = Assert<
+  EveryMemberTakesAnalyse<IApplicationJobTemplate<Probe, Probe>>
+>;
+export type _IAbapKeywordDocumentation = Assert<
+  EveryMemberTakesAnalyse<IAbapKeywordDocumentation<Probe, Probe, Probe>>
 >;
 export type _IAtcLog = Assert<EveryMemberTakesAnalyse<IAtcLog<Probe, Probe>>>;
 export type _IAtcRunStatusReadable = Assert<

@@ -873,6 +873,45 @@ export const ADT_TYPES_ONPREM = {
       },
     },
   },
+  applicationLog: {
+    kind: 'application_log',
+    collection: '/sap/bc/adt/applicationlog/objects',
+    codes: {
+      'APLO/TYP': {
+        main: 'APLO',
+        parent: null,
+        nameMaxLength: 20,
+        operations: ['source', 'readMetadata'],
+        evidence: 'system-description-s4-2025--07-typestructure',
+      },
+    },
+  },
+  applicationJobCatalog: {
+    kind: 'application_job_catalog',
+    collection: '/sap/bc/adt/applicationjob/catalogs',
+    codes: {
+      SAJC: {
+        main: 'SAJC',
+        parent: null,
+        nameMaxLength: 40,
+        operations: ['source', 'readMetadata'],
+        evidence: 'system-description-s4-2025--07-typestructure',
+      },
+    },
+  },
+  applicationJobTemplate: {
+    kind: 'application_job_template',
+    collection: '/sap/bc/adt/applicationjob/templates',
+    codes: {
+      SAJT: {
+        main: 'SAJT',
+        parent: null,
+        nameMaxLength: 40,
+        operations: ['source', 'readMetadata'],
+        evidence: 'system-description-s4-2025--07-typestructure',
+      },
+    },
+  },
   authorizationField: {
     kind: 'authorization_field',
     collection: '/sap/bc/adt/aps/iam/auth',
@@ -1893,6 +1932,45 @@ export const ADT_TYPES_CLOUD = {
           'getRuntimeState',
           'checkState',
         ],
+        evidence: 'system-description-abap-cloud--07-typestructure',
+      },
+    },
+  },
+  applicationLog: {
+    kind: 'application_log',
+    collection: '/sap/bc/adt/applicationlog/objects',
+    codes: {
+      'APLO/TYP': {
+        main: 'APLO',
+        parent: null,
+        nameMaxLength: 20,
+        operations: ['source', 'readMetadata'],
+        evidence: 'system-description-abap-cloud--07-typestructure',
+      },
+    },
+  },
+  applicationJobCatalog: {
+    kind: 'application_job_catalog',
+    collection: '/sap/bc/adt/applicationjob/catalogs',
+    codes: {
+      SAJC: {
+        main: 'SAJC',
+        parent: null,
+        nameMaxLength: 40,
+        operations: ['source', 'readMetadata'],
+        evidence: 'system-description-abap-cloud--07-typestructure',
+      },
+    },
+  },
+  applicationJobTemplate: {
+    kind: 'application_job_template',
+    collection: '/sap/bc/adt/applicationjob/templates',
+    codes: {
+      SAJT: {
+        main: 'SAJT',
+        parent: null,
+        nameMaxLength: 40,
+        operations: ['source', 'readMetadata'],
         evidence: 'system-description-abap-cloud--07-typestructure',
       },
     },

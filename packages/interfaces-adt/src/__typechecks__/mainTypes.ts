@@ -65,6 +65,7 @@ void _enhsSpot;
 
 // The main types are what the tables' codes state, recorded per variant.
 type ModernMains =
+  | 'APLO'
   | 'AUTH'
   | 'BDEF'
   | 'CLAS'
@@ -83,6 +84,8 @@ type ModernMains =
   | 'INTF'
   | 'MSAG'
   | 'PROG'
+  | 'SAJC'
+  | 'SAJT'
   | 'SRVB'
   | 'SRVD'
   | 'TABL'

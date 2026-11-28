@@ -649,6 +649,24 @@ type RecordedOnPremise = {
         | 'checkState';
     };
   };
+  applicationLog: {
+    'APLO/TYP': {
+      parent: null;
+      operations: 'source' | 'readMetadata';
+    };
+  };
+  applicationJobCatalog: {
+    SAJC: {
+      parent: null;
+      operations: 'source' | 'readMetadata';
+    };
+  };
+  applicationJobTemplate: {
+    SAJT: {
+      parent: null;
+      operations: 'source' | 'readMetadata';
+    };
+  };
   authorizationField: {
     AUTH: {
       parent: null;
