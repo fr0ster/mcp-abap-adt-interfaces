@@ -157,6 +157,7 @@ export type {
   IAdtEnhancementHost,
   IAdtIncludeEnhancementHost,
   IAdtLockable,
+  IAdtLockedDeletable,
   IAdtLockedWrite,
   IAdtLockFreeMetadataUpdatable,
   IAdtLockFreeUpdatable,
@@ -420,6 +421,10 @@ export {
   ADT_TASK_TYPE,
   TRANSPORT_SEARCH_CONFIGURATIONS_URL,
 } from './adt/IAdtTransport';
+export type {
+  ITypeGroupConfig,
+  ITypeGroupResults,
+} from './adt/IAdtTypeGroup';
 export type {
   AdtApiEntry,
   AdtApiName,

@@ -39,6 +39,7 @@ import type {
   IAdtGroupLifecycle,
   IAdtIncludeEnhancementHost,
   IAdtLockable,
+  IAdtLockedDeletable,
   IAdtLockFreeMetadataUpdatable,
   IAdtLockFreeUpdatable,
   IAdtMessageClassMessageLockable,
@@ -209,6 +210,9 @@ export type _IAdtMetadataUpdatable = Assert<
 >;
 export type _IAdtDeletable = Assert<
   EveryMemberTakesAnalyse<IAdtDeletable<Probe, Probe, keyof Probe, Probe>>
+>;
+export type _IAdtLockedDeletable = Assert<
+  EveryMemberTakesAnalyse<IAdtLockedDeletable<Probe, Probe, keyof Probe>>
 >;
 export type _IAdtValidatable = Assert<
   EveryMemberTakesAnalyse<IAdtValidatable<Probe, Probe, keyof Probe>>

@@ -146,7 +146,7 @@ export type RealIntersection = [
       AdtCodeWith<AdtModernVariant, 'delete'>,
       Exclude<
         AdtTypeCodeWith<'onprem', 'delete'>,
-        'PROG/P' | 'PROG/I' | 'FTG2/FT'
+        'PROG/P' | 'PROG/I' | 'FTG2/FT' | 'TYPE/DG'
       >
     >
   >,
@@ -167,7 +167,7 @@ export type RealIntersection = [
       AdtCodeWith<AdtModernVariant, 'create'>,
       Exclude<
         AdtTypeCodeWith<'onprem', 'create'>,
-        'PROG/P' | 'PROG/I' | 'FTG2/FT'
+        'PROG/P' | 'PROG/I' | 'FTG2/FT' | 'TYPE/DG'
       >
     >
   >,

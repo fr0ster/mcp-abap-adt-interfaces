@@ -581,6 +581,43 @@ export interface IAdtDeletable<
   ): Promise<IAdtResponse<TChecked>>;
 }
 
+/**
+ * An object deleted by a `DELETE` on its own address, **under the caller's
+ * lock**, with no deletion check beside it.
+ *
+ * {@link IAdtDeletable} pairs `delete` with `checkDeletion` and its `delete`
+ * takes no lock handle. A type group (`TYPE/DG`) is deleted otherwise: lock,
+ * `DELETE …/{name}?lockHandle=…`, unlock, as measured on S/4HANA 2025. The
+ * deletion check is not offered for it, so this atom carries `delete` alone,
+ * with the handle required by type as on every locked write
+ * ({@link IAdtLockedWrite}).
+ */
+export interface IAdtLockedDeletable<
+  TConfig,
+  TDeleted,
+  TRequired extends keyof TConfig,
+> {
+  /**
+   * Delete the object under the caller's lock. One request.
+   *
+   * @param config - Object identification
+   * @param options - `lockHandle` for the lock the caller took, `analyse` for
+   *                  the verdict
+   * @returns whatever this implementation's reading makes of the answer
+   */
+  delete<E extends IAdtError>(
+    config: AdtObjectIdentity<TConfig, TRequired>,
+    options: { headers: IAdtHeaders } & IAdtOperationOptions<E> &
+      IAdtLockedWrite & {
+        analyse: IAnalyse<E>;
+      },
+  ): Promise<IAdtResponse<TDeleted, E | IAdtError>>;
+  delete(
+    config: AdtObjectIdentity<TConfig, TRequired>,
+    options: { headers: IAdtHeaders } & IAdtOperationOptions & IAdtLockedWrite,
+  ): Promise<IAdtResponse<TDeleted>>;
+}
+
 export interface IAdtValidatable<
   TConfig,
   TValidated,
