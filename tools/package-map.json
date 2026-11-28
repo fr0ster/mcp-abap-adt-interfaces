@@ -606,6 +606,8 @@
   "ITraceState": "interfaces-adt",
   "ITraceView": "interfaces-adt",
   "ITransformationConfig": "interfaces-adt",
+  "ITypeGroupConfig": "interfaces-adt",
+  "ITypeGroupResults": "interfaces-adt",
   "ITransformationResults": "interfaces-adt",
   "ITransportCheckServiceBindingParams": "interfaces-adt",
   "ITransportConfig": "interfaces-adt",

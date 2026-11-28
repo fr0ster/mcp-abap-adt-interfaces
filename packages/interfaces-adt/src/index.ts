@@ -422,6 +422,10 @@ export {
   TRANSPORT_SEARCH_CONFIGURATIONS_URL,
 } from './adt/IAdtTransport';
 export type {
+  ITypeGroupConfig,
+  ITypeGroupResults,
+} from './adt/IAdtTypeGroup';
+export type {
   AdtApiEntry,
   AdtApiName,
   AdtApiTable,
